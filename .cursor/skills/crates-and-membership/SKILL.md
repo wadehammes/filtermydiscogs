@@ -1,8 +1,9 @@
 ---
+
 name: crates-and-membership
 description: >-
-  Crates API, CrateProvider, drawer, ReleaseCrateMenu, public /crate pages. Use
-  for crate CRUD, layout, membership, or sharing.
+Crates API, CrateProvider, drawer, ReleaseCrateMenu, public /crate pages. Use
+for crate CRUD, layout, membership, or sharing.
 ---
 
 # Crates and membership

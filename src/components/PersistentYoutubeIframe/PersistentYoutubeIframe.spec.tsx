@@ -68,6 +68,85 @@ const VariantHarness = ({
   );
 };
 
+const LoadingHarness = () => {
+  const [isPlaybackVideoLoading, setIsPlaybackVideoLoading] = useState(true);
+
+  return (
+    <>
+      <button type="button" onClick={() => setIsPlaybackVideoLoading(false)}>
+        Clear loading
+      </button>
+      <PersistentYoutubeIframe
+        videoId="te2jJncBVG4"
+        videoTitle="Test video"
+        variant="visible"
+        isPlaybackVideoLoading={isPlaybackVideoLoading}
+      />
+    </>
+  );
+};
+
+const HiddenVideoSwitchHarness = () => {
+  const [variant, setVariant] = useState<"hidden" | "visible">("hidden");
+  const [videoId, setVideoId] = useState("te2jJncBVG4");
+
+  return (
+    <>
+      <button type="button" onClick={() => setVideoId("abc12345678")}>
+        Switch video
+      </button>
+      <button type="button" onClick={() => setVariant("visible")}>
+        Show iframe
+      </button>
+      <PersistentYoutubeIframe
+        videoId={videoId}
+        videoTitle="Test video"
+        variant={variant}
+      />
+    </>
+  );
+};
+
+const VisibleVideoSwitchHarness = () => {
+  const [videoId, setVideoId] = useState("te2jJncBVG4");
+
+  return (
+    <>
+      <button type="button" onClick={() => setVideoId("abc12345678")}>
+        Switch video
+      </button>
+      <PersistentYoutubeIframe
+        videoId={videoId}
+        videoTitle="Test video"
+        autoplay
+        variant="visible"
+      />
+    </>
+  );
+};
+
+const DeferredLoadHarness = () => {
+  const [videoId, setVideoId] = useState("te2jJncBVG4");
+  const [deferVideoLoad, setDeferVideoLoad] = useState(true);
+
+  return (
+    <>
+      <button type="button" onClick={() => setVideoId("abc12345678")}>
+        Switch video
+      </button>
+      <button type="button" onClick={() => setDeferVideoLoad(false)}>
+        Allow load
+      </button>
+      <PersistentYoutubeIframe
+        videoId={videoId}
+        videoTitle="Test video"
+        deferVideoLoad={deferVideoLoad}
+        variant="visible"
+      />
+    </>
+  );
+};
+
 describe("PersistentYoutubeIframe", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -113,28 +192,6 @@ describe("PersistentYoutubeIframe", () => {
   it("refreshes embed layout when dock video loading clears while the panel is visible", async () => {
     const user = userEvent.setup();
 
-    const LoadingHarness = () => {
-      const [isPlaybackVideoLoading, setIsPlaybackVideoLoading] =
-        useState(true);
-
-      return (
-        <>
-          <button
-            type="button"
-            onClick={() => setIsPlaybackVideoLoading(false)}
-          >
-            Clear loading
-          </button>
-          <PersistentYoutubeIframe
-            videoId="te2jJncBVG4"
-            videoTitle="Test video"
-            variant="visible"
-            isPlaybackVideoLoading={isPlaybackVideoLoading}
-          />
-        </>
-      );
-    };
-
     render(<LoadingHarness />, { wrapper: createWrapper() });
 
     mockRefreshYoutubeEmbedPlayerLayout.mockClear();
@@ -171,28 +228,7 @@ describe("PersistentYoutubeIframe", () => {
   it("loads the next video via postMessage while hidden and refreshes embed layout to keep controls", async () => {
     const user = userEvent.setup();
 
-    const VideoSwitchHarness = () => {
-      const [variant, setVariant] = useState<"hidden" | "visible">("hidden");
-      const [videoId, setVideoId] = useState("te2jJncBVG4");
-
-      return (
-        <>
-          <button type="button" onClick={() => setVideoId("abc12345678")}>
-            Switch video
-          </button>
-          <button type="button" onClick={() => setVariant("visible")}>
-            Show iframe
-          </button>
-          <PersistentYoutubeIframe
-            videoId={videoId}
-            videoTitle="Test video"
-            variant={variant}
-          />
-        </>
-      );
-    };
-
-    render(<VideoSwitchHarness />, { wrapper: createWrapper() });
+    render(<HiddenVideoSwitchHarness />, { wrapper: createWrapper() });
 
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const initialSrc = iframe.getAttribute("src");
@@ -221,25 +257,7 @@ describe("PersistentYoutubeIframe", () => {
   it("loads the next video via postMessage while visible without reloading iframe src", async () => {
     const user = userEvent.setup();
 
-    const VideoSwitchHarness = () => {
-      const [videoId, setVideoId] = useState("te2jJncBVG4");
-
-      return (
-        <>
-          <button type="button" onClick={() => setVideoId("abc12345678")}>
-            Switch video
-          </button>
-          <PersistentYoutubeIframe
-            videoId={videoId}
-            videoTitle="Test video"
-            autoplay
-            variant="visible"
-          />
-        </>
-      );
-    };
-
-    render(<VideoSwitchHarness />, { wrapper: createWrapper() });
+    render(<VisibleVideoSwitchHarness />, { wrapper: createWrapper() });
 
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const initialSrc = iframe.getAttribute("src");
@@ -279,28 +297,6 @@ describe("PersistentYoutubeIframe", () => {
 
   it("defers loadVideoById until deferVideoLoad is cleared", async () => {
     const user = userEvent.setup();
-
-    const DeferredLoadHarness = () => {
-      const [videoId, setVideoId] = useState("te2jJncBVG4");
-      const [deferVideoLoad, setDeferVideoLoad] = useState(true);
-
-      return (
-        <>
-          <button type="button" onClick={() => setVideoId("abc12345678")}>
-            Switch video
-          </button>
-          <button type="button" onClick={() => setDeferVideoLoad(false)}>
-            Allow load
-          </button>
-          <PersistentYoutubeIframe
-            videoId={videoId}
-            videoTitle="Test video"
-            deferVideoLoad={deferVideoLoad}
-            variant="visible"
-          />
-        </>
-      );
-    };
 
     render(<DeferredLoadHarness />, { wrapper: createWrapper() });
 

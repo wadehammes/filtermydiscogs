@@ -134,19 +134,19 @@ The app will be available at `http://localhost:6767`.
 
 ## Pages
 
-| Path | Purpose |
-|------|---------|
-| `/` | Public landing / login |
-| `/releases` | Browse, filter, sort collection; crates/playlists side panel |
-| `/crates` | Crate hub (your crates) |
-| `/crates/[id]` | Owner crate workspace |
-| `/crate/[id]` | Public shared crate (no login) |
-| `/dashboard` | Collection analytics |
-| `/mosaic` | Cover-art mosaic grid (click tiles for release details; export download) |
-| `/settings` | Theme, sync, data preferences |
-| `/about` | About, optional donations (Stripe), clear data |
-| `/legal` | Terms of Service and Privacy Policy |
-| `/admin` | Admin stats (requires `ADMIN_USER_ID`) |
+| Path           | Purpose                                                                  |
+| -------------- | ------------------------------------------------------------------------ |
+| `/`            | Public landing / login                                                   |
+| `/releases`    | Browse, filter, sort collection; crates/playlists side panel             |
+| `/crates`      | Crate hub (your crates)                                                  |
+| `/crates/[id]` | Owner crate workspace                                                    |
+| `/crate/[id]`  | Public shared crate (no login)                                           |
+| `/dashboard`   | Collection analytics                                                     |
+| `/mosaic`      | Cover-art mosaic grid (click tiles for release details; export download) |
+| `/settings`    | Theme, sync, data preferences                                            |
+| `/about`       | About, optional donations (Stripe), clear data                           |
+| `/legal`       | Terms of Service and Privacy Policy                                      |
+| `/admin`       | Admin stats (requires `ADMIN_USER_ID`)                                   |
 
 ## Tech Stack
 
@@ -209,11 +209,11 @@ pnpm db:studio        # Prisma Studio
 
 ### Testing
 
-| Layer | Command | What it runs |
-|-------|---------|----------------|
-| Unit / integration | `pnpm test` / `pnpm test:ci` | Jest; API client specs use MSW ([`.jest/setupMswForApiSpecs.ts`](./.jest/setupMswForApiSpecs.ts)) |
-| E2E smoke (PR) | `pnpm test:e2e:smoke:ci` or `mise run ci` | [`build:e2e`](./package.json) then chromium specs in [`e2e/smokeSpecs.constants.ts`](./e2e/smokeSpecs.constants.ts) against **`next start`** |
-| E2E full | `pnpm test:e2e:ci` or `mise run ci-full` | Every spec × desktop, phone, and tablet (push to **`staging`**) |
+| Layer              | Command                                   | What it runs                                                                                                                                 |
+| ------------------ | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit / integration | `pnpm test` / `pnpm test:ci`              | Jest; API client specs use MSW ([`.jest/setupMswForApiSpecs.ts`](./.jest/setupMswForApiSpecs.ts))                                            |
+| E2E smoke (PR)     | `pnpm test:e2e:smoke:ci` or `mise run ci` | [`build:e2e`](./package.json) then chromium specs in [`e2e/smokeSpecs.constants.ts`](./e2e/smokeSpecs.constants.ts) against **`next start`** |
+| E2E full           | `pnpm test:e2e:ci` or `mise run ci-full`  | Every spec × desktop, phone, and tablet (push to **`staging`**)                                                                              |
 
 Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixtures/msw.fixture.ts): **MSW intercepts `/api/*`** with a **fresh handler stack per test** and **factory-backed** data under [`src/tests/msw/`](./src/tests/msw/) and [`src/tests/factories/`](./src/tests/factories/) — no live Discogs collection sync or YouTube embeds in CI. The Playwright **`webServer`** and **`build:e2e`** set server env so gated UI (e.g. playlists) matches production flag wiring without calling Vercel Flags. Public-route E2E does not require **`DATABASE_URL`**. Spec catalog, embed mock, and flag overrides: [`docs/handbook/platform.md` → Playwright](./docs/handbook/platform.md#playwright-instant-navigation-tests) and [Feature flags](./docs/handbook/platform.md#feature-flags-vercel).
 
@@ -221,10 +221,10 @@ Test data conventions (factories, TDD, E2E MSW): [`docs/handbook/factories.md`](
 
 ## Branches and production
 
-| Branch | Purpose |
-|--------|---------|
+| Branch        | Purpose                                                                                                                                             |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`staging`** | Default trunk — open PRs here; [CI](.github/workflows/ci.yml) (unit + Playwright smoke) on PRs; [E2E full](.github/workflows/e2e-full.yml) on push. |
-| **`main`** | Production only — updated automatically when you cut a release tag; do **not** push or PR here. |
+| **`main`**    | Production only — updated automatically when you cut a release tag; do **not** push or PR here.                                                     |
 
 **Vercel:** point **Production** at **`main`**, previews/staging at **`staging`**.
 
@@ -248,11 +248,10 @@ If **`create-release`** failed on **Reset Main**, use [`platform.md` → Branchi
 ## Cursor (optional)
 
 Agent wiring for this repo (also documented in [`docs/handbook/platform.md` → Cursor](./docs/handbook/platform.md#cursor-agents)):
-
 - **Hooks** — [`.cursor/hooks.json`](./.cursor/hooks.json): brief session handbook pointer, convention guards on edits, commit via [`scripts/git-commit.sh`](./scripts/git-commit.sh), optional session-end drift/lint/tests (see [platform.md → Cursor](./docs/handbook/platform.md#cursor-agents)).
 - **Rules / skills** — [`.cursor/rules/`](./.cursor/rules/), [`.cursor/skills/README.md`](./.cursor/skills/README.md) (task checklists; handbook stays canonical).
 - **MCP (Cursor)** — [`.cursor/mcp.json`](./.cursor/mcp.json): **Fallow** (local `pnpm exec fallow-mcp`; optional `pnpm fallow:health`) and **Sentry** ([`https://mcp.sentry.dev/mcp`](https://mcp.sentry.dev/) — OAuth; project-scoped URL recommended — see [platform.md → Cursor](./docs/handbook/platform.md#cursor-agents)).
-Use **mise** so hooks resolve the same **pnpm** as your shell (`mise bootstrap`). Day-to-day editing is **Zed** (see **Setup**); Cursor is for agents only.
+  Use **mise** so hooks resolve the same **pnpm** as your shell (`mise bootstrap`). Day-to-day editing is **Zed** (see **Setup**); Cursor is for agents only.
 
 ## Handbook
 
@@ -263,7 +262,6 @@ The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place f
 **Agents (Cursor):** [AGENTS.md](./AGENTS.md). Cursor rules and skills live under [`.cursor/`](./.cursor/). Use the task map in [`docs/handbook/llms.md`](./docs/handbook/llms.md) to route work to the right handbook chapter.
 
 **Suggested reading order**
-
 - **New to the project:** [architecture.md](./docs/handbook/architecture.md), then [conventions.md](./docs/handbook/conventions.md), then skim [patterns.md](./docs/handbook/patterns.md).
 - **Agents / task routing:** [llms.md](./docs/handbook/llms.md).
 - **Discogs OAuth or API:** [discogs.md](./docs/handbook/discogs.md).

@@ -1,8 +1,9 @@
 ---
+
 name: release-playback
 description: >-
-  Global playback queue, mini player, YouTube embed, ReleasePlaybackProvider.
-  Use for playback hooks, dock, queue drawer, or modal track play.
+Global playback queue, mini player, YouTube embed, ReleasePlaybackProvider.
+Use for playback hooks, dock, queue drawer, or modal track play.
 ---
 
 # Release playback

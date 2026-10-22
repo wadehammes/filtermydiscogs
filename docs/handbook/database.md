@@ -14,47 +14,47 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 
 ### `User`
 
-| Field | Notes |
-|-------|-------|
-| `discogs_user_id` | Primary key — Discogs user ID from **verified OAuth identity** |
-| `username` | Discogs username (updated on login) |
-| `preferences` | JSON blob for account settings (see below) |
-| `login_count` | Completed OAuth logins (incremented in [`recordDiscogsLogin`](../../src/lib/user.server.ts)) |
-| `support_toast_dismissed` | When `true`, the support-project action toast is never shown again |
-| `support_toast_pending` | One-shot flag set on login when `login_count` reaches the threshold and the toast was not dismissed; consumed by **`GET /api/auth/check`** |
-| `last_seen_at` | Last authenticated activity timestamp; set on every login and throttled updates from **`GET /api/auth/check`** ([`touchUserLastSeen`](../../src/lib/user.server.ts), 15-minute interval) |
-| `created_at` / `updated_at` | Row timestamps |
+| Field                       | Notes                                                                                                                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `discogs_user_id`           | Primary key — Discogs user ID from **verified OAuth identity**                                                                                                                           |
+| `username`                  | Discogs username (updated on login)                                                                                                                                                      |
+| `preferences`               | JSON blob for account settings (see below)                                                                                                                                               |
+| `login_count`               | Completed OAuth logins (incremented in [`recordDiscogsLogin`](../../src/lib/user.server.ts))                                                                                             |
+| `support_toast_dismissed`   | When `true`, the support-project action toast is never shown again                                                                                                                       |
+| `support_toast_pending`     | One-shot flag set on login when `login_count` reaches the threshold and the toast was not dismissed; consumed by **`GET /api/auth/check`**                                               |
+| `last_seen_at`              | Last authenticated activity timestamp; set on every login and throttled updates from **`GET /api/auth/check`** ([`touchUserLastSeen`](../../src/lib/user.server.ts), 15-minute interval) |
+| `created_at` / `updated_at` | Row timestamps                                                                                                                                                                           |
 
 One row per Discogs account. **`Crate.user_id`** references **`User.discogs_user_id`** with **`ON DELETE CASCADE`**. Rows are created/updated on OAuth login via [`recordDiscogsLogin`](../../src/lib/user.server.ts) in the auth callback and token-reuse paths.
 
 **`preferences`** (versioned JSON, typed as [`UserPreferencesJson`](../../src/types/userPreferences.types.ts), parsed by [`user-preferences.server.ts`](../../src/lib/user-preferences.server.ts); Prisma field typing via [`prisma-json-types-generator`](https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-json-fields) + [`src/types/prisma-json.d.ts`](../../src/types/prisma-json.d.ts)):
 
-| Field | Default | Purpose |
-|-------|---------|---------|
-| `persistFilters` | `true` | When `false`, filter/sort selections are not restored on the next visit |
-| `autoPlayOnQueueAdd` | `true` | When `true`, the first track added to an empty queue starts playback immediately and opens the video panel |
-| `extendQueueWithSimilarReleases` | `false` | When `true`, playback appends one related collection track at a time when up next runs low |
-| `defaultCollectionSidePanel` | `"crates"` | Which Releases side panel (`crates` or `playlists`) is selected on load; applied once per login via [`useCrateProvider`](../../src/hooks/useCrateProvider.hook.ts) |
-| `theme` | `"system"` | App color theme (`amber`, `codex`, `dark`, `dim`, `discogs`, `forest`, `futuristic`, `high-contrast`, `light`, `midnight`, `sepia`, `slate`, `wine`, or `system`) |
-| `view` | `{ currentView: "card", previousView: "card" }` | Default releases view (`card`, `list`, or `random`) |
-| `filters` | Default empty filter state | Saved filter selections when `persistFilters` is `true` (styles, years, formats, sort, style/format/year match mode, search query) |
-| `filterViews` | `[]` | Named saved filter snapshots (search, facets, sort) synced across browsers; up to 20 entries |
-| `analyticsConsent` | unset | Optional boolean mirror of the analytics cookie choice when set from Settings |
+| Field                            | Default                                         | Purpose                                                                                                                                                            |
+| -------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `persistFilters`                 | `true`                                          | When `false`, filter/sort selections are not restored on the next visit                                                                                            |
+| `autoPlayOnQueueAdd`             | `true`                                          | When `true`, the first track added to an empty queue starts playback immediately and opens the video panel                                                         |
+| `extendQueueWithSimilarReleases` | `false`                                         | When `true`, playback appends one related collection track at a time when up next runs low                                                                         |
+| `defaultCollectionSidePanel`     | `"crates"`                                      | Which Releases side panel (`crates` or `playlists`) is selected on load; applied once per login via [`useCrateProvider`](../../src/hooks/useCrateProvider.hook.ts) |
+| `theme`                          | `"system"`                                      | App color theme (`amber`, `codex`, `dark`, `dim`, `discogs`, `forest`, `futuristic`, `high-contrast`, `light`, `midnight`, `sepia`, `slate`, `wine`, or `system`)  |
+| `view`                           | `{ currentView: "card", previousView: "card" }` | Default releases view (`card`, `list`, or `random`)                                                                                                                |
+| `filters`                        | Default empty filter state                      | Saved filter selections when `persistFilters` is `true` (styles, years, formats, sort, style/format/year match mode, search query)                                 |
+| `filterViews`                    | `[]`                                            | Named saved filter snapshots (search, facets, sort) synced across browsers; up to 20 entries                                                                       |
+| `analyticsConsent`               | unset                                           | Optional boolean mirror of the analytics cookie choice when set from Settings                                                                                      |
 
 Client reads/writes via **`GET`** / **`PATCH`** [`/api/user/preferences`](../../src/app/api/user/preferences/route.ts). **`GET`** is read-only: it **`findUnique`**s the authenticated **`User`** row and returns defaults when missing (user rows are created on OAuth login or the first **`PATCH`**). [`useUserPreferencesSync`](../../src/hooks/useUserPreferencesSync.hook.ts) (mounted from [`Providers.tsx`](../../src/components/Providers.tsx)) resets **`theme`** to **`system`** while logged out (guest default). On first login it **seeds local → server only when the server field is still at its default** (e.g. filters saved on preview/staging hydrate into a fresh local browser instead of being overwritten by empty **`localStorage`**); local **`system`** theme is **not** seeded (guest placeholder only). Otherwise it applies server prefs via **`setTheme`**, **`viewStateAtom`**, and **`persistedFiltersAtom`**. Authenticated **`PATCH`** calls go through [`usePersistUserPreferences`](../../src/hooks/usePersistUserPreferences.hook.ts) and [`userPreferencesPersistQueue.ts`](../../src/utils/userPreferencesPersistQueue.ts) (debounced filter writes, merged patches)—from [`ThemeSwitcher`](../../src/components/ThemeSwitcher/ThemeSwitcher.component.tsx), [`useViewDispatch`](../../src/hooks/useViewAtoms.hook.ts), [`useFiltersDispatch`](../../src/hooks/useFilterAtoms.hook.ts), [`SettingsClient`](../../src/components/Settings/SettingsClient.component.tsx), and the sync hook’s first-login seed. **`PATCH`** upserts preferences in one Prisma round trip.
 
 ### `Crate`
 
-| Field | Notes |
-|-------|-------|
-| `user_id` | Discogs user ID from **verified OAuth identity** (matches Prisma `Int`; not the cookie alone) |
-| `id` | UUID string |
-| `name` | Display name |
-| `username` | Discogs username (for public crate attribution) |
-| `is_default` | One default crate per user |
-| `private` | When `false`, crate is publicly viewable at `/crate/[id]` |
-| `packed_enabled` | When `true`, owner sees gig-packing checklist UI on the crate detail page ([`/crates/[id]`](../../src/app/crates/[id]/page.tsx); default **`false`**) |
-| `notes` | Optional free-text notes for the crate; editable in **Edit crate** and the owner detail page set-notes scratchpad (not exposed on public crate routes) |
+| Field            | Notes                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `user_id`        | Discogs user ID from **verified OAuth identity** (matches Prisma `Int`; not the cookie alone)                                                          |
+| `id`             | UUID string                                                                                                                                            |
+| `name`           | Display name                                                                                                                                           |
+| `username`       | Discogs username (for public crate attribution)                                                                                                        |
+| `is_default`     | One default crate per user                                                                                                                             |
+| `private`        | When `false`, crate is publicly viewable at `/crate/[id]`                                                                                              |
+| `packed_enabled` | When `true`, owner sees gig-packing checklist UI on the crate detail page ([`/crates/[id]`](../../src/app/crates/[id]/page.tsx); default **`false`**)  |
+| `notes`          | Optional free-text notes for the crate; editable in **Edit crate** and the owner detail page set-notes scratchpad (not exposed on public crate routes) |
 
 Composite primary key: **`[user_id, id]`**.
 
@@ -76,16 +76,16 @@ Owner-only section labels within a crate layout (e.g. “Peak hour”, nested �
 
 Per-user playback stats for collection tracks (same identity as the playback queue: **`track_key`** = `` `${instance_id}:${track_position}` ``). User-owned data (not product analytics); rows cascade when **`User`** is deleted.
 
-| Field | Notes |
-|-------|-------|
-| `track_key` | Composite playback key (part of primary key with `user_id`) |
-| `youtube_id` | User’s preferred YouTube embed id for this track (optional). Set via **`PATCH /api/tracks/youtube`**, updated on play record when playback starts, and returned on **`GET /api/tracks/stats`** |
-| `track_title`, `track_position`, `instance_id` | Denormalized for display |
-| `artist`, `release_title` | Optional display metadata |
-| `play_count` | User started playback (row click, queue, skip, auto-advance) — once per active track session |
-| `listen_count` | ≥ **30s** continuous playback in one session, or embed ended before 30s (short tracks) |
-| `first_played_at` | Set on first **`play`** or override upsert when the row is created |
-| `last_played_at` / `last_listened_at` | Updated when the matching counter increments |
+| Field                                          | Notes                                                                                                                                                                                          |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `track_key`                                    | Composite playback key (part of primary key with `user_id`)                                                                                                                                    |
+| `youtube_id`                                   | User’s preferred YouTube embed id for this track (optional). Set via **`PATCH /api/tracks/youtube`**, updated on play record when playback starts, and returned on **`GET /api/tracks/stats`** |
+| `track_title`, `track_position`, `instance_id` | Denormalized for display                                                                                                                                                                       |
+| `artist`, `release_title`                      | Optional display metadata                                                                                                                                                                      |
+| `play_count`                                   | User started playback (row click, queue, skip, auto-advance) — once per active track session                                                                                                   |
+| `listen_count`                                 | ≥ **30s** continuous playback in one session, or embed ended before 30s (short tracks)                                                                                                         |
+| `first_played_at`                              | Set on first **`play`** or override upsert when the row is created                                                                                                                             |
+| `last_played_at` / `last_listened_at`          | Updated when the matching counter increments                                                                                                                                                   |
 
 Admin override counts use **`userTrackHasYoutubeOverrideWhere`** in [`user-track.server.ts`](../../src/lib/user-track.server.ts) (aligned with **`btrim(youtube_id) <> ''`** in admin SQL).
 
@@ -95,13 +95,13 @@ Client writes via **`POST /api/tracks/record`** (`event`: **`play`** \| **`liste
 
 First-party product analytics when the visitor opts in (same consent gate as GTM). No FK to **`User`** — optional **`user_id`** for signed-in events.
 
-| Field | Notes |
-|-------|-------|
-| `event` / `category` / `action` / `label` | Event metadata (mirrors GTM-style payloads) |
-| `value` | Optional string value |
-| `page_path` | App route path when recorded |
-| `user_id` | Discogs user ID when signed in; nullable for anonymous page views |
-| `created_at` | Insert timestamp |
+| Field                                     | Notes                                                             |
+| ----------------------------------------- | ----------------------------------------------------------------- |
+| `event` / `category` / `action` / `label` | Event metadata (mirrors GTM-style payloads)                       |
+| `value`                                   | Optional string value                                             |
+| `page_path`                               | App route path when recorded                                      |
+| `user_id`                                 | Discogs user ID when signed in; nullable for anonymous page views |
+| `created_at`                              | Insert timestamp                                                  |
 
 Indexed on **`user_id`** for **`POST /api/auth/clear-data`** deletes and other per-user maintenance.
 
@@ -111,12 +111,12 @@ Ingest: **`POST /api/usage/events`** ([`PRODUCT_ANALYTICS_INGEST_PATH`](../../sr
 
 Daily aggregates preserved after raw event retention. Composite primary key: **`[date, dimension_type, dimension_key]`** (UTC calendar date).
 
-| Field | Notes |
-|-------|-------|
-| `date` | UTC day bucket (`DATE`) |
+| Field            | Notes                                                            |
+| ---------------- | ---------------------------------------------------------------- |
+| `date`           | UTC day bucket (`DATE`)                                          |
 | `dimension_type` | `page_path` (page views) or `event` (non–page-view interactions) |
-| `dimension_key` | Path or event name |
-| `event_count` | Total events that day for that dimension |
+| `dimension_key`  | Path or event name                                               |
+| `event_count`    | Total events that day for that dimension                         |
 
 Populated by **`GET /api/cron/product-analytics`** ([`product-analytics-maintenance.server.ts`](../../src/lib/product-analytics-maintenance.server.ts)) — Vercel Cron daily at 04:00 UTC ([`vercel.json`](../../vercel.json)). Requires **`CRON_SECRET`**. Rollups are **incremental**: each run starts the day after the latest stored rollup (or the oldest raw event on first run), catches up through **yesterday** (UTC), and **always re-rolls yesterday** so late-arriving events update that day. Rows are written with a bulk **`INSERT … ON CONFLICT`** per dimension/day. UTC day boundaries use [`startOfUtcDay`](../../src/utils/dateHelpers.ts) / [`addUtcDays`](../../src/utils/dateHelpers.ts) (shared with [`collectionRhythm.ts`](../../src/utils/collectionRhythm.ts)).
 
@@ -134,10 +134,10 @@ Populated by **`GET /api/cron/product-analytics`** ([`product-analytics-maintena
 
 **`PlaylistTrack`** — junction only (no duplicated track columns):
 
-| Field | Notes |
-|-------|-------|
+| Field                                 | Notes                                                                      |
+| ------------------------------------- | -------------------------------------------------------------------------- |
 | `user_id`, `playlist_id`, `track_key` | Composite PK; **`track_key`** FK → **`UserTrack`** **`ON DELETE CASCADE`** |
-| `sort_order` | Order within the playlist (DnD in **`PlaylistDrawerTracks`**) |
+| `sort_order`                          | Order within the playlist (DnD in **`PlaylistDrawerTracks`**)              |
 
 Adding the same track twice: **dedupe** by **`track_key`** per playlist (reject or no-op on second add).
 
@@ -185,34 +185,34 @@ CI runs **`pnpm prisma generate`** before typecheck/tests ([`platform.md`](platf
 
 ## API routes
 
-| Route | Methods | Purpose |
-|-------|---------|---------|
-| `/api/crates` | GET, POST | List/create crates for authenticated user; GET returns crates ordered **default first**, then **name ascending** (`releaseCount` and up to three `previewThumbs` per crate). Pass **`?all=true`** to return up to **`CRATE_LIST_ALL_MAX`** (500) crates in one page (used by the client crate list) |
-| `/api/crates/[id]` | GET, PATCH, DELETE | Single crate CRUD; can toggle `private`, update `username`; GET returns releases ordered by **`sort_order`** plus **`markers[]`**. Pass **`?all=true`** to return up to **`CRATE_DETAIL_ALL_MAX`** (10,000) releases in one page |
-| `/api/crates/[id]/layout` | PUT | Atomically replace crate layout (release order + set markers) |
-| `/api/crates/[id]/releases` | GET, POST, PATCH | List/add releases; bulk clear packed (`clear_found`); new releases prepend at min **`sort_order` − 1000** |
-| `/api/crates/[id]/releases/[releaseId]` | PATCH, DELETE | Mark packed / remove release from crate |
-| `/api/crates/membership/[instanceId]` | GET | Crate ids containing a collection release (`instance_id`) for the authenticated user |
-| `/api/crates/membership/[instanceId]` | PUT | Set crate membership for a release in one request (`{ crateIds, release }`) |
-| `/api/crates/public/[id]` | GET | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers). Pass **`?all=true`** for a single full payload (up to **`CRATE_DETAIL_ALL_MAX`**) |
-| `/api/crates/migrate` | POST | Bulk import legacy localStorage releases into the user's default crate (`{ releases }`, max **`LEGACY_CRATE_MIGRATE_MAX`**) |
-| `/api/crates/sync` | POST | Sync local crate state with server; orphan detection scans **all** crate-release rows via **`count`** + **`groupBy instance_id`** ([`crate-sync.server.ts`](../../src/lib/crate-sync.server.ts)) — no row cap; **400** responses include **`blockedReason`** (`collection_too_small` \| `deletion_cap_blocked`) when sync is refused; blocks bulk deletes above 50% unless **`force=true`** (structured **`crate_sync_force_override`** log + audit metadata) |
-| `/api/playlists` | GET, POST | List/create user playlists ([`playlist.server.ts`](../../src/lib/playlist.server.ts)); GET ordered by **`updated_at` desc** with **`trackCount`** |
-| `/api/playlists/[id]` | GET, PATCH, DELETE | Playlist detail (tracks joined from **`UserTrack`**) / rename / delete |
-| `/api/playlists/[id]/tracks` | POST, DELETE, PUT | Add track (**`addPlaylistTrackBodySchema`** = **`userTrackMetadataBodySchema`**; upserts **`UserTrack`** first), remove by **`track_key`**, reorder full **`track_keys`** list (**409** on duplicate add) |
-| `/api/tracks/record` | POST | Record **`play`** or **`listen`** for a track (`userTrackRecordBodySchema`) |
-| `/api/tracks/stats` | GET | Batch stats for **`?keys=`** (comma-separated **`track_key`**) |
-| `/api/tracks/youtube` | PATCH | Per-track YouTube embed override (**`userTrackYoutubeOverrideBodySchema`**) |
-| `/api/release/[id]` | GET | Discogs release detail for modal/playback; optional **`?fresh=1`** (**`no-store`**). Uses [`fetchDiscogsReleaseRecord.server.ts`](../../src/lib/fetchDiscogsReleaseRecord.server.ts) (OAuth, then consumer on upstream **404**). Co-located [`route.spec.ts`](../../src/app/api/release/[id]/route.spec.ts). |
-| `/api/release/batch` | POST | **`{ ids: string[] }`** → **`{ releases: Record<id, detail> }`** (max **`RELEASE_BATCH_MAX_IDS`**; invalid/failed ids omitted). Same [`fetchDiscogsReleaseRecord.server.ts`](../../src/lib/fetchDiscogsReleaseRecord.server.ts) helper as single-id GET. [`route.spec.ts`](../../src/app/api/release/batch/route.spec.ts). |
-| `/api/youtube/oembed` | GET | YouTube oEmbed title + channel for **`?video_id=`** (verified session; query Zod in [`youtube.schemas.ts`](../../src/lib/validation/youtube.schemas.ts); server fetch [`fetchYoutubeOembedMetadata`](../../src/lib/youtube-oembed.server.ts); **`404`** when oEmbed has no row). Powers **`TrackYoutubeOverrideVideoMeta`** via **`useYoutubeOembedQuery`**. Co-located [`route.spec.ts`](../../src/app/api/youtube/oembed/route.spec.ts) mocks **`fetchYoutubeOembedMetadata`**. |
-| `/api/crates/health` | GET | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats) |
-| `/api/dashboard/most-crated` | GET | Releases in multiple crates for the signed-in user — **`groupBy (instance_id, crate_id)`** + one **`release_data`** sample per instance ([`dashboard-most-crated.server.ts`](../../src/lib/dashboard-most-crated.server.ts)) |
-| `/api/admin/stats` | GET | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, **account preferences** (filter persistence, analytics consent, themes, default view, saved filter views), **feature usage** from **`product_analytics_daily_rollups`** + recent raw events, and **`UserTrack` playback stats** via [`fetchAdminUserTrackStats`](../../src/lib/admin-user-track-stats.server.ts)) |
-| `/api/admin/users/[username]` | GET | Admin-only lookup for a Discogs username: account metadata, preferences summary, crate totals, activity, **`UserTrack` playback** totals, analytics counts, and recent crates |
-| `/api/usage/events` | POST | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** via **`getOptionalVerifiedUserFromRequest`** — anonymous **`null`** on auth/Discogs failure; co-located [`route.spec.ts`](../../src/app/api/usage/events/route.spec.ts)) |
-| `/api/cron/product-analytics` | GET | Daily rollup + 90-day raw retention (Vercel Cron; **`Authorization: Bearer CRON_SECRET`**) |
-| `/api/auth/clear-data` | POST | In one transaction: delete **`product_analytics_events`** for that **`user_id`**, then delete the **`User`** row (cascades crates); clear session cookies |
+| Route                                   | Methods            | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/crates`                           | GET, POST          | List/create crates for authenticated user; GET returns crates ordered **default first**, then **name ascending** (`releaseCount` and up to three `previewThumbs` per crate). Pass **`?all=true`** to return up to **`CRATE_LIST_ALL_MAX`** (500) crates in one page (used by the client crate list)                                                                                                                                                                               |
+| `/api/crates/[id]`                      | GET, PATCH, DELETE | Single crate CRUD; can toggle `private`, update `username`; GET returns releases ordered by **`sort_order`** plus **`markers[]`**. Pass **`?all=true`** to return up to **`CRATE_DETAIL_ALL_MAX`** (10,000) releases in one page                                                                                                                                                                                                                                                  |
+| `/api/crates/[id]/layout`               | PUT                | Atomically replace crate layout (release order + set markers)                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `/api/crates/[id]/releases`             | GET, POST, PATCH   | List/add releases; bulk clear packed (`clear_found`); new releases prepend at min **`sort_order` − 1000**                                                                                                                                                                                                                                                                                                                                                                         |
+| `/api/crates/[id]/releases/[releaseId]` | PATCH, DELETE      | Mark packed / remove release from crate                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `/api/crates/membership/[instanceId]`   | GET                | Crate ids containing a collection release (`instance_id`) for the authenticated user                                                                                                                                                                                                                                                                                                                                                                                              |
+| `/api/crates/membership/[instanceId]`   | PUT                | Set crate membership for a release in one request (`{ crateIds, release }`)                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `/api/crates/public/[id]`               | GET                | Public crate payload (no auth required when not private); releases ordered by **`sort_order`** only (no markers). Pass **`?all=true`** for a single full payload (up to **`CRATE_DETAIL_ALL_MAX`**)                                                                                                                                                                                                                                                                               |
+| `/api/crates/migrate`                   | POST               | Bulk import legacy localStorage releases into the user's default crate (`{ releases }`, max **`LEGACY_CRATE_MIGRATE_MAX`**)                                                                                                                                                                                                                                                                                                                                                       |
+| `/api/crates/sync`                      | POST               | Sync local crate state with server; orphan detection scans **all** crate-release rows via **`count`** + **`groupBy instance_id`** ([`crate-sync.server.ts`](../../src/lib/crate-sync.server.ts)) — no row cap; **400** responses include **`blockedReason`** (`collection_too_small` \| `deletion_cap_blocked`) when sync is refused; blocks bulk deletes above 50% unless **`force=true`** (structured **`crate_sync_force_override`** log + audit metadata)                     |
+| `/api/playlists`                        | GET, POST          | List/create user playlists ([`playlist.server.ts`](../../src/lib/playlist.server.ts)); GET ordered by **`updated_at` desc** with **`trackCount`**                                                                                                                                                                                                                                                                                                                                 |
+| `/api/playlists/[id]`                   | GET, PATCH, DELETE | Playlist detail (tracks joined from **`UserTrack`**) / rename / delete                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `/api/playlists/[id]/tracks`            | POST, DELETE, PUT  | Add track (**`addPlaylistTrackBodySchema`** = **`userTrackMetadataBodySchema`**; upserts **`UserTrack`** first), remove by **`track_key`**, reorder full **`track_keys`** list (**409** on duplicate add)                                                                                                                                                                                                                                                                         |
+| `/api/tracks/record`                    | POST               | Record **`play`** or **`listen`** for a track (`userTrackRecordBodySchema`)                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `/api/tracks/stats`                     | GET                | Batch stats for **`?keys=`** (comma-separated **`track_key`**)                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `/api/tracks/youtube`                   | PATCH              | Per-track YouTube embed override (**`userTrackYoutubeOverrideBodySchema`**)                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `/api/release/[id]`                     | GET                | Discogs release detail for modal/playback; optional **`?fresh=1`** (**`no-store`**). Uses [`fetchDiscogsReleaseRecord.server.ts`](../../src/lib/fetchDiscogsReleaseRecord.server.ts) (OAuth, then consumer on upstream **404**). Co-located [`route.spec.ts`](../../src/app/api/release/[id]/route.spec.ts).                                                                                                                                                                      |
+| `/api/release/batch`                    | POST               | **`{ ids: string[] }`** → **`{ releases: Record<id, detail> }`** (max **`RELEASE_BATCH_MAX_IDS`**; invalid/failed ids omitted). Same [`fetchDiscogsReleaseRecord.server.ts`](../../src/lib/fetchDiscogsReleaseRecord.server.ts) helper as single-id GET. [`route.spec.ts`](../../src/app/api/release/batch/route.spec.ts).                                                                                                                                                        |
+| `/api/youtube/oembed`                   | GET                | YouTube oEmbed title + channel for **`?video_id=`** (verified session; query Zod in [`youtube.schemas.ts`](../../src/lib/validation/youtube.schemas.ts); server fetch [`fetchYoutubeOembedMetadata`](../../src/lib/youtube-oembed.server.ts); **`404`** when oEmbed has no row). Powers **`TrackYoutubeOverrideVideoMeta`** via **`useYoutubeOembedQuery`**. Co-located [`route.spec.ts`](../../src/app/api/youtube/oembed/route.spec.ts) mocks **`fetchYoutubeOembedMetadata`**. |
+| `/api/crates/health`                    | GET                | Admin-only DB diagnostics (connection, **`databaseHost`**, crate + **`product_analytics_events`** table checks, pool/query stats)                                                                                                                                                                                                                                                                                                                                                 |
+| `/api/dashboard/most-crated`            | GET                | Releases in multiple crates for the signed-in user — **`groupBy (instance_id, crate_id)`** + one **`release_data`** sample per instance ([`dashboard-most-crated.server.ts`](../../src/lib/dashboard-most-crated.server.ts))                                                                                                                                                                                                                                                      |
+| `/api/admin/stats`                      | GET                | Admin-only aggregates (users, crates, releases, crate feature adoption, **engagement**, **account preferences** (filter persistence, analytics consent, themes, default view, saved filter views), **feature usage** from **`product_analytics_daily_rollups`** + recent raw events, and **`UserTrack` playback stats** via [`fetchAdminUserTrackStats`](../../src/lib/admin-user-track-stats.server.ts))                                                                         |
+| `/api/admin/users/[username]`           | GET                | Admin-only lookup for a Discogs username: account metadata, preferences summary, crate totals, activity, **`UserTrack` playback** totals, analytics counts, and recent crates                                                                                                                                                                                                                                                                                                     |
+| `/api/usage/events`                     | POST               | Ingest consent-gated product analytics events (IP rate-limited; optional **`user_id`** via **`getOptionalVerifiedUserFromRequest`** — anonymous **`null`** on auth/Discogs failure; co-located [`route.spec.ts`](../../src/app/api/usage/events/route.spec.ts))                                                                                                                                                                                                                   |
+| `/api/cron/product-analytics`           | GET                | Daily rollup + 90-day raw retention (Vercel Cron; **`Authorization: Bearer CRON_SECRET`**)                                                                                                                                                                                                                                                                                                                                                                                        |
+| `/api/auth/clear-data`                  | POST               | In one transaction: delete **`product_analytics_events`** for that **`user_id`**, then delete the **`User`** row (cascades crates); clear session cookies                                                                                                                                                                                                                                                                                                                         |
 
 All mutating crate and playlist routes require a verified OAuth session via **`getVerifiedUserFromRequestWithRateLimit`** ([`src/lib/api-helpers.ts`](../../src/lib/api-helpers.ts)) (playlist POST/PATCH/DELETE and track writes pass **`true`** for stricter rate limits, same as crate POST) and scope queries by **`identity.id`** from Discogs—never by the **`discogs_user_id`** cookie alone.
 

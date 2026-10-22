@@ -1,8 +1,9 @@
 ---
+
 name: component-and-po-specs
 description: >-
-  Component Jest specs, page objects, TestProviders, api mocks. Use for
-  src/components/**/*.spec.tsx and context specs.
+Component Jest specs, page objects, TestProviders, api mocks. Use for
+src/components/**/*.spec.tsx and context specs.
 ---
 
 # Component and PO specs

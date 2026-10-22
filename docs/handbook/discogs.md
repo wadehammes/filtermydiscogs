@@ -6,25 +6,25 @@ OAuth 1.0a authentication, API access, username validation, and cookie conventio
 
 Implemented in [`src/services/discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) using **`oauth-1.0a`** and Node **`crypto`** for HMAC-SHA1 signing.
 
-| Step | Route / method | Purpose |
-|------|----------------|---------|
-| 1 | `GET /api/auth/discogs` | Obtain request token, redirect to Discogs authorize |
-| 2 | Discogs redirects to callback | User approves app |
-| 3 | `GET /api/auth/callback` | Exchange for access token, fetch identity, set cookies, upsert **`User`** row |
-| 4 | `GET /api/auth/check` | Verify tokens still valid; return **`avatarUrl`** when profile fetch succeeds |
-| 5 | `POST /api/auth/logout` | Clear session cookies; clear cached **`avatarUrl`** for the user |
-| 6 | `POST /api/auth/clear-data` | Delete **`product_analytics_events`** for the user, delete **`User`** row (cascades crates), and clear session (Settings / About / Legal) |
+| Step | Route / method                | Purpose                                                                                                                                   |
+| ---- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `GET /api/auth/discogs`       | Obtain request token, redirect to Discogs authorize                                                                                       |
+| 2    | Discogs redirects to callback | User approves app                                                                                                                         |
+| 3    | `GET /api/auth/callback`      | Exchange for access token, fetch identity, set cookies, upsert **`User`** row                                                             |
+| 4    | `GET /api/auth/check`         | Verify tokens still valid; return **`avatarUrl`** when profile fetch succeeds                                                             |
+| 5    | `POST /api/auth/logout`       | Clear session cookies; clear cached **`avatarUrl`** for the user                                                                          |
+| 6    | `POST /api/auth/clear-data`   | Delete **`product_analytics_events`** for the user, delete **`User`** row (cascades crates), and clear session (Settings / About / Legal) |
 
 Temporary OAuth request tokens use short-lived cookies (`oauth_token`, `oauth_token_secret`) cleared after callback.
 
 ## Environment variables
 
-| Variable | Where used |
-|----------|------------|
-| `DISCOGS_CONSUMER_KEY` | OAuth consumer key (server + exposed via `next.config` `env`) |
-| `DISCOGS_CONSUMER_SECRET` | OAuth consumer secret (server only in practice) |
-| `DISCOGS_CALLBACK_URL` | OAuth callback (default `http://localhost:6767/api/auth/callback`) |
-| `DISCOGS_API_USER_AGENT` | Optional override for Discogs API `User-Agent` header |
+| Variable                  | Where used                                                         |
+| ------------------------- | ------------------------------------------------------------------ |
+| `DISCOGS_CONSUMER_KEY`    | OAuth consumer key (server + exposed via `next.config` `env`)      |
+| `DISCOGS_CONSUMER_SECRET` | OAuth consumer secret (server only in practice)                    |
+| `DISCOGS_CALLBACK_URL`    | OAuth callback (default `http://localhost:6767/api/auth/callback`) |
+| `DISCOGS_API_USER_AGENT`  | Optional override for Discogs API `User-Agent` header              |
 
 Register the callback URL in the [Discogs developer app](https://www.discogs.com/settings/developers) for each environment.
 
@@ -32,14 +32,14 @@ Register the callback URL in the [Discogs developer app](https://www.discogs.com
 
 Set in [`src/app/api/auth/callback/route.ts`](../../src/app/api/auth/callback/route.ts):
 
-| Cookie | httpOnly | Purpose |
-|--------|----------|---------|
-| `discogs_reconnect_username` | no | Last connected Discogs username for quick re-login after logout; display only |
-| `discogs_session` | yes | Active app session; cleared on logout while OAuth tokens may remain for quick re-login |
-| `discogs_access_token` | yes | OAuth access token |
-| `discogs_access_token_secret` | yes | OAuth access token secret |
-| `discogs_username` | no | Display name; readable by client JS |
-| `discogs_user_id` | yes | Numeric Discogs user ID; display/cache only—**never** used for API authorization |
+| Cookie                        | httpOnly | Purpose                                                                                |
+| ----------------------------- | -------- | -------------------------------------------------------------------------------------- |
+| `discogs_reconnect_username`  | no       | Last connected Discogs username for quick re-login after logout; display only          |
+| `discogs_session`             | yes      | Active app session; cleared on logout while OAuth tokens may remain for quick re-login |
+| `discogs_access_token`        | yes      | OAuth access token                                                                     |
+| `discogs_access_token_secret` | yes      | OAuth access token secret                                                              |
+| `discogs_username`            | no       | Display name; readable by client JS                                                    |
+| `discogs_user_id`             | yes      | Numeric Discogs user ID; display/cache only—**never** used for API authorization       |
 
 `secure` is **`false` in development**, **`true` in production**. Max age: 30 days.
 
@@ -48,7 +48,6 @@ Client reads username via [`getUsernameFromCookies`](../../src/services/auth.ser
 ## Authenticated API routes
 
 Route handlers that proxy Discogs (e.g. **`/api/collection`**, **`/api/collection/fields`**, **`/api/collection/instances/{instanceId}/fields/{fieldId}`**, **`/api/collection/releases/{releaseId}/rating`**, **`/api/collection/value`**, **`/api/search`**) must:
-
 1. Verify the session with **`requireAuthenticatedDiscogsUser`** or **`getVerifiedUserFromRequest`** ([`src/lib/auth-request.ts`](../../src/lib/auth-request.ts))—never trust **`discogs_user_id`** or **`discogs_username`** cookies for authorization.
 2. Validate the **`username`** query/body param with **`isValidDiscogsUsername`** ([`src/lib/discogs-username.ts`](../../src/lib/discogs-username.ts)).
 3. Confirm the verified identity username matches the requested username (**case-insensitive** for collection routes).
@@ -75,7 +74,6 @@ Do **not** copy a narrower regex (e.g. omitting `.`) into individual routes.
 ## Discogs API service
 
 [`DiscogsOAuthService`](../../src/services/discogs-oauth.service.ts) centralizes:
-
 - OAuth header generation
 - **`getIdentity`**, **`getUserProfile`** ( **`avatar_url`** for header account pill), **`getCollection`**, **`getCollectionFields`**, **`updateCollectionInstanceField`**, **`api.updateReleaseRating`**, **`deleteReleaseRating`**, **`getCollectionValue`**, **`search`**, release fetches
 - Error handling for HTTP failures (including mapping upstream 5xx to clearer client responses where implemented)
@@ -97,7 +95,7 @@ Discogs may return **429** (rate limit) or **5xx** (upstream errors). Read proxi
 
 **App DB rate limits:** Verified-user routes call [`getVerifiedUserFromRequestWithRateLimit`](../../src/lib/api-helpers.ts) with separate read/write buckets ([`rate-limit.ts`](../../src/lib/rate-limit.ts) — **`DB_RATE_LIMIT_*`**, default **60** writes/min). Crate layout saves and gig-packing toggles count as writes; **`useSetReleasePackedInCrateMutation`** and **`useUpdateCrateLayoutMutation`** retry transient **429** using **`Retry-After`** when the API returns [`ApiFetchError`](../../src/api/apiFetchError.ts).
 
-**Discogs request pacing:** [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) serializes outbound Discogs HTTP through [`discogs-request-throttle.ts`](../../src/lib/discogs-request-throttle.ts). The throttle is **reentrancy-safe** (nested calls inside an active slot run immediately via **`AsyncLocalStorage`**) and rejects waiters after **`DISCOGS_THROTTLE_QUEUE_TIMEOUT_MS`** (default **30s**) so a stuck slot cannot pin an invocation for the full Fluid timeout — **`GET /api/release/[id]`** maps that **`DiscogsThrottleQueueError`** to **503** with **`Retry-After: 5`**, and **`useDiscogsReleaseQuery`** retries transient **503** / **429** like collection pagination. Colocated **[`discogs-request-throttle.spec.ts`](../../src/lib/discogs-request-throttle.spec.ts)** covers serialization, nested reentrancy, **`DiscogsThrottleQueueError`** on queue wait timeout, and **no `unhandledRejection`** when the timeout wins the slot race (queue wait uses **`Promise.race`** resolve-then-throw — not a rejecting race branch). Concurrent **GET**s for the same Discogs URL on one serverless instance share one in-flight OAuth request (deduped in **`discogs-oauth.service.ts`**); the Map cleanup **`finally`** chain **`.catch(() => undefined)`** so a handled upstream **404** / **5xx** on the shared promise does not also emit **`unhandledRejection`** to Sentry — regression in **[`discogs-oauth.service.spec.ts`](../../src/services/discogs-oauth.service.spec.ts)** (**when a deduped GET fails, does not emit an unhandled rejection from in-flight cleanup**). Prefer a single throttle boundary — do not wrap **`makeAuthenticatedRequest`** / **`makeConsumerRequest`** in another **`runThrottledDiscogsRequest`**. **`getIdentity`** (OAuth callback / session verify) uses **`skipThrottle: true`** so login never waits behind collection pacing. Every Discogs HTTP call goes through [`discogsFetch`](../../src/lib/discogs-fetch.ts) with **`AbortSignal.timeout`** (**`DISCOGS_FETCH_TIMEOUT_MS`**, default **20s**). After each Discogs response, [`discogs-rate-limit.ts`](../../src/lib/discogs-rate-limit.ts) reads **`X-Discogs-Ratelimit`**, **`X-Discogs-Ratelimit-Used`**, and **`X-Discogs-Ratelimit-Remaining`** and adjusts spacing before the next call on that serverless instance (faster when quota remains, slower when the window is nearly exhausted). When Discogs omits those headers, pacing falls back to **`DISCOGS_MIN_REQUEST_INTERVAL_MS`** (default **1000** ms; set **0** to disable the fallback floor).
+**Discogs request pacing:** [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) serializes outbound Discogs HTTP through [`discogs-request-throttle.ts`](../../src/lib/discogs-request-throttle.ts). The throttle is **reentrancy-safe** (nested calls inside an active slot run immediately via **`AsyncLocalStorage`**) and rejects waiters after **`DISCOGS_THROTTLE_QUEUE_TIMEOUT_MS`** (default **30s**) so a stuck slot cannot pin an invocation for the full Fluid timeout — **`GET /api/release/[id]`** maps that **`DiscogsThrottleQueueError`** to **503** with **`Retry-After: 5`**, and **`useDiscogsReleaseQuery`** retries transient **503** / **429** like collection pagination. Colocated **[`discogs-request-throttle.spec.ts`](../../src/lib/discogs-request-throttle.spec.ts)** covers serialization, nested reentrancy, **`DiscogsThrottleQueueError`** on queue wait timeout, and **no`unhandledRejection`** when the timeout wins the slot race (queue wait uses **`Promise.race`** resolve-then-throw — not a rejecting race branch). Concurrent **GET**s for the same Discogs URL on one serverless instance share one in-flight OAuth request (deduped in **`discogs-oauth.service.ts`**); the Map cleanup **`finally`** chain **`.catch(() => undefined)`** so a handled upstream **404** / **5xx** on the shared promise does not also emit **`unhandledRejection`** to Sentry — regression in **[`discogs-oauth.service.spec.ts`](../../src/services/discogs-oauth.service.spec.ts)** (**when a deduped GET fails, does not emit an unhandled rejection from in-flight cleanup**). Prefer a single throttle boundary — do not wrap **`makeAuthenticatedRequest`** / **`makeConsumerRequest`** in another **`runThrottledDiscogsRequest`**. **`getIdentity`** (OAuth callback / session verify) uses **`skipThrottle: true`** so login never waits behind collection pacing. Every Discogs HTTP call goes through [`discogsFetch`](../../src/lib/discogs-fetch.ts) with **`AbortSignal.timeout`** (**`DISCOGS_FETCH_TIMEOUT_MS`**, default **20s**). After each Discogs response, [`discogs-rate-limit.ts`](../../src/lib/discogs-rate-limit.ts) reads **`X-Discogs-Ratelimit`**, **`X-Discogs-Ratelimit-Used`**, and **`X-Discogs-Ratelimit-Remaining`** and adjusts spacing before the next call on that serverless instance (faster when quota remains, slower when the window is nearly exhausted). When Discogs omits those headers, pacing falls back to **`DISCOGS_MIN_REQUEST_INTERVAL_MS`** (default **1000** ms; set **0** to disable the fallback floor).
 
 **Collection pagination retries:** [`useDiscogsCollectionQuery`](../../src/hooks/queries/useDiscogsCollectionQuery.ts) retries transient **503** / **429** page fetches (up to 3 attempts) using **`Retry-After`** when present without pausing the infinite query for auth revalidation. **`GET /api/collection`** forwards upstream Discogs **`Retry-After`** on **429** (via [`discogs-api-error.ts`](../../src/lib/discogs-api-error.ts)); when Discogs omits the header, the route falls back to **`DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS`** (60).
 
@@ -119,11 +117,11 @@ Browsers call **`api.discogsCollection`** in [`src/api/urls.ts`](../../src/api/u
 
 Full release metadata (tracklist, community videos) is **not** included in collection pagination. The app fetches it on demand when a release detail modal opens.
 
-| Operation | App route | Discogs API |
-|-----------|-----------|-------------|
+| Operation           | App route                      | Discogs API                  |
+| ------------------- | ------------------------------ | ---------------------------- |
 | Read release detail | `GET /api/release/{releaseId}` | `GET /releases/{release_id}` |
 
-Authenticated sessions use the user's OAuth tokens. When OAuth **`GET /releases/{id}`** returns **404** (Discogs sometimes responds *“That release does not exist…”* for a valid release id), [`fetchDiscogsReleaseRecord.server.ts`](../../src/lib/fetchDiscogsReleaseRecord.server.ts) retries once with application (consumer) credentials before the app proxy returns **404** — same helper for **`GET /api/release/[id]`** and **`POST /api/release/batch`**. Visitors without Discogs cookies — and browsers that still hold OAuth token cookies after logout (**`discogs_session`** cleared, tokens preserved for quick re-login) — use consumer credentials directly so public crate pages can open the release modal and mini player.
+Authenticated sessions use the user's OAuth tokens. When OAuth **`GET /releases/{id}`** returns **404** (Discogs sometimes responds _“That release does not exist…”_ for a valid release id), [`fetchDiscogsReleaseRecord.server.ts`](../../src/lib/fetchDiscogsReleaseRecord.server.ts) retries once with application (consumer) credentials before the app proxy returns **404** — same helper for **`GET /api/release/[id]`** and **`POST /api/release/batch`**. Visitors without Discogs cookies — and browsers that still hold OAuth token cookies after logout (**`discogs_session`** cleared, tokens preserved for quick re-login) — use consumer credentials directly so public crate pages can open the release modal and mini player.
 
 Client helper: **`api.discogsRelease`** in [`src/api/urls.ts`](../../src/api/urls.ts). React Query: **`useDiscogsReleaseQuery`** ([`src/hooks/queries/useDiscogsReleaseQuery.ts`](../../src/hooks/queries/useDiscogsReleaseQuery.ts)) with **`DiscogsReleaseQueryKeys`**.
 
@@ -141,13 +139,13 @@ Typed response fields live in [`src/types/discogs-release-detail.types.ts`](../.
 
 Discogs collection instances can include user-defined note fields (Media, Notes, etc.). Values are already present on each release in the **`/api/collection`** pagination payload as **`notes: [{ field_id, value }]`**. Normalize missing notes to **`[]`** when ingesting collection pages ([`useCollectionData.hook.ts`](../../src/hooks/useCollectionData.hook.ts)).
 
-| Operation | App route | Discogs API |
-|-----------|-----------|-------------|
-| List field definitions | `GET /api/collection/fields?username=` | `GET /users/{username}/collection/fields` |
-| Read note values | Included in collection pages | `GET /users/{username}/collection/folders/0/releases` |
-| Update a note value | `POST /api/collection/instances/{instanceId}/fields/{fieldId}` | `POST /users/{username}/collection/folders/{folder_id}/releases/{release_id}/instances/{instance_id}/fields/{field_id}` with body `{ "value": "..." }` |
-| Update your rating | `PUT /api/collection/releases/{releaseId}/rating` | `PUT /releases/{release_id}/rating/{username}` with body `{ "rating": 1..5 }` |
-| Clear your rating | `DELETE /api/collection/releases/{releaseId}/rating?username=` | `DELETE /releases/{release_id}/rating/{username}` |
+| Operation              | App route                                                      | Discogs API                                                                                                                                            |
+| ---------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| List field definitions | `GET /api/collection/fields?username=`                         | `GET /users/{username}/collection/fields`                                                                                                              |
+| Read note values       | Included in collection pages                                   | `GET /users/{username}/collection/folders/0/releases`                                                                                                  |
+| Update a note value    | `POST /api/collection/instances/{instanceId}/fields/{fieldId}` | `POST /users/{username}/collection/folders/{folder_id}/releases/{release_id}/instances/{instance_id}/fields/{field_id}` with body `{ "value": "..." }` |
+| Update your rating     | `PUT /api/collection/releases/{releaseId}/rating`              | `PUT /releases/{release_id}/rating/{username}` with body `{ "rating": 1..5 }`                                                                          |
+| Clear your rating      | `DELETE /api/collection/releases/{releaseId}/rating?username=` | `DELETE /releases/{release_id}/rating/{username}`                                                                                                      |
 
 Client helpers: **`api.collectionFields`**, **`api.updateCollectionNote`**, **`api.updateReleaseRating`**, **`api.clearReleaseRating`** in [`src/api/urls.ts`](../../src/api/urls.ts). **`api.updateCollectionNote`** must tolerate empty success bodies from the app route (same as the Discogs **`204`** case).
 
@@ -156,7 +154,6 @@ React Query: **`useCollectionFieldsQuery`** ([`src/hooks/queries/useCollectionFi
 Display/edit UI lives in [`src/components/ReleaseNotes/`](../../src/components/ReleaseNotes/). Note labels, search text, write helpers, and **multi text-field picker** helpers (**`sortTextCollectionFields`**, **`getInitialActiveTextFieldId`**, **`getReleaseNotesTextFieldPickerOptions`**, **`parseReleaseNotesTextFieldPickerValue`**, **`RELEASE_NOTES_TEXT_FIELD_PICKER_LABEL`**) are in [`src/utils/releaseNotes.ts`](../../src/utils/releaseNotes.ts). Picker helpers expect text fields **already sorted** by **`sortTextCollectionFields`** (Discogs **`position`**).
 
 **Write requests** require `releaseId`, `folderId`, `instanceId`, and `fieldId`:
-
 - **`releaseId`**: **`parseReleaseId`** prefers **`basic_information.id`**, then top-level **`id`**, then **`basic_information.resource_url`**.
 - **`folderId`**: **`getReleaseFolderId`** reads **`release.folder_id`**; defaults to **`0`** (All) when missing.
 - **`instanceId`**: collection item **`instance_id`**.

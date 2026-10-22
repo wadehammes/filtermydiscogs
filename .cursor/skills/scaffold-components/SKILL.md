@@ -1,8 +1,9 @@
 ---
+
 name: scaffold-components
 description: >-
-  Add new UI components with pnpm scaffold. Use when creating components under
-  src/components, page objects, or fmd test ids.
+Add new UI components with pnpm scaffold. Use when creating components under
+src/components, page objects, or fmd test ids.
 ---
 
 # Component scaffold

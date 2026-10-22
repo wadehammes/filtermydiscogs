@@ -1,8 +1,9 @@
 ---
+
 name: sentry
 description: >-
-  Triage production errors via Sentry MCP (search issues, issue details, resolve/ignore,
-  dropped events). Use when investigating Sentry issues, regressions, or alert spikes.
+Triage production errors via Sentry MCP (search issues, issue details, resolve/ignore,
+dropped events). Use when investigating Sentry issues, regressions, or alert spikes.
 ---
 
 # Sentry MCP (this repo)
@@ -13,12 +14,12 @@ description: >-
 
 ## When to use MCP vs the UI
 
-| Goal | MCP tools (discover via MCP tool list after auth) |
-|------|---------------------------------------------------|
+| Goal                             | MCP tools (discover via MCP tool list after auth)                                       |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
 | Open backlog / filter production | **`search_issues`** with handbook queries (e.g. `is:unresolved environment:production`) |
-| Issue stack, events, metadata | **`get_sentry_resource`** (issue URL or id) |
-| Flat charts / quota | **`find_dropped_events`** |
-| Triage after fix shipped | **`update_issue`** (resolve / ignore with reason) |
+| Issue stack, events, metadata    | **`get_sentry_resource`** (issue URL or id)                                             |
+| Flat charts / quota              | **`find_dropped_events`**                                                               |
+| Triage after fix shipped         | **`update_issue`** (resolve / ignore with reason)                                       |
 
 Prefer MCP for agent-driven triage; use the [issue dashboard](https://filtermydiscogs.sentry.io/issues/?project=javascript-nextjs) for Session Replay and deep event UI.
 

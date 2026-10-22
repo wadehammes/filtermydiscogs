@@ -1,8 +1,9 @@
 ---
+
 name: hook-feature-specs
 description: >-
-  TDD and Jest patterns for feature hooks and component tests. Use when adding
-  src/hooks/*.hook.spec, mocking API data, renderFeatureHook, or React Query tests.
+TDD and Jest patterns for feature hooks and component tests. Use when adding
+src/hooks/*.hook.spec, mocking API data, renderFeatureHook, or React Query tests.
 ---
 
 # Hook and feature specs

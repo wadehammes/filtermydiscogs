@@ -20,21 +20,21 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 
 ## Index of docs
 
-| File | What it covers |
-|------|----------------|
-| [architecture.md](architecture.md) | Tech stack, directory map, data flow, key config. Start here. |
-| [conventions.md](conventions.md) | TypeScript, Biome, Stylelint/CSS, Modules, testing, accessibility. |
-| [discogs.md](discogs.md) | OAuth 1.0a, `discogs-oauth.service`, username validation, cookies, API errors. |
-| [database.md](database.md) | Prisma models, crate CRUD, migrations, admin stats. |
-| [components.md](components.md) | Component folder layout, naming, tests. |
-| [patterns.md](patterns.md) | Jotai atoms, context providers, React Query hooks, filters, auth, public crate pages. |
-| [playback-embed-invariants.md](playback-embed-invariants.md) | Embed ↔ queue behavioral contract; maps to `releasePlayback.context.*.spec.tsx` search strings. |
-| [playback-manual-queue.md](playback-manual-queue.md) | Manual queue curation vs pending album rebuild; maps to core context specs + manual-queue E2E. |
-| [playback-embed-simplification.md](playback-embed-simplification.md) | Stacked refactor plan (pure embed session → thin hooks). |
-| [platform.md](platform.md) | GitHub CI, **`staging`** / **`main`** rulesets, releases, `pnpm` scripts, `next.config` (env, CSP, images). |
-| [factories.md](factories.md) | Test factories: BaseFactory, Faker, KeysMatch, nullish, nested builds. |
-| [source-layout.md](source-layout.md) | Module map under `src/` and related folders. |
-| [llms.md](llms.md) | Task-to-chapter routing; copy-paste blurb for agents. |
+| File                                                                 | What it covers                                                                                              |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| [architecture.md](architecture.md)                                   | Tech stack, directory map, data flow, key config. Start here.                                               |
+| [conventions.md](conventions.md)                                     | TypeScript, Biome, Stylelint/CSS, Modules, testing, accessibility.                                          |
+| [discogs.md](discogs.md)                                             | OAuth 1.0a, `discogs-oauth.service`, username validation, cookies, API errors.                              |
+| [database.md](database.md)                                           | Prisma models, crate CRUD, migrations, admin stats.                                                         |
+| [components.md](components.md)                                       | Component folder layout, naming, tests.                                                                     |
+| [patterns.md](patterns.md)                                           | Jotai atoms, context providers, React Query hooks, filters, auth, public crate pages.                       |
+| [playback-embed-invariants.md](playback-embed-invariants.md)         | Embed ↔ queue behavioral contract; maps to `releasePlayback.context.*.spec.tsx` search strings.             |
+| [playback-manual-queue.md](playback-manual-queue.md)                 | Manual queue curation vs pending album rebuild; maps to core context specs + manual-queue E2E.              |
+| [playback-embed-simplification.md](playback-embed-simplification.md) | Stacked refactor plan (pure embed session → thin hooks).                                                    |
+| [platform.md](platform.md)                                           | GitHub CI, **`staging`** / **`main`** rulesets, releases, `pnpm` scripts, `next.config` (env, CSP, images). |
+| [factories.md](factories.md)                                         | Test factories: BaseFactory, Faker, KeysMatch, nullish, nested builds.                                      |
+| [source-layout.md](source-layout.md)                                 | Module map under `src/` and related folders.                                                                |
+| [llms.md](llms.md)                                                   | Task-to-chapter routing; copy-paste blurb for agents.                                                       |
 
 ## Development setup
 

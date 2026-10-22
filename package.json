@@ -1,7 +1,7 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@12.14.0",
+  "packageManager": "pnpm@12.15.0",
   "private": true,
   "scripts": {
     "predev": "prisma generate",
@@ -102,7 +102,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.15",
+    "@biomejs/biome": "^2.6.2",
     "@faker-js/faker": "10.6.0",
     "@jest/globals": "^30.5.2",
     "@jest/types": "^30.5.1",

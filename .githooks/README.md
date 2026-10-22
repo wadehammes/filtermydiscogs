@@ -13,8 +13,8 @@ chmod +x .githooks/*
 
 ## Hooks
 
-| Hook | Purpose |
-|------|---------|
+| Hook         | Purpose                                                |
+| ------------ | ------------------------------------------------------ |
 | `commit-msg` | Rejects messages containing `Co-authored-by:` trailers |
 
 Cursor agents must commit via `scripts/git-commit.sh` (enables this hook path for one command). See `.cursor/hooks/block-co-authored-by-commit.sh`.
