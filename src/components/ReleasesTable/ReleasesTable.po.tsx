@@ -75,6 +75,8 @@ jest.mock("src/context/crate.context", () => {
       isLoadingCrate: false,
       isFetchingCrate: false,
       isDrawerOpen: false,
+      sidePanel: "crates" as const,
+      isSidePanelDefaultPending: false,
       packedReleaseCount: 0,
       isUpdatingCrate: false,
       isUpdatingCrateLayout: false,

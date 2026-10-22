@@ -9,6 +9,7 @@ import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.compon
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
 import { useFilterViews } from "src/hooks/useFilterViews.hook";
+import type { CollectionSidePanelPreference } from "src/types/userPreferences.types";
 import {
   type FilterView,
   formatFilterViewSummary,
@@ -54,18 +55,26 @@ export function SettingsAccountPanel({
 
 type SettingsAppearancePanelProps = {
   settingsViewValue: "card" | "list";
+  defaultCollectionSidePanel: CollectionSidePanelPreference;
+  playlistsFeatureEnabled: boolean;
   isPreferencesLoading: boolean;
   isPreferencesSaving: boolean;
   onViewChange: (view: "card" | "list") => void;
+  onDefaultCollectionSidePanelChange: (
+    panel: CollectionSidePanelPreference,
+  ) => void;
   onThemePersisted: () => void;
   onThemePersistError: () => void;
 };
 
 export function SettingsAppearancePanel({
   settingsViewValue,
+  defaultCollectionSidePanel,
+  playlistsFeatureEnabled,
   isPreferencesLoading,
   isPreferencesSaving,
   onViewChange,
+  onDefaultCollectionSidePanelChange,
   onThemePersisted,
   onThemePersistError,
 }: SettingsAppearancePanelProps) {
@@ -96,6 +105,30 @@ export function SettingsAppearancePanel({
           className={styles.fieldControl}
         />
       </div>
+      {playlistsFeatureEnabled ? (
+        <div className={styles.field}>
+          <span className={styles.fieldLabel}>Default collection panel</span>
+          <Select
+            label="Default collection panel"
+            options={[
+              { value: "crates", label: "Crates" },
+              { value: "playlists", label: "Playlists" },
+            ]}
+            value={defaultCollectionSidePanel}
+            onChange={(value) => {
+              onDefaultCollectionSidePanelChange(
+                value as CollectionSidePanelPreference,
+              );
+            }}
+            disabled={isPreferencesLoading || isPreferencesSaving}
+            className={styles.fieldControl}
+          />
+          <p className={styles.sectionDescription}>
+            On desktop, which side panel opens when you load Releases. You can
+            still switch panels anytime from the collection toolbar.
+          </p>
+        </div>
+      ) : null}
     </>
   );
 }

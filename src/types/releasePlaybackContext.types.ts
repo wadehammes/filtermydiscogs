@@ -81,6 +81,7 @@ export interface ReleasePlaybackActions {
   notifyPlaybackVideoPresentationReady: () => void;
   resumePlaybackFromGesture: () => void;
   clearQueue: () => void;
+  replaceUpcomingQueue: (queue: PlaybackQueueItem[]) => void;
   stopPlayback: () => void;
 }
 

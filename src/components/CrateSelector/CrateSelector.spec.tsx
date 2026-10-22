@@ -96,7 +96,7 @@ describe("CrateSelector", () => {
     expect(crate3Option).toBeInTheDocument();
   });
 
-  it("preserves crate order returned by the API", async () => {
+  it("sorts crate options alphabetically by name", async () => {
     const user = userEvent.setup();
     po.mockCrates([
       crateWithCountFactory.build({
@@ -141,9 +141,9 @@ describe("CrateSelector", () => {
       );
 
     expect(labels).toEqual([
-      "Test Crate (0)",
       "Another sick crate (1)",
       "Test (1)",
+      "Test Crate (0)",
       "Testing Again (1)",
     ]);
   });

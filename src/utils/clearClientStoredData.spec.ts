@@ -12,6 +12,10 @@ import {
 import { clearPersistedCollectionCaches } from "src/utils/collectionCacheStorage";
 import { PERSIST_FILTERS_STORAGE_KEY } from "src/utils/filterPersistence";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
+import {
+  readLastPlayedPlaylistId,
+  writeLastPlayedPlaylistId,
+} from "src/utils/lastPlayedPlaylistStorage";
 import { PLAYBACK_VIDEO_INTRO_STORAGE_KEY } from "src/utils/playbackVideoIntroStorage";
 import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
 import { clearClientStoredData } from "./clearClientStoredData";
@@ -69,5 +73,15 @@ describe("clearClientStoredData", () => {
     clearClientStoredData();
 
     expect(mockClearPersistedCollectionCaches).toHaveBeenCalledTimes(1);
+  });
+
+  it("removes last played playlist ids from localStorage", () => {
+    writeLastPlayedPlaylistId("user-a", "playlist-1");
+    writeLastPlayedPlaylistId("user-b", "playlist-2");
+
+    clearClientStoredData();
+
+    expect(readLastPlayedPlaylistId("user-a")).toBeNull();
+    expect(readLastPlayedPlaylistId("user-b")).toBeNull();
   });
 });

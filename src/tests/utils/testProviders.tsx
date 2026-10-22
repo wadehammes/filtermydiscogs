@@ -7,10 +7,15 @@ import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, type AuthState } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
+import { FeatureFlagProvider } from "src/context/featureFlags.context";
 import { FiltersProvider } from "src/context/filters.context";
 import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
+import {
+  DEFAULT_FEATURE_FLAGS,
+  type FeatureFlags,
+} from "src/types/featureFlags.types";
 import {
   testAuthenticatedAuthState,
   testUnauthenticatedAuthState,
@@ -24,6 +29,7 @@ export type TestProvidersProps = {
   skipInitialAuthCheck?: boolean;
   includeCrate?: boolean;
   includeCollectionSync?: boolean;
+  featureFlags?: FeatureFlags;
 };
 
 export const AppTestProviders = ({
@@ -73,6 +79,7 @@ export const TestProviders = ({
   skipInitialAuthCheck = true,
   includeCrate = true,
   includeCollectionSync = true,
+  featureFlags = { ...DEFAULT_FEATURE_FLAGS, playlists: true },
 }: TestProvidersProps) => (
   <AppTestProviders
     {...(queryClient !== undefined ? { queryClient } : {})}
@@ -81,7 +88,9 @@ export const TestProviders = ({
     includeCollectionSync={includeCollectionSync}
   >
     <PlaybackReleaseClickProvider>
-      {includeCrate ? <CrateProvider>{children}</CrateProvider> : children}
+      <FeatureFlagProvider featureFlags={featureFlags}>
+        {includeCrate ? <CrateProvider>{children}</CrateProvider> : children}
+      </FeatureFlagProvider>
     </PlaybackReleaseClickProvider>
   </AppTestProviders>
 );

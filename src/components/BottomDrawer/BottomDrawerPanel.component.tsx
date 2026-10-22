@@ -80,6 +80,7 @@ export const BottomDrawerPanel = ({
       <div
         className={classNames(styles.content, contentClassName, {
           [styles.contentFlush]: chrome && contentFlush,
+          [styles.contentAboveFooter]: Boolean(footer),
         })}
       >
         {children}

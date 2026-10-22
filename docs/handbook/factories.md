@@ -168,6 +168,11 @@ Some factories expose **preset methods** for repeated test scenarios (still back
 | `crateLayoutItemFactory` | `marker()`, `release()`, `list()` | **`CrateLayoutItem[]`** fixtures in [`crate-layout.spec.ts`](../../src/lib/crate-layout.spec.ts), [`crate-section-layout.spec.ts`](../../src/lib/crate-section-layout.spec.ts), [`crate-layout.edge-cases.spec.ts`](../../src/lib/crate-layout.edge-cases.spec.ts), [`crate-layout.server.spec.ts`](../../src/lib/crate-layout.server.spec.ts) (group-delete → PUT pipeline), and [`CrateLayoutList.spec.tsx`](../../src/components/Crates/CrateLayoutList.spec.tsx) (section delete + layout DnD) |
 | `crateReleaseFactory` | `forInstance()` | Prisma crate release rows in route specs |
 | `cratesResponseFactory` | `empty()`, `withCrates()`, `withCrate()` | `fetchCrates` API response |
+| `playlistSummaryFactory` | `empty()` | API **`PlaylistSummary`** |
+| `playlistListRowFactory` | `forListTest()` | Prisma **`playlist.findMany`** rows with **`_count.tracks`** |
+| `playlistTrackRowFactory` | `opening()` | **`PlaylistTrackRow`** (detail + playback hydrate tests) |
+| `playlistDetailFactory` | `withTracks()` | **`PlaylistDetail`** |
+| `trackMetadataBodyFactory` | `opening()` | **`UserTrackMetadataBody`** (playlist add / **`ensureUserTrackMetadata`**) |
 | `crateWithReleasesResponseFactory` | `empty()`, `withReleases()` | `fetchCrate` API response |
 | `userTrackStatsResponseFactory` | `build()` | **`fetchTrackStats`** / **`GET /api/tracks/stats`** mocks (empty **`stats`** by default) |
 | [`setupDefaultTrackStatsApiMock`](../../src/tests/mocks/setupDefaultTrackStatsApiMock.ts) | (helper, not a factory) | Stubs **`api.fetchTrackStats`** with empty **`stats`** for **`useTrackStatsQuery`** |

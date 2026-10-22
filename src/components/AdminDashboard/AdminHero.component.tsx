@@ -44,7 +44,13 @@ export function AdminHero({ overview, engagement, last7Days }: AdminHeroProps) {
               format={formatCommunityStatValue}
               value={overview.totalCrates}
             />{" "}
-            crates and{" "}
+            crates,{" "}
+            <TickerNumber
+              active
+              format={formatCommunityStatValue}
+              value={overview.playlists.totalPlaylists}
+            />{" "}
+            playlists, and{" "}
             <TickerNumber
               active
               format={formatCommunityStatValue}

@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Suspense } from "react";
 import { Providers } from "src/components/Providers";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {
@@ -10,6 +11,8 @@ import {
   SITE_NAME,
   siteCanonicalUrl,
 } from "src/constants/siteMetadata";
+import { FeatureFlagsServerSync } from "src/lib/featureFlagsServerSync.server";
+import { DEFAULT_FEATURE_FLAGS } from "src/types/featureFlags.types";
 
 import "src/styles/global.css";
 
@@ -72,7 +75,12 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <div className="appRoot">
-          <Providers>{children}</Providers>
+          <Providers featureFlags={DEFAULT_FEATURE_FLAGS}>
+            <Suspense fallback={null}>
+              <FeatureFlagsServerSync />
+            </Suspense>
+            {children}
+          </Providers>
         </div>
       </body>
     </html>

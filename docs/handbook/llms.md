@@ -18,6 +18,7 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Playback embed refactor / watchdog / hidden tab invariants | [playback-embed-simplification.md](playback-embed-simplification.md) + [playback-embed-invariants.md](playback-embed-invariants.md) + [patterns.md → Release playback queue](patterns.md#release-playback-queue) |
 | Manual queue curation / pending album rebuild / drawer reorder | [playback-manual-queue.md](playback-manual-queue.md) + [patterns.md → Release playback queue](patterns.md#release-playback-queue) |
 | Crates, Prisma, Postgres, crate API routes | [database.md](database.md) |
+| Playlists, playlist drawer, playlist API (`UserTrack` + junction) | [database.md](database.md) (Playlists), [patterns.md](patterns.md) (Playlists) |
 | Owner crate layout DnD, section groups, packed hide, layout lib tests | [database.md](database.md) (`CrateSetMarker` / layout lib) + [source-layout.md](source-layout.md) (layout helpers) + [conventions.md](conventions.md) (Testing → `@dnd-kit` / lib specs) + [factories.md](factories.md) (`crateLayoutItemFactory`) |
 | API route request validation (Zod) | [database.md](database.md) (Request validation) |
 | Component folders, naming, tests | [components.md](components.md) |

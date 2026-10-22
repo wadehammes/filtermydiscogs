@@ -1,3 +1,4 @@
+import { E2E_EMBED_MOCK_VIDEO_IDS } from "src/constants/e2eEmbedMock.constants";
 import { artistFactory } from "src/tests/factories/Artist.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
@@ -17,7 +18,7 @@ const e2eTrackTitle = (albumTitle: string) => `${albumTitle} (E2E Track A)`;
 function buildE2eReleaseDetail(
   id: number,
   title: string,
-  youtubeVideoId = "te2jJncBVG4",
+  youtubeVideoId: string = E2E_EMBED_MOCK_VIDEO_IDS.normal,
 ): DiscogsReleaseDetail {
   const trackTitle = e2eTrackTitle(title);
 

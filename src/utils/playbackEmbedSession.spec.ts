@@ -10,7 +10,10 @@ import {
   shouldAcceptEmbedPlayingConfirmation,
   tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/playbackEmbedSession";
-import { YOUTUBE_PLAYER_STATE_PLAYING } from "src/utils/youtubeIframeEvents";
+import {
+  YOUTUBE_PLAYER_STATE_PAUSED,
+  YOUTUBE_PLAYER_STATE_PLAYING,
+} from "src/utils/youtubeIframeEvents";
 
 describe("playbackEmbedSession", () => {
   it("runs hidden-tab player-state poll while transport session is active, including when transport is paused", () => {
@@ -185,6 +188,23 @@ describe("playbackEmbedSession", () => {
         nowMs: startedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
       }),
     ).toBe(true);
+  });
+
+  it("does not treat paused info-delivery as audible confirm even when currentTime is positive", () => {
+    expect(
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: {
+          kind: "info-delivery",
+          info: { currentTime: 1.2, playerState: YOUTUBE_PLAYER_STATE_PAUSED },
+        },
+        imperativeEmbedLoadStartedAtMs: null,
+        videoUiLoadingCycleStartedAtMs: null,
+        nowMs: 9000,
+        transportSessionActive: true,
+        transportPaused: false,
+        lastInfoDeliveryCurrentTime: 1.2,
+      }),
+    ).toBe(false);
   });
 
   it("confirms from info-delivery and audible signals through the same gate", () => {

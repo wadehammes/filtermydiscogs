@@ -1156,6 +1156,38 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(shouldRebuildAlbumQueueRef.current).toBe(false);
   });
 
+  it("replaceUpcomingQueue replaces the upcoming list and disables similar queue mode", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const queued = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Queued",
+    });
+    const replacement = createQueueItem({
+      release,
+      trackPosition: "B1",
+      trackTitle: "Replacement",
+    });
+    const {
+      result,
+      queueManuallyExtendedRef,
+      setUpcomingQueue,
+      similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
+    } = buildHarness({ sessionQueue: [queued] });
+
+    queueManuallyExtendedRef.current = false;
+    similarQueueModeRef.current = createSimilarQueueMode(true);
+    similarQueueSuppressedAfterClearRef.current = true;
+
+    result.current.replaceUpcomingQueue([replacement]);
+
+    expect(setUpcomingQueue).toHaveBeenCalledWith([replacement]);
+    expect(queueManuallyExtendedRef.current).toBe(true);
+    expect(similarQueueModeRef.current.enabled).toBe(false);
+    expect(similarQueueSuppressedAfterClearRef.current).toBe(false);
+  });
+
   it("PLAY_QUEUE_ITEM includes pending track position when release detail is not ready to resolve the target track", () => {
     const release = releaseFactory.withDisplayDefaults();
     const queuedItem = createQueueItem({

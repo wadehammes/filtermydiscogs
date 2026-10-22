@@ -13,6 +13,7 @@ export interface AdminUserLookupCrateSummary {
 export interface AdminUserLookupActivity {
   lastCrateUpdateAt: string | null;
   lastReleaseAddedAt: string | null;
+  lastPlaylistUpdateAt: string | null;
   releasesAddedLast7Days: number;
   releasesAddedLast30Days: number;
 }
@@ -20,6 +21,7 @@ export interface AdminUserLookupActivity {
 export interface AdminUserLookupPreferences {
   theme: string;
   defaultView: string;
+  defaultCollectionSidePanel: "crates" | "playlists";
   persistFilters: boolean;
   analyticsConsent: "enabled" | "disabled" | "unset";
   savedViewsCount: number;
@@ -56,6 +58,8 @@ export interface AdminUserLookupStats {
     cratesWithNotes: number;
     setMarkers: number;
     packedReleases: number;
+    playlists: number;
+    playlistTracks: number;
   };
   activity: AdminUserLookupActivity;
   analytics: AdminUserLookupAnalytics;

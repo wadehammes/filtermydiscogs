@@ -6,6 +6,7 @@ import {
 import { E2E_SMOKE_SPEC_FILES } from "./e2e/smokeSpecs.constants";
 import { RESPONSIVE_VIEWPORT_PRESETS } from "./src/constants/layoutMediaQueries";
 import { DISCOGS_OAUTH_TEST_ENV } from "./src/tests/discogsOAuthTestEnv";
+import { E2E_FEATURE_FLAG_ENV } from "./src/tests/e2eFeatureFlagEnv";
 
 const port = 6767;
 const baseURL = `http://localhost:${port}`;
@@ -40,6 +41,7 @@ const responsiveProjects = [
 
 const e2eWebServerEnv = {
   ...process.env,
+  ...E2E_FEATURE_FLAG_ENV,
   NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED: "1",
   NODE_OPTIONS: "",
   DISCOGS_CONSUMER_KEY:

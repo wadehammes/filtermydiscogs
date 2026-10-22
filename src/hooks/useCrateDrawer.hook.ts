@@ -23,6 +23,8 @@ function getServerSnapshot() {
   return false;
 }
 
+export type CollectionSidePanelMode = "crates" | "playlists";
+
 export const useCrateDrawer = () => {
   const isDesktop = useSyncExternalStore(
     subscribeToMediaQuery,
@@ -30,6 +32,7 @@ export const useCrateDrawer = () => {
     getServerSnapshot,
   );
   const [userToggled, setUserToggled] = useState<boolean | null>(null);
+  const [sidePanel, setSidePanel] = useState<CollectionSidePanelMode>("crates");
   const previousIsDesktopRef = useRef(isDesktop);
 
   useEffect(() => {
@@ -48,6 +51,12 @@ export const useCrateDrawer = () => {
   }, [isDesktop]);
 
   const openDrawer = useCallback(() => {
+    setSidePanel("crates");
+    setUserToggled(true);
+  }, []);
+
+  const openPlaylistsDrawer = useCallback(() => {
+    setSidePanel("playlists");
     setUserToggled(true);
   }, []);
 
@@ -59,12 +68,37 @@ export const useCrateDrawer = () => {
     setUserToggled(null);
   }, []);
 
+  const applySidePanelDefault = useCallback(
+    (panel: CollectionSidePanelMode) => {
+      setSidePanel(panel);
+      setUserToggled(null);
+    },
+    [],
+  );
+
+  const selectSidePanel = useCallback(
+    (panel: CollectionSidePanelMode) => {
+      if (sidePanel === panel) {
+        setUserToggled((prev) => (prev === null ? !isDesktop : !prev));
+        return;
+      }
+
+      setSidePanel(panel);
+      setUserToggled(true);
+    },
+    [isDesktop, sidePanel],
+  );
+
   return {
     isDrawerOpen,
     isDesktop,
+    sidePanel,
     toggleDrawer,
     openDrawer,
+    openPlaylistsDrawer,
     closeDrawer,
     resetDrawer,
+    applySidePanelDefault,
+    selectSidePanel,
   };
 };

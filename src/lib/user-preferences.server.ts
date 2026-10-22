@@ -1,6 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import {
+  type CollectionSidePanelPreference,
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
+  DEFAULT_COLLECTION_SIDE_PANEL,
   DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
   type StoredTheme,
   type StoredViewState,
@@ -28,6 +30,7 @@ export const defaultUserPreferences = (): UserPreferences => ({
   persistFilters: true,
   autoPlayOnQueueAdd: DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   extendQueueWithSimilarReleases: DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
+  defaultCollectionSidePanel: DEFAULT_COLLECTION_SIDE_PANEL,
   theme: "system",
   view: defaultViewPreference,
   filters: defaultPersistedFilters,
@@ -56,6 +59,17 @@ const parseBooleanField = (
   value: Prisma.JsonValue | undefined,
   fallback: boolean,
 ): boolean => (typeof value === "boolean" ? value : fallback);
+
+const parseCollectionSidePanelField = (
+  value: Prisma.JsonValue | undefined,
+  fallback: CollectionSidePanelPreference,
+): CollectionSidePanelPreference => {
+  if (value === "crates" || value === "playlists") {
+    return value;
+  }
+
+  return fallback;
+};
 
 const parseThemeField = (
   value: Prisma.JsonValue | undefined,
@@ -90,6 +104,10 @@ export const parseUserPreferences = (
     extendQueueWithSimilarReleases: parseBooleanField(
       storedPreferences.extendQueueWithSimilarReleases,
       defaults.extendQueueWithSimilarReleases,
+    ),
+    defaultCollectionSidePanel: parseCollectionSidePanelField(
+      storedPreferences.defaultCollectionSidePanel,
+      defaults.defaultCollectionSidePanel,
     ),
     theme: parseThemeField(storedPreferences.theme, defaults.theme),
     view: parseViewPreference(storedPreferences.view ?? null),

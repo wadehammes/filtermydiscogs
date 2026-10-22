@@ -704,6 +704,21 @@ export const useReleasePlaybackQueueActions = ({
     ],
   );
 
+  const replaceUpcomingQueue = useCallback(
+    (nextQueue: PlaybackQueueItem[]) => {
+      similarQueueSuppressedAfterClearRef.current = false;
+      queueManuallyExtendedRef.current = nextQueue.length > 0;
+      similarQueueModeRef.current = createSimilarQueueMode(false);
+      setUpcomingQueue(nextQueue);
+    },
+    [
+      queueManuallyExtendedRef,
+      setUpcomingQueue,
+      similarQueueModeRef,
+      similarQueueSuppressedAfterClearRef,
+    ],
+  );
+
   const stopPlayback = useCallback(
     ({ resetSkipLogToast = true }: { resetSkipLogToast?: boolean } = {}) => {
       resetUserTrackRecordingSession();
@@ -855,6 +870,7 @@ export const useReleasePlaybackQueueActions = ({
     removeFromQueue,
     removeAlbumTracksFromQueue,
     reorderQueue,
+    replaceUpcomingQueue,
     playNext,
     playPrevious,
     stopPlayback,

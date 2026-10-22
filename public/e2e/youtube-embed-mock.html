@@ -5,8 +5,16 @@
     <title>E2E YouTube embed mock</title>
   </head>
   <body>
+    <button
+      type="button"
+      id="e2eSimulateYoutubePause"
+      aria-label="E2E simulate YouTube pause"
+    >
+      E2E pause
+    </button>
     <script>
       const YOUTUBE_PLAYER_STATE_PLAYING = 1;
+      const YOUTUBE_PLAYER_STATE_PAUSED = 2;
       const YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE = 100;
 
       const params = new URLSearchParams(window.location.search);
@@ -17,7 +25,22 @@
         window.parent.postMessage(JSON.stringify(payload), "*");
       };
 
+      let playbackStarted = false;
+      let transportPaused = false;
+      let playingIntervalId = null;
+
+      const clearPlayingInterval = () => {
+        if (playingIntervalId !== null) {
+          window.clearInterval(playingIntervalId);
+          playingIntervalId = null;
+        }
+      };
+
       const emitPlaying = () => {
+        if (transportPaused) {
+          return;
+        }
+
         post({
           event: "infoDelivery",
           info: {
@@ -29,14 +52,26 @@
         post({ event: "onStateChange", info: YOUTUBE_PLAYER_STATE_PLAYING });
       };
 
+      const emitPaused = () => {
+        transportPaused = true;
+        clearPlayingInterval();
+        post({
+          event: "infoDelivery",
+          info: {
+            playerState: YOUTUBE_PLAYER_STATE_PAUSED,
+            currentTime: 1.2,
+            duration: 212,
+          },
+        });
+        post({ event: "onStateChange", info: YOUTUBE_PLAYER_STATE_PAUSED });
+      };
+
       const emitError = () => {
         post({
           event: "onError",
           info: YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE,
         });
       };
-
-      let playbackStarted = false;
 
       const startPlaybackSignals = () => {
         if (mode === "silent") {
@@ -48,6 +83,8 @@
           return;
         }
 
+        transportPaused = false;
+
         if (playbackStarted) {
           emitPlaying();
           return;
@@ -58,11 +95,18 @@
 
         const emitAfterDelay = () => {
           emitPlaying();
-          window.setInterval(emitPlaying, 350);
+          clearPlayingInterval();
+          playingIntervalId = window.setInterval(emitPlaying, 350);
         };
 
         window.setTimeout(emitAfterDelay, Math.max(0, delayMs));
       };
+
+      document
+        .getElementById("e2eSimulateYoutubePause")
+        .addEventListener("click", () => {
+          emitPaused();
+        });
 
       window.addEventListener("message", (event) => {
         if (typeof event.data !== "string") {
@@ -86,9 +130,17 @@
           return;
         }
 
+        if (data.func === "pauseVideo") {
+          emitPaused();
+          return;
+        }
+
+        if (data.func === "playVideo") {
+          startPlaybackSignals();
+          return;
+        }
+
         const syncCommands = [
-          "playVideo",
-          "pauseVideo",
           "loadVideoById",
           "getPlayerState",
           "getCurrentTime",

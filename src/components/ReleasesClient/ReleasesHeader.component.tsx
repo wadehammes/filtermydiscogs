@@ -2,11 +2,12 @@
 
 import classNames from "classnames";
 import { useEffect, useState } from "react";
+import { CollectionSidePanelToggle } from "src/components/CollectionSidePanelToggle/CollectionSidePanelToggle.component";
 import { usePlaybackPageScrollElement } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { ViewToggle } from "src/components/ViewToggle/ViewToggle.component";
+import type { CollectionSidePanelMode } from "src/hooks/useCrateDrawer.hook";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
-import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleasesHeader.module.css";
 
 interface ReleasesHeaderProps {
@@ -17,8 +18,11 @@ interface ReleasesHeaderProps {
   currentView: "card" | "list" | "random";
   onViewChange: (view: "card" | "list" | "random") => void;
   onRandomClick: () => void;
-  onCratesClick?: () => void;
-  isCratesOpen?: boolean;
+  sidePanel: CollectionSidePanelMode;
+  isSidePanelOpen: boolean;
+  onSelectSidePanel: (panel: CollectionSidePanelMode) => void;
+  playlistsEnabled?: boolean;
+  deferSidePanelHighlight?: boolean;
 }
 
 export const ReleasesHeader = ({
@@ -29,8 +33,11 @@ export const ReleasesHeader = ({
   currentView,
   onViewChange,
   onRandomClick,
-  onCratesClick,
-  isCratesOpen,
+  sidePanel,
+  isSidePanelOpen,
+  onSelectSidePanel,
+  playlistsEnabled = true,
+  deferSidePanelHighlight = false,
 }: ReleasesHeaderProps) => {
   const [isStuck, setIsStuck] = useState(false);
   const scrollElement = usePlaybackPageScrollElement();
@@ -93,13 +100,21 @@ export const ReleasesHeader = ({
           </span>
         ) : null}
       </div>
-      <ViewToggle
-        currentView={isRandomMode ? "random" : currentView}
-        onViewChange={onViewChange}
-        onRandomClick={onRandomClick}
-        className={classNames(styles.viewToggleMobile)}
-        {...definedProps({ onCratesClick, isCratesOpen })}
-      />
+      <div className={styles.headerControls}>
+        <ViewToggle
+          currentView={isRandomMode ? "random" : currentView}
+          onViewChange={onViewChange}
+          onRandomClick={onRandomClick}
+          className={classNames(styles.viewToggleDesktop)}
+        />
+        <CollectionSidePanelToggle
+          sidePanel={sidePanel}
+          isDrawerOpen={isSidePanelOpen}
+          onSelectSidePanel={onSelectSidePanel}
+          playlistsEnabled={playlistsEnabled}
+          deferSegmentHighlight={deferSidePanelHighlight}
+        />
+      </div>
     </div>
   );
 };

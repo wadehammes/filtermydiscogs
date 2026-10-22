@@ -1,0 +1,7 @@
+.banner {
+  background: color-mix(in srgb, var(--warning) 12%, var(--background));
+  border-bottom: 1px solid color-mix(in srgb, var(--warning) 40%, var(--border));
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-4);
+  width: 100%;
+}

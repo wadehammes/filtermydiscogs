@@ -1,0 +1,20 @@
+import type { SVGProps } from "react";
+
+export const PlaylistThinIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+    {...props}
+  >
+    <line x1="2" y1="3.5" x2="7" y2="3.5" />
+    <line x1="2" y1="8" x2="7" y2="8" />
+    <line x1="2" y1="12.5" x2="7" y2="12.5" />
+    <path d="M9 5.5v5l4-2.5-4-2.5z" />
+  </svg>
+);

@@ -1,25 +1,24 @@
-import Link from "next/link";
-import { ABOUT_GITHUB_LINKS } from "src/constants/about.constants";
+"use client";
+
+import {
+  BetaBanner,
+  type BetaBannerProps,
+} from "src/components/BetaBanner/BetaBanner.component";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./CrateLayoutBetaBanner.module.css";
 
-export const CrateLayoutBetaBanner = () => (
-  <div
-    className={styles.banner}
-    role="status"
-    data-testid="fmdCrateLayoutBetaBanner"
-  >
-    <p className={styles.text}>
-      Crate layout and sections are in{" "}
-      <span className={styles.betaLabel}>beta</span>. Something off?{" "}
-      <Link
-        href={ABOUT_GITHUB_LINKS.issues}
-        className={styles.link}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Report an issue on GitHub
-      </Link>
-      .
-    </p>
-  </div>
+export type CrateLayoutBetaBannerProps = Pick<
+  BetaBannerProps,
+  "onSubmitBugReport"
+>;
+
+export const CrateLayoutBetaBanner = ({
+  onSubmitBugReport,
+}: CrateLayoutBetaBannerProps) => (
+  <BetaBanner
+    bannerClassName={styles.banner}
+    leading="Crate layout and sections are in"
+    testId="fmdCrateLayoutBetaBanner"
+    {...definedProps({ onSubmitBugReport })}
+  />
 );

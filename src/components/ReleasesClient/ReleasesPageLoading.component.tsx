@@ -42,6 +42,9 @@ export const ReleasesPageLoading = () => {
                 currentView="card"
                 onViewChange={() => {}}
                 onRandomClick={() => {}}
+                sidePanel="crates"
+                isSidePanelOpen={false}
+                onSelectSidePanel={() => {}}
               />
               <ReleasesSkeleton isMobile={isMobile} />
             </main>

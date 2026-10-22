@@ -20,7 +20,7 @@
 }
 
 .bar {
-  background: var(--primary);
+  background: var(--playing-indicator-bar-color, var(--primary));
   border-radius: 1px;
   height: 100%;
   width: 2px;

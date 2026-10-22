@@ -1012,6 +1012,51 @@ describe("ReleasePlaybackProvider — queue and session", () => {
     expect(result.current.isPlaying).toBe(true);
   });
 
+  it("replaceUpcomingQueue swaps upcoming tracks without restarting the active track", async () => {
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.queue).toHaveLength(1);
+    });
+
+    act(() => {
+      result.current.addToQueue({
+        release: collectionRelease,
+        trackPosition: "B1",
+        trackTitle: "Never Gonna Give You Up (Instrumental)",
+      });
+    });
+
+    expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
+      "B1",
+    ]);
+
+    const replacement = createQueueItem({
+      release: shortCollectionRelease,
+      trackPosition: "1",
+      trackTitle: "Short A",
+    });
+
+    act(() => {
+      result.current.replaceUpcomingQueue([replacement]);
+    });
+
+    expect(result.current.queue.map((item) => item.trackPosition)).toEqual([
+      "1",
+    ]);
+    expect(result.current.activeTrackPosition).toBe("A1");
+    expect(result.current.isPlaying).toBe(true);
+  });
+
   it("when release detail resolves after manual queue curation, keeps the active track and does not unavailable-skip", async () => {
     setupCollectionAndShortReleaseApiMock();
 

@@ -46,11 +46,33 @@ describe("user-preferences.server", () => {
       persistFilters: false,
       autoPlayOnQueueAdd: true,
       extendQueueWithSimilarReleases: false,
+      defaultCollectionSidePanel: "crates",
       theme: "dark",
       view: { currentView: "list", previousView: "card" },
       filters,
       filterViews: [],
     });
+  });
+
+  it("parses defaultCollectionSidePanel and rejects invalid values", () => {
+    expect(
+      parseUserPreferences({ defaultCollectionSidePanel: "playlists" })
+        .defaultCollectionSidePanel,
+    ).toBe("playlists");
+
+    expect(
+      parseUserPreferences({ defaultCollectionSidePanel: "queue" })
+        .defaultCollectionSidePanel,
+    ).toBe("crates");
+
+    expect(
+      getUserPreferencesPatchError({ defaultCollectionSidePanel: "crates" }),
+    ).toBeNull();
+    expect(
+      getUserPreferencesPatchError({
+        defaultCollectionSidePanel: "albums",
+      } as unknown as UserPreferencesPatch),
+    ).toBe("defaultCollectionSidePanel must be crates or playlists");
   });
 
   it("merges preference patches", () => {
@@ -74,6 +96,7 @@ describe("user-preferences.server", () => {
       persistFilters: false,
       autoPlayOnQueueAdd: true,
       extendQueueWithSimilarReleases: false,
+      defaultCollectionSidePanel: "crates",
       theme: "dark",
       view: { currentView: "card", previousView: "card" },
       filters,

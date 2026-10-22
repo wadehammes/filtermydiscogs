@@ -54,6 +54,7 @@ const idlePlaybackActions: ReleasePlaybackActions = {
   notifyPlaybackVideoPresentationReady: () => undefined,
   resumePlaybackFromGesture: () => undefined,
   clearQueue: () => undefined,
+  replaceUpcomingQueue: () => undefined,
   stopPlayback: () => undefined,
 };
 

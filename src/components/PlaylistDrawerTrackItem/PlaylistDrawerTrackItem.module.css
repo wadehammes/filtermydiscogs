@@ -1,0 +1,109 @@
+.artworkButton {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex: none;
+  font: inherit;
+  padding: 0;
+  text-align: left;
+  width: auto;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+}
+
+.trackMetaColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+.playButton {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  height: 100%;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+}
+
+.imagePlaceholder {
+  background: var(--muted);
+  height: 100%;
+  width: 100%;
+}
+
+.listItemActive {
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+
+.listItemDragging {
+  opacity: 0.85;
+}
+
+.dragHandle {
+  color: color-mix(in srgb, var(--foreground) 62%, var(--muted-foreground));
+  cursor: grab;
+  touch-action: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.dragHandleIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.listItemActive .dragHandle {
+  color: color-mix(in srgb, var(--foreground) 78%, var(--primary));
+}
+
+.dragHandle:hover:not(:disabled) {
+  color: var(--foreground);
+}
+
+.artworkImage {
+  position: relative;
+}
+
+.artworkPlayingOverlay {
+  --playing-indicator-bar-color: var(--on-primary);
+
+  align-items: center;
+  background: color-mix(in srgb, var(--primary) 52%, transparent);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.trackTitleText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

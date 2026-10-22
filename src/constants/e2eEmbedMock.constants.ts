@@ -1,5 +1,5 @@
 export const E2E_EMBED_MOCK_VIDEO_IDS = {
-  normal: "te2jJncBVG4",
+  normal: "e2eNorm0001",
   silent: "e2eSilent01",
   delayed: "e2eDelay000",
   error: "e2eError000",

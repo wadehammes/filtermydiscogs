@@ -7,6 +7,11 @@ export const USER_PREFERENCES_VERSION = 1;
 export const DEFAULT_AUTO_PLAY_ON_QUEUE_ADD = true;
 export const DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES = false;
 
+export type CollectionSidePanelPreference = "crates" | "playlists";
+
+export const DEFAULT_COLLECTION_SIDE_PANEL: CollectionSidePanelPreference =
+  "crates";
+
 export type PaletteTheme =
   | "amber"
   | "codex"
@@ -34,6 +39,7 @@ export type UserPreferencesJson = {
   persistFilters: boolean;
   autoPlayOnQueueAdd: boolean;
   extendQueueWithSimilarReleases: boolean;
+  defaultCollectionSidePanel: CollectionSidePanelPreference;
   theme: StoredTheme;
   view: StoredViewState;
   filters: PersistedFiltersJson;
@@ -49,6 +55,7 @@ export type UserPreferencesPatch = Partial<
     | "persistFilters"
     | "autoPlayOnQueueAdd"
     | "extendQueueWithSimilarReleases"
+    | "defaultCollectionSidePanel"
     | "theme"
     | "view"
     | "filters"

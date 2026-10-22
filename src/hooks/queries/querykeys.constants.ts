@@ -67,6 +67,18 @@ export const TopUserTracksQueryKeys = {
   list: (limit: number) => [...TopUserTracksQueryKeys.all(), limit] as const,
 };
 
+export const PlaylistsQueryKeys = {
+  all: () => ["playlists"] as const,
+  byUserId: (userId: string | number | null) =>
+    [...PlaylistsQueryKeys.all(), userId] as const,
+};
+
+export const PlaylistQueryKeys = {
+  all: () => ["playlist"] as const,
+  byUserAndId: (userId: string | number | null, playlistId: string | null) =>
+    [...PlaylistQueryKeys.all(), userId, playlistId] as const,
+};
+
 export const AdminStatsQueryKeys = {
   all: () => ["adminStats"] as const,
 };

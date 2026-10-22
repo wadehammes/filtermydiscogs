@@ -23,6 +23,11 @@ const DEFAULT_VIEW_LABELS: Record<string, string> = {
   random: "Random",
 };
 
+const DEFAULT_SIDE_PANEL_LABELS: Record<string, string> = {
+  crates: "Crates",
+  playlists: "Playlists",
+};
+
 const ANALYTICS_CONSENT_LABELS = {
   enabled: "Enabled",
   disabled: "Disabled",
@@ -70,7 +75,7 @@ export const AdminUserLookupPanel = () => {
   return (
     <DashboardSection
       id="user-lookup"
-      lede="Look up a Discogs username to inspect account stats, preferences, and crates."
+      lede="Look up a Discogs username to inspect account stats, preferences, crates, and playlists."
       title="User lookup"
     >
       <article className={styles.panel}>
@@ -170,6 +175,14 @@ export const AdminUserLookupPanel = () => {
                 value={formatCommunityStatValue(data.totals.packedReleases)}
               />
               <StatCard
+                label="Playlists"
+                value={formatCommunityStatValue(data.totals.playlists)}
+              />
+              <StatCard
+                label="Playlist tracks"
+                value={formatCommunityStatValue(data.totals.playlistTracks)}
+              />
+              <StatCard
                 label="Releases added (7d)"
                 value={formatCommunityStatValue(
                   data.activity.releasesAddedLast7Days,
@@ -211,6 +224,12 @@ export const AdminUserLookupPanel = () => {
                       data.preferences.defaultView,
                   )}
                   {renderPreferenceRow(
+                    "Default side panel",
+                    DEFAULT_SIDE_PANEL_LABELS[
+                      data.preferences.defaultCollectionSidePanel
+                    ] ?? data.preferences.defaultCollectionSidePanel,
+                  )}
+                  {renderPreferenceRow(
                     "Remember filters",
                     data.preferences.persistFilters ? "On" : "Off",
                   )}
@@ -235,6 +254,10 @@ export const AdminUserLookupPanel = () => {
                   {renderPreferenceRow(
                     "Last release added",
                     formatTimestamp(data.activity.lastReleaseAddedAt),
+                  )}
+                  {renderPreferenceRow(
+                    "Last playlist update",
+                    formatTimestamp(data.activity.lastPlaylistUpdateAt),
                   )}
                   {renderPreferenceRow(
                     "Releases added (30d)",
