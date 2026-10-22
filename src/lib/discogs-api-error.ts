@@ -16,6 +16,7 @@ export {
   getDiscogsApiErrorStatus,
   getDiscogsRateLimitRetryAfterSeconds,
   isDiscogsFetchTimeoutError,
+  isDiscogsInvalidTokenStatus,
   isDiscogsThrottleQueueError,
   mapDiscogsUpstreamToProxyStatus,
   resolveDiscogsVerificationFailureStatus,

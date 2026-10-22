@@ -88,6 +88,25 @@ describe("identity-cache", () => {
     expect(getInFlightIdentityRequest(cacheKey)).toBeUndefined();
   });
 
+  it("coalesces parallel identity fetch rejections into one factory call", async () => {
+    let factoryCalls = 0;
+    const rejection = Object.assign(new Error("Unauthorized"), { status: 401 });
+
+    const first = coalesceInFlightIdentityRequest(cacheKey, () => {
+      factoryCalls += 1;
+      return Promise.reject(rejection);
+    });
+    const second = coalesceInFlightIdentityRequest(cacheKey, () => {
+      factoryCalls += 1;
+      return Promise.reject(rejection);
+    });
+
+    expect(factoryCalls).toBe(1);
+    await expect(first).rejects.toBe(rejection);
+    await expect(second).rejects.toBe(rejection);
+    expect(getInFlightIdentityRequest(cacheKey)).toBeUndefined();
+  });
+
   it("deduplicates in-flight identity requests by cache key", async () => {
     let resolveRequest: ((value: CachedDiscogsIdentity) => void) | undefined;
     const request = new Promise<CachedDiscogsIdentity>((resolve) => {

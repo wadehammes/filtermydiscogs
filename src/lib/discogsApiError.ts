@@ -20,6 +20,9 @@ export const asDiscogsApiError = (error: unknown): DiscogsApiError | null => {
 export const getDiscogsApiErrorStatus = (error: unknown): number | undefined =>
   asDiscogsApiError(error)?.status;
 
+export const isDiscogsInvalidTokenStatus = (status?: number): boolean =>
+  status === 401 || status === 403;
+
 export const isDiscogsFetchTimeoutError = (error: unknown): boolean => {
   if (!(error instanceof Error)) {
     return false;
