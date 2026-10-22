@@ -1,8 +1,9 @@
 ---
+
 name: prisma-and-migrations
 description: >-
-  Prisma schema changes, migrate, db:generate, crate models. Use when editing
-  prisma/ or crate API behavior.
+Prisma schema changes, migrate, db:generate, crate models. Use when editing
+prisma/ or crate API behavior.
 ---
 
 # Prisma and migrations
@@ -20,12 +21,12 @@ Session stop hook nudges **`db:generate`** when schema changed. CI/build run gen
 
 ## Commands
 
-| Task | Command |
-|------|---------|
-| Local migrate | `pnpm db:migrate` |
-| Prototype push | `pnpm db:push` (sparingly) |
-| Staging DB env | `pnpm db:pull:staging` then `pnpm db:migrate:staging` |
-| Studio | `pnpm db:studio` |
+| Task                 | Command                                                                                       |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| Local migrate        | `pnpm db:migrate`                                                                             |
+| Prototype push       | `pnpm db:push` (sparingly)                                                                    |
+| Staging DB env       | `pnpm db:pull:staging` then `pnpm db:migrate:staging`                                         |
+| Studio               | `pnpm db:studio`                                                                              |
 | Migrations vs schema | `pnpm db:diff:migrations` (requires **`SHADOW_DATABASE_URL`** or localhost **`{db}_shadow`**) |
 
 Generated client is **not committed** — run generate after pull.

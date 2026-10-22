@@ -1,8 +1,9 @@
 ---
+
 name: stacked-prs
 description: >-
-  Create and manage stacked PRs into staging with st (gh-stack). Use when splitting
-  large work, dependent branches, st init/add/sync/ss, or gh stack workflows.
+Create and manage stacked PRs into staging with st (gh-stack). Use when splitting
+large work, dependent branches, st init/add/sync/ss, or gh stack workflows.
 ---
 
 # Stacked PRs (`st`)
@@ -18,13 +19,13 @@ gh extension install github/gh-stack
 
 ## Workflow
 
-| Step | Command |
-|------|---------|
-| Create stack (bottom → top) | `st init branch-a branch-b` |
-| Add layer after commits on current branch | `st add next-branch` |
-| Rebase chain | `st sync` or `st rebase` |
-| Push + open/update PRs | `st ss --auto` |
-| Inspect | `st view --json` |
+| Step                                      | Command                     |
+| ----------------------------------------- | --------------------------- |
+| Create stack (bottom → top)               | `st init branch-a branch-b` |
+| Add layer after commits on current branch | `st add next-branch`        |
+| Rebase chain                              | `st sync` or `st rebase`    |
+| Push + open/update PRs                    | `st ss --auto`              |
+| Inspect                                   | `st view --json`            |
 
 Plan layers **before** coding: schema/API → consumers → UI/tests. **One concern per branch**; use `git add` + `git commit` deliberately per layer.
 

@@ -1,8 +1,9 @@
 ---
+
 name: typescript-react-guardrails
 description: >-
-  TS/React house style — arrow functions, classNames, definedProps, no any, Link.
-  Use when writing or reviewing src/**/*.tsx and utils.
+TS/React house style — arrow functions, classNames, definedProps, no any, Link.
+Use when writing or reviewing src/**/*.tsx and utils.
 ---
 
 # TypeScript and React guardrails

@@ -1,44 +1,44 @@
 allowBuilds:
-  '@parcel/watcher': false
-  '@prisma/engines': false
+  "@parcel/watcher": false
+  "@prisma/engines": false
   esbuild: false
   msw: true
   prisma: false
   sharp: false
   unrs-resolver: false
 minimumReleaseAgeExclude:
-  - '@next/bundle-analyzer@16.3.0'
-  - '@next/env@16.3.0'
-  - '@next/swc-darwin-arm64@16.3.0'
-  - '@next/swc-darwin-x64@16.3.0'
-  - '@next/swc-linux-arm64-gnu@16.3.0'
-  - '@next/swc-linux-arm64-musl@16.3.0'
-  - '@next/swc-linux-x64-gnu@16.3.0'
-  - '@next/swc-linux-x64-musl@16.3.0'
-  - '@next/swc-win32-arm64-msvc@16.3.0'
-  - '@next/swc-win32-x64-msvc@16.3.0'
+  - "@next/bundle-analyzer@16.3.0"
+  - "@next/env@16.3.0"
+  - "@next/swc-darwin-arm64@16.3.0"
+  - "@next/swc-darwin-x64@16.3.0"
+  - "@next/swc-linux-arm64-gnu@16.3.0"
+  - "@next/swc-linux-arm64-musl@16.3.0"
+  - "@next/swc-linux-x64-gnu@16.3.0"
+  - "@next/swc-linux-x64-musl@16.3.0"
+  - "@next/swc-win32-arm64-msvc@16.3.0"
+  - "@next/swc-win32-x64-msvc@16.3.0"
   - next@16.3.0
-  - '@next/playwright@16.3.0'
-  - '@fallow-cli/darwin-arm64@3.26.0'
-  - '@fallow-cli/darwin-x64@3.26.0'
-  - '@fallow-cli/linux-arm64-gnu@3.26.0'
-  - '@fallow-cli/linux-arm64-musl@3.26.0'
-  - '@fallow-cli/linux-x64-gnu@3.26.0'
-  - '@fallow-cli/linux-x64-musl@3.26.0'
-  - '@fallow-cli/win32-arm64-msvc@3.26.0'
-  - '@fallow-cli/win32-x64-msvc@3.26.0'
+  - "@next/playwright@16.3.0"
+  - "@fallow-cli/darwin-arm64@3.26.0"
+  - "@fallow-cli/darwin-x64@3.26.0"
+  - "@fallow-cli/linux-arm64-gnu@3.26.0"
+  - "@fallow-cli/linux-arm64-musl@3.26.0"
+  - "@fallow-cli/linux-x64-gnu@3.26.0"
+  - "@fallow-cli/linux-x64-musl@3.26.0"
+  - "@fallow-cli/win32-arm64-msvc@3.26.0"
+  - "@fallow-cli/win32-x64-msvc@3.26.0"
   - fallow-type-aware@3.26.0
   - fallow@3.26.0
 catalog:
   pg: ^8.23.1
-  '@types/pg': 8.23.1
+  "@types/pg": 8.23.1
 overrides:
-  svgo: '>=3.3.3'
-  picomatch: '>=4.0.4'
-  postcss: '>=8.5.10'
-  hono: '>=4.12.21'
-  '@hono/node-server': '>=1.19.13'
-  '@babel/plugin-transform-modules-systemjs': '>=7.29.4'
+  svgo: ">=3.3.3"
+  picomatch: ">=4.0.4"
+  postcss: ">=8.5.10"
+  hono: ">=4.12.21"
+  "@hono/node-server": ">=1.19.13"
+  "@babel/plugin-transform-modules-systemjs": ">=7.29.4"
 publicHoistPattern:
-  - '*jest*'
-  - '*@jest/*'
+  - "*jest*"
+  - "*@jest/*"

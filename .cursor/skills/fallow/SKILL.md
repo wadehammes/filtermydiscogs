@@ -1,8 +1,9 @@
 ---
+
 name: fallow
 description: >-
-  Optional codebase intelligence via Fallow MCP and CLI. Use for PR audit, dead code
-  traces, duplication, health score, guard boundaries, or fallow commands.
+Optional codebase intelligence via Fallow MCP and CLI. Use for PR audit, dead code
+traces, duplication, health score, guard boundaries, or fallow commands.
 ---
 
 # Fallow (this repo)

@@ -1,8 +1,9 @@
 ---
+
 name: api-routes
 description: >-
-  Next.js App Router API handlers — OAuth auth, Zod bodies, privateRouteJson,
-  route.spec.ts. Use when editing src/app/api.
+Next.js App Router API handlers — OAuth auth, Zod bodies, privateRouteJson,
+route.spec.ts. Use when editing src/app/api.
 ---
 
 # API routes

@@ -1,8 +1,9 @@
 ---
+
 name: filters-and-jotai
 description: >-
-  Collection filters, Jotai atoms, saved views, FiltersBar/FiltersDrawer. Use when
-  changing filter UI, facets, or session/persisted filter state.
+Collection filters, Jotai atoms, saved views, FiltersBar/FiltersDrawer. Use when
+changing filter UI, facets, or session/persisted filter state.
 ---
 
 # Filters and Jotai

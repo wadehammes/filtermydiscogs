@@ -74,14 +74,14 @@ test.describe("authenticated releases crate menu (MSW)", () => {
     ).toBeVisible();
   });
 
-  test.describe("mobile layout", { tag: E2E_TAG_MOBILE_ONLY }, () => {
+  test.describe("mobile layout", () => {
     test.beforeEach(async ({ page }) => {
       await gotoReleasesWorkspace(page);
     });
 
-    test("mobile card portals the crate menu outside the clipped card shell", async ({
-      page,
-    }) => {
+    test("mobile card portals the crate menu outside the clipped card shell", {
+      tag: E2E_TAG_MOBILE_ONLY,
+    }, async ({ page }) => {
       const card = releaseCardByAlbum(page, E2E_ALBUM_ONE);
       await openReleaseCrateMenuOnCard(card);
       await expectCrateMenuPortaledOutsideCard(card);
@@ -90,9 +90,9 @@ test.describe("authenticated releases crate menu (MSW)", () => {
       ).toBeVisible();
     });
 
-    test("mobile card toggles active crate membership from the menu", async ({
-      page,
-    }) => {
+    test("mobile card toggles active crate membership from the menu", {
+      tag: E2E_TAG_MOBILE_ONLY,
+    }, async ({ page }) => {
       const card = releaseCardByAlbum(page, E2E_ALBUM_ONE);
       const trigger = card.getByTestId("fmdReleaseCrateMenuTrigger");
       const activeCrateOption = page.getByRole("menuitemcheckbox", {
@@ -111,14 +111,14 @@ test.describe("authenticated releases crate menu (MSW)", () => {
     });
   });
 
-  test.describe("desktop layout", { tag: E2E_TAG_DESKTOP_ONLY }, () => {
+  test.describe("desktop layout", () => {
     test.beforeEach(async ({ page }) => {
       await gotoReleasesWorkspace(page);
     });
 
-    test("desktop grid keeps the crate menu inline while the collection scrolls", async ({
-      page,
-    }) => {
+    test("desktop grid keeps the crate menu inline while the collection scrolls", {
+      tag: E2E_TAG_DESKTOP_ONLY,
+    }, async ({ page }) => {
       const card = releaseCardByAlbum(page, E2E_ALBUM_ONE);
       await openReleaseCrateMenuOnCard(card);
       await expectCrateMenuInlineOnCard(card);
@@ -128,9 +128,9 @@ test.describe("authenticated releases crate menu (MSW)", () => {
       await expectCrateMenuInlineOnCard(card);
     });
 
-    test("desktop list table portals the crate menu outside the clipped cell", async ({
-      page,
-    }) => {
+    test("desktop list table portals the crate menu outside the clipped cell", {
+      tag: E2E_TAG_DESKTOP_ONLY,
+    }, async ({ page }) => {
       await switchCollectionView(page, "list");
       await expectListTableVisible(page);
 
@@ -142,9 +142,9 @@ test.describe("authenticated releases crate menu (MSW)", () => {
       ).toBeVisible();
     });
 
-    test("desktop list table keeps the portaled crate menu visible while scrolling", async ({
-      page,
-    }) => {
+    test("desktop list table keeps the portaled crate menu visible while scrolling", {
+      tag: E2E_TAG_DESKTOP_ONLY,
+    }, async ({ page }) => {
       await switchCollectionView(page, "list");
       await expectListTableVisible(page);
 

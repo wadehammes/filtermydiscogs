@@ -22,7 +22,6 @@ Map of FilterMyDisco.gs: technologies, top-level folders, and how Discogs collec
 ### [`src/app/`](../../src/app/)
 
 Next.js routes, layouts, and **Route Handlers** under `app/api/`.
-
 - **Pages**: [`page.tsx`](../../src/app/page.tsx) (login/home), [`releases/`](../../src/app/releases/), [`crates/`](../../src/app/crates/) (hub + [`[id]/`](../../src/app/crates/[id]/page.tsx) owner workspace), [`dashboard/`](../../src/app/dashboard/), [`mosaic/`](../../src/app/mosaic/), [`settings/`](../../src/app/settings/), [`crate/[id]/`](../../src/app/crate/[id]/) (public share), [`about/`](../../src/app/about/), [`legal/`](../../src/app/legal/), [`admin/`](../../src/app/admin/).
 - **API**: Discogs proxy (`collection`, `collection/fields`, `collection/value`, `collection/instances/...`, `search`, `release/[id]`, **`release/batch`**), auth (`auth/discogs`, `auth/callback`, `auth/check`, `auth/logout`, `auth/clear-data`), crate CRUD under `crates/` (including **`crates/migrate`**), `user/preferences`, `tracks/record`, `tracks/stats`, `build-version`, `image-proxy`, `dashboard/most-crated`, `dashboard/top-tracks`, `usage/events`, `cron/product-analytics`, admin stats + admin user lookup, dynamic OG (`og/crate/[id]`).
 - **Root layout**: [`layout.tsx`](../../src/app/layout.tsx) — fonts, metadata defaults, `Providers`, Google Tag Manager.
@@ -45,7 +44,6 @@ Feature UI: one folder per area (e.g. `Dashboard`, `ReleaseCard`, `StickyHeaderB
 ### [`src/atoms/`](../../src/atoms/)
 
 **Jotai** client UI state:
-
 - [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts) — `allReleasesAtom`, filter inputs (`atomWithStorage` → **`filtermydiscogs_filters`**), derived `filteredReleasesAtom`, `filtersDispatchAtom`.
 - [`view.atoms.ts`](../../src/atoms/view.atoms.ts) — card / list / random view preference (`atomWithStorage`); list mode renders [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) on desktop.
 - [`JotaiProvider.tsx`](../../src/atoms/JotaiProvider.tsx) — shared store for the app tree.
@@ -56,14 +54,14 @@ Prefer **`useFilterAtoms`** / **`useViewAtoms`** in app code. Biome restricts **
 
 Global providers that are **not** Jotai-backed:
 
-| Module | Role |
-|--------|------|
-| [`auth.context.tsx`](../../src/context/auth.context.tsx) | OAuth session (`useReducer`) |
+| Module                                                               | Role                                                                            |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`auth.context.tsx`](../../src/context/auth.context.tsx)             | OAuth session (`useReducer`)                                                    |
 | [`collection.context.tsx`](../../src/context/collection.context.tsx) | Collection pagination metadata only (`useReducer`); release list lives in Jotai |
-| [`crate.context.tsx`](../../src/context/crate.context.tsx) | Active crate, drawer, mutations (React Query) |
-| [`theme.context.tsx`](../../src/context/theme.context.tsx) | Light/dark/system theme |
-| [`filters.context.tsx`](../../src/context/filters.context.tsx) | Scope marker; state lives in Jotai |
-| [`view.context.tsx`](../../src/context/view.context.tsx) | Scope marker; state lives in Jotai |
+| [`crate.context.tsx`](../../src/context/crate.context.tsx)           | Active crate, drawer, mutations (React Query)                                   |
+| [`theme.context.tsx`](../../src/context/theme.context.tsx)           | Light/dark/system theme                                                         |
+| [`filters.context.tsx`](../../src/context/filters.context.tsx)       | Scope marker; state lives in Jotai                                              |
+| [`view.context.tsx`](../../src/context/view.context.tsx)             | Scope marker; state lives in Jotai                                              |
 
 See [patterns.md](patterns.md). **`collection.context.tsx`** holds pagination metadata only (`collection`, `fetchingCollection`, `error`); release lists and filters live in Jotai.
 

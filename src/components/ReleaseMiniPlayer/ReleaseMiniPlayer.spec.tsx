@@ -12,6 +12,7 @@ import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { expectReleaseCrateMenuAbovePlaybackDock } from "src/tests/filterControlTestHelpers";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
+import type { DiscogsRelease } from "src/types";
 import {
   markPlaybackVideoIntroSeen,
   PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
@@ -35,6 +36,85 @@ const PlaybackStarter = () => {
     >
       Start playback
     </button>
+  );
+};
+
+const EmptyQueueAdd = () => {
+  const { addToQueue } = useReleasePlayback();
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        addToQueue({
+          release: po.collectionRelease,
+          trackPosition: "A",
+          trackTitle: "Never Gonna Give You Up",
+        });
+      }}
+    >
+      Add to empty queue
+    </button>
+  );
+};
+
+const QueueAndPlaybackControls = ({
+  secondRelease,
+}: {
+  secondRelease: DiscogsRelease;
+}) => {
+  const { startPlayback, addToQueue, queue } = useReleasePlayback();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          startPlayback({
+            release: po.collectionRelease,
+            trackPosition: "A",
+          });
+        }}
+      >
+        Start playback
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          addToQueue({
+            release: secondRelease,
+            trackPosition: "1",
+            trackTitle: "Short A",
+          });
+        }}
+      >
+        Queue second release
+      </button>
+      <span data-testid="fmdQueueLength">{queue.length}</span>
+    </>
+  );
+};
+
+const SessionEnder = () => {
+  const { startPlayback, stopPlayback } = useReleasePlayback();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          startPlayback({
+            release: po.collectionRelease,
+            trackPosition: "A",
+          });
+        }}
+      >
+        Start playback
+      </button>
+      <button type="button" onClick={stopPlayback}>
+        End session
+      </button>
+    </>
   );
 };
 
@@ -178,25 +258,6 @@ describe("ReleaseMiniPlayer", () => {
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: false });
     document.body.setAttribute("data-collection-side-panel-open", "true");
-
-    const EmptyQueueAdd = () => {
-      const { addToQueue } = useReleasePlayback();
-
-      return (
-        <button
-          type="button"
-          onClick={() => {
-            addToQueue({
-              release: po.collectionRelease,
-              trackPosition: "A",
-              trackTitle: "Never Gonna Give You Up",
-            });
-          }}
-        >
-          Add to empty queue
-        </button>
-      );
-    };
 
     const user = userEvent.setup();
 
@@ -737,42 +798,11 @@ describe("ReleaseMiniPlayer", () => {
       }),
     });
 
-    const QueueAndPlaybackControls = () => {
-      const { startPlayback, addToQueue, queue } = useReleasePlayback();
-
-      return (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              startPlayback({
-                release: po.collectionRelease,
-                trackPosition: "A",
-              });
-            }}
-          >
-            Start playback
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              addToQueue({
-                release: secondRelease,
-                trackPosition: "1",
-                trackTitle: "Short A",
-              });
-            }}
-          >
-            Queue second release
-          </button>
-          <span data-testid="fmdQueueLength">{queue.length}</span>
-        </>
-      );
-    };
-
     const user = userEvent.setup();
 
-    render(<QueueAndPlaybackControls />, { wrapper: po.createWrapper() });
+    render(<QueueAndPlaybackControls secondRelease={secondRelease} />, {
+      wrapper: po.createWrapper(),
+    });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -817,29 +847,6 @@ describe("ReleaseMiniPlayer", () => {
   });
 
   it("hides the dock when the playback session ends", async () => {
-    const SessionEnder = () => {
-      const { startPlayback, stopPlayback } = useReleasePlayback();
-
-      return (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              startPlayback({
-                release: po.collectionRelease,
-                trackPosition: "A",
-              });
-            }}
-          >
-            Start playback
-          </button>
-          <button type="button" onClick={stopPlayback}>
-            End session
-          </button>
-        </>
-      );
-    };
-
     const user = userEvent.setup();
 
     render(<SessionEnder />, { wrapper: po.createWrapper() });

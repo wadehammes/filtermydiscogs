@@ -1,8 +1,9 @@
 ---
+
 name: handbook-routing
 description: >-
-  Which handbook chapter to read before coding. Use at the start of substantive
-  tasks (features, refactors, API, CSS, tests).
+Which handbook chapter to read before coding. Use at the start of substantive
+tasks (features, refactors, API, CSS, tests).
 ---
 
 # Handbook routing
@@ -19,7 +20,6 @@ Source of truth: **`docs/handbook/`**. Task map: **[`llms.md`](../../docs/handbo
 ## Post-work (before your final reply)
 
 When the session changed **`src/`**, **`.jest/`**, **`jest.config.ts`**, **`e2e/`**, **`playwright.config.ts`**, **`next.config.ts`**, or new test patterns:
-
 1. Open **`llms.md`** and the chapter(s) it maps for this area.
 2. **Edit handbook** in the same turn if anything documented is now wrong or missing.
 3. If you truly changed nothing doc-worthy, **name the section headings you checked** — not a bare “handbook still accurate.”

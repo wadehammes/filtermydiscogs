@@ -1,8 +1,9 @@
 ---
+
 name: oauth-and-session
 description: >-
-  Discogs OAuth 1.0a, session cookies, auth check, login flow. Use for auth
-  routes, session bugs, or protected pages.
+Discogs OAuth 1.0a, session cookies, auth check, login flow. Use for auth
+routes, session bugs, or protected pages.
 ---
 
 # OAuth and session
@@ -11,13 +12,13 @@ Handbook: [discogs.md](../../docs/handbook/discogs.md), [patterns.md → Authent
 
 ## Flow
 
-| Step | Route |
-|------|--------|
-| Start OAuth | `GET /api/auth/discogs` |
-| Callback | `GET /api/auth/callback` — sets cookies, upserts **`User`** |
-| Session check | `GET /api/auth/check` |
-| Logout | `POST /api/auth/logout` |
-| Clear all data | `POST /api/auth/clear-data` |
+| Step           | Route                                                       |
+| -------------- | ----------------------------------------------------------- |
+| Start OAuth    | `GET /api/auth/discogs`                                     |
+| Callback       | `GET /api/auth/callback` — sets cookies, upserts **`User`** |
+| Session check  | `GET /api/auth/check`                                       |
+| Logout         | `POST /api/auth/logout`                                     |
+| Clear all data | `POST /api/auth/clear-data`                                 |
 
 Service: [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts).
 

@@ -1,8 +1,9 @@
 ---
+
 name: react-query-hooks
 description: >-
-  Query and mutation hooks under src/hooks/queries and mutations — keys, dumb
-  hooks, no specs in those folders.
+Query and mutation hooks under src/hooks/queries and mutations — keys, dumb
+hooks, no specs in those folders.
 ---
 
 # React Query hooks

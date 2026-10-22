@@ -2,12 +2,12 @@
 
 GitHub **rulesets** for **`staging`** (trunk) and **`main`** (production). Full policy: [`docs/handbook/platform.md`](../../docs/handbook/platform.md#branching-and-github-rulesets).
 
-| File | Ruleset | ID |
-|------|---------|-----|
-| `production-main.json` | Production — main | 23658577 |
+| File                             | Ruleset                       | ID       |
+| -------------------------------- | ----------------------------- | -------- |
+| `production-main.json`           | Production — main             | 23658577 |
 | `trunk-staging-protect-ref.json` | Trunk — staging (protect ref) | 23658599 |
-| `trunk-staging-pr-ci.json` | Trunk — staging (PR & CI) | 23658600 |
-| `release-tags-v.json` | Release tags — v* | 23658836 |
+| `trunk-staging-pr-ci.json`       | Trunk — staging (PR & CI)     | 23658600 |
+| `release-tags-v.json`            | Release tags — v*             | 23658836 |
 
 Apply after editing JSON (requires admin auth):
 

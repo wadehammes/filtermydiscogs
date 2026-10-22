@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { useLayoutEffect } from "react";
+import { type ReactNode, useLayoutEffect } from "react";
 import { StickyHeaderBarPageObject } from "src/components/StickyHeaderBar/StickyHeaderBar.po";
 import { SortValues } from "src/constants/sortValues";
 import { useCollectionContext } from "src/context/collection.context";
@@ -34,6 +34,16 @@ const defaultSessionFilters = {
   searchQuery: "",
 };
 
+const FetchingCollectionHarness = ({ children }: { children: ReactNode }) => {
+  const { dispatchFetchingCollection } = useCollectionContext();
+
+  useLayoutEffect(() => {
+    dispatchFetchingCollection(true);
+  }, [dispatchFetchingCollection]);
+
+  return children;
+};
+
 describe("StickyHeaderBar", () => {
   beforeEach(() => {
     po = new StickyHeaderBarPageObject();
@@ -56,20 +66,6 @@ describe("StickyHeaderBar", () => {
   });
 
   it("renders the filters skeleton when pages are loaded but collection metadata is still fetching", () => {
-    const FetchingCollectionHarness = ({
-      children,
-    }: {
-      children: React.ReactNode;
-    }) => {
-      const { dispatchFetchingCollection } = useCollectionContext();
-
-      useLayoutEffect(() => {
-        dispatchFetchingCollection(true);
-      }, [dispatchFetchingCollection]);
-
-      return children;
-    };
-
     render(
       <FetchingCollectionHarness>
         <StickyHeaderBar
