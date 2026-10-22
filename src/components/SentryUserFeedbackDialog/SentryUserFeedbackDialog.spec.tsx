@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
+import dialogStyles from "src/components/AppDialog/AppDialog.module.css";
 import { SentryUserFeedbackDialogPageObject } from "src/components/SentryUserFeedbackDialog/SentryUserFeedbackDialog.po";
 import {
   SENTRY_USER_FEEDBACK_ADD_SCREENSHOT_LABEL,
   SENTRY_USER_FEEDBACK_CHOOSE_IMAGE_LABEL,
 } from "src/constants/sentryUserFeedbackForm.constants";
+import portalStyles from "src/styles/modules/base-ui-portal.module.css";
 import { screen, waitFor } from "test-utils";
 
 let po: SentryUserFeedbackDialogPageObject;
@@ -110,6 +112,19 @@ describe("SentryUserFeedbackDialog", () => {
         email: "",
       },
       screenshot,
+    );
+  });
+
+  it("when the playback overlay portal is mounted, renders on document.body above the bottom drawer", () => {
+    po.renderSentryUserFeedbackDialogInPlaybackShell();
+
+    const dialog = screen.getByTestId(po.testId);
+    const portal = screen.getByTestId("fmdPlaybackOverlayPortal");
+
+    expect(portal).not.toContainElement(dialog);
+    expect(dialog).toHaveClass(dialogStyles.popupAboveDrawer);
+    expect(screen.getByTestId(`${po.testId}-backdrop`)).toHaveClass(
+      portalStyles.backdropAboveDrawer,
     );
   });
 

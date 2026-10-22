@@ -4,4 +4,10 @@
   flex-shrink: 0;
   padding: var(--space-3) var(--space-4);
   width: 100%;
+
+  &.bannerInDrawerHeader {
+    margin-block-start: calc(var(--space-3) * -1);
+    margin-inline: calc(var(--space-4) * -1);
+    width: calc(100% + (var(--space-4) * 2));
+  }
 }

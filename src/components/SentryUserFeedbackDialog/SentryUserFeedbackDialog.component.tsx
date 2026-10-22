@@ -261,6 +261,7 @@ export const SentryUserFeedbackDialog = ({
 
   return (
     <FormDialog
+      aboveBottomDrawer
       open={dialogOpen}
       onClose={onClose}
       testId="fmdSentryUserFeedbackDialog"
