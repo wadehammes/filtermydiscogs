@@ -9,6 +9,7 @@ import {
   getOptionalVerifiedUserFromRequest,
   getStoredReconnectUsername,
   getVerifiedUserFromRequest,
+  getVerifiedUserFromStoredTokens,
   isDiscogsVerificationUnavailable,
   requireAuthenticatedDiscogsUser,
 } from "./auth-request";
@@ -144,6 +145,37 @@ describe("auth-request", () => {
 
       expect("error" in result).toBe(true);
       expect("user" in result).toBe(false);
+    });
+
+    it("returns unauthorized without logging when Discogs rejects expired tokens", async () => {
+      const consoleError = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      jest
+        .spyOn(discogsOAuthService, "getIdentity")
+        .mockRejectedValue(
+          Object.assign(
+            new Error("You must authenticate to access this resource."),
+            { status: 401 },
+          ),
+        );
+
+      const request = createRequest({
+        [DISCOGS_SESSION_COOKIE]: "1",
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      const result = await getVerifiedUserFromRequest(request);
+
+      expect("error" in result).toBe(true);
+      if ("error" in result) {
+        expect(result.error.status).toBe(401);
+      }
+
+      expect(consoleError).not.toHaveBeenCalled();
+      expect(getCachedIdentity({ cacheKey })).toBeNull();
     });
 
     it("returns 502 instead of unauthorized when Discogs is down", async () => {
@@ -315,6 +347,33 @@ describe("auth-request", () => {
       ).toBe(expected);
     },
   );
+
+  describe("getVerifiedUserFromStoredTokens", () => {
+    it("returns unauthorized when stored tokens are rejected without error logging", async () => {
+      const consoleError = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      jest
+        .spyOn(discogsOAuthService, "getIdentity")
+        .mockRejectedValue(
+          Object.assign(
+            new Error("You must authenticate to access this resource."),
+            { status: 401 },
+          ),
+        );
+
+      const request = createRequest({
+        discogs_access_token: accessToken,
+        discogs_access_token_secret: accessTokenSecret,
+      });
+
+      const result = await getVerifiedUserFromStoredTokens(request);
+
+      expect("error" in result).toBe(true);
+      expect(consoleError).not.toHaveBeenCalled();
+    });
+  });
 
   describe("getOptionalVerifiedUserFromRequest", () => {
     it("returns display cookies without calling Discogs", async () => {

@@ -3,6 +3,7 @@ import {
   DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS,
   DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE,
   isDiscogsFetchTimeoutError,
+  isDiscogsInvalidTokenStatus,
   resolveDiscogsVerificationFailureStatus,
 } from "src/lib/discogs-api-error";
 import {
@@ -282,11 +283,18 @@ async function getVerifiedUserFromOAuthCookies(
     return { user };
   } catch (error) {
     const status = resolveDiscogsVerificationFailureStatus(error);
+    const isInvalidToken = isDiscogsInvalidTokenStatus(status);
     const isRateLimited = status === 429;
     const isUpstreamUnavailable = status !== undefined && status >= 500;
+
+    if (isInvalidToken) {
+      clearVerifiedIdentityCache(accessToken, accessTokenSecret);
+    }
+
     const shouldReportVerificationFailure =
       options.reportVerificationFailures !== false &&
-      !isDiscogsFetchTimeoutError(error);
+      !isDiscogsFetchTimeoutError(error) &&
+      !isInvalidToken;
 
     if (isRateLimited || isUpstreamUnavailable) {
       const stale = getCachedIdentity({ cacheKey, allowStale: true });
@@ -350,7 +358,9 @@ export async function getVerifiedUserFromStoredTokens(
   request: NextRequest,
 ): Promise<VerifiedUserResult> {
   return attachSentryUserToVerifiedResult(
-    await getVerifiedUserFromOAuthCookies(request),
+    await getVerifiedUserFromOAuthCookies(request, {
+      reportVerificationFailures: false,
+    }),
   );
 }
 

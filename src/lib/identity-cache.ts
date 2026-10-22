@@ -119,11 +119,13 @@ export const coalesceInFlightIdentityRequest = (
 
   const request = factory();
   inFlightIdentityRequests.set(cacheKey, request);
-  void request.finally(() => {
-    if (inFlightIdentityRequests.get(cacheKey) === request) {
-      inFlightIdentityRequests.delete(cacheKey);
-    }
-  });
+  void request
+    .catch(() => undefined)
+    .finally(() => {
+      if (inFlightIdentityRequests.get(cacheKey) === request) {
+        inFlightIdentityRequests.delete(cacheKey);
+      }
+    });
 
   return request;
 };
