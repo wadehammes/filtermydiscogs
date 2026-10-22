@@ -1,202 +1,22 @@
 "use client";
 
-import { Menu } from "@base-ui/react/menu";
-import classNames from "classnames";
-import { useCallback, useRef } from "react";
-import { IconButton } from "src/components/IconButton/IconButton.component";
-import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import {
-  ReleasePlaylistPickerSubmenuPanel,
-  ReleasePlaylistPickerSubmenuTrigger,
-} from "src/components/ReleasePlaylistPickerDialog/ReleasePlaylistPickerDialog.component";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
-import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
-import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
-import MenuIcon from "src/styles/icons/menu-thin.svg";
-import MinusIcon from "src/styles/icons/minus-thin.svg";
-import { VideoThinIcon } from "src/styles/icons/VideoThinIcon.component";
-import styles from "./ReleaseTrackRowMenu.module.css";
+  type ReleaseTrackRowMenuProps,
+  ReleaseTrackRowMenuView,
+} from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenuView.component";
+import { ReleaseTrackRowMenuWithPlaylist } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenuWithPlaylist.component";
 
-export type ReleaseTrackRowMenuProps = {
-  trackTitle: string;
-  className?: string | undefined;
-  triggerClassName?: string | undefined;
-  canAddToQueue: boolean;
-  canUnqueue: boolean;
-  isQueued: boolean;
-  hasUserYoutubeOverride: boolean;
-  hasDefaultYoutubeEmbed: boolean;
-  onAddToQueue?: () => void;
-  onRemoveFromQueue?: () => void;
-  onEditYoutube?: () => void;
-  playlistPickerMetadata?: UserTrackMetadataBody;
-  useMenuOverlayStack?: boolean;
-  releaseHasQueueActions?: boolean;
-};
+export type { ReleaseTrackRowMenuProps } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenuView.component";
 
-export const ReleaseTrackRowMenu = ({
-  trackTitle,
-  className,
-  triggerClassName,
-  canAddToQueue,
-  canUnqueue,
-  isQueued,
-  hasUserYoutubeOverride,
-  hasDefaultYoutubeEmbed,
-  onAddToQueue,
-  onRemoveFromQueue,
-  onEditYoutube,
-  playlistPickerMetadata,
-  useMenuOverlayStack = true,
-  releaseHasQueueActions = false,
-}: ReleaseTrackRowMenuProps) => {
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  const handleOpenChange = useCallback((open: boolean) => {
-    if (!open) {
-      queueMicrotask(() => {
-        triggerRef.current?.blur();
-      });
-    }
-  }, []);
-
-  const showAddToQueue = onAddToQueue !== undefined && canAddToQueue;
-  const showRemoveFromQueue = onRemoveFromQueue !== undefined && canUnqueue;
-  const showInQueueDisabled =
-    isQueued && !canAddToQueue && !canUnqueue && releaseHasQueueActions;
-  const showAddToQueueUnavailable =
-    releaseHasQueueActions &&
-    !canAddToQueue &&
-    !isQueued &&
-    !canUnqueue &&
-    onAddToQueue === undefined;
-  const showYoutube = onEditYoutube !== undefined;
-  const showAddToPlaylist = playlistPickerMetadata !== undefined;
-  const hasItems =
-    showAddToQueue ||
-    showRemoveFromQueue ||
-    showInQueueDisabled ||
-    showAddToQueueUnavailable ||
-    showYoutube ||
-    showAddToPlaylist;
-
-  if (!hasItems) {
-    return null;
+export const ReleaseTrackRowMenu = (props: ReleaseTrackRowMenuProps) => {
+  if (props.playlistPickerMetadata) {
+    return (
+      <ReleaseTrackRowMenuWithPlaylist
+        {...props}
+        playlistPickerMetadata={props.playlistPickerMetadata}
+      />
+    );
   }
 
-  const youtubeLabel = hasUserYoutubeOverride
-    ? "Edit YouTube URL"
-    : hasDefaultYoutubeEmbed
-      ? "Use different video"
-      : "Add YouTube URL";
-
-  return (
-    <div
-      className={classNames(styles.menuRoot, className)}
-      data-testid="fmdReleaseTrackRowMenu"
-    >
-      <Menu.Root onOpenChange={handleOpenChange} modal={false}>
-        <Menu.Trigger
-          render={(props) => (
-            <IconButton
-              {...props}
-              ref={(node) => {
-                triggerRef.current = node;
-                if (typeof props.ref === "function") {
-                  props.ref(node);
-                } else if (props.ref) {
-                  props.ref.current = node;
-                }
-              }}
-              variant="queue"
-              className={classNames(styles.menuTrigger, triggerClassName, {
-                [styles.menuTriggerQueued]: hasUserYoutubeOverride,
-              })}
-              iconClassName={styles.menuTriggerIcon}
-              aria-label={`Actions for ${trackTitle}`}
-              data-testid="fmdReleaseTrackRowMenuTrigger"
-              onClick={(event) => {
-                event.stopPropagation();
-                props.onClick?.(event);
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-        />
-        <InlinePopoverMenu.Panel
-          align="end"
-          side="bottom"
-          popupClassName={styles.menuPopup}
-          testId="fmdReleaseTrackRowMenuPanel"
-          useOverlayStack={useMenuOverlayStack}
-        >
-          <InlinePopoverMenu.List>
-            {showAddToQueue ? (
-              <InlinePopoverMenu.Item
-                onClick={() => {
-                  onAddToQueue();
-                }}
-              >
-                <span className={styles.menuItemIcon} aria-hidden>
-                  <ListPlusThinIcon />
-                </span>
-                <span className={styles.menuItemLabel}>Add to queue</span>
-              </InlinePopoverMenu.Item>
-            ) : null}
-            {showRemoveFromQueue ? (
-              <InlinePopoverMenu.Item
-                onClick={() => {
-                  onRemoveFromQueue();
-                }}
-              >
-                <span className={styles.menuItemIcon} aria-hidden>
-                  <MinusIcon />
-                </span>
-                <span className={styles.menuItemLabel}>Remove from queue</span>
-              </InlinePopoverMenu.Item>
-            ) : null}
-            {showInQueueDisabled ? (
-              <InlinePopoverMenu.Item disabled>
-                <span className={styles.menuItemIcon} aria-hidden>
-                  <CheckThinIcon />
-                </span>
-                <span className={styles.menuItemLabel}>In queue</span>
-              </InlinePopoverMenu.Item>
-            ) : null}
-            {showAddToQueueUnavailable ? (
-              <InlinePopoverMenu.Item disabled>
-                <span className={styles.menuItemIcon} aria-hidden>
-                  <ListPlusThinIcon />
-                </span>
-                <span className={styles.menuItemLabel}>Add to queue</span>
-              </InlinePopoverMenu.Item>
-            ) : null}
-            {showAddToPlaylist && playlistPickerMetadata ? (
-              <Menu.SubmenuRoot>
-                <ReleasePlaylistPickerSubmenuTrigger trackTitle={trackTitle} />
-                <ReleasePlaylistPickerSubmenuPanel
-                  metadata={playlistPickerMetadata}
-                  trackTitle={trackTitle}
-                  useOverlayStack={useMenuOverlayStack}
-                />
-              </Menu.SubmenuRoot>
-            ) : null}
-            {showYoutube ? (
-              <InlinePopoverMenu.Item
-                onClick={() => {
-                  onEditYoutube();
-                }}
-              >
-                <span className={styles.menuItemIcon} aria-hidden>
-                  <VideoThinIcon />
-                </span>
-                <span className={styles.menuItemLabel}>{youtubeLabel}</span>
-              </InlinePopoverMenu.Item>
-            ) : null}
-          </InlinePopoverMenu.List>
-        </InlinePopoverMenu.Panel>
-      </Menu.Root>
-    </div>
-  );
+  return <ReleaseTrackRowMenuView {...props} />;
 };

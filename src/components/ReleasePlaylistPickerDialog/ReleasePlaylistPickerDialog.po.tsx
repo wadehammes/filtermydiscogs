@@ -8,15 +8,17 @@ import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
 import { render } from "test-utils";
 
 export type ReleasePlaylistPickerSubmenuRenderProps =
   Partial<ReleasePlaylistPickerSubmenuPanelProps>;
 
 const defaultProps: ReleasePlaylistPickerSubmenuPanelProps = {
-  metadata: trackMetadataBodyFactory.opening(),
-  trackTitle: "Opening",
+  isLoading: false,
+  sortedPlaylists: [],
+  isAddTrackPending: false,
+  onPickPlaylist: () => {},
+  onOpenCreateDialog: () => {},
 };
 
 export class ReleasePlaylistPickerDialogPageObject extends BasePageObject {
