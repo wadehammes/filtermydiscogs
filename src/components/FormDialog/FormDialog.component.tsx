@@ -28,6 +28,7 @@ export type FormDialogProps = {
   panelClassName?: string;
   panelWidth?: "sm" | "md";
   backdropVariant?: AppDialogProps["backdropVariant"];
+  aboveBottomDrawer?: boolean;
 };
 
 const FormDialogRoot = ({
@@ -48,6 +49,7 @@ const FormDialogRoot = ({
   panelClassName,
   panelWidth = "sm",
   backdropVariant,
+  aboveBottomDrawer = false,
 }: FormDialogProps) => {
   const generatedTitleId = useId();
   const generatedDescriptionId = useId();
@@ -65,6 +67,7 @@ const FormDialogRoot = ({
         },
         panelClassName,
       )}
+      aboveBottomDrawer={aboveBottomDrawer}
       {...definedProps({
         testId,
         backdropVariant,

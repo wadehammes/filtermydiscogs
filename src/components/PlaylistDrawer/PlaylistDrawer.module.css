@@ -82,7 +82,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 0;
+  gap: var(--space-3);
   min-width: 0;
   width: 100%;
 }

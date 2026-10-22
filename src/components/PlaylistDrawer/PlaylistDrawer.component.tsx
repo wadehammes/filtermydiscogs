@@ -53,7 +53,10 @@ const PlaylistDrawerMobile = ({
     dataAttribute="data-collection-side-panel-open"
     headerContent={
       <div className={styles.mobileDrawerHeaderStack}>
-        <PlaylistDrawerBetaBanner {...definedProps({ onSubmitBugReport })} />
+        <PlaylistDrawerBetaBanner
+          inDrawerHeader
+          {...definedProps({ onSubmitBugReport })}
+        />
         {playlistSelector}
       </div>
     }

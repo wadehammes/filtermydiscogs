@@ -24,7 +24,30 @@ interface AppDialogProps {
   panelClassName?: string;
   backdropVariant?: AppDialogBackdropVariant;
   escapeStackingContext?: boolean;
+  aboveBottomDrawer?: boolean;
 }
+
+const popupClassByPlacement = ({
+  aboveBottomDrawer,
+  usesShellPortal,
+  backdropVariant,
+}: {
+  aboveBottomDrawer: boolean;
+  usesShellPortal: boolean;
+  backdropVariant: AppDialogBackdropVariant;
+}): string => {
+  if (aboveBottomDrawer) {
+    return styles.popupAboveDrawer;
+  }
+
+  if (usesShellPortal) {
+    return backdropVariant === "default"
+      ? styles.popupShell
+      : styles.popupModalShell;
+  }
+
+  return backdropVariant === "default" ? styles.popup : styles.popupModal;
+};
 
 const backdropClassByVariant = (
   variant: AppDialogBackdropVariant,
@@ -55,10 +78,11 @@ export const AppDialog = ({
   panelClassName,
   backdropVariant = "default",
   escapeStackingContext = false,
+  aboveBottomDrawer = false,
 }: AppDialogProps) => {
   usePlaybackPageScrollLock(open);
   const overlayPortal = usePlaybackPageOverlayPortal();
-  const usesShellPortal = overlayPortal !== null;
+  const usesShellPortal = overlayPortal !== null && !aboveBottomDrawer;
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handleOpenChange = useCallback(
@@ -82,11 +106,15 @@ export const AppDialog = ({
     <Dialog.Root open={open} onOpenChange={handleOpenChange} modal="trap-focus">
       <Dialog.Portal
         {...definedProps({
-          container: overlayPortal ?? undefined,
+          container: usesShellPortal ? (overlayPortal ?? undefined) : undefined,
         })}
       >
         <Dialog.Backdrop
-          className={backdropClassByVariant(backdropVariant, usesShellPortal)}
+          className={
+            aboveBottomDrawer
+              ? portalStyles.backdropAboveDrawer
+              : backdropClassByVariant(backdropVariant, usesShellPortal)
+          }
           {...definedProps({
             "data-testid": testId ? `${testId}-backdrop` : undefined,
           })}
@@ -94,13 +122,11 @@ export const AppDialog = ({
         <Dialog.Popup
           aria-modal={true}
           className={classNames(
-            usesShellPortal
-              ? backdropVariant === "default"
-                ? styles.popupShell
-                : styles.popupModalShell
-              : backdropVariant === "default"
-                ? styles.popup
-                : styles.popupModal,
+            popupClassByPlacement({
+              aboveBottomDrawer,
+              usesShellPortal,
+              backdropVariant,
+            }),
             panelClassName,
           )}
           {...definedProps({
