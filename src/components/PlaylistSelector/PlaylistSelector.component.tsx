@@ -68,6 +68,7 @@ export const PlaylistSelector = ({
       ),
     [playlists],
   );
+  const hasPlaylists = playlists.length > 0;
 
   if (isLoading) {
     return (
@@ -94,7 +95,8 @@ export const PlaylistSelector = ({
           options={options}
           value={activePlaylistId ?? ""}
           onChange={handlePlaylistChange}
-          placeholder="Select a playlist"
+          placeholder={hasPlaylists ? "Select a playlist" : "No playlists yet"}
+          disabled={!hasPlaylists}
           className={styles.select}
         />
         <div className={styles.actions}>

@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseTrackRowMenuPageObject } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenu.po";
+import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
 import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
-import { screen, waitFor } from "test-utils";
+import { screen, waitFor, within } from "test-utils";
 
 let po: ReleaseTrackRowMenuPageObject;
 
@@ -152,6 +153,50 @@ describe("ReleaseTrackRowMenu", () => {
       expect(
         screen.getByRole("menuitem", { name: "Add to queue" }),
       ).toHaveAttribute("aria-disabled", "true");
+    });
+  });
+
+  it("opens CreatePlaylistDialog after choosing Create new playlist when the track menu closes", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    po.renderReleaseTrackRowMenu({
+      playlistPickerMetadata: trackMetadataBodyFactory.opening(),
+      playlistSubmenuOpenOnHover: false,
+      useMenuOverlayStack: true,
+    });
+
+    await user.click(screen.getByTestId("fmdReleaseTrackRowMenuTrigger"));
+    await waitFor(() => {
+      expect(
+        screen.getByRole("menuitem", { name: "Add to queue" }),
+      ).toBeInTheDocument();
+    });
+
+    const addToPlaylistItem = screen.getByRole("menuitem", {
+      name: /Add Test track to playlist/i,
+    });
+    await user.click(addToPlaylistItem);
+
+    const playlistPickerPanel = await screen.findByTestId(
+      po.playlistPickerSubmenuTestId,
+    );
+    const createPlaylistItem = within(playlistPickerPanel).getByRole(
+      "menuitem",
+      { name: "Create new playlist…" },
+    );
+
+    await user.click(createPlaylistItem);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId(po.createPlaylistDialogTestId),
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole("dialog", { name: "Create playlist" }),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId(po.menuPanelTestId)).not.toBeInTheDocument();
     });
   });
 
