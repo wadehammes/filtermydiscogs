@@ -26,3 +26,7 @@ export const reorderPlaylistTracksBodySchema = z.object({
 export const removePlaylistTrackBodySchema = z.object({
   track_key: z.string().min(1).max(512),
 });
+
+export const listPlaylistsQuerySchema = z.object({
+  trackKey: z.string().min(1).max(512).optional(),
+});

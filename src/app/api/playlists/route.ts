@@ -7,7 +7,10 @@ import { createPlaylist, listPlaylistsForUser } from "src/lib/playlist.server";
 import { requirePlaylistsFeatureEnabled } from "src/lib/playlistsFeatureGuard.server";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
-import { createPlaylistBodySchema } from "src/lib/validation/playlist.schemas";
+import {
+  createPlaylistBodySchema,
+  listPlaylistsQuerySchema,
+} from "src/lib/validation/playlist.schemas";
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +24,20 @@ export async function GET(request: NextRequest) {
       return verified.error;
     }
 
-    const playlists = await listPlaylistsForUser(verified.user.userId);
+    const query = listPlaylistsQuerySchema.safeParse({
+      trackKey: request.nextUrl.searchParams.get("trackKey") ?? undefined,
+    });
+    if (!query.success) {
+      return privateRouteJson(
+        { error: query.error.flatten() },
+        { status: 400 },
+      );
+    }
+
+    const playlists = await listPlaylistsForUser(
+      verified.user.userId,
+      query.data.trackKey ? { trackKey: query.data.trackKey } : undefined,
+    );
 
     return privateRouteJson({ playlists });
   } catch (error) {

@@ -6,10 +6,13 @@ import {
   InlinePopoverMenu,
   inlinePopoverMenuStyles,
 } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
+import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
+import MinusIcon from "src/styles/icons/minus-thin.svg";
 import { PlaylistThinIcon } from "src/styles/icons/PlaylistThinIcon.component";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import type { PlaylistSummary } from "src/types/playlist.types";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleasePlaylistPickerDialog.module.css";
 
 export interface ReleasePlaylistPickerSubmenuPanelProps {
@@ -20,6 +23,7 @@ export interface ReleasePlaylistPickerSubmenuPanelProps {
   onPickPlaylist: (
     playlistId: string,
     playlistName: string,
+    containsTrack: boolean,
   ) => void | Promise<void>;
   onOpenCreateDialog: () => void;
 }
@@ -46,20 +50,45 @@ export const ReleasePlaylistPickerSubmenuPanel = ({
     playlistListContent = (
       <InlinePopoverMenu.List>
         <InlinePopoverMenu.ItemGroup>
-          {sortedPlaylists.map((playlist) => (
-            <Menu.Item
-              key={playlist.id}
-              className={inlinePopoverMenuStyles.item}
-              disabled={isAddTrackPending}
-              onClick={() => {
-                onPickPlaylist(playlist.id, playlist.name);
-              }}
-            >
-              <span className={styles.playlistItemLabel}>
-                {playlist.name} ({playlist.trackCount})
-              </span>
-            </Menu.Item>
-          ))}
+          {sortedPlaylists.map((playlist) => {
+            const containsTrack = playlist.containsTrack === true;
+            const playlistLabel = `${playlist.name} (${playlist.trackCount})`;
+
+            return (
+              <Menu.Item
+                key={playlist.id}
+                className={classNames(inlinePopoverMenuStyles.item, {
+                  [styles.playlistItemWithMembership]: true,
+                  [styles.playlistItemContainsTrack]: containsTrack,
+                })}
+                disabled={isAddTrackPending}
+                aria-label={
+                  containsTrack
+                    ? `${playlistLabel}, already in playlist`
+                    : playlistLabel
+                }
+                onClick={() => {
+                  onPickPlaylist(playlist.id, playlist.name, containsTrack);
+                }}
+              >
+                <span className={styles.membershipIndicator} aria-hidden>
+                  {containsTrack ? (
+                    <>
+                      <CheckThinIcon
+                        className={styles.membershipCheckIcon}
+                        strokeWidth={1.75}
+                        data-testid="fmdPlaylistPickerMembershipCheck"
+                      />
+                      <MinusIcon className={styles.membershipRemoveIcon} />
+                    </>
+                  ) : null}
+                </span>
+                <span className={styles.playlistItemLabel}>
+                  {playlistLabel}
+                </span>
+              </Menu.Item>
+            );
+          })}
         </InlinePopoverMenu.ItemGroup>
       </InlinePopoverMenu.List>
     );
@@ -108,12 +137,12 @@ export interface ReleasePlaylistPickerSubmenuTriggerProps {
 export const ReleasePlaylistPickerSubmenuTrigger = ({
   trackTitle,
   submenuLabel = "Add to playlist",
-  openOnHover = true,
+  openOnHover,
 }: ReleasePlaylistPickerSubmenuTriggerProps) => (
   <Menu.SubmenuTrigger
     className={classNames(inlinePopoverMenuStyles.item, styles.submenuTrigger)}
     aria-label={`Add ${trackTitle} to playlist`}
-    openOnHover={openOnHover}
+    {...definedProps({ openOnHover })}
   >
     <span className={styles.submenuTriggerIcon} aria-hidden>
       <PlaylistThinIcon />

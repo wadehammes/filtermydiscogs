@@ -71,6 +71,10 @@ export const PlaylistsQueryKeys = {
   all: () => ["playlists"] as const,
   byUserId: (userId: string | number | null) =>
     [...PlaylistsQueryKeys.all(), userId] as const,
+  byUserIdAndTrackKey: (
+    userId: string | number | null,
+    trackKey: string | null,
+  ) => [...PlaylistsQueryKeys.byUserId(userId), trackKey] as const,
 };
 
 export const PlaylistQueryKeys = {

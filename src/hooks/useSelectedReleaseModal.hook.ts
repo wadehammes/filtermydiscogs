@@ -103,6 +103,7 @@ const useCollectionBackedSelectedRelease = ({
 
 interface ModalSyncState {
   optimisticId: string | null;
+  dismissed: boolean;
 }
 
 type ModalSyncAction =
@@ -112,6 +113,7 @@ type ModalSyncAction =
 
 const initialModalSyncState: ModalSyncState = {
   optimisticId: null,
+  dismissed: false,
 };
 
 const modalSyncReducer = (
@@ -120,21 +122,21 @@ const modalSyncReducer = (
 ): ModalSyncState => {
   switch (action.type) {
     case "open":
-      return { optimisticId: action.instanceId };
+      return { optimisticId: action.instanceId, dismissed: false };
     case "close":
-      return { optimisticId: null };
+      return { optimisticId: null, dismissed: true };
     case "syncUrl":
       if (!action.urlInstanceId) {
         if (state.optimisticId) {
           return state;
         }
 
-        return { optimisticId: null };
+        return { optimisticId: null, dismissed: false };
       }
       if (state.optimisticId === action.urlInstanceId) {
-        return { optimisticId: null };
+        return { optimisticId: null, dismissed: false };
       }
-      return state;
+      return { optimisticId: null, dismissed: false };
     default:
       return state;
   }
@@ -168,7 +170,9 @@ const useUrlSyncedReleaseModal = ({
     syncModalFromUrl(urlInstanceId);
   }, [urlInstanceId]);
 
-  const selectedReleaseId = modalSync.optimisticId ?? urlInstanceId;
+  const selectedReleaseId = modalSync.dismissed
+    ? null
+    : (modalSync.optimisticId ?? urlInstanceId);
 
   useEffect(() => {
     if (!selectedReleaseId) {

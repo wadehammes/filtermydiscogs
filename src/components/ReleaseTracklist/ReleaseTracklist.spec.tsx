@@ -578,8 +578,8 @@ describe("ReleaseTracklist", () => {
     expect(onEditTrackYoutube).toHaveBeenCalledWith("A");
   });
 
-  it("renders an add-all toolbar and calls onAddAllToQueue", async () => {
-    const user = userEvent.setup();
+  it("renders an add-all menu and calls onAddAllToQueue from the Queue item", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     const onAddAllToQueue = jest.fn();
 
     render(
@@ -595,10 +595,16 @@ describe("ReleaseTracklist", () => {
 
     const addAllButton = screen.getByTestId("fmdReleaseTracklistAddAllButton");
 
-    expect(addAllButton).toHaveTextContent("Add all to queue");
+    expect(addAllButton).toHaveTextContent("Add all to…");
     expect(addAllButton).toBeEnabled();
 
     await user.click(addAllButton);
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("fmdReleaseTracklistAddAllMenuPanel"),
+      ).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("menuitem", { name: "Queue" }));
 
     expect(onAddAllToQueue).toHaveBeenCalledTimes(1);
   });

@@ -27,14 +27,14 @@ export type ReleaseTrackRowMenuProps = {
   onRemoveFromQueue?: () => void;
   onEditYoutube?: () => void;
   playlistPickerMetadata?: UserTrackMetadataBody;
-  playlistSubmenuOpenOnHover?: boolean;
   useMenuOverlayStack?: boolean;
   releaseHasQueueActions?: boolean;
+  playlistSubmenuOpenOnHover?: boolean;
 };
 
 export type ReleaseTrackRowMenuViewProps = Omit<
   ReleaseTrackRowMenuProps,
-  "playlistPickerMetadata" | "playlistSubmenuOpenOnHover"
+  "playlistPickerMetadata"
 > & {
   playlistSubmenu?: ReactNode;
   registerCloseMenu?: (closeMenu: () => void) => void;
@@ -128,7 +128,7 @@ export const ReleaseTrackRowMenuView = ({
               }}
               variant="queue"
               className={classNames(styles.menuTrigger, triggerClassName, {
-                [styles.menuTriggerQueued]: hasUserYoutubeOverride,
+                [styles.menuTriggerQueued]: isQueued,
               })}
               iconClassName={styles.menuTriggerIcon}
               aria-label={`Actions for ${trackTitle}`}

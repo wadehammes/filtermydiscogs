@@ -89,6 +89,26 @@ describe("/api/playlists", () => {
     expect(json).toEqual({ playlists });
     expect(mockListPlaylistsForUser).toHaveBeenCalledWith(
       verifiedUser.user.userId,
+      undefined,
+    );
+  });
+
+  it("GET forwards trackKey when listing playlist membership for a track", async () => {
+    const playlists = [playlistSummaryFactory.empty({ containsTrack: true })];
+    mockListPlaylistsForUser.mockResolvedValue(playlists);
+
+    const response = await GET(
+      new NextRequest(
+        "http://localhost/api/playlists?trackKey=instance-1%3AA1",
+      ),
+    );
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json).toEqual({ playlists });
+    expect(mockListPlaylistsForUser).toHaveBeenCalledWith(
+      verifiedUser.user.userId,
+      { trackKey: "instance-1:A1" },
     );
   });
 

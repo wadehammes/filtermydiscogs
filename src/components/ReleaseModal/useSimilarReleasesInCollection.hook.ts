@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 import { RELEASE_MODAL_SIMILAR_LIMIT } from "src/constants/collection";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
@@ -17,6 +17,7 @@ export const useSimilarReleasesInCollection = (
   enabled = true,
 ) => {
   const allReleases = useAllReleases();
+  const releasesForSimilar = useDeferredValue(allReleases);
   const { isLoading, hasNextPage, isFetchingNextPage } =
     useCollectionLoadState();
   const isCollectionLoading = useNeedsCollectionLoad({
@@ -35,11 +36,11 @@ export const useSimilarReleasesInCollection = (
     }
 
     return getSimilarReleases({
-      releases: allReleases,
+      releases: releasesForSimilar,
       sourceRelease: release,
       limit: RELEASE_MODAL_SIMILAR_LIMIT,
     });
-  }, [allReleases, enabled, isCollectionLoading, release]);
+  }, [enabled, isCollectionLoading, release, releasesForSimilar]);
 
   const isSimilarLoading = Boolean(
     enabled && release && canHaveSimilar && isCollectionLoading,

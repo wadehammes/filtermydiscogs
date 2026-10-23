@@ -206,7 +206,10 @@ export class ReleaseMiniPlayerPageObject extends BasePageObject {
     );
   }
 
-  createWrapper(onReleaseClick?: (instanceId: string) => void) {
+  createWrapper(
+    onReleaseClick?: (instanceId: string) => void,
+    options?: { submenuOpenOnHover?: boolean },
+  ) {
     return ({ children }: { children: ReactNode }) => (
       <TestProviders
         authInitialState={testAuthenticatedAuthState}
@@ -214,7 +217,12 @@ export class ReleaseMiniPlayerPageObject extends BasePageObject {
       >
         <ReleasePlaybackProvider>
           {children}
-          <ReleaseMiniPlayer {...definedProps({ onReleaseClick })} />
+          <ReleaseMiniPlayer
+            {...definedProps({
+              onReleaseClick,
+              submenuOpenOnHover: options?.submenuOpenOnHover,
+            })}
+          />
         </ReleasePlaybackProvider>
       </TestProviders>
     );

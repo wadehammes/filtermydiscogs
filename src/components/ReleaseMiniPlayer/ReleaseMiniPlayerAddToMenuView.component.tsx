@@ -16,30 +16,27 @@ import MinusIcon from "src/styles/icons/minus-thin.svg";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseMiniPlayerAddToMenu.module.css";
 
 const ADD_TO_MENU_LABEL = "Add to";
 
-export interface ReleaseMiniPlayerAddToMenuProps {
+export interface ReleaseMiniPlayerAddToMenuViewProps {
   release: DiscogsRelease;
-  trackTitle: string;
   actionClass: (active?: boolean) => string;
   slotClass?: string;
+  playlistSubmenu?: ReactNode;
+  registerCloseMenu?: (closeMenu: () => void) => void;
+  submenuOpenOnHover?: boolean;
 }
-
-export type ReleaseMiniPlayerAddToMenuViewProps =
-  ReleaseMiniPlayerAddToMenuProps & {
-    playlistSubmenu?: ReactNode;
-    registerCloseMenu?: (closeMenu: () => void) => void;
-  };
 
 export const ReleaseMiniPlayerAddToMenuView = ({
   release,
-  trackTitle,
   actionClass,
   slotClass = "",
   playlistSubmenu = null,
   registerCloseMenu,
+  submenuOpenOnHover,
 }: ReleaseMiniPlayerAddToMenuViewProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const closeMenu = useCallback(() => {
@@ -88,7 +85,10 @@ export const ReleaseMiniPlayerAddToMenuView = ({
                 aria-label={ADD_TO_MENU_LABEL}
                 aria-pressed={inActiveCrate}
                 disabled={isLoading || isCrateActionPending}
-                onClick={handleTriggerClick}
+                onClick={(event) => {
+                  handleTriggerClick(event);
+                  props.onClick?.(event);
+                }}
                 onFocus={prefetchMembership}
                 onPointerDown={prefetchMembership}
                 onPointerEnter={prefetchMembership}
@@ -113,7 +113,7 @@ export const ReleaseMiniPlayerAddToMenuView = ({
               <Menu.SubmenuRoot>
                 <ReleaseCrateMenuSubmenuTrigger
                   inActiveCrate={inActiveCrate}
-                  openOnHover={false}
+                  {...definedProps({ openOnHover: submenuOpenOnHover })}
                 />
                 <ReleaseCrateMenuSubmenuPanel
                   panelContentProps={panelContentProps}

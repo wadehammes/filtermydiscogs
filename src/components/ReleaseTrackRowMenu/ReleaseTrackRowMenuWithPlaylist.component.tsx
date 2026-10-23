@@ -14,14 +14,13 @@ import { definedProps } from "src/utils/definedProps";
 export type ReleaseTrackRowMenuWithPlaylistProps =
   ReleaseTrackRowMenuViewProps & {
     playlistPickerMetadata: UserTrackMetadataBody;
-    playlistSubmenuOpenOnHover?: boolean;
   };
 
 export const ReleaseTrackRowMenuWithPlaylist = ({
   playlistPickerMetadata,
-  playlistSubmenuOpenOnHover,
   trackTitle,
   useMenuOverlayStack = true,
+  playlistSubmenuOpenOnHover,
   ...menuProps
 }: ReleaseTrackRowMenuWithPlaylistProps) => {
   const closeMenuRef = useRef<() => void>(() => {});

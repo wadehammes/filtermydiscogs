@@ -33,7 +33,7 @@ class PlaylistSummaryFactory extends BaseFactory<
     const factoryBuilt = mergeFactoryAttributes(instance, attributes);
 
     const _allKeysMustBeInTheInstance: KeysMatch<
-      PlaylistSummary,
+      Omit<PlaylistSummary, "containsTrack">,
       typeof instance
     > = undefined;
 

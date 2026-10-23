@@ -2,14 +2,15 @@
 
 import { Tooltip } from "@base-ui/react/tooltip";
 import classNames from "classnames";
+import { useMemo } from "react";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
+import { ReleaseTracklistAddAllMenu } from "src/components/ReleaseTracklistAddAllMenu/ReleaseTracklistAddAllMenu.component";
 import { ReleaseTrackRowMenu } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenu.component";
 import { RELEASE_TRACKLIST_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useFeatureFlag } from "src/context/featureFlags.context";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
-import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import type { DiscogsTrack } from "src/types";
@@ -41,6 +42,8 @@ interface ReleaseTracklistProps {
   onAddAllToQueue?: () => void;
   onRemoveAllFromQueue?: () => void;
   allPlayableTracksQueued?: boolean;
+  releaseTitle?: string;
+  useAddAllMenuOverlayStack?: boolean;
   onActiveTrackToggle?: () => void;
   onEditTrackYoutube?: (position: string) => void;
   getPlaylistTrackMetadata?: (
@@ -68,6 +71,8 @@ export const ReleaseTracklist = ({
   onAddAllToQueue,
   onRemoveAllFromQueue,
   allPlayableTracksQueued = false,
+  releaseTitle = "",
+  useAddAllMenuOverlayStack = false,
   onActiveTrackToggle,
   trackStatsByPosition,
   onEditTrackYoutube,
@@ -76,6 +81,22 @@ export const ReleaseTracklist = ({
   alwaysShowTrackRowMenu = false,
 }: ReleaseTracklistProps) => {
   const playlistsEnabled = useFeatureFlag("playlists");
+  const addAllPlaylistMetadata = useMemo(() => {
+    if (!getPlaylistTrackMetadata) {
+      return [];
+    }
+
+    return tracks.flatMap((track) => {
+      if (isTrackPlayable && !isTrackPlayable(track.position)) {
+        return [];
+      }
+
+      const metadata = getPlaylistTrackMetadata(track.position);
+
+      return metadata ? [metadata] : [];
+    });
+  }, [getPlaylistTrackMetadata, isTrackPlayable, tracks]);
+
   const hasSelectableTracks = onTrackSelect !== undefined;
   const hasQueueAdd = onTrackQueue !== undefined;
   const hasQueueRemove = onTrackUnqueue !== undefined;
@@ -305,18 +326,15 @@ export const ReleaseTracklist = ({
                 <ListThinIcon />
               </IconButton>
             ) : onAddAllToQueue ? (
-              <IconButton
-                variant="queue"
-                className={styles.addAllButton}
-                iconClassName={styles.addAllButtonIcon}
-                label="Add all to queue"
-                onClick={onAddAllToQueue}
-                aria-label="Add all playable tracks to queue"
-                title="Add all to queue"
-                data-testid="fmdReleaseTracklistAddAllButton"
-              >
-                <ListPlusThinIcon />
-              </IconButton>
+              <ReleaseTracklistAddAllMenu
+                onAddAllToQueue={onAddAllToQueue}
+                trackMetadataList={addAllPlaylistMetadata}
+                releaseTitle={releaseTitle}
+                showPlaylistSubmenu={
+                  playlistsEnabled && getPlaylistTrackMetadata !== undefined
+                }
+                useOverlayStack={useAddAllMenuOverlayStack}
+              />
             ) : null}
           </div>
         ) : null}

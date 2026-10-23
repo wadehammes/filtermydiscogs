@@ -110,6 +110,7 @@ export const ReleaseModalPlaybackTracksFromState = ({
   return (
     <>
       <ReleaseModalPlaybackTracksSection
+        releaseTitle={releaseTitle}
         tracks={tracks}
         videos={videos}
         hasEmbeddableVideo={hasEmbeddableVideo}

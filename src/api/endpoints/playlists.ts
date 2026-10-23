@@ -15,8 +15,23 @@ const throwPlaylistApiError = async (response: Response): Promise<never> => {
   );
 };
 
-export const fetchPlaylists = async (): Promise<PlaylistSummary[]> => {
-  const response = await fetch("/api/playlists", {
+export type FetchPlaylistsOptions = {
+  trackKey?: string;
+};
+
+export const fetchPlaylists = async (
+  options?: FetchPlaylistsOptions,
+): Promise<PlaylistSummary[]> => {
+  const params = new URLSearchParams();
+  const trackKey = options?.trackKey?.trim();
+  if (trackKey) {
+    params.set("trackKey", trackKey);
+  }
+
+  const query = params.toString();
+  const url = query ? `/api/playlists?${query}` : "/api/playlists";
+
+  const response = await fetch(url, {
     method: "GET",
     credentials: "include",
   });

@@ -9,15 +9,18 @@ import {
 import { ReleaseTrackRowMenuPlaylistSubmenu } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenuPlaylistSubmenu.component";
 import { useReleasePlaylistPickerController } from "src/hooks/useReleasePlaylistPickerController.hook";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import { definedProps } from "src/utils/definedProps";
 
 export type ReleaseMiniPlayerAddToMenuWithPlaylistProps =
   ReleaseMiniPlayerAddToMenuViewProps & {
     playlistMetadata: UserTrackMetadataBody;
+    trackTitle: string;
   };
 
 export const ReleaseMiniPlayerAddToMenuWithPlaylist = ({
   playlistMetadata,
   trackTitle,
+  submenuOpenOnHover,
   ...menuProps
 }: ReleaseMiniPlayerAddToMenuWithPlaylistProps) => {
   const closeMenuRef = useRef<() => void>(() => {});
@@ -35,7 +38,7 @@ export const ReleaseMiniPlayerAddToMenuWithPlaylist = ({
     <>
       <ReleaseMiniPlayerAddToMenuView
         {...menuProps}
-        trackTitle={trackTitle}
+        {...definedProps({ submenuOpenOnHover })}
         registerCloseMenu={(closeMenu) => {
           closeMenuRef.current = closeMenu;
         }}
@@ -44,7 +47,7 @@ export const ReleaseMiniPlayerAddToMenuWithPlaylist = ({
             trackTitle={trackTitle}
             submenuPanelProps={submenuPanelProps}
             submenuLabel="Playlists"
-            openOnHover={false}
+            {...definedProps({ openOnHover: submenuOpenOnHover })}
           />
         }
       />

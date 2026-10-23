@@ -56,6 +56,18 @@ export const expectReleaseModalShowsE2eTracklist = async (
   });
 };
 
+export const addAllPlayableTracksToQueueFromReleaseModal = async (
+  page: Page,
+) => {
+  const trigger = page.getByTestId("fmdReleaseTracklistAddAllButton");
+  await expect(trigger).toBeEnabled();
+  await trigger.click();
+  const panel = page.getByTestId("fmdReleaseTracklistAddAllMenuPanel");
+  await expect(panel).toBeVisible();
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+};
+
 export const closeReleaseModal = async (page: Page) => {
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0, {

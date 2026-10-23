@@ -118,6 +118,29 @@ export const useRemoveTrackFromPlaylistMutation = (playlistId: string) => {
   });
 };
 
+export const useRemoveTrackFromPlaylistEntryMutation = () => {
+  const queryClient = useQueryClient();
+  const {
+    state: { userId },
+  } = useAuth();
+
+  return useMutation({
+    mutationFn: ({
+      playlistId,
+      trackKey,
+    }: {
+      playlistId: string;
+      trackKey: string;
+    }) => api.removeTrackFromPlaylist(playlistId, trackKey),
+    onSuccess: (_data, { playlistId }) => {
+      invalidatePlaylists(queryClient, userId ?? null, playlistId);
+    },
+    onError: () => {
+      toast.error("Failed to remove track from playlist");
+    },
+  });
+};
+
 export const useReorderPlaylistTracksMutation = (playlistId: string) => {
   const queryClient = useQueryClient();
   const {

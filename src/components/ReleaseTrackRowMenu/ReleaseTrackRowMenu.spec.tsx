@@ -4,6 +4,7 @@ import { ReleaseTrackRowMenuPageObject } from "src/components/ReleaseTrackRowMen
 import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
 import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor, within } from "test-utils";
+import styles from "./ReleaseTrackRowMenu.module.css";
 
 let po: ReleaseTrackRowMenuPageObject;
 
@@ -89,6 +90,30 @@ describe("ReleaseTrackRowMenu", () => {
     });
   });
 
+  it("when the track has a user YouTube override but is not queued, does not use queued menu trigger styling", () => {
+    po.renderReleaseTrackRowMenu({
+      canAddToQueue: false,
+      hasUserYoutubeOverride: true,
+      isQueued: false,
+      onEditYoutube: () => undefined,
+    });
+
+    expect(screen.getByTestId("fmdReleaseTrackRowMenuTrigger")).not.toHaveClass(
+      styles.menuTriggerQueued,
+    );
+  });
+
+  it("when the track is queued, uses queued menu trigger styling", () => {
+    po.renderReleaseTrackRowMenu({
+      canAddToQueue: false,
+      isQueued: true,
+    });
+
+    expect(screen.getByTestId("fmdReleaseTrackRowMenuTrigger")).toHaveClass(
+      styles.menuTriggerQueued,
+    );
+  });
+
   it("calls onEditYoutube and shows Edit when a user override exists", async () => {
     const user = userEvent.setup();
     const onEditYoutube = jest.fn();
@@ -161,8 +186,8 @@ describe("ReleaseTrackRowMenu", () => {
 
     po.renderReleaseTrackRowMenu({
       playlistPickerMetadata: trackMetadataBodyFactory.opening(),
-      playlistSubmenuOpenOnHover: false,
       useMenuOverlayStack: true,
+      playlistSubmenuOpenOnHover: false,
     });
 
     await user.click(screen.getByTestId("fmdReleaseTrackRowMenuTrigger"));
@@ -176,6 +201,10 @@ describe("ReleaseTrackRowMenu", () => {
       name: /Add Test track to playlist/i,
     });
     await user.click(addToPlaylistItem);
+
+    await waitFor(() => {
+      expect(addToPlaylistItem).toHaveAttribute("aria-expanded", "true");
+    });
 
     const playlistPickerPanel = await screen.findByTestId(
       po.playlistPickerSubmenuTestId,

@@ -4,6 +4,7 @@ export type PlaylistSummary = {
   trackCount: number;
   created_at: string;
   updated_at: string;
+  containsTrack?: boolean;
 };
 
 export type PlaylistTrackRow = {
