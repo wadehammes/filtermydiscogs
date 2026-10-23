@@ -951,7 +951,9 @@ describe("ReleaseMiniPlayer", () => {
   it("adds the playing release to the active crate", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
-    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
+    render(<PlaybackStarter />, {
+      wrapper: po.createWrapper(undefined, { submenuOpenOnHover: false }),
+    });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -961,19 +963,23 @@ describe("ReleaseMiniPlayer", () => {
       expect(screen.getByTestId("fmdReleaseAddToMenu")).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("menuitem", { name: /Add to crates|Manage crates/i }),
-    );
+    const cratesSubmenuItem = screen.getByRole("menuitem", {
+      name: /Add to crates|Manage crates/i,
+    });
+    await user.click(cratesSubmenuItem);
+
+    await waitFor(() => {
+      expect(cratesSubmenuItem).toHaveAttribute("aria-expanded", "true");
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("menuitemcheckbox", {
-        name: new RegExp(po.defaultCrateWithCount.name, "i"),
-      }),
-    );
+    const crateCheckbox = await screen.findByRole("menuitemcheckbox", {
+      name: new RegExp(po.defaultCrateWithCount.name, "i"),
+    });
+    await user.click(crateCheckbox);
 
     await waitFor(() => {
       expect(po.mockApi.addReleaseToCrate).toHaveBeenCalled();
@@ -985,7 +991,9 @@ describe("ReleaseMiniPlayer", () => {
 
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 
-    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
+    render(<PlaybackStarter />, {
+      wrapper: po.createWrapper(undefined, { submenuOpenOnHover: false }),
+    });
 
     await startPlaybackAndWaitForPlayer(user);
 
@@ -1002,19 +1010,23 @@ describe("ReleaseMiniPlayer", () => {
       expect(screen.getByTestId("fmdReleaseAddToMenu")).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("menuitem", { name: /Add to crates|Manage crates/i }),
-    );
+    const cratesSubmenuItem = screen.getByRole("menuitem", {
+      name: /Add to crates|Manage crates/i,
+    });
+    await user.click(cratesSubmenuItem);
+
+    await waitFor(() => {
+      expect(cratesSubmenuItem).toHaveAttribute("aria-expanded", "true");
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("menuitemcheckbox", {
-        name: new RegExp(po.defaultCrateWithCount.name, "i"),
-      }),
-    );
+    const crateCheckbox = await screen.findByRole("menuitemcheckbox", {
+      name: new RegExp(po.defaultCrateWithCount.name, "i"),
+    });
+    await user.click(crateCheckbox);
 
     await waitFor(() => {
       expect(po.mockApi.removeReleaseFromCrate).toHaveBeenCalled();

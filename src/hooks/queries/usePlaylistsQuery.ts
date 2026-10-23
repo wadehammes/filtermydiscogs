@@ -10,15 +10,20 @@ const PLAYLISTS_LIST_GC_MS = 10 * 60 * 1000;
 const PLAYLIST_DETAIL_STALE_MS = 2 * 60 * 1000;
 const PLAYLIST_DETAIL_GC_MS = 5 * 60 * 1000;
 
-export const playlistsQueryOptions = (userId: string | null) =>
+export const playlistsQueryOptions = (
+  userId: string | null,
+  trackKey: string | null = null,
+) =>
   queryOptions({
-    queryKey: PlaylistsQueryKeys.byUserId(userId),
+    queryKey: trackKey
+      ? PlaylistsQueryKeys.byUserIdAndTrackKey(userId, trackKey)
+      : PlaylistsQueryKeys.byUserId(userId),
     queryFn: async () => {
       if (!userId) {
         throw new Error("User not authenticated");
       }
 
-      return api.playlists();
+      return api.playlists(trackKey ? { trackKey } : undefined);
     },
     staleTime: PLAYLISTS_LIST_STALE_MS,
     gcTime: PLAYLISTS_LIST_GC_MS,
@@ -53,15 +58,19 @@ export const playlistQueryOptions = (
 
 export interface UsePlaylistsQueryParams {
   userId: string | null;
+  trackKey?: string | null;
   enabled?: boolean;
 }
 
 export const usePlaylistsQuery = ({
   userId,
+  trackKey = null,
   enabled = true,
 }: UsePlaylistsQueryParams) => {
+  const normalizedTrackKey = trackKey?.trim() || null;
+
   return useQuery({
-    ...playlistsQueryOptions(userId),
+    ...playlistsQueryOptions(userId, normalizedTrackKey),
     enabled: enabled && !!userId,
   });
 };

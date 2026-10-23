@@ -148,6 +148,45 @@ describe("listPlaylistsForUser", () => {
       }),
     ]);
   });
+
+  it("returns containsTrack when listing with a trackKey", async () => {
+    const { prisma } = await import("src/lib/db");
+    const trackKey = "instance-1:A1";
+    const listRow = playlistListRowFactory.forListTest({
+      user_id: USER_ID,
+      id: PLAYLIST_ID,
+    });
+    jest.mocked(prisma.playlist.findMany).mockResolvedValue([
+      {
+        ...listRow,
+        tracks: [{ track_key: trackKey }],
+      },
+    ] as never);
+
+    const rows = await listPlaylistsForUser(USER_ID, { trackKey });
+
+    expect(rows).toEqual([
+      playlistSummaryFactory.build({
+        id: listRow.id,
+        name: listRow.name,
+        trackCount: listRow._count.tracks,
+        created_at: listRow.created_at.toISOString(),
+        updated_at: listRow.updated_at.toISOString(),
+        containsTrack: true,
+      }),
+    ]);
+    expect(jest.mocked(prisma.playlist.findMany)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          tracks: {
+            where: { track_key: trackKey },
+            take: 1,
+            select: { track_key: true },
+          },
+        }),
+      }),
+    );
+  });
 });
 
 describe("getPlaylistDetail", () => {

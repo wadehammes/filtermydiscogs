@@ -100,6 +100,38 @@ describe("useSelectedReleaseModal", () => {
     );
   });
 
+  it("clears selectedReleaseId immediately on close before the router updates the URL", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockReplace = jest.fn();
+    const mockPush = jest.fn((url: string) => {
+      applyUrl(url);
+    });
+    const mockRouter = createMockAppRouter({
+      push: mockPush,
+      replace: mockReplace,
+    });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    rerender();
+
+    act(() => {
+      result.current.handleCloseModal();
+    });
+
+    expect(result.current.selectedReleaseId).toBeNull();
+    expect(result.current.selectedRelease).toBeNull();
+    expect(mockReplace).toHaveBeenCalledWith("/releases", { scroll: false });
+  });
+
   it("clears the selection after the router removes the instance param", () => {
     const releases = releaseFactory.buildList(1);
     const mockReplace = jest.fn(

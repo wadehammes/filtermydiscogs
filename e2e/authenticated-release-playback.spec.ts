@@ -2,6 +2,7 @@ import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.cons
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
 import { expect, test } from "./fixtures/msw.fixture";
 import {
+  addAllPlayableTracksToQueueFromReleaseModal,
   closeReleaseModal,
   expectReleaseModalShowsE2eTracklist,
   openReleaseModalByTitle,
@@ -16,9 +17,7 @@ test.describe("authenticated release playback queue (MSW)", () => {
     await openReleaseModalByTitle(page, E2E_ALBUM_ONE);
 
     await expectReleaseModalShowsE2eTracklist(page, E2E_ALBUM_ONE);
-    await page
-      .getByRole("button", { name: "Add all playable tracks to queue" })
-      .click();
+    await addAllPlayableTracksToQueueFromReleaseModal(page);
     await closeReleaseModal(page);
 
     await expect(

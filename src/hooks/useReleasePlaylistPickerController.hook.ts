@@ -6,12 +6,16 @@ import { useAuth } from "src/context/auth.context";
 import {
   useAddTrackToPlaylistMutation,
   useCreatePlaylistMutation,
+  useRemoveTrackFromPlaylistEntryMutation,
 } from "src/hooks/mutations/usePlaylistMutations";
 import { usePlaylistsQuery } from "src/hooks/queries/usePlaylistsQuery";
 import type { CreatePlaylistFormValues } from "src/lib/validation/playlist.schemas";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import { sortByDisplayName } from "src/utils/compareByDisplayName";
-import { showPlaylistTrackAddedToast } from "src/utils/playlistToast";
+import {
+  showPlaylistTrackAddedToast,
+  showPlaylistTrackRemovedToast,
+} from "src/utils/playlistToast";
 
 export type UseReleasePlaylistPickerControllerOptions = {
   metadata: UserTrackMetadataBody;
@@ -31,8 +35,10 @@ export const useReleasePlaylistPickerController = ({
   } = useAuth();
   const { data: playlists = [], isLoading } = usePlaylistsQuery({
     userId,
+    trackKey: metadata.track_key,
   });
   const addTrackMutation = useAddTrackToPlaylistMutation();
+  const removeTrackMutation = useRemoveTrackFromPlaylistEntryMutation();
   const createPlaylistMutation = useCreatePlaylistMutation();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
@@ -42,11 +48,24 @@ export const useReleasePlaylistPickerController = ({
   );
 
   const handlePick = useCallback(
-    async (playlistId: string, playlistName: string) => {
+    async (
+      playlistId: string,
+      playlistName: string,
+      containsTrack: boolean,
+    ) => {
+      if (containsTrack) {
+        await removeTrackMutation.mutateAsync({
+          playlistId,
+          trackKey: metadata.track_key,
+        });
+        showPlaylistTrackRemovedToast(playlistName);
+        return;
+      }
+
       await addTrackMutation.mutateAsync({ playlistId, metadata });
       showPlaylistTrackAddedToast(playlistName);
     },
-    [addTrackMutation, metadata],
+    [addTrackMutation, metadata, removeTrackMutation],
   );
 
   const handleCreate = useCallback(
@@ -75,7 +94,8 @@ export const useReleasePlaylistPickerController = ({
     useOverlayStack,
     isLoading,
     sortedPlaylists,
-    isAddTrackPending: addTrackMutation.isPending,
+    isAddTrackPending:
+      addTrackMutation.isPending || removeTrackMutation.isPending,
     onPickPlaylist: handlePick,
     onOpenCreateDialog: openCreateDialog,
   };

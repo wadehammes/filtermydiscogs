@@ -15,6 +15,66 @@
   padding-top: var(--space-1);
 }
 
+.playlistItemWithMembership {
+  gap: var(--space-2);
+}
+
+.playlistItemContainsTrack {
+  color: var(--foreground);
+
+  @media (hover: hover) {
+    &:hover:not(:is(:disabled, [data-disabled], [aria-disabled="true"])),
+    &[data-highlighted]:not(:is([data-disabled], [aria-disabled="true"])) {
+      background: color-mix(in srgb, var(--destructive) 14%, var(--popover));
+      color: var(--destructive);
+
+      .membershipCheckIcon {
+        display: none;
+      }
+
+      .membershipRemoveIcon {
+        display: block;
+      }
+    }
+  }
+}
+
+.membershipIndicator {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  @media (width >= 1024px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
+.membershipCheckIcon {
+  display: block;
+  height: 1rem;
+  width: 1rem;
+
+  @media (width >= 1024px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
+.membershipRemoveIcon {
+  display: none;
+  height: 1rem;
+  width: 1rem;
+
+  @media (width >= 1024px) {
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
 .playlistItemLabel {
   font-weight: var(--font-medium);
   min-width: 0;

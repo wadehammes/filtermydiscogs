@@ -12,7 +12,7 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Sorting & views**: Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
 - **In-app playback**: Preview tracks from a persistent mini player and queue while you browse; set or change a **YouTube link per track** on your collection copy when Discogs has no embed or you want a different upload; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
-- **Playlists** (progressive rollout): Save cross-release track lists; manage, reorder, and play from the Releases side panel (Crates | Playlists toggle when enabled); mix with the queue by adding tracks from release tracklists
+- **Playlists** (progressive rollout): Save cross-release track lists; manage, reorder, and play from the Releases side panel (Crates | Playlists toggle when enabled); mix with the queue by adding tracks from release tracklists (per-track menus or **Add all to…** for queue and playlists)
 - **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link — same Releases side panel as playlists
 - **Collection insights**: Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
 - **Mosaic generator**: Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
@@ -126,8 +126,8 @@ The app will be available at `http://localhost:6767`.
 ## Usage
 
 1. Click **Connect with Discogs** on the home page and authorize the app
-2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, preview tracks, and set per-track YouTube links from the track menu when needed
-3. On **Releases**, use the side panel — **Crates** always; **Playlists** when your deployment has them enabled — stage picks in the crate drawer, or create playlists and add tracks from a release tracklist menu
+2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, preview tracks, queue or playlist actions from track menus, bulk **Add all to…** (queue or playlists) from the tracklist toolbar, and set per-track YouTube links when needed
+3. On **Releases**, use the side panel — **Crates** always; **Playlists** when your deployment has them enabled — stage picks in the crate drawer, or create playlists and add tracks from release tracklist menus
 4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); play or edit playlist tracks from the playlists panel on Releases
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
 6. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu

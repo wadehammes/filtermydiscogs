@@ -23,6 +23,10 @@ const queryMatches = (
     return coarsePointer;
   }
 
+  if (query.includes("(pointer: fine)")) {
+    return !coarsePointer;
+  }
+
   if (query.includes("min-width:") || query.includes("max-width:")) {
     return layoutMatchesMediaQueryAtWidth(query, viewportWidthPx);
   }

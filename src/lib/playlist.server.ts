@@ -33,19 +33,41 @@ type PlaylistSummaryRow = {
   created_at: Date;
   updated_at: Date;
   _count: { tracks: number };
+  tracks?: { track_key: string }[];
 };
 
-const mapPlaylistSummaryRow = (row: PlaylistSummaryRow): PlaylistSummary => ({
-  id: row.id,
-  name: row.name,
-  trackCount: row._count.tracks,
-  created_at: toIso(row.created_at),
-  updated_at: toIso(row.updated_at),
-});
+const mapPlaylistSummaryRow = (
+  row: PlaylistSummaryRow,
+  options?: { trackKey?: string },
+): PlaylistSummary => {
+  const summary: PlaylistSummary = {
+    id: row.id,
+    name: row.name,
+    trackCount: row._count.tracks,
+    created_at: toIso(row.created_at),
+    updated_at: toIso(row.updated_at),
+  };
+
+  if (options?.trackKey) {
+    return {
+      ...summary,
+      containsTrack: (row.tracks?.length ?? 0) > 0,
+    };
+  }
+
+  return summary;
+};
+
+export type ListPlaylistsForUserOptions = {
+  trackKey?: string;
+};
 
 export const listPlaylistsForUser = async (
   userId: number,
+  options?: ListPlaylistsForUserOptions,
 ): Promise<PlaylistSummary[]> => {
+  const trackKey = options?.trackKey?.trim();
+
   const rows = await prisma.playlist.findMany({
     where: { user_id: userId },
     orderBy: { updated_at: "desc" },
@@ -55,10 +77,21 @@ export const listPlaylistsForUser = async (
       created_at: true,
       updated_at: true,
       _count: { select: { tracks: true } },
+      ...(trackKey
+        ? {
+            tracks: {
+              where: { track_key: trackKey },
+              take: 1,
+              select: { track_key: true },
+            },
+          }
+        : {}),
     },
   });
 
-  return rows.map(mapPlaylistSummaryRow);
+  return rows.map((row) =>
+    mapPlaylistSummaryRow(row, trackKey ? { trackKey } : undefined),
+  );
 };
 
 export const createPlaylist = async (

@@ -59,7 +59,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCi,
   retries: isCi ? 1 : 0,
-  workers: isCi ? 1 : undefined,
+  workers: isCi ? (isSmokeSuite ? 4 : 1) : undefined,
   reporter: "list",
   use: {
     baseURL,

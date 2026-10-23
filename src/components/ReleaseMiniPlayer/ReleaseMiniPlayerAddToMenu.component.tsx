@@ -5,6 +5,7 @@ import { ReleaseMiniPlayerAddToMenuWithPlaylist } from "src/components/ReleaseMi
 import { useFeatureFlag } from "src/context/featureFlags.context";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 
 export interface ReleaseMiniPlayerAddToMenuProps {
   release: DiscogsRelease;
@@ -12,6 +13,7 @@ export interface ReleaseMiniPlayerAddToMenuProps {
   trackTitle: string;
   actionClass: (active?: boolean) => string;
   slotClass?: string;
+  submenuOpenOnHover?: boolean;
 }
 
 export const ReleaseMiniPlayerAddToMenu = ({
@@ -20,6 +22,7 @@ export const ReleaseMiniPlayerAddToMenu = ({
   trackTitle,
   actionClass,
   slotClass = "",
+  submenuOpenOnHover,
 }: ReleaseMiniPlayerAddToMenuProps) => {
   const playlistsEnabled = useFeatureFlag("playlists");
 
@@ -31,6 +34,7 @@ export const ReleaseMiniPlayerAddToMenu = ({
         trackTitle={trackTitle}
         actionClass={actionClass}
         slotClass={slotClass}
+        {...definedProps({ submenuOpenOnHover })}
       />
     );
   }
@@ -38,9 +42,9 @@ export const ReleaseMiniPlayerAddToMenu = ({
   return (
     <ReleaseMiniPlayerAddToMenuView
       release={release}
-      trackTitle={trackTitle}
       actionClass={actionClass}
       slotClass={slotClass}
+      {...definedProps({ submenuOpenOnHover })}
     />
   );
 };

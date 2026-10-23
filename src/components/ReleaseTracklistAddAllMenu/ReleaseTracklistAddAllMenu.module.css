@@ -1,0 +1,41 @@
+.menuHost {
+  position: relative;
+}
+
+.menuTrigger {
+  isolation: isolate;
+  position: relative;
+  z-index: 1;
+}
+
+.menuTriggerIcon {
+  display: block;
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.menuPopup {
+  composes: popupcompact from "../../styles/modules/inline-popover-menu.module.css";
+  min-width: 12rem;
+}
+
+.menuHeading {
+  padding-inline: var(--space-3);
+}
+
+.queueItem {
+  gap: var(--space-2);
+}
+
+.queueItemIcon {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 0.875rem;
+  width: 0.875rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}

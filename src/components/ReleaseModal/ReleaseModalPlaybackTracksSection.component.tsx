@@ -11,6 +11,7 @@ import { definedProps } from "src/utils/definedProps";
 import type { UserTrackStatCounts } from "src/utils/userTrack";
 
 interface ReleaseModalPlaybackTracksSectionProps {
+  releaseTitle: string;
   releaseArtistNames: string;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
@@ -48,6 +49,7 @@ interface ReleaseModalPlaybackTracksSectionProps {
 }
 
 export const ReleaseModalPlaybackTracksSection = ({
+  releaseTitle,
   tracks,
   videos,
   hasEmbeddableVideo,
@@ -110,6 +112,8 @@ export const ReleaseModalPlaybackTracksSection = ({
       <ReleaseTracklist
         tracks={tracks}
         releaseArtistNames={releaseArtistNames}
+        releaseTitle={releaseTitle}
+        useAddAllMenuOverlayStack
         activeTrackPosition={activeTrackPosition}
         reserveQueueColumn={reserveQueueColumn}
         alwaysShowTrackRowMenu

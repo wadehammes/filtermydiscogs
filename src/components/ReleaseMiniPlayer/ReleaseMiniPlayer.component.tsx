@@ -28,10 +28,12 @@ import { useReleaseMiniPlayerVideoPanelState } from "./useReleaseMiniPlayerVideo
 
 interface ReleaseMiniPlayerProps {
   onReleaseClick?: (instanceId: string) => void;
+  submenuOpenOnHover?: boolean;
 }
 
 export const ReleaseMiniPlayer = ({
   onReleaseClick,
+  submenuOpenOnHover,
 }: ReleaseMiniPlayerProps) => {
   "use memo";
   const { state: authState } = useAuth();
@@ -175,7 +177,7 @@ export const ReleaseMiniPlayer = ({
     <ReleaseMiniPlayerAddToMenu
       release={release}
       trackTitle={activePlaybackTitle ?? "Track"}
-      {...definedProps({ playlistMetadata })}
+      {...definedProps({ playlistMetadata, submenuOpenOnHover })}
       actionClass={(active) =>
         classNames(styles.controlButton, styles.crateButton, {
           [styles.crateButtonActive]: active,

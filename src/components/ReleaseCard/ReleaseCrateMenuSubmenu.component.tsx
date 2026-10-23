@@ -12,6 +12,7 @@ import {
 } from "src/components/ReleaseCard/ReleaseCrateMenuPanelContent.component";
 import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
 import CratesIcon from "src/styles/icons/crates-thin.svg";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseCrateMenu.module.css";
 import submenuStyles from "./ReleaseCrateMenuSubmenu.module.css";
 
@@ -22,12 +23,12 @@ export interface ReleaseCrateMenuSubmenuTriggerProps {
 
 export const ReleaseCrateMenuSubmenuTrigger = ({
   inActiveCrate,
-  openOnHover = true,
+  openOnHover,
 }: ReleaseCrateMenuSubmenuTriggerProps) => (
   <Menu.SubmenuTrigger
     className={classNames(inlinePopoverMenuStyles.item, submenuStyles.trigger)}
     aria-label={inActiveCrate ? "Manage crates" : "Add to crates"}
-    openOnHover={openOnHover}
+    {...definedProps({ openOnHover })}
   >
     <span className={submenuStyles.triggerIcon} aria-hidden>
       <CratesIcon />
