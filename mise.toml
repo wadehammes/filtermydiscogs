@@ -41,9 +41,10 @@ description = "Biome (changed vs staging), Stylelint fix, tsc:ci, Knip"
 run = "pnpm lint:all"
 
 [tasks.pr-prep]
-description = "Pre-PR: lint:all, handbook sync vs staging, Fallow audit (changed files)"
+description = "Pre-PR: lint:all, handbook sync vs staging, Jest (changed), Fallow audit"
 run = [
   "pnpm lint:all",
   "pnpm handbook:check",
+  "pnpm test:changed",
   "pnpm fallow:audit",
 ]

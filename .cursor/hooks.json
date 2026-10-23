@@ -110,6 +110,11 @@
         "command": ".cursor/hooks/lint-all-check.sh",
         "timeout": 180,
         "loop_limit": 1
+      },
+      {
+        "command": ".cursor/hooks/jest-changed-check.sh",
+        "timeout": 300,
+        "loop_limit": 1
       }
     ]
   }

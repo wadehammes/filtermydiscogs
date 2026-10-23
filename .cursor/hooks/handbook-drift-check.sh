@@ -16,6 +16,7 @@ fi
 
 root="$(printf '%s' "$input" | jq -r '.cwd // empty')"
 [ -n "$root" ] && cd "$root"
+ROOT="${root:-$(pwd)}"
 
 changed="$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } 2>/dev/null || true)"
 
@@ -36,14 +37,16 @@ if [ -n "$readme_relevant" ] && [ -z "$readme_changed" ]; then
   needs_readme=true
 fi
 
-spec_pair_touched="$(printf '%s\n' "$code_changed" | grep -E '^src/utils/(releasePlayback|playback|trackStatsQueryCache|trackPlaybackYoutube|resolveQueueItemEmbedTracksVideos|syncPlaybackSessionRefs)|^src/hooks/useReleasePlayback|^src/hooks/usePlaybackTrack|^src/context/releasePlayback\.context\.tsx$' || true)"
-spec_pair_updated="$(printf '%s\n' "$changed" | grep -E '\.spec\.(ts|tsx)$' || true)"
-needs_spec_pair=false
-if [ -n "$spec_pair_touched" ] && [ -z "$spec_pair_updated" ]; then
-  needs_spec_pair=true
+spec_pair_message=""
+if [ -n "$code_changed" ] && git rev-parse --verify origin/staging^{commit} >/dev/null 2>&1; then
+  spec_pair_err="$(mktemp)"
+  if ! SPEC_PAIR_INCLUDE_WORKTREE=1 bash "$ROOT/scripts/spec-pair-check.sh" origin/staging >"$spec_pair_err" 2>&1; then
+    spec_pair_message="$(cat "$spec_pair_err")"
+  fi
+  rm -f "$spec_pair_err"
 fi
 
-if [ "$needs_handbook" = false ] && [ "$needs_readme" = false ] && [ "$needs_spec_pair" = false ]; then
+if [ "$needs_handbook" = false ] && [ "$needs_readme" = false ] && [ -z "$spec_pair_message" ]; then
   exit 0
 fi
 
@@ -66,13 +69,12 @@ fi
 
 sections=()
 
-if [ "$needs_spec_pair" = true ]; then
+if [ -n "$spec_pair_message" ]; then
   sections+=("$(printf '%s\n' \
-    'Spec pairing (TDD): this session changed playback/queue/track-stats production code but no *.spec.ts(x) in the working tree.' \
-    'Add or extend a failing spec before finishing (see docs/handbook/conventions.md → Test-driven development). CI: scripts/spec-pair-check.sh.' \
+    'Spec pairing (TDD): fix before push — same gate as CI (scripts/spec-pair-check.sh origin/staging).' \
+    'Run locally: pnpm handbook:check  or  SPEC_PAIR_INCLUDE_WORKTREE=1 bash scripts/spec-pair-check.sh origin/staging' \
     '' \
-    'Playback-related files:' \
-    "$spec_pair_touched")")
+    "$spec_pair_message")")
 fi
 
 if [ "$needs_handbook" = true ]; then

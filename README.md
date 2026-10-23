@@ -38,7 +38,7 @@ mise trust          # once per clone, if prompted
 mise bootstrap      # tools + pnpm install + Prisma generate
 mise run ci         # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e)
 mise run ci-full    # same unit gates + full Playwright (all specs × desktop/phone/tablet)
-mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + fallow:audit
+mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + test:changed + fallow:audit
 ```
 
 **Zed:** open the repo as a folder so [`.zed/settings.json`](./.zed/settings.json) applies (workspace TypeScript 6 language service + CSS Modules **`composes`** hints). Reload after **`pnpm install`**.
@@ -170,11 +170,12 @@ pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 
 mise run ci           # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e + next start)
 mise run ci-full      # same unit gates + full Playwright (all specs; phone/tablet/desktop)
-mise run pr-prep      # lint:all + handbook:check + fallow:audit (before opening a PR)
+mise run pr-prep      # lint:all + handbook:check + test:changed + fallow:audit (before opening a PR)
 mise run lint-all     # pnpm lint:all
 
 pnpm lint:all         # Biome (changed vs staging), Stylelint fix, tsc:ci, Knip
 pnpm handbook:check   # handbook sync + spec-pair (TDD) vs origin/staging
+pnpm test:changed     # Jest for files changed vs staging (incl. uncommitted); full gate: pnpm test:ci
 
 pnpm test             # Jest (--runInBand --detectOpenHandles; CI: pnpm test:ci)
 pnpm test:file        # Jest watch for one file
@@ -182,8 +183,8 @@ pnpm test:e2e         # full Playwright suite (auto-installs Chromium if missing
 pnpm test:e2e:smoke   # smoke list only (E2E_SMOKE=1; chromium)
 pnpm test:e2e:install # download Chromium only (test:e2e runs this when browsers are missing)
 pnpm build:e2e        # prod build for CI E2E: mock YouTube embed, test OAuth, playlists flag override (DB optional)
-pnpm test:e2e:smoke:ci  # PR-parity smoke: build:e2e + chromium smoke list
-pnpm test:e2e:ci      # full E2E matrix (matches push to staging)
+pnpm test:e2e:smoke:ci  # PR-parity smoke: install-playwright-chromium-ci.sh + build:e2e + smoke list
+pnpm test:e2e:ci      # full E2E matrix (same install script + build:e2e; matches push to staging)
 pnpm generate:theme-init  # regenerate public/theme-init.js after palette changes
 
 pnpm lint             # Biome check
@@ -209,11 +210,11 @@ pnpm db:studio        # Prisma Studio
 
 ### Testing
 
-| Layer              | Command                                   | What it runs                                                                                                                                 |
-| ------------------ | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unit / integration | `pnpm test` / `pnpm test:ci`              | Jest; API client specs use MSW ([`.jest/setupMswForApiSpecs.ts`](./.jest/setupMswForApiSpecs.ts))                                            |
-| E2E smoke (PR)     | `pnpm test:e2e:smoke:ci` or `mise run ci` | [`build:e2e`](./package.json) then chromium specs in [`e2e/smokeSpecs.constants.ts`](./e2e/smokeSpecs.constants.ts) against **`next start`** |
-| E2E full           | `pnpm test:e2e:ci` or `mise run ci-full`  | Every spec × desktop, phone, and tablet (push to **`staging`**)                                                                              |
+| Layer              | Command                                   | What it runs                                                                                                                                                                                                                                                                                 |
+| ------------------ | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit / integration | `pnpm test` / `pnpm test:ci`              | Jest; API client specs use MSW ([`.jest/setupMswForApiSpecs.ts`](./.jest/setupMswForApiSpecs.ts))                                                                                                                                                                                            |
+| E2E smoke (PR)     | `pnpm test:e2e:smoke:ci` or `mise run ci` | [`install-playwright-chromium-ci.sh`](./scripts/install-playwright-chromium-ci.sh) (OS deps only when Chromium missing; Actions caches browsers), [`build:e2e`](./package.json), then smoke specs in [`e2e/smokeSpecs.constants.ts`](./e2e/smokeSpecs.constants.ts) against **`next start`** |
+| E2E full           | `pnpm test:e2e:ci` or `mise run ci-full`  | Same Playwright install + build, then every spec × desktop, phone, and tablet (push to **`staging`**)                                                                                                                                                                                        |
 
 Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixtures/msw.fixture.ts): **MSW intercepts `/api/*`** with a **fresh handler stack per test** and **factory-backed** data under [`src/tests/msw/`](./src/tests/msw/) and [`src/tests/factories/`](./src/tests/factories/) — no live Discogs collection sync or YouTube embeds in CI. The Playwright **`webServer`** and **`build:e2e`** set server env so gated UI (e.g. playlists) matches production flag wiring without calling Vercel Flags. Public-route E2E does not require **`DATABASE_URL`**. Spec catalog, embed mock, and flag overrides: [`docs/handbook/platform.md` → Playwright](./docs/handbook/platform.md#playwright-instant-navigation-tests) and [Feature flags](./docs/handbook/platform.md#feature-flags-vercel).
 

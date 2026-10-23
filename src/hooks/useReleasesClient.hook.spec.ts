@@ -17,7 +17,12 @@ import {
 } from "src/tests/mocks/mockIntersectionObserver.mock";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { prefetchReleaseModalChunk } from "src/utils/prefetchReleaseModalChunk";
 import { act, renderFeatureHook, waitFor } from "test-utils";
+
+jest.mock("src/utils/prefetchReleaseModalChunk", () => ({
+  prefetchReleaseModalChunk: jest.fn(),
+}));
 
 jest.mock("src/api/urls", () => ({
   api: {
@@ -28,6 +33,7 @@ jest.mock("src/api/urls", () => ({
 
 const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
 const mockUpdateUserPreferences = jest.mocked(api.updateUserPreferences);
+const mockPrefetchReleaseModalChunk = jest.mocked(prefetchReleaseModalChunk);
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
 const mockUseSearchParams = jest.mocked(useSearchParams);
@@ -101,6 +107,23 @@ describe("useReleasesClient", () => {
         }),
       }),
     );
+  });
+
+  it("prefetches the release modal lazy chunk once on mount", async () => {
+    mockApiResponse(
+      true,
+      mockFetchDiscogsCollection,
+      buildSinglePageCollection(releaseFactory.buildList(1)),
+      new Error("fail"),
+    );
+
+    renderFeatureHook(() => useReleasesClient(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(mockPrefetchReleaseModalChunk).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("loads releases and tracks selected release modal state", async () => {
