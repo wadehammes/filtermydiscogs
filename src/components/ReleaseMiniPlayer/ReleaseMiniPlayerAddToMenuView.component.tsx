@@ -85,10 +85,7 @@ export const ReleaseMiniPlayerAddToMenuView = ({
                 aria-label={ADD_TO_MENU_LABEL}
                 aria-pressed={inActiveCrate}
                 disabled={isLoading || isCrateActionPending}
-                onClick={(event) => {
-                  handleTriggerClick(event);
-                  props.onClick?.(event);
-                }}
+                onClick={handleTriggerClick}
                 onFocus={prefetchMembership}
                 onPointerDown={prefetchMembership}
                 onPointerEnter={prefetchMembership}

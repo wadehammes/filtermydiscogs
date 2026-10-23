@@ -18,6 +18,9 @@ export const useSimilarReleasesInCollection = (
 ) => {
   const allReleases = useAllReleases();
   const releasesForSimilar = useDeferredValue(allReleases);
+  const similarSourceKey =
+    enabled && release ? String(release.instance_id) : null;
+  const deferredSimilarSourceKey = useDeferredValue(similarSourceKey);
   const { isLoading, hasNextPage, isFetchingNextPage } =
     useCollectionLoadState();
   const isCollectionLoading = useNeedsCollectionLoad({
@@ -31,7 +34,11 @@ export const useSimilarReleasesInCollection = (
     : false;
 
   const similarReleases = useMemo(() => {
-    if (!(enabled && release) || isCollectionLoading) {
+    if (!deferredSimilarSourceKey || isCollectionLoading) {
+      return [];
+    }
+
+    if (!release || String(release.instance_id) !== deferredSimilarSourceKey) {
       return [];
     }
 
@@ -40,7 +47,12 @@ export const useSimilarReleasesInCollection = (
       sourceRelease: release,
       limit: RELEASE_MODAL_SIMILAR_LIMIT,
     });
-  }, [enabled, isCollectionLoading, release, releasesForSimilar]);
+  }, [
+    deferredSimilarSourceKey,
+    isCollectionLoading,
+    release,
+    releasesForSimilar,
+  ]);
 
   const isSimilarLoading = Boolean(
     enabled && release && canHaveSimilar && isCollectionLoading,

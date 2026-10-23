@@ -9,6 +9,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 BASE_REF="${1:-origin/staging}"
+INCLUDE_WORKTREE="${SPEC_PAIR_INCLUDE_WORKTREE:-0}"
+
+if [ "${2:-}" = "--worktree" ]; then
+  INCLUDE_WORKTREE=1
+fi
 
 if ! git rev-parse --verify "${BASE_REF}^{commit}" >/dev/null 2>&1; then
   echo "spec-pair-check: base ref '${BASE_REF}' not found (fetch remotes first)." >&2
@@ -16,6 +21,18 @@ if ! git rev-parse --verify "${BASE_REF}^{commit}" >/dev/null 2>&1; then
 fi
 
 changed="$(git diff --name-only "${BASE_REF}"...HEAD 2>/dev/null || true)"
+
+if [ "$INCLUDE_WORKTREE" = "1" ]; then
+  worktree_changed="$(
+    {
+      git diff --name-only HEAD 2>/dev/null || true
+      git diff --name-only --cached HEAD 2>/dev/null || true
+    } | grep -v '^$' || true
+  )"
+  if [ -n "$worktree_changed" ]; then
+    changed="$(printf '%s\n%s' "$changed" "$worktree_changed" | grep -v '^$' | sort -u || true)"
+  fi
+fi
 
 if [ -z "$changed" ]; then
   exit 0

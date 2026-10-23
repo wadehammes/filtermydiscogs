@@ -140,11 +140,7 @@
       }
     },
     {
-      "includes": [
-        "docs/handbook/components.md",
-        "docs/handbook/conventions.md",
-        "docs/handbook/database.md"
-      ],
+      "includes": ["docs/handbook/**/*.md"],
       "formatter": {
         "enabled": false
       }

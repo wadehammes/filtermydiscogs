@@ -924,6 +924,25 @@ describe("ReleaseMiniPlayer", () => {
     expect(screen.getByRole("dialog", { name: "Queue" })).toBeInTheDocument();
   });
 
+  it("when the Add to trigger is clicked once, keeps the root menu open", async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(<PlaybackStarter />, { wrapper: po.createWrapper() });
+
+    await startPlaybackAndWaitForPlayer(user);
+
+    const trigger = screen.getByRole("button", { name: "Add to" });
+    await user.click(trigger);
+
+    await screen.findByTestId("fmdReleaseAddToMenu");
+
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+    });
+
+    expect(screen.getByTestId("fmdReleaseAddToMenu")).toBeInTheDocument();
+  });
+
   it("portals the crate menu above the playback dock", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
 

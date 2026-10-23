@@ -41,6 +41,7 @@ import {
   useViewDispatch,
 } from "src/hooks/useViewAtoms.hook";
 import type { DiscogsRelease } from "src/types";
+import { prefetchReleaseModalChunk } from "src/utils/prefetchReleaseModalChunk";
 
 interface UseReleasesClientOptions {
   scrollElement?: HTMLElement | null;
@@ -159,6 +160,10 @@ export const useReleasesClient = ({
     collectionUsername: authState.username,
     fallbackReleases: sortedFilteredReleases,
   });
+
+  useEffect(() => {
+    prefetchReleaseModalChunk();
+  }, []);
 
   const toggleRandomModeForView = useEffectEvent(
     (view: "card" | "list" | "random") => {

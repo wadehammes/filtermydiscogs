@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { startTransition } from "react";
 import { api } from "src/api/urls";
 import {
   useLocalSelectedReleaseModal,
@@ -16,6 +17,18 @@ import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
 
+jest.mock("react", () => {
+  const actual = jest.requireActual<typeof import("react")>("react");
+
+  return {
+    ...actual,
+    startTransition: jest.fn((callback: () => void) => {
+      callback();
+    }),
+  };
+});
+
+const mockStartTransition = jest.mocked(startTransition);
 const mockApi = jest.mocked(api);
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
@@ -71,6 +84,42 @@ describe("useSelectedReleaseModal", () => {
     expect(result.current.selectedRelease?.instance_id).toBe(
       releases[0]?.instance_id,
     );
+  });
+
+  it("wraps open and close navigation in startTransition", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockPush = jest.fn();
+    const mockReplace = jest.fn((url: string) => {
+      applyUrl(url);
+    });
+    const mockRouter = createMockAppRouter({
+      push: mockPush,
+      replace: mockReplace,
+    });
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result, rerender } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    expect(mockStartTransition).toHaveBeenCalled();
+    expect(mockPush).toHaveBeenCalledWith(
+      `/releases?instance=${releases[0]?.instance_id}`,
+      { scroll: false },
+    );
+
+    act(() => {
+      result.current.handleCloseModal();
+    });
+
+    rerender();
+
+    expect(mockStartTransition.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(mockReplace).toHaveBeenCalled();
   });
 
   it("opens optimistically before the router updates search params", () => {

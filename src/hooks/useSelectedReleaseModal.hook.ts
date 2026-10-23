@@ -3,6 +3,7 @@
 import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  startTransition,
   useCallback,
   useEffect,
   useEffectEvent,
@@ -204,7 +205,9 @@ const useUrlSyncedReleaseModal = ({
         preModalUrlRef.current = buildUrl(null);
       }
 
-      router.push(url, { scroll: false });
+      startTransition(() => {
+        router.push(url, { scroll: false });
+      });
     },
     [
       buildUrl,
@@ -224,12 +227,16 @@ const useUrlSyncedReleaseModal = ({
     const returnUrl = preModalUrlRef.current;
 
     if (returnUrl !== null) {
-      router.replace(returnUrl, { scroll: false });
+      startTransition(() => {
+        router.replace(returnUrl, { scroll: false });
+      });
       return;
     }
 
     if (hadOpenRelease) {
-      router.replace(buildUrl(null), { scroll: false });
+      startTransition(() => {
+        router.replace(buildUrl(null), { scroll: false });
+      });
     }
   }, [buildUrl, modalSync.optimisticId, router, urlInstanceId]);
 
