@@ -3,34 +3,16 @@ import "server-only";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { Pool, type PoolConfig } from "pg";
+import {
+  isPrismaPostgresPooledConnectionString,
+  readRuntimeDatabaseUrlFromEnv,
+  sanitizePostgresConnectionStringForPg,
+} from "src/lib/databaseUrlEnv";
 import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
   pool: Pool | undefined;
-};
-
-const validateAndSanitizeConnectionString = (
-  connectionString: string,
-): string => {
-  const url = new URL(connectionString);
-
-  const sslMode = url.searchParams.get("sslmode");
-  if (
-    sslMode === "prefer" ||
-    sslMode === "require" ||
-    sslMode === "verify-ca"
-  ) {
-    url.searchParams.set("sslmode", "verify-full");
-  } else if (process.env.NODE_ENV === "production" && !sslMode) {
-    url.searchParams.set("sslmode", "verify-full");
-  }
-
-  url.searchParams.set("statement_timeout", "30000");
-  url.searchParams.set("connect_timeout", "10");
-  url.searchParams.set("pool_timeout", "10");
-
-  return url.toString();
 };
 
 const sanitizeConnectionStringForLogging = (
@@ -67,7 +49,7 @@ const getPoolConfig = (connectionString: string): PoolConfig => {
     minConnections = 0;
   }
 
-  return {
+  const poolConfig: PoolConfig = {
     connectionString,
     max: maxConnections,
     min: minConnections,
@@ -80,11 +62,16 @@ const getPoolConfig = (connectionString: string): PoolConfig => {
       10,
     ),
     allowExitOnIdle: true,
-    statement_timeout: parseInt(
+  };
+
+  if (!isPrismaPostgresPooledConnectionString(connectionString)) {
+    poolConfig.statement_timeout = parseInt(
       process.env.DB_STATEMENT_TIMEOUT || "30000",
       10,
-    ),
-  };
+    );
+  }
+
+  return poolConfig;
 };
 
 const PRISMA_MODEL_DELEGATES = [
@@ -112,13 +99,15 @@ const createPrismaInitializationError = (error: unknown): Error => {
 };
 
 const initializePrismaClient = (): PrismaClient => {
-  const rawConnectionString = process.env.DATABASE_URL;
+  const rawConnectionString = readRuntimeDatabaseUrlFromEnv();
   if (!rawConnectionString) {
-    throw new Error("DATABASE_URL environment variable is not set");
+    throw new Error(
+      "DATABASE_URL or DATABASE_URL_POOLED environment variable is not set",
+    );
   }
 
   const connectionString =
-    validateAndSanitizeConnectionString(rawConnectionString);
+    sanitizePostgresConnectionStringForPg(rawConnectionString);
 
   if (process.env.NODE_ENV === "development") {
     console.log(

@@ -1,24 +1,10 @@
 #!/usr/bin/env bash
 # Apply pending migrations during CI/Vercel builds.
 # Retries transient P1001 errors from Prisma Postgres cold starts / build-network blips.
-# Migrate URL precedence (DIRECT_URL → POSTGRES_URL → DATABASE_URL) must stay aligned with
-# readMainDatabaseUrlFromEnv in src/lib/databaseUrlEnv.ts (used by prisma.config.ts).
+# Migrate URL from readMainDatabaseUrlFromEnv (src/lib/databaseUrlEnv.ts, prisma.config.ts).
 set -euo pipefail
 
-resolve_migrate_url() {
-  if [ -n "${DIRECT_URL:-}" ]; then
-    printf '%s' "$DIRECT_URL"
-    return
-  fi
-  if [ -n "${POSTGRES_URL:-}" ]; then
-    printf '%s' "$POSTGRES_URL"
-    return
-  fi
-  if [ -n "${DATABASE_URL:-}" ]; then
-    printf '%s' "$DATABASE_URL"
-    return
-  fi
-}
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 append_connect_timeout() {
   local url="$1"
@@ -33,7 +19,12 @@ append_connect_timeout() {
   fi
 }
 
-MIGRATE_URL="$(resolve_migrate_url || true)"
+MIGRATE_URL=""
+if MIGRATE_URL="$(pnpm --silent db:resolve-migrate-url 2>/dev/null)"; then
+  :
+else
+  MIGRATE_URL=""
+fi
 
 if [ -z "${MIGRATE_URL:-}" ]; then
   echo "Skipping prisma migrate deploy (no DIRECT_URL, POSTGRES_URL, or DATABASE_URL)."

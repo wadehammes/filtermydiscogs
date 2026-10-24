@@ -11,10 +11,10 @@ if [ "$ENVIRONMENT" = "production" ]; then
   echo "✅ Production DATABASE_URL pulled to .env.local"
 elif [ "$ENVIRONMENT" = "staging" ] || [ "$ENVIRONMENT" = "preview" ]; then
   vercel env pull .env.local --environment=preview --yes
-  echo "✅ Staging (preview) DATABASE_URL pulled to .env.local"
+  echo "✅ Staging (preview) database env pulled to .env.local"
 elif [ "$ENVIRONMENT" = "development" ]; then
   vercel env pull .env.local --environment=development --yes
-  echo "✅ Development DATABASE_URL pulled to .env.local"
+  echo "✅ Development database env pulled to .env.local"
 else
   echo "❌ Invalid environment. Use: staging, development, preview, or production"
   exit 1

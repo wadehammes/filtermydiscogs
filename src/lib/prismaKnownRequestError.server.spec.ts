@@ -19,6 +19,21 @@ describe("sanitizePrismaKnownRequestError", () => {
     });
   });
 
+  it("when message reports too many database connections, returns 503 DB_CONNECTION_ERROR", () => {
+    expect(
+      sanitizePrismaKnownRequestError(
+        buildKnownRequestError(
+          "P2037",
+          'Too many database connections opened: too many connections for role "prisma_migration"',
+        ),
+      ),
+    ).toEqual({
+      message: "Database connection error. Please try again in a moment",
+      code: "DB_CONNECTION_ERROR",
+      status: 503,
+    });
+  });
+
   it("when code is P2025, returns 404 NOT_FOUND", () => {
     expect(
       sanitizePrismaKnownRequestError(buildKnownRequestError("P2025")),

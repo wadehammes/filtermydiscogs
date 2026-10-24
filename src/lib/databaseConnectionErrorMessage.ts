@@ -34,6 +34,8 @@ export const databaseConnectionErrorSanitized = () => ({
 
 const DATABASE_CONNECTION_MESSAGE_MARKERS = [
   "can't reach database",
+  "too many connections",
+  "failed to connect to upstream database",
   "insufficient resources",
   "connection terminated",
   "terminated unexpectedly",
