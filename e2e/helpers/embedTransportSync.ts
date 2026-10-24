@@ -20,6 +20,9 @@ export const expectE2eNowPlayingShowsPlayControl = async (page: Page) => {
   });
 
   await expect(nowPlaying).toBeVisible({ timeout: 15_000 });
+  await expect(nowPlaying.getByRole("button", { name: "Pause" })).toBeHidden({
+    timeout: 15_000,
+  });
   await expect(
     nowPlaying.getByRole("button", { name: "Play", exact: true }),
   ).toBeVisible({

@@ -83,7 +83,9 @@
           return;
         }
 
-        transportPaused = false;
+        if (transportPaused) {
+          return;
+        }
 
         if (playbackStarted) {
           emitPlaying();
@@ -136,6 +138,7 @@
         }
 
         if (data.func === "playVideo") {
+          transportPaused = false;
           startPlaybackSignals();
           return;
         }
