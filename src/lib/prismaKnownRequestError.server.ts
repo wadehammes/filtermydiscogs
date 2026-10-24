@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import {
   databaseConnectionErrorSanitized,
+  isDatabaseConnectionErrorMessage,
   isPrismaConnectionErrorCode,
 } from "src/lib/databaseConnectionErrorMessage";
 
@@ -24,7 +25,10 @@ export const sanitizePrismaKnownRequestError = (
     return null;
   }
 
-  if (isPrismaConnectionErrorCode(error.code)) {
+  if (
+    isPrismaConnectionErrorCode(error.code) ||
+    isDatabaseConnectionErrorMessage(error.message)
+  ) {
     return databaseConnectionErrorSanitized();
   }
 

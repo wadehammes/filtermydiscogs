@@ -65,12 +65,14 @@ DISCOGS_CALLBACK_URL=http://localhost:6767/api/auth/callback
 # Site URL (optional, defaults to https://www.filtermydisco.gs)
 NEXT_PUBLIC_SITE_URL=http://localhost:6767
 
-# Database (Prisma)
-# From Vercel: Project → Storage / Prisma Postgres → copy env into .env.local
-# Runtime prefers pooled DATABASE_URL; migrations use DIRECT_URL or POSTGRES_URL when set
-DATABASE_URL=your_database_url_here
-# DIRECT_URL=your_direct_database_url_here
+# Database (Prisma Postgres) — per Vercel target (Preview/Development ≠ Production):
+# POSTGRES_URL — integration direct (db.prisma.io); migrate / prisma CLI / next build
+# DATABASE_URL — same credentials as POSTGRES_URL (direct); optional if POSTGRES_URL is set
+# DATABASE_URL_POOLED — same credentials, pooled.db.prisma.io (runtime preferred; omit locally to use in-app rewrite from DATABASE_URL)
 # POSTGRES_URL=your_postgres_url_here
+DATABASE_URL=your_direct_database_url_here
+# DATABASE_URL_POOLED=your_pooled_database_url_here
+# DIRECT_URL=your_direct_database_url_here
 
 # Admin User ID (optional, for /admin)
 # Discogs user ID — available after login (discogs_user_id cookie)
@@ -101,7 +103,7 @@ Full variable list (including Vercel feature flags): [`docs/handbook/platform.md
 
 ### Database Setup
 
-1. Provision Postgres for the Vercel project (Prisma Postgres / Marketplace storage) and copy connection env vars into `.env.local`.
+1. Connect **Prisma Postgres** to the Vercel project (Marketplace), then `pnpm db:pull:dev` or `db:pull:staging`. On Vercel, keep the three-var contract aligned per target (**`POSTGRES_URL`** direct → migrate; **`DATABASE_URL_POOLED`** pooled → runtime; see [platform.md → Environment variables](./docs/handbook/platform.md)). If env drifted after an incident: `pnpm db:apply-vercel-database-env preview|development|production` (maintainers).
 2. Install and apply schema:
 
 ```bash
@@ -110,7 +112,7 @@ pnpm db:generate
 pnpm db:migrate       # local migrate; or pnpm db:push for prototype
 ```
 
-Helpers: `pnpm db:pull:dev` / `db:pull:staging` / `db:pull:prod` pull env from Vercel; `pnpm db:studio` opens Prisma Studio.
+Helpers: `pnpm db:pull:dev` / `db:pull:staging` / `db:pull:prod` pull env from Vercel into `.env.local`. Use **`db:pull:staging`** or **`db:pull:dev`** for local work — **`db:pull:prod`** only when you intentionally need production. Local **`next dev`** can use a direct **`DATABASE_URL`** alone (the app rewrites `db.prisma.io` → pooled at runtime) or an explicit **`DATABASE_URL_POOLED`** for prod parity. `pnpm db:studio` opens Prisma Studio.
 
 ### Installation
 
@@ -206,6 +208,9 @@ pnpm db:generate      # Prisma Client
 pnpm db:migrate       # migrate dev
 pnpm db:push          # push schema (prototype)
 pnpm db:studio        # Prisma Studio
+pnpm db:pull:dev      # Vercel Development env → .env.local
+pnpm db:pull:staging  # Vercel Preview env → .env.local
+# Repair (env drift): pnpm db:sync-pooled-url | pnpm db:apply-vercel-database-env <target>
 ```
 
 ### Testing

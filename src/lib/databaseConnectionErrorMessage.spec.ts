@@ -32,6 +32,14 @@ describe("isDatabaseConnectionErrorMessage", () => {
     ).toBe(true);
   });
 
+  it("when Postgres reports too many connections for role, matches", () => {
+    expect(
+      isDatabaseConnectionErrorMessage(
+        'too many connections for role "prisma_migration"',
+      ),
+    ).toBe(true);
+  });
+
   it("when message only mentions timeout without a DB connection phrase, ignores", () => {
     expect(isDatabaseConnectionErrorMessage("Request timeout")).toBe(false);
   });

@@ -1,14 +1,12 @@
 import type { NextRequest } from "next/server";
 import { verifyAdminFromRequest } from "src/lib/admin-helpers";
+import { readRuntimeDatabaseUrlFromEnv } from "src/lib/databaseUrlEnv";
 import { getPoolMetrics, prisma } from "src/lib/db";
 import { getAuditStats } from "src/lib/db-audit";
 import { getQueryPatterns, getQueryStats } from "src/lib/db-middleware";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 
-/**
- * Admin-only health check for debugging production issues.
- */
 export async function GET(request: NextRequest) {
   const isAdmin = await verifyAdminFromRequest(request);
 
@@ -16,17 +14,19 @@ export async function GET(request: NextRequest) {
     return privateRouteJson({ error: "Forbidden" }, { status: 403 });
   }
 
-  const databaseUrl = process.env.DATABASE_URL;
+  const runtimeDatabaseUrl = readRuntimeDatabaseUrlFromEnv();
   const diagnostics: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
-    hasDatabaseUrl: !!databaseUrl,
+    hasDatabaseUrlEnv: !!process.env.DATABASE_URL,
+    hasDatabaseUrlPooledEnv: !!process.env.DATABASE_URL_POOLED,
+    hasRuntimeDatabaseUrl: !!runtimeDatabaseUrl,
     prismaClientStatus: "unknown",
   };
 
-  if (databaseUrl) {
+  if (runtimeDatabaseUrl) {
     try {
-      diagnostics.databaseHost = new URL(databaseUrl).hostname;
+      diagnostics.databaseHost = new URL(runtimeDatabaseUrl).hostname;
     } catch {
       diagnostics.databaseHost = "invalid";
     }

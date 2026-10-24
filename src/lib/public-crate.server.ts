@@ -2,6 +2,7 @@ import { cacheLife } from "next/cache";
 import { isE2eMockYoutubeEmbedEnabled } from "src/constants/e2ePlayback.constants";
 import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/publicCrate.constants";
 import { isValidCrateId } from "src/lib/crate-id";
+import { readRuntimeDatabaseUrlFromEnv } from "src/lib/databaseUrlEnv";
 import { prisma } from "src/lib/db";
 import {
   findPublicCrateById,
@@ -13,7 +14,10 @@ export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
 export const PUBLIC_CRATE_BUILD_PRERENDER_LIMIT = 25;
 
 const publicCrateStaticParamFallbackIds = (): string[] =>
-  isE2eMockYoutubeEmbedEnabled() ? [LOGIN_DEMO_PUBLIC_CRATE_ID] : [];
+  isE2eMockYoutubeEmbedEnabled() ||
+  process.env.NEXT_PHASE === "phase-production-build"
+    ? [LOGIN_DEMO_PUBLIC_CRATE_ID]
+    : [];
 
 async function listRecentPublicCrateIds(limit: number): Promise<string[]> {
   "use cache";
@@ -32,7 +36,7 @@ async function listRecentPublicCrateIds(limit: number): Promise<string[]> {
 export async function getPublicCrateIdsForStaticGeneration(
   limit = PUBLIC_CRATE_STATIC_PARAMS_LIMIT,
 ): Promise<string[]> {
-  if (!process.env.DATABASE_URL) {
+  if (!readRuntimeDatabaseUrlFromEnv()) {
     return publicCrateStaticParamFallbackIds();
   }
 
