@@ -203,6 +203,8 @@ describe("getPublicPlaylistForOg", () => {
       name: payload.playlist.name,
       username: payload.playlist.username,
       coverThumbUrls: payload.mosaicThumbUrls.slice(0, 4),
+      trackCount: payload.tracks.length,
+      updatedAt: payload.playlist.updated_at,
     });
   });
 

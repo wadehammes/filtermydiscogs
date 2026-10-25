@@ -57,6 +57,8 @@ export async function getPublicCrateForOg(crateId: string): Promise<{
   name: string;
   username: string | null;
   coverThumbUrls: string[];
+  releaseCount: number;
+  updatedAt: string;
 } | null> {
   if (!isValidCrateId(crateId)) {
     return null;
@@ -67,12 +69,18 @@ export async function getPublicCrateForOg(crateId: string): Promise<{
     return null;
   }
 
-  const [username, coverThumbUrls] = await Promise.all([
+  const [username, coverThumbUrls, releaseCount] = await Promise.all([
     resolvePublicShareUsername(crate.user_id, crate.username),
     fetchPublicCrateCoverThumbUrls({
       userId: crate.user_id,
       crateId: crate.id,
       maxThumbs: PLAYLIST_HERO_MOSAIC_MAX_TILES,
+    }),
+    prisma.crateRelease.count({
+      where: {
+        crate_id: crate.id,
+        user_id: crate.user_id,
+      },
     }),
   ]);
 
@@ -80,6 +88,8 @@ export async function getPublicCrateForOg(crateId: string): Promise<{
     name: crate.name,
     username,
     coverThumbUrls,
+    releaseCount,
+    updatedAt: crate.updated_at.toISOString(),
   };
 }
 

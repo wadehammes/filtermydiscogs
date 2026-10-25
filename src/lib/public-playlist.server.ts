@@ -73,6 +73,8 @@ export async function getPublicPlaylistForOg(playlistId: string): Promise<{
   name: string;
   username: string | null;
   coverThumbUrls: string[];
+  trackCount: number;
+  updatedAt: string;
 } | null> {
   if (!isValidCrateId(playlistId)) {
     return null;
@@ -90,6 +92,8 @@ export async function getPublicPlaylistForOg(playlistId: string): Promise<{
       0,
       PLAYLIST_HERO_MOSAIC_MAX_TILES,
     ),
+    trackCount: payload.tracks.length,
+    updatedAt: payload.playlist.updated_at,
   };
 }
 

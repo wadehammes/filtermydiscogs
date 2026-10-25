@@ -18,6 +18,9 @@ jest.mock("src/lib/db", () => ({
     crate: {
       findMany: jest.fn(),
     },
+    crateRelease: {
+      count: jest.fn(),
+    },
   },
 }));
 
@@ -42,6 +45,9 @@ type DbModule = typeof import("src/lib/db");
 let getPublicCrateIdsForStaticGeneration: typeof import("src/lib/public-crate.server")["getPublicCrateIdsForStaticGeneration"];
 let getPublicCrateForOg: typeof import("src/lib/public-crate.server")["getPublicCrateForOg"];
 let mockFindMany: jest.MockedFunction<DbModule["prisma"]["crate"]["findMany"]>;
+let mockCrateReleaseCount: jest.MockedFunction<
+  DbModule["prisma"]["crateRelease"]["count"]
+>;
 let mockFindPublicCrateById: jest.MockedFunction<
   typeof import("src/lib/public-crate-query.server")["findPublicCrateById"]
 >;
@@ -107,15 +113,18 @@ describe("getPublicCrateForOg", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const [serverModule, queryModule, previewModule, usernameModule] =
+    const [serverModule, queryModule, previewModule, usernameModule, db] =
       await Promise.all([
         import("src/lib/public-crate.server"),
         import("src/lib/public-crate-query.server"),
         import("src/lib/crate-preview.server"),
         import("src/lib/public-share-username.server"),
+        import("src/lib/db"),
       ]);
 
     getPublicCrateForOg = serverModule.getPublicCrateForOg;
+    mockCrateReleaseCount = jest.mocked(db.prisma.crateRelease.count);
+    mockCrateReleaseCount.mockResolvedValue(8);
     mockFindPublicCrateById = jest.mocked(queryModule.findPublicCrateById);
     mockFetchPublicCrateCoverThumbUrls = jest.mocked(
       previewModule.fetchPublicCrateCoverThumbUrls,
@@ -150,6 +159,8 @@ describe("getPublicCrateForOg", () => {
         "https://example.com/1.jpg",
         "https://example.com/2.jpg",
       ],
+      releaseCount: 8,
+      updatedAt: "2026-01-02T00:00:00.000Z",
     });
   });
 
