@@ -92,13 +92,13 @@
   width: 100%;
 }
 
-.publicCrateTeaser {
+.publicSampleTeaser {
   line-height: 1.45;
   margin: 0;
   max-width: min(100%, 34rem);
 }
 
-.publicCrateLink {
+.publicSampleLink {
   color: var(--link);
   font-weight: var(--font-medium);
   text-decoration: none;

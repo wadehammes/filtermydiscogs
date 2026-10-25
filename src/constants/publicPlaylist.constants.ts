@@ -8,3 +8,9 @@ export const LOGIN_DEMO_PUBLIC_PLAYLIST_PATH =
   `/playlist/${LOGIN_DEMO_PUBLIC_PLAYLIST_ID}` as const;
 
 export const LOGIN_DEMO_PUBLIC_PLAYLIST_TITLE = "E2E Public Demo Playlist";
+
+export const HOME_SAMPLE_PUBLIC_PLAYLIST_ID =
+  "cc096211-f8c8-4121-84d0-c7019e4350f9" as const;
+
+export const HOME_SAMPLE_PUBLIC_PLAYLIST_PATH =
+  `/playlist/${HOME_SAMPLE_PUBLIC_PLAYLIST_ID}` as const;

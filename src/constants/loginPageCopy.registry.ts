@@ -14,8 +14,11 @@ export const LOGIN_PAGE_UI_COPY = {
   featuresSectionHeading: "What you can do",
   featuresSectionLede:
     "Five ways to get more from the records you already own.",
-  publicCrateLinkLabel: "Browse a shared crate",
-  publicCrateTeaserSuffix: " (no sign-in required).",
+  publicShareTeaserLead: "Listen to a ",
+  publicShareTeaserPlaylistLinkLabel: "shared playlist",
+  publicShareTeaserJoiner: " or browse a ",
+  publicShareTeaserCrateLinkLabel: "shared crate",
+  publicShareTeaserSuffix: " (no sign-in required).",
   termsPrivacyLink: "Terms & Privacy",
   finePrintFreePrefix: "Free to use (",
   finePrintSupportLink: "support is greatly appreciated",
@@ -71,13 +74,28 @@ export const getLoginPageCopyEntries = (
       source: "loginPageCopy.registry",
     },
     {
-      id: "ui.publicCrateLinkLabel",
-      text: LOGIN_PAGE_UI_COPY.publicCrateLinkLabel,
+      id: "ui.publicShareTeaserLead",
+      text: LOGIN_PAGE_UI_COPY.publicShareTeaserLead,
       source: "loginPageCopy.registry",
     },
     {
-      id: "ui.publicCrateTeaserSuffix",
-      text: LOGIN_PAGE_UI_COPY.publicCrateTeaserSuffix,
+      id: "ui.publicShareTeaserPlaylistLinkLabel",
+      text: LOGIN_PAGE_UI_COPY.publicShareTeaserPlaylistLinkLabel,
+      source: "loginPageCopy.registry",
+    },
+    {
+      id: "ui.publicShareTeaserJoiner",
+      text: LOGIN_PAGE_UI_COPY.publicShareTeaserJoiner,
+      source: "loginPageCopy.registry",
+    },
+    {
+      id: "ui.publicShareTeaserCrateLinkLabel",
+      text: LOGIN_PAGE_UI_COPY.publicShareTeaserCrateLinkLabel,
+      source: "loginPageCopy.registry",
+    },
+    {
+      id: "ui.publicShareTeaserSuffix",
+      text: LOGIN_PAGE_UI_COPY.publicShareTeaserSuffix,
       source: "loginPageCopy.registry",
     },
     {
