@@ -67,6 +67,7 @@ export const PublicShareOgImage = ({
               key={url ?? `empty-${index}`}
               style={{
                 background: "rgba(255, 255, 255, 0.06)",
+                display: "flex",
                 height: OG_COLLAGE_CELL_PX,
                 overflow: "hidden",
                 width: OG_COLLAGE_CELL_PX,
