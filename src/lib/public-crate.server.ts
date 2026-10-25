@@ -2,14 +2,14 @@ import { cacheLife, cacheTag } from "next/cache";
 import { isE2eMockYoutubeEmbedEnabled } from "src/constants/e2ePlayback.constants";
 import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/publicCrate.constants";
 import { isValidCrateId } from "src/lib/crate-id";
+import { fetchPublicCrateCoverThumbUrls } from "src/lib/crate-preview.server";
 import { readRuntimeDatabaseUrlFromEnv } from "src/lib/databaseUrlEnv";
 import { prisma } from "src/lib/db";
-import {
-  findPublicCrateById,
-  findPublicCrateSummaryById,
-} from "src/lib/public-crate-query.server";
+import { findPublicCrateById } from "src/lib/public-crate-query.server";
 import { publicCrateCacheTag } from "src/lib/public-share-cache.server";
+import { resolvePublicShareUsername } from "src/lib/public-share-username.server";
 import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
+import { PLAYLIST_HERO_MOSAIC_MAX_TILES } from "src/utils/playlistMosaic";
 
 export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
 export const PUBLIC_CRATE_BUILD_PRERENDER_LIMIT = 25;
@@ -56,12 +56,31 @@ export async function getPublicCrateIdsForStaticGeneration(
 export async function getPublicCrateForOg(crateId: string): Promise<{
   name: string;
   username: string | null;
+  coverThumbUrls: string[];
 } | null> {
   if (!isValidCrateId(crateId)) {
     return null;
   }
 
-  return findPublicCrateSummaryById(crateId);
+  const crate = await findPublicCrateById(crateId);
+  if (!crate) {
+    return null;
+  }
+
+  const [username, coverThumbUrls] = await Promise.all([
+    resolvePublicShareUsername(crate.user_id, crate.username),
+    fetchPublicCrateCoverThumbUrls({
+      userId: crate.user_id,
+      crateId: crate.id,
+      maxThumbs: PLAYLIST_HERO_MOSAIC_MAX_TILES,
+    }),
+  ]);
+
+  return {
+    name: crate.name,
+    username,
+    coverThumbUrls,
+  };
 }
 
 export async function getPublicCrateMetadataForPage(crateId: string): Promise<{

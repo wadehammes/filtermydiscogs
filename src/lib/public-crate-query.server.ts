@@ -47,18 +47,3 @@ export const findPublicCrateById = async (
 
   return crates[0] ?? null;
 };
-
-export const findPublicCrateSummaryById = async (
-  crateId: string,
-): Promise<{ name: string; username: string | null } | null> => {
-  const crate = await findPublicCrateById(crateId);
-
-  if (!crate) {
-    return null;
-  }
-
-  return {
-    name: crate.name,
-    username: crate.username,
-  };
-};

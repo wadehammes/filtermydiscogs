@@ -167,6 +167,7 @@ export const getPlaylistDetail = async (
 export type UpdatePlaylistFields = {
   name?: string;
   private?: boolean;
+  username?: string;
 };
 
 export const updatePlaylistFields = async (
@@ -174,7 +175,11 @@ export const updatePlaylistFields = async (
   playlistId: string,
   fields: UpdatePlaylistFields,
 ): Promise<boolean> => {
-  const data: { name?: string; private?: boolean } = {};
+  const data: {
+    name?: string;
+    private?: boolean;
+    username?: string | null;
+  } = {};
 
   if (fields.name !== undefined) {
     data.name = fields.name.trim();
@@ -182,6 +187,10 @@ export const updatePlaylistFields = async (
 
   if (fields.private !== undefined) {
     data.private = fields.private;
+  }
+
+  if (fields.username !== undefined) {
+    data.username = fields.username.trim() || null;
   }
 
   if (Object.keys(data).length === 0) {

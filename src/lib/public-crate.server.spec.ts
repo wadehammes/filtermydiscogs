@@ -25,10 +25,32 @@ jest.mock("src/lib/sentry/reportInfrastructureFailure", () => ({
   reportInfrastructureFailure: jest.fn(),
 }));
 
+jest.mock("src/lib/public-crate-query.server", () => ({
+  findPublicCrateById: jest.fn(),
+}));
+
+jest.mock("src/lib/crate-preview.server", () => ({
+  fetchPublicCrateCoverThumbUrls: jest.fn(),
+}));
+
+jest.mock("src/lib/public-share-username.server", () => ({
+  resolvePublicShareUsername: jest.fn(),
+}));
+
 type DbModule = typeof import("src/lib/db");
 
 let getPublicCrateIdsForStaticGeneration: typeof import("src/lib/public-crate.server")["getPublicCrateIdsForStaticGeneration"];
+let getPublicCrateForOg: typeof import("src/lib/public-crate.server")["getPublicCrateForOg"];
 let mockFindMany: jest.MockedFunction<DbModule["prisma"]["crate"]["findMany"]>;
+let mockFindPublicCrateById: jest.MockedFunction<
+  typeof import("src/lib/public-crate-query.server")["findPublicCrateById"]
+>;
+let mockFetchPublicCrateCoverThumbUrls: jest.MockedFunction<
+  typeof import("src/lib/crate-preview.server")["fetchPublicCrateCoverThumbUrls"]
+>;
+let mockResolvePublicShareUsername: jest.MockedFunction<
+  typeof import("src/lib/public-share-username.server")["resolvePublicShareUsername"]
+>;
 
 describe("getPublicCrateIdsForStaticGeneration", () => {
   beforeEach(async () => {
@@ -78,5 +100,64 @@ describe("getPublicCrateIdsForStaticGeneration", () => {
     await expect(getPublicCrateIdsForStaticGeneration(25)).resolves.toEqual([
       LOGIN_DEMO_PUBLIC_CRATE_ID,
     ]);
+  });
+});
+
+describe("getPublicCrateForOg", () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+
+    const [serverModule, queryModule, previewModule, usernameModule] =
+      await Promise.all([
+        import("src/lib/public-crate.server"),
+        import("src/lib/public-crate-query.server"),
+        import("src/lib/crate-preview.server"),
+        import("src/lib/public-share-username.server"),
+      ]);
+
+    getPublicCrateForOg = serverModule.getPublicCrateForOg;
+    mockFindPublicCrateById = jest.mocked(queryModule.findPublicCrateById);
+    mockFetchPublicCrateCoverThumbUrls = jest.mocked(
+      previewModule.fetchPublicCrateCoverThumbUrls,
+    );
+    mockResolvePublicShareUsername = jest.mocked(
+      usernameModule.resolvePublicShareUsername,
+    );
+  });
+
+  it("returns crate name, resolved username, and cover thumb urls", async () => {
+    const crateId = "11111111-2222-3333-4444-555555555555";
+    mockFindPublicCrateById.mockResolvedValue({
+      user_id: 42,
+      id: crateId,
+      name: "Gig crate",
+      username: null,
+      is_default: false,
+      private: false,
+      created_at: new Date("2026-01-01"),
+      updated_at: new Date("2026-01-02"),
+    });
+    mockResolvePublicShareUsername.mockResolvedValue("dj-crate");
+    mockFetchPublicCrateCoverThumbUrls.mockResolvedValue([
+      "https://example.com/1.jpg",
+      "https://example.com/2.jpg",
+    ]);
+
+    await expect(getPublicCrateForOg(crateId)).resolves.toEqual({
+      name: "Gig crate",
+      username: "dj-crate",
+      coverThumbUrls: [
+        "https://example.com/1.jpg",
+        "https://example.com/2.jpg",
+      ],
+    });
+  });
+
+  it("when the crate is missing, returns null", async () => {
+    mockFindPublicCrateById.mockResolvedValue(null);
+
+    await expect(
+      getPublicCrateForOg("11111111-2222-3333-4444-555555555555"),
+    ).resolves.toBeNull();
   });
 });

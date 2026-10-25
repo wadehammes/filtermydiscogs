@@ -12,6 +12,7 @@ import { findPublicPlaylistSummaryById } from "src/lib/public-playlist-query.ser
 import { publicPlaylistCacheTag } from "src/lib/public-share-cache.server";
 import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 import type { PublicPlaylistResponse } from "src/types/playlist.types";
+import { PLAYLIST_HERO_MOSAIC_MAX_TILES } from "src/utils/playlistMosaic";
 
 export const PUBLIC_PLAYLIST_BUILD_PRERENDER_LIMIT = 25;
 
@@ -71,19 +72,24 @@ export async function getPublicPlaylistIdsForStaticGeneration(
 export async function getPublicPlaylistForOg(playlistId: string): Promise<{
   name: string;
   username: string | null;
+  coverThumbUrls: string[];
 } | null> {
   if (!isValidCrateId(playlistId)) {
     return null;
   }
 
-  const summary = await findPublicPlaylistSummaryById(playlistId);
-  if (!summary) {
+  const payload = await loadPublicPlaylist(playlistId);
+  if (!payload) {
     return null;
   }
 
   return {
-    name: summary.name,
-    username: summary.username,
+    name: payload.playlist.name,
+    username: payload.playlist.username,
+    coverThumbUrls: payload.mosaicThumbUrls.slice(
+      0,
+      PLAYLIST_HERO_MOSAIC_MAX_TILES,
+    ),
   };
 }
 

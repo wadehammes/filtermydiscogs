@@ -37,6 +37,7 @@ type DbModule = typeof import("src/lib/db");
 
 let getPublicPlaylistIdsForStaticGeneration: typeof import("src/lib/public-playlist.server")["getPublicPlaylistIdsForStaticGeneration"];
 let getPublicPlaylistForPage: typeof import("src/lib/public-playlist.server")["getPublicPlaylistForPage"];
+let getPublicPlaylistForOg: typeof import("src/lib/public-playlist.server")["getPublicPlaylistForOg"];
 let mockFindMany: jest.MockedFunction<
   DbModule["prisma"]["playlist"]["findMany"]
 >;
@@ -170,5 +171,46 @@ describe("getPublicPlaylistForPage", () => {
       getPublicPlaylistForPage(payload.playlist.id),
     ).resolves.toEqual(payload);
     expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(payload.playlist.id);
+  });
+});
+
+describe("getPublicPlaylistForOg", () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+
+    const [serverModule, loadModule] = await Promise.all([
+      import("src/lib/public-playlist.server"),
+      import("src/lib/public-playlist-load.server"),
+    ]);
+    getPublicPlaylistForOg = serverModule.getPublicPlaylistForOg;
+    mockLoadPublicPlaylist = jest.mocked(loadModule.loadPublicPlaylist);
+    mockLoadPublicPlaylist.mockReset();
+  });
+
+  it("when loadPublicPlaylist succeeds, returns name, username, and up to four cover urls", async () => {
+    const payload = publicPlaylistResponseFactory.build({
+      mosaicThumbUrls: [
+        "https://i.discogs.com/0.jpg",
+        "https://i.discogs.com/1.jpg",
+        "https://i.discogs.com/2.jpg",
+        "https://i.discogs.com/3.jpg",
+        "https://i.discogs.com/4.jpg",
+      ],
+    });
+    mockLoadPublicPlaylist.mockResolvedValue(payload);
+
+    await expect(getPublicPlaylistForOg(payload.playlist.id)).resolves.toEqual({
+      name: payload.playlist.name,
+      username: payload.playlist.username,
+      coverThumbUrls: payload.mosaicThumbUrls.slice(0, 4),
+    });
+  });
+
+  it("when the playlist is missing, returns null", async () => {
+    mockLoadPublicPlaylist.mockResolvedValue(null);
+
+    await expect(
+      getPublicPlaylistForOg("11111111-2222-3333-4444-555555555555"),
+    ).resolves.toBeNull();
   });
 });

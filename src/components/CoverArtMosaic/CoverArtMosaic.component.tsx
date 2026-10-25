@@ -5,15 +5,21 @@ import Image from "next/image";
 import { playlistMosaicGridLayout } from "src/utils/playlistMosaic";
 import styles from "./CoverArtMosaic.module.css";
 
+export type CoverArtMosaicLayout = "fixed" | "fill";
+
 export interface CoverArtMosaicProps {
   thumbUrls?: string[];
   className?: string;
+  layout?: CoverArtMosaicLayout;
+  maxDisplaySize?: number;
   "aria-label"?: string;
 }
 
 export const CoverArtMosaic = ({
   thumbUrls = [],
   className,
+  layout = "fixed",
+  maxDisplaySize = 280,
   "aria-label": ariaLabel = "Cover art mosaic",
 }: CoverArtMosaicProps) => {
   if (thumbUrls.length === 0) {
@@ -28,11 +34,47 @@ export const CoverArtMosaic = ({
   }
 
   const { cols, rows, cellSize } = playlistMosaicGridLayout(thumbUrls.length);
+
+  if (layout === "fill") {
+    return (
+      <div
+        className={classNames(styles.root, styles.rootFill, className)}
+        role="img"
+        aria-label={ariaLabel}
+        data-testid="fmdCoverArtMosaic"
+      >
+        <div
+          className={classNames(styles.grid, styles.gridFill)}
+          style={{
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+          }}
+        >
+          {thumbUrls.map((url, index) => (
+            <div key={`${url}-${index}`} className={styles.cell}>
+              <Image
+                src={url}
+                alt=""
+                fill
+                className={styles.image}
+                sizes="(width >= 1024px) 256px, (width >= 768px) 144px, 50vw"
+                priority={index === 0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const gridWidth = cols * cellSize;
   const gridHeight = rows * cellSize;
   const displayCellSize = Math.max(
     8,
-    Math.floor(Math.min(280 / gridWidth, 280 / gridHeight) * cellSize),
+    Math.floor(
+      Math.min(maxDisplaySize / gridWidth, maxDisplaySize / gridHeight) *
+        cellSize,
+    ),
   );
   const displayWidth = cols * displayCellSize;
   const displayHeight = rows * displayCellSize;

@@ -1,10 +1,12 @@
 import { describe, expect, it } from "@jest/globals";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { PLAYLIST_HERO_MOSAIC_MAX_TILES } from "src/utils/playlistMosaic";
 import {
   CRATE_HUB_PREVIEW_COUNT,
   extractPreviewThumbUrl,
   groupPreviewThumbsByCrateId,
+  listCrateCoverThumbUrlsInOrder,
 } from "./crate-preview";
 
 const buildPreviewRow = (crateId: string, thumb: string) => ({
@@ -46,5 +48,24 @@ describe("crate-preview", () => {
     ]);
     expect(grouped.get("crate-b")).toEqual(["https://example.com/b1.jpg"]);
     expect(CRATE_HUB_PREVIEW_COUNT).toBe(3);
+  });
+
+  it("listCrateCoverThumbUrlsInOrder returns up to maxThumbs cover urls in row order", () => {
+    const rows = [
+      buildPreviewRow("crate-a", "https://example.com/a1.jpg"),
+      buildPreviewRow("crate-a", "https://example.com/a2.jpg"),
+      buildPreviewRow("crate-a", "https://example.com/a3.jpg"),
+      buildPreviewRow("crate-a", "https://example.com/a4.jpg"),
+      buildPreviewRow("crate-a", "https://example.com/a5.jpg"),
+    ];
+
+    expect(
+      listCrateCoverThumbUrlsInOrder(rows, PLAYLIST_HERO_MOSAIC_MAX_TILES),
+    ).toEqual([
+      "https://example.com/a1.jpg",
+      "https://example.com/a2.jpg",
+      "https://example.com/a3.jpg",
+      "https://example.com/a4.jpg",
+    ]);
   });
 });

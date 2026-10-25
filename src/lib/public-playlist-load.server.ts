@@ -3,6 +3,7 @@ import { prisma } from "src/lib/db";
 import { mapPlaylistTrackRow } from "src/lib/playlist-track-map.server";
 import { hydratePublicPlaylistReleases } from "src/lib/public-playlist-discogs.server";
 import { findPublicPlaylistById } from "src/lib/public-playlist-query.server";
+import { resolvePublicShareUsername } from "src/lib/public-share-username.server";
 import {
   toPublicPlaylistReleaseSnapshot,
   validateReleaseDataForStorage,
@@ -115,11 +116,16 @@ export const loadPublicPlaylist = async (
     releaseByInstanceId,
   });
 
+  const username = await resolvePublicShareUsername(
+    playlist.user_id,
+    playlist.username,
+  );
+
   return {
     playlist: {
       id: playlist.id,
       name: playlist.name,
-      username: playlist.username,
+      username,
       private: playlist.private,
       created_at: playlist.created_at.toISOString(),
       updated_at: playlist.updated_at.toISOString(),
