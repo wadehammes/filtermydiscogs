@@ -22,6 +22,7 @@ export const userTrackRecordBodySchema = z.object({
   track_position: z.string().min(1).max(128),
   instance_id: z.string().min(1).max(64),
   youtube_id: youtubeIdSchema,
+  discogs_release_id: z.number().int().positive().optional(),
   artist: z.string().max(500).optional(),
   release_title: z.string().max(500).optional(),
 });
@@ -34,6 +35,7 @@ export const userTrackMetadataBodySchema = z.object({
   track_position: z.string().min(1).max(128),
   instance_id: z.string().min(1).max(64),
   youtube_id: youtubeIdSchema.optional(),
+  discogs_release_id: z.number().int().positive().optional(),
   artist: z.string().max(500).optional(),
   release_title: z.string().max(500).optional(),
 });

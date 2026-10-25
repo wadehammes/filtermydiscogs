@@ -91,6 +91,9 @@ describe("PublicCrateClient", () => {
     expect(mockApi.publicCrate).toHaveBeenCalledWith(po.crateId);
     expect(mockApi.discogsCollection).not.toHaveBeenCalled();
     expect(screen.queryByText("Loading crate...")).not.toBeInTheDocument();
+    expect(screen.getByTestId("fmdPublicSharedViewBanner")).toHaveTextContent(
+      "Public crate",
+    );
   });
 
   it("settles after one fetch when mounted through the logged-out public crate gate", async () => {

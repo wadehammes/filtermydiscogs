@@ -4,7 +4,11 @@ import {
   NOW_PLAYING_REGION_LABEL,
   PLAYBACK_QUEUE_LIST_LABEL,
 } from "src/constants/accessibilityLabels.constants";
-import { e2eTrackTitle } from "src/tests/msw/e2eReleaseDetailData";
+import {
+  e2eTrackPlayButtonLabel,
+  e2eTrackRowTitle,
+  e2eTrackTitle,
+} from "src/tests/msw/e2eReleaseDetailData";
 import { createE2eDelayedReleaseByIdHandler } from "src/tests/msw/e2eReleaseHandlers";
 import {
   E2E_ALBUM_THREE,
@@ -67,7 +71,7 @@ export const expectNowPlayingTrackTitle = async (
 ) => {
   await expect(
     page.getByRole("region", { name: NOW_PLAYING_REGION_LABEL }),
-  ).toContainText(e2eTrackTitle(albumTitle), { timeout: 30_000 });
+  ).toContainText(e2eTrackRowTitle(albumTitle), { timeout: 30_000 });
 };
 
 export const startE2eAlbumTrackPlayback = async (
@@ -78,7 +82,7 @@ export const startE2eAlbumTrackPlayback = async (
   await openReleaseModalByTitle(page, albumTitle);
   await expectReleaseModalShowsE2eTracklist(page, albumTitle);
   await page
-    .getByRole("button", { name: `Play ${e2eTrackTitle(albumTitle)}` })
+    .getByRole("button", { name: e2eTrackPlayButtonLabel(albumTitle) })
     .click();
   await closeReleaseModal(page);
   await expectNowPlayingTrackTitle(page, albumTitle);

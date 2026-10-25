@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
+  toPublicPlaylistReleaseSnapshot,
   toPublicReleaseSnapshot,
   validateReleaseDataForStorage,
 } from "./release-data-validation";
@@ -62,5 +63,25 @@ describe("toPublicReleaseSnapshot", () => {
     expect(snapshot).not.toHaveProperty("notes");
     expect(snapshot).not.toHaveProperty("rating");
     expect(snapshot).not.toHaveProperty("date_added");
+  });
+});
+
+describe("toPublicPlaylistReleaseSnapshot", () => {
+  it("strips private collection fields but keeps release identity for playback", () => {
+    const release = releaseFactory.build({
+      notes: [{ field_id: 1, value: "Private note" }],
+      rating: 5,
+      date_added: "2020-01-01T00:00:00",
+      folder_id: 1,
+    });
+
+    const snapshot = toPublicPlaylistReleaseSnapshot(release);
+
+    expect(snapshot.instance_id).toBe(String(release.instance_id));
+    expect(snapshot.basic_information.id).toBe(release.basic_information.id);
+    expect(snapshot).not.toHaveProperty("notes");
+    expect(snapshot).not.toHaveProperty("rating");
+    expect(snapshot).not.toHaveProperty("date_added");
+    expect(snapshot).not.toHaveProperty("folder_id");
   });
 });

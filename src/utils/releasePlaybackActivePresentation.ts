@@ -270,6 +270,22 @@ export const shouldClearPlaybackVideoTransition = ({
   pendingPreviewVideoUri === null &&
   activeVideoId === transitionTargetVideoId;
 
+export const resolveActivePlaybackTrackTitle = ({
+  activeTrackTitle,
+  playbackTrackTitleOverride,
+}: {
+  activeTrackTitle: string | null | undefined;
+  playbackTrackTitleOverride: string | null;
+}): string | null => {
+  const override = playbackTrackTitleOverride?.trim();
+
+  if (override) {
+    return override;
+  }
+
+  return activeTrackTitle?.trim() ?? null;
+};
+
 export const resolveActivePlaybackTitle = ({
   isReleasePreview,
   previewTitle,

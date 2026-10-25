@@ -34,9 +34,9 @@ export function SettingsAccountPanel({
       <div className={styles.panelBlock}>
         <h3 className={styles.panelBlockTitle}>Complete logout</h3>
         <p className={styles.sectionDescription}>
-          Sign out and revoke stored OAuth tokens on this browser. Your crates
-          and preferences stay saved—you can sign in again with Discogs when you
-          are ready.
+          Sign out and revoke stored OAuth tokens on this browser. Your crates,
+          playlists, and preferences stay saved—you can sign in again with
+          Discogs when you are ready.
         </p>
         <div className={styles.actions}>
           <Button

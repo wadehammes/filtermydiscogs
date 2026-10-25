@@ -29,15 +29,24 @@ export const createQueueItem = ({
   release,
   trackPosition,
   trackTitle,
+  youtubeVideoId,
+  artist,
+  releaseTitle,
 }: {
   release: DiscogsRelease;
   trackPosition: string;
   trackTitle: string;
+  youtubeVideoId?: string;
+  artist?: string | null;
+  releaseTitle?: string | null;
 }): PlaybackQueueItem => ({
   instanceId: String(release.instance_id),
   trackPosition,
   trackTitle,
   release,
+  ...(youtubeVideoId?.trim() ? { youtubeVideoId: youtubeVideoId.trim() } : {}),
+  ...(artist?.trim() ? { artist: artist.trim() } : {}),
+  ...(releaseTitle?.trim() ? { releaseTitle: releaseTitle.trim() } : {}),
 });
 
 export const createPreviewQueueItem = ({

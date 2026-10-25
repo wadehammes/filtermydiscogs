@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { usePlaylistDrawerContext } from "src/components/PlaylistDrawer/PlaylistDrawer.context";
+import { PlaylistShareControls } from "src/components/PlaylistShareControls/PlaylistShareControls.component";
 import {
   SegmentedControl,
   segmentedStyles,
@@ -122,6 +123,7 @@ export const PlaylistDrawerFooter = () => {
             <PlayIcon />
           </IconButton>
         </SegmentedControl>
+        <PlaylistShareControls />
       </div>
       <ConfirmDialog
         isOpen={showDeleteDialog}

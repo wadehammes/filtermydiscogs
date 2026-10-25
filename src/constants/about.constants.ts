@@ -10,7 +10,7 @@ export const ABOUT_GITHUB_LINKS = {
 
 export const ABOUT_DATA_DELETION_ITEMS = [
   "All auth tokens and session cookies",
-  "Every crate and its release membership (permanent Postgres delete)",
+  "Every crate, playlist, and their release or track membership (permanent Postgres delete)",
   "In-app playback stats (per-track play and listen counts on our server)",
   "Saved account preferences, saved views, filter memory, and playback settings",
   "Product analytics events when analytics was enabled",

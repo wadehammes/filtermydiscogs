@@ -3,6 +3,7 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
 import type { ReleasePlaybackState } from "src/types/releasePlaybackContext.types";
 import { createQueueItem, getQueueItemKey } from "src/utils/playbackQueue";
+import { buildStubReleaseForPlaylistTrack } from "src/utils/playlistTrackStubRelease";
 import { findReleaseByInstanceId } from "src/utils/releaseNotes";
 
 export const orderPlaylistTracks = (
@@ -184,16 +185,25 @@ export const resolvePlaylistTrackToQueueItem = (
   track: PlaylistTrackRow,
   releases: DiscogsRelease[],
 ): PlaybackQueueItem | null => {
-  const release = findReleaseByInstanceId(releases, track.instance_id);
+  const resolvedRelease =
+    findReleaseByInstanceId(releases, track.instance_id) ??
+    buildStubReleaseForPlaylistTrack(track);
 
-  if (!release) {
+  if (!resolvedRelease) {
     return null;
   }
+
+  const release = resolvedRelease;
+
+  const youtubeVideoId = resolvePlaylistTrackYoutubeOverride(track);
 
   return createQueueItem({
     release,
     trackPosition: track.track_position,
     trackTitle: track.track_title,
+    artist: track.artist,
+    releaseTitle: track.release_title,
+    ...(youtubeVideoId ? { youtubeVideoId } : {}),
   });
 };
 

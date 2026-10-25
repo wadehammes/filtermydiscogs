@@ -33,6 +33,8 @@ describe("getPublicCommunityStats", () => {
       {
         totalCrates: BigInt(10),
         totalPublicCrates: BigInt(3),
+        totalPlaylists: BigInt(8),
+        totalPublicPlaylists: BigInt(2),
         totalReleases: BigInt(100),
         totalTracksSaved: BigInt(7),
         totalCollectors: BigInt(4),
@@ -43,6 +45,8 @@ describe("getPublicCommunityStats", () => {
     await expect(getPublicCommunityStats()).resolves.toEqual({
       totalCrates: 10,
       totalPublicCrates: 3,
+      totalPlaylists: 8,
+      totalPublicPlaylists: 2,
       totalReleases: 100,
       totalTracksSaved: 7,
       totalCollectors: 4,

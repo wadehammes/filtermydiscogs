@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { RELEASE_TRACKLIST_LABEL } from "src/constants/accessibilityLabels.constants";
-import { e2eTrackTitle } from "src/tests/msw/e2eReleaseDetailData";
+import { e2eTrackPlayButtonLabel } from "src/tests/msw/e2eReleaseDetailData";
 
 const waitForReleaseDetailFetch = (page: Page) =>
   page.waitForResponse(
@@ -50,7 +50,7 @@ export const expectReleaseModalShowsE2eTracklist = async (
     timeout: 30_000,
   });
   await expect(
-    page.getByRole("button", { name: `Play ${e2eTrackTitle(albumTitle)}` }),
+    page.getByRole("button", { name: e2eTrackPlayButtonLabel(albumTitle) }),
   ).toBeVisible({
     timeout: 30_000,
   });

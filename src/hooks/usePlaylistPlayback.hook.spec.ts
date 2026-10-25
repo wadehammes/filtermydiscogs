@@ -79,11 +79,10 @@ describe("usePlaylistPlayback", () => {
         trackPosition: "A1",
         rebuildAlbumQueue: false,
         startPaused: false,
+        upcomingQueue: [expect.objectContaining({ trackPosition: "A2" })],
       }),
     );
-    expect(mockReplaceUpcomingQueue).toHaveBeenCalledWith([
-      expect.objectContaining({ trackPosition: "A2" }),
-    ]);
+    expect(mockReplaceUpcomingQueue).not.toHaveBeenCalled();
     expect(mockAddToQueue).not.toHaveBeenCalled();
   });
 
@@ -114,11 +113,10 @@ describe("usePlaylistPlayback", () => {
       expect.objectContaining({
         trackPosition: "A2",
         rebuildAlbumQueue: false,
+        upcomingQueue: [expect.objectContaining({ trackPosition: "A3" })],
       }),
     );
-    expect(mockReplaceUpcomingQueue).toHaveBeenCalledWith([
-      expect.objectContaining({ trackPosition: "A3" }),
-    ]);
+    expect(mockReplaceUpcomingQueue).not.toHaveBeenCalled();
   });
 
   it("syncPlaylistQueueToTrackOrder replaces the upcoming queue when it no longer matches playlist order", () => {

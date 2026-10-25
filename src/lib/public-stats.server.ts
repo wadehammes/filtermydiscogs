@@ -5,6 +5,8 @@ import type { PublicCommunityStats } from "src/types/public-stats.types";
 type PublicCommunityStatsRow = {
   totalCrates: bigint;
   totalPublicCrates: bigint;
+  totalPlaylists: bigint;
+  totalPublicPlaylists: bigint;
   totalReleases: bigint;
   totalTracksSaved: bigint;
   totalCollectors: bigint;
@@ -16,6 +18,8 @@ const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
     SELECT
       (SELECT COUNT(*)::bigint FROM "crates") AS "totalCrates",
       (SELECT COUNT(*)::bigint FROM "crates" WHERE private = false) AS "totalPublicCrates",
+      (SELECT COUNT(*)::bigint FROM "playlists") AS "totalPlaylists",
+      (SELECT COUNT(*)::bigint FROM "playlists" WHERE private = false) AS "totalPublicPlaylists",
       (SELECT COUNT(*)::bigint FROM "crate_releases") AS "totalReleases",
       (SELECT COUNT(*)::bigint FROM "user_tracks" WHERE youtube_id IS NOT NULL) AS "totalTracksSaved",
       (SELECT COUNT(DISTINCT user_id)::bigint FROM "crates") AS "totalCollectors",
@@ -27,6 +31,8 @@ const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
       totalCollectors: 0,
       totalCrates: 0,
       totalPublicCrates: 0,
+      totalPlaylists: 0,
+      totalPublicPlaylists: 0,
       totalReleases: 0,
       totalTracksSaved: 0,
       totalTrackPlays: 0,
@@ -37,6 +43,8 @@ const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
     totalCollectors: Number(row.totalCollectors),
     totalCrates: Number(row.totalCrates),
     totalPublicCrates: Number(row.totalPublicCrates),
+    totalPlaylists: Number(row.totalPlaylists),
+    totalPublicPlaylists: Number(row.totalPublicPlaylists),
     totalReleases: Number(row.totalReleases),
     totalTracksSaved: Number(row.totalTracksSaved),
     totalTrackPlays: Number(row.totalTrackPlays),

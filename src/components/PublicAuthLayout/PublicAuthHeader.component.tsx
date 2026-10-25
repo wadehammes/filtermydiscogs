@@ -17,12 +17,12 @@ export const PublicAuthHeader = ({
     state: { isAuthenticated },
   } = useAuth();
 
-  if (isAuthenticated && authenticatedNavPage) {
+  if (isAuthenticated) {
     return (
       <StickyHeaderBar
         allReleasesLoaded={true}
         hideFilters={true}
-        currentPage={authenticatedNavPage}
+        {...(authenticatedNavPage ? { currentPage: authenticatedNavPage } : {})}
       />
     );
   }

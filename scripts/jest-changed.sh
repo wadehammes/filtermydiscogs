@@ -64,11 +64,16 @@ while IFS= read -r path; do
   esac
 
   if [[ "$path" == *.spec.ts || "$path" == *.spec.tsx ]]; then
-    jest_targets+=("$path")
+    if [ -f "$ROOT/$path" ]; then
+      jest_targets+=("$path")
+    fi
     continue
   fi
 
   if is_src_ts_file "$path"; then
+    if [ ! -f "$ROOT/$path" ]; then
+      continue
+    fi
     if [[ "$path" == *.types.ts ]]; then
       continue
     fi

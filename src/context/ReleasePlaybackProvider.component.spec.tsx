@@ -21,6 +21,7 @@ const idlePlaybackState: ReleasePlaybackState = {
   embedVideoId: null,
   playbackVideoId: null,
   activePlaybackTitle: null,
+  activePlaybackArtist: null,
   isReleasePreview: false,
   isPlaying: false,
   isPaused: false,

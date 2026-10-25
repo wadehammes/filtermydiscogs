@@ -12,8 +12,11 @@ export const LOGIN_PAGE_COPY_BANNED_PHRASES = [
   "notes visible on public",
   "with your notes visible",
   "on public crate pages when",
+  "on public playlist pages when",
   "shown on public crate pages",
+  "shown on public playlist pages",
   "public crate pages when shareable",
+  "public playlist pages when shareable",
   "notes appear on public",
   "your notes visible on the page",
 ] as const;

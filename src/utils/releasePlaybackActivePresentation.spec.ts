@@ -8,6 +8,7 @@ import {
   doesPlaybackVideoUiLoadingTargetMatch,
   isEmbedAlignedForLoadingPlaybackConfirm,
   resolveActivePlaybackTitle,
+  resolveActivePlaybackTrackTitle,
   resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
   resolveActiveVideoId,
@@ -382,6 +383,24 @@ describe("releasePlaybackActivePresentation", () => {
         trackTitle: "Track one",
       }),
     ).toBe("Full album");
+  });
+
+  it("resolveActivePlaybackTrackTitle prefers the queue item title override while the tracklist index is stale", () => {
+    expect(
+      resolveActivePlaybackTrackTitle({
+        activeTrackTitle: "Gaia",
+        playbackTrackTitleOverride: "Moodita",
+      }),
+    ).toBe("Moodita");
+  });
+
+  it("resolveActivePlaybackTrackTitle falls back to the resolved tracklist title when no override is set", () => {
+    expect(
+      resolveActivePlaybackTrackTitle({
+        activeTrackTitle: "Gaia",
+        playbackTrackTitleOverride: null,
+      }),
+    ).toBe("Gaia");
   });
 
   it("resolveActiveTrackPosition hides track position during preview playback", () => {

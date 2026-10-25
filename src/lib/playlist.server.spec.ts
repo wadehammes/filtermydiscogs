@@ -142,6 +142,7 @@ describe("listPlaylistsForUser", () => {
       playlistSummaryFactory.build({
         id: listRow.id,
         name: listRow.name,
+        private: listRow.private,
         trackCount: listRow._count.tracks,
         created_at: listRow.created_at.toISOString(),
         updated_at: listRow.updated_at.toISOString(),
@@ -169,6 +170,7 @@ describe("listPlaylistsForUser", () => {
       playlistSummaryFactory.build({
         id: listRow.id,
         name: listRow.name,
+        private: listRow.private,
         trackCount: listRow._count.tracks,
         created_at: listRow.created_at.toISOString(),
         updated_at: listRow.updated_at.toISOString(),
@@ -195,6 +197,7 @@ describe("getPlaylistDetail", () => {
     mockPlaylistFindUnique.mockResolvedValue({
       id: PLAYLIST_ID,
       name: "Sunday",
+      private: false,
       created_at: new Date("2026-10-01T00:00:00.000Z"),
       updated_at: new Date("2026-10-02T00:00:00.000Z"),
       tracks: [
@@ -208,6 +211,7 @@ describe("getPlaylistDetail", () => {
             artist: trackRow.artist,
             release_title: trackRow.release_title,
             youtube_id: trackRow.youtube_id,
+            discogs_release_id: trackRow.discogs_release_id,
           },
         },
       ],

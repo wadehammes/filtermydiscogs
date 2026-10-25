@@ -1,13 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "src/lib/db";
+import { mapPlaylistTrackRow } from "src/lib/playlist-track-map.server";
 import { ensureUserTrackMetadata } from "src/lib/user-track.server";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
-import type {
-  PlaylistDetail,
-  PlaylistSummary,
-  PlaylistTrackRow,
-} from "src/types/playlist.types";
+import type { PlaylistDetail, PlaylistSummary } from "src/types/playlist.types";
 
 const playlistWhere = (userId: number, playlistId: string) => ({
   user_id_id: { user_id: userId, id: playlistId },
@@ -30,6 +27,7 @@ const toIso = (date: Date) => date.toISOString();
 type PlaylistSummaryRow = {
   id: string;
   name: string;
+  private: boolean;
   created_at: Date;
   updated_at: Date;
   _count: { tracks: number };
@@ -44,6 +42,7 @@ const mapPlaylistSummaryRow = (
     id: row.id,
     name: row.name,
     trackCount: row._count.tracks,
+    private: row.private,
     created_at: toIso(row.created_at),
     updated_at: toIso(row.updated_at),
   };
@@ -74,6 +73,7 @@ export const listPlaylistsForUser = async (
     select: {
       id: true,
       name: true,
+      private: true,
       created_at: true,
       updated_at: true,
       _count: { select: { tracks: true } },
@@ -107,6 +107,7 @@ export const createPlaylist = async (
     select: {
       id: true,
       name: true,
+      private: true,
       created_at: true,
       updated_at: true,
       _count: { select: { tracks: true } },
@@ -115,28 +116,6 @@ export const createPlaylist = async (
 
   return mapPlaylistSummaryRow(row);
 };
-
-const mapPlaylistTrackRow = (row: {
-  sort_order: number;
-  track_key: string;
-  user_track: {
-    track_title: string;
-    track_position: string;
-    instance_id: string;
-    artist: string | null;
-    release_title: string | null;
-    youtube_id: string | null;
-  };
-}): PlaylistTrackRow => ({
-  track_key: row.track_key,
-  sort_order: row.sort_order,
-  track_title: row.user_track.track_title,
-  track_position: row.user_track.track_position,
-  instance_id: row.user_track.instance_id,
-  artist: row.user_track.artist,
-  release_title: row.user_track.release_title,
-  youtube_id: row.user_track.youtube_id,
-});
 
 export const getPlaylistDetail = async (
   userId: number,
@@ -147,6 +126,7 @@ export const getPlaylistDetail = async (
     select: {
       id: true,
       name: true,
+      private: true,
       created_at: true,
       updated_at: true,
       tracks: {
@@ -162,6 +142,7 @@ export const getPlaylistDetail = async (
               artist: true,
               release_title: true,
               youtube_id: true,
+              discogs_release_id: true,
             },
           },
         },
@@ -176,21 +157,41 @@ export const getPlaylistDetail = async (
   return {
     id: playlist.id,
     name: playlist.name,
+    private: playlist.private,
     created_at: toIso(playlist.created_at),
     updated_at: toIso(playlist.updated_at),
     tracks: playlist.tracks.map(mapPlaylistTrackRow),
   };
 };
 
-export const updatePlaylistName = async (
+export type UpdatePlaylistFields = {
+  name?: string;
+  private?: boolean;
+};
+
+export const updatePlaylistFields = async (
   userId: number,
   playlistId: string,
-  name: string,
+  fields: UpdatePlaylistFields,
 ): Promise<boolean> => {
+  const data: { name?: string; private?: boolean } = {};
+
+  if (fields.name !== undefined) {
+    data.name = fields.name.trim();
+  }
+
+  if (fields.private !== undefined) {
+    data.private = fields.private;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return true;
+  }
+
   try {
     await prisma.playlist.update({
       where: playlistWhere(userId, playlistId),
-      data: { name: name.trim() },
+      data,
     });
     return true;
   } catch (error) {

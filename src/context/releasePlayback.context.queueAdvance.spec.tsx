@@ -4,6 +4,7 @@ import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
+import { createQueueItem } from "src/utils/playbackQueue";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
   loadAndPlayYoutubeVideo,
@@ -442,6 +443,49 @@ describe("ReleasePlaybackProvider — queue advance", () => {
     expect(result.current.isPlaying).toBe(true);
     expect(result.current.shouldAutoplayEmbed).toBe(true);
     expect(result.current.queue).toHaveLength(0);
+  });
+
+  it("playNext uses queue item YouTube id and UserTrack artist for mini-player metadata", async () => {
+    setupCollectionAndShortReleaseApiMock();
+
+    const mooditaItem = createQueueItem({
+      release: shortCollectionRelease,
+      trackPosition: "1",
+      trackTitle: "Moodita",
+      youtubeVideoId: "moodita-yt-id",
+      artist: "D I N",
+    });
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease, shortCollectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+        trackTitle: "Gaia",
+        youtubeVideoId: "gaia-yt-id",
+        artist: "Janeret & Miroloja",
+        rebuildAlbumQueue: false,
+        upcomingQueue: [mooditaItem],
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activePlaybackTitle).toBe("A1 - Gaia");
+      expect(result.current.activePlaybackArtist).toBe("Janeret & Miroloja");
+    });
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activePlaybackTitle).toBe("1 - Moodita");
+      expect(result.current.activePlaybackArtist).toBe("D I N");
+      expect(result.current.embedVideoId).toBe("moodita-yt-id");
+    });
   });
 
   it("advances through a cross-release queue with playNext", async () => {

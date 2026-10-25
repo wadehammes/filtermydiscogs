@@ -68,6 +68,10 @@ import {
   PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
 } from "src/utils/playbackEmbedUnavailableSkip";
 import { buildCurrentQueueItem } from "src/utils/playbackQueue";
+import {
+  isQueueItemTrackTitlePlaceholder,
+  resolvePlaybackPresentationFromQueueItem,
+} from "src/utils/playbackQueuePresentation";
 import { isQueueItemReplayOfActiveSession } from "src/utils/playbackQueueReplay";
 import {
   getSessionRelease,
@@ -87,6 +91,7 @@ import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToa
 import { requestYoutubeEmbedPlaybackSync } from "src/utils/postYoutubePlayerCommand";
 import {
   resolveActivePlaybackTitle,
+  resolveActivePlaybackTrackTitle,
   resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
   resolveActiveVideoId,
@@ -105,6 +110,7 @@ import {
 } from "src/utils/releasePlaybackEmbedConfirm";
 import { createPlaybackEndedAdvanceHandler } from "src/utils/releasePlaybackEndedAdvance";
 import { shouldDeferEmbedStartWatchdogUntilAfterTabVisibleRecovery } from "src/utils/releasePlaybackHiddenTabTransport";
+import { resolveIsQueueBuilding } from "src/utils/releasePlaybackPendingResolution";
 import { resolvePlaybackSkipSentryDetails } from "src/utils/resolvePlaybackSkipSentryDetails";
 import type { PlaybackEmbedSessionRefTarget } from "src/utils/syncPlaybackEmbedSessionRefs";
 import { syncPlaybackSessionRefs } from "src/utils/syncPlaybackSessionRefs";
@@ -113,7 +119,7 @@ import {
   mergeTrackStatsFromQueryCache,
   resolveActiveTrackHasYoutubeOverride,
 } from "src/utils/trackStatsQueryCache";
-import { buildTrackKey } from "src/utils/userTrack";
+import { buildTrackKey, formatTrackPositionTitle } from "src/utils/userTrack";
 import { recordTrackPlayFromQueueItem } from "src/utils/userTrackRecording";
 
 export const useReleasePlaybackProvider = (): {
@@ -167,6 +173,11 @@ export const useReleasePlaybackProvider = (): {
     useState<string | null>(null);
   const [isPlaybackVideoUiLoading, setIsPlaybackVideoUiLoading] =
     useState(false);
+  const [playbackTrackTitleOverride, setPlaybackTrackTitleOverride] = useState<
+    string | null
+  >(null);
+  const [nowPlayingQueueItem, setNowPlayingQueueItem] =
+    useState<PlaybackQueueItem | null>(null);
   const isPlaybackVideoUiLoadingRef = useRef(false);
   const playbackVideoTransitionTargetIdRef = useRef<string | null>(null);
   const playbackVideoUiLoadingTargetVideoIdRef = useRef<string | null>(null);
@@ -599,11 +610,27 @@ export const useReleasePlaybackProvider = (): {
     ],
   );
 
+  const nowPlayingPresentation =
+    nowPlayingQueueItem &&
+    !isQueueItemTrackTitlePlaceholder(nowPlayingQueueItem)
+      ? resolvePlaybackPresentationFromQueueItem(nowPlayingQueueItem)
+      : null;
+
   const activePlaybackTitle = resolveActivePlaybackTitle({
     isReleasePreview,
     previewTitle: activeVideo?.title ?? null,
-    trackTitle: activeTrack?.title ?? null,
+    trackTitle:
+      nowPlayingPresentation?.trackTitle ??
+      resolveActivePlaybackTrackTitle({
+        activeTrackTitle:
+          activeTrack?.title && activeTrack.position
+            ? formatTrackPositionTitle(activeTrack.position, activeTrack.title)
+            : activeTrack?.title,
+        playbackTrackTitleOverride,
+      }),
   });
+
+  const activePlaybackArtist = nowPlayingPresentation?.artistLabel ?? null;
 
   const isMiniPlayerVisible = selectIsMiniPlayerVisible(session);
 
@@ -1243,6 +1270,8 @@ export const useReleasePlaybackProvider = (): {
     removeAlbumTracksFromQueue,
   } = useReleasePlaybackQueueActions({
     dispatchSession,
+    setNowPlayingQueueItem,
+    setPlaybackTrackTitleOverride,
     setShouldAutoplayEmbed,
     setIsPlaybackEmbedMounted,
     setPlaybackVideoTransitionTargetId:
@@ -1408,8 +1437,13 @@ export const useReleasePlaybackProvider = (): {
     startPlaybackRef,
   });
 
-  const isQueueBuilding =
-    isSimilarQueueLoading || pendingTrackPosition !== null;
+  const isQueueBuilding = resolveIsQueueBuilding({
+    isSimilarQueueLoading,
+    pendingTrackPosition,
+    releaseId,
+    isReleaseDetailLoading: isLoading,
+    tracksLength: tracks.length,
+  });
 
   const stateValue = useMemo(
     (): ReleasePlaybackState => ({
@@ -1426,6 +1460,7 @@ export const useReleasePlaybackProvider = (): {
       embedVideoId,
       playbackVideoId,
       activePlaybackTitle,
+      activePlaybackArtist,
       isReleasePreview,
       isPlaying,
       isPaused,
@@ -1454,6 +1489,7 @@ export const useReleasePlaybackProvider = (): {
       embedVideoId,
       playbackVideoId,
       activePlaybackTitle,
+      activePlaybackArtist,
       isReleasePreview,
       isPlaying,
       isPaused,

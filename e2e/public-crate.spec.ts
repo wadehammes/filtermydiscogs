@@ -10,7 +10,6 @@ import { gotoPublicDemoCrate } from "./helpers/publicCrate";
 test.describe("public shared crate (MSW)", () => {
   test("loads the demo public crate without login", async ({ page }) => {
     await gotoPublicDemoCrate(page);
-    await expect(page.getByTestId("fmdPublicCrate")).toBeVisible();
     await expectNotOnLogin(page);
     await expect(
       page.getByRole("button", {

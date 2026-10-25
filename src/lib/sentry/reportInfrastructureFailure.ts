@@ -7,7 +7,8 @@ import { shouldCaptureInfrastructureFailure } from "src/lib/sentry/shouldCapture
 export type InfrastructureFailureArea =
   | "database"
   | "admin_stats"
-  | "public_crate";
+  | "public_crate"
+  | "public_playlist";
 
 const throttledReportKeys = new Map<string, number>();
 

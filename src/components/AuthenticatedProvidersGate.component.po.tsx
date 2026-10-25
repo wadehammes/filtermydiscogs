@@ -1,3 +1,4 @@
+import { PathnameContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { AuthenticatedProvidersGate } from "src/components/AuthenticatedProvidersGate.component";
 import type { AuthState } from "src/context/auth.context";
 import {
@@ -14,6 +15,7 @@ import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 
 const mockUsePathname = jest.fn(() => "/");
+let gatePathnameContextValue = "/";
 
 jest.mock("next/navigation", () => ({
   ...jest.requireActual<typeof import("next/navigation")>("next/navigation"),
@@ -28,7 +30,6 @@ export type AuthenticatedProvidersGateRenderProps = {
 };
 
 export class AuthenticatedProvidersGatePageObject extends BasePageObject {
-  readonly playbackShellTestId = "fmdPlaybackProvidersShell";
   readonly authenticatedDynamicTestId = "fmdAuthenticatedProvidersDynamic";
   readonly childProbeTestId = "fmdAuthenticatedProvidersGateChild";
 
@@ -37,6 +38,7 @@ export class AuthenticatedProvidersGatePageObject extends BasePageObject {
   }
 
   setPathname(pathname: string): void {
+    gatePathnameContextValue = pathname;
     mockUsePathname.mockReturnValue(pathname);
   }
 
@@ -49,9 +51,11 @@ export class AuthenticatedProvidersGatePageObject extends BasePageObject {
       overrides.authInitialState ?? testUnauthenticatedAuthState;
 
     return render(
-      <AuthenticatedProvidersGate>
-        <div data-testid={this.childProbeTestId}>child</div>
-      </AuthenticatedProvidersGate>,
+      <PathnameContext.Provider value={gatePathnameContextValue}>
+        <AuthenticatedProvidersGate>
+          <div data-testid={this.childProbeTestId}>child</div>
+        </AuthenticatedProvidersGate>
+      </PathnameContext.Provider>,
       {
         wrapper: ({ children }) => (
           <TestProviders

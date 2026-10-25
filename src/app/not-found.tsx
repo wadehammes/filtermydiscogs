@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PRIVATE_PAGE_ROBOTS } from "src/constants/siteMetadata";
 import styles from "src/styles/modules/error-boundary.module.css";
 
 export const metadata: Metadata = {
   title: "Page not found",
   description: "The page you requested does not exist.",
+  robots: PRIVATE_PAGE_ROBOTS,
 };
 
 export default function NotFound() {

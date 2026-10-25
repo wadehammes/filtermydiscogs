@@ -17,7 +17,7 @@ class PlaylistSummaryFactory extends BaseFactory<
     const created = faker.date.past();
     const updated = faker.date.between({ from: created, to: new Date() });
 
-    const instance = {
+    const base = {
       id: faker.string.uuid(),
       name: faker.helpers.arrayElement([
         "Sunday spins",
@@ -28,14 +28,17 @@ class PlaylistSummaryFactory extends BaseFactory<
       trackCount: faker.number.int({ min: 0, max: 40 }),
       created_at: created.toISOString(),
       updated_at: updated.toISOString(),
-    } satisfies PlaylistSummary;
-
-    const factoryBuilt = mergeFactoryAttributes(instance, attributes);
+    } satisfies Omit<PlaylistSummary, "containsTrack" | "private">;
 
     const _allKeysMustBeInTheInstance: KeysMatch<
-      Omit<PlaylistSummary, "containsTrack">,
-      typeof instance
+      Omit<PlaylistSummary, "containsTrack" | "private">,
+      typeof base
     > = undefined;
+
+    const factoryBuilt = mergeFactoryAttributes(
+      { ...base, private: true },
+      attributes,
+    );
 
     return factoryBuilt;
   }

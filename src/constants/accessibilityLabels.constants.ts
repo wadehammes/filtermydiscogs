@@ -2,6 +2,8 @@ export const SIGN_IN_REGION_LABEL = "Sign in";
 
 export const PUBLIC_SHARED_CRATE_MAIN_LABEL = "Public shared crate";
 
+export const PUBLIC_SHARED_PLAYLIST_MAIN_LABEL = "Public shared playlist";
+
 export const NOW_PLAYING_REGION_LABEL = "Now playing";
 
 export const PLAYBACK_QUEUE_LIST_LABEL = "Playback queue";

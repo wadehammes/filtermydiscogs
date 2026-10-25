@@ -28,8 +28,10 @@ const metadataFromTrackFields = (
     | "instance_id"
     | "artist"
     | "release_title"
+    | "discogs_release_id"
   > & {
     youtube_id?: string | null | undefined;
+    discogs_release_id?: number | null | undefined;
   },
   now: Date,
 ) => ({
@@ -40,6 +42,9 @@ const metadataFromTrackFields = (
   ...(body.artist !== undefined ? { artist: body.artist } : {}),
   ...(body.release_title !== undefined
     ? { release_title: body.release_title }
+    : {}),
+  ...(body.discogs_release_id !== undefined
+    ? { discogs_release_id: body.discogs_release_id }
     : {}),
   updated_at: now,
 });

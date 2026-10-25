@@ -1,0 +1,125 @@
+.trackRow {
+  align-items: center;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  min-width: 0;
+  padding-block: var(--space-2);
+  width: 100%;
+}
+
+.indexCell {
+  padding-inline: var(--space-3) var(--space-2);
+}
+
+.trackPlayButton {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.trackTitleLayout {
+  @media (width >= 1024px) {
+    align-items: baseline;
+    flex-direction: row;
+    gap: var(--space-3);
+  }
+}
+
+.trackTitlePrimary {
+  @media (width >= 1024px) {
+    flex-shrink: 0;
+  }
+}
+
+.trackMetaGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+
+  @media (width >= 1024px) {
+    align-items: baseline;
+    flex-direction: row;
+    flex-shrink: 1;
+    gap: var(--space-2);
+  }
+}
+
+.artworkButton {
+  align-self: center;
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  font: inherit;
+  margin-inline: var(--space-2);
+  padding: 0;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.artworkImage {
+  border-radius: var(--radius-ui);
+  display: block;
+  height: 3.5rem;
+  object-fit: cover;
+  width: 3.5rem;
+}
+
+.artworkPlaceholder {
+  background: var(--muted);
+  border-radius: var(--radius-ui);
+  display: block;
+  height: 3.5rem;
+  width: 3.5rem;
+}
+
+.playbackTrailing {
+  justify-content: center;
+  min-width: 2rem;
+  padding-inline: var(--space-2) var(--space-3);
+}
+
+.playbackControlButton {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.75rem;
+  justify-content: center;
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+  width: 1.75rem;
+
+  svg {
+    display: block;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--foreground) 8%, transparent);
+    color: var(--foreground);
+  }
+}

@@ -3,6 +3,7 @@ import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import {
   findPendingPreviewVideo,
   isPlaybackReleaseDetailSynced,
+  resolveIsQueueBuilding,
   shouldApplyPendingAlbumQueueRebuild,
   shouldClearTransportForMissingVideo,
   shouldResetActiveTrackIndex,
@@ -127,6 +128,44 @@ describe("releasePlaybackPendingResolution", () => {
           pendingTrackPosition: "A1",
         }),
       ).toBe(false);
+    });
+  });
+
+  describe("resolveIsQueueBuilding", () => {
+    it("is false when pending track position is set but the release has no Discogs id", () => {
+      expect(
+        resolveIsQueueBuilding({
+          isSimilarQueueLoading: false,
+          pendingTrackPosition: "A1",
+          releaseId: null,
+          isReleaseDetailLoading: false,
+          tracksLength: 0,
+        }),
+      ).toBe(false);
+    });
+
+    it("is true while release detail is loading for a pending album track", () => {
+      expect(
+        resolveIsQueueBuilding({
+          isSimilarQueueLoading: false,
+          pendingTrackPosition: "A1",
+          releaseId: 42,
+          isReleaseDetailLoading: true,
+          tracksLength: 0,
+        }),
+      ).toBe(true);
+    });
+
+    it("is true when similar queue tail is loading", () => {
+      expect(
+        resolveIsQueueBuilding({
+          isSimilarQueueLoading: true,
+          pendingTrackPosition: null,
+          releaseId: null,
+          isReleaseDetailLoading: false,
+          tracksLength: 0,
+        }),
+      ).toBe(true);
     });
   });
 

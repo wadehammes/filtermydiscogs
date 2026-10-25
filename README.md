@@ -12,10 +12,10 @@ A web application to filter and explore your Discogs collection, including vinyl
 - **Sorting & views**: Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
 - **In-app playback**: Preview tracks from a persistent mini player and queue while you browse; set or change a **YouTube link per track** on your collection copy when Discogs has no embed or you want a different upload; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
-- **Playlists** (progressive rollout): Save cross-release track lists; manage, reorder, and play from the Releases side panel (Crates | Playlists toggle when enabled); mix with the queue by adding tracks from release tracklists (per-track menus or **Add all to…** for queue and playlists)
+- **Playlists** (progressive rollout): Save cross-release track lists; manage, reorder, and play from the Releases side panel (Crates | Playlists toggle when enabled); share a public link; mix with the queue by adding tracks from release tracklists (per-track menus or **Add all to…** for queue and playlists)
 - **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link — same Releases side panel as playlists
 - **Collection insights**: Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
-- **Mosaic generator**: Browse cover-art grids from your collection (click any tile for release details); export as JPEG or PNG
+- **Mosaic generator**: Browse cover-art grids from your collection, crates, or playlists (click any tile for release details); export as JPEG or PNG
 - **Settings**: Theme (light / dark / system), default Releases side panel (crates or playlists), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, analytics consent, and clear stored data
 - **Responsive UI**: Desktop sidebar for crates/playlists on Releases, mobile drawers, and touch-friendly filters; fast route transitions on authenticated pages (Next.js instant navigation)
 - **Discogs outage notice**: When Discogs is down you stay signed in, see a notice with a link to [Discogs status](https://status.discogs.com), and your collection loads once Discogs is back
@@ -130,25 +130,26 @@ The app will be available at `http://localhost:6767`.
 1. Click **Connect with Discogs** on the home page and authorize the app
 2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, preview tracks, queue or playlist actions from track menus, bulk **Add all to…** (queue or playlists) from the tracklist toolbar, and set per-track YouTube links when needed
 3. On **Releases**, use the side panel — **Crates** always; **Playlists** when your deployment has them enabled — stage picks in the crate drawer, or create playlists and add tracks from release tracklist menus
-4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); play or edit playlist tracks from the playlists panel on Releases
+4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Releases
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
 6. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu
 
 ## Pages
 
-| Path           | Purpose                                                                  |
-| -------------- | ------------------------------------------------------------------------ |
-| `/`            | Public landing / login                                                   |
-| `/releases`    | Browse, filter, sort collection; crates/playlists side panel             |
-| `/crates`      | Crate hub (your crates)                                                  |
-| `/crates/[id]` | Owner crate workspace                                                    |
-| `/crate/[id]`  | Public shared crate (no login)                                           |
-| `/dashboard`   | Collection analytics                                                     |
-| `/mosaic`      | Cover-art mosaic grid (click tiles for release details; export download) |
-| `/settings`    | Theme, sync, data preferences                                            |
-| `/about`       | About, optional donations (Stripe), clear data                           |
-| `/legal`       | Terms of Service and Privacy Policy                                      |
-| `/admin`       | Admin stats (requires `ADMIN_USER_ID`)                                   |
+| Path             | Purpose                                                                  |
+| ---------------- | ------------------------------------------------------------------------ |
+| `/`              | Public landing / login                                                   |
+| `/releases`      | Browse, filter, sort collection; crates/playlists side panel             |
+| `/crates`        | Crate hub (your crates)                                                  |
+| `/crates/[id]`   | Owner crate workspace                                                    |
+| `/crate/[id]`    | Public shared crate (no login)                                           |
+| `/playlist/[id]` | Public shared playlist (no login)                                        |
+| `/dashboard`     | Collection analytics                                                     |
+| `/mosaic`        | Cover-art mosaic grid (click tiles for release details; export download) |
+| `/settings`      | Theme, sync, data preferences                                            |
+| `/about`         | About, optional donations (Stripe), clear data                           |
+| `/legal`         | Terms of Service and Privacy Policy                                      |
+| `/admin`         | Admin stats (requires `ADMIN_USER_ID`)                                   |
 
 ## Tech Stack
 

@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 import { E2E_PLAYLIST_NAME } from "src/tests/msw/e2ePlaylist.constants";
-import { e2eTrackTitle } from "src/tests/msw/e2eReleaseDetailData";
+import { e2eTrackRowTitle } from "src/tests/msw/e2eReleaseDetailData";
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
 
 export const openDesktopPlaylistDrawer = async (page: Page) => {
@@ -31,9 +31,9 @@ export const playE2ePlaylistFromDrawerFooter = async (page: Page) => {
 export const expectActivePlaylistTrackShowsPausedIndicator = async (
   page: Page,
 ) => {
-  const trackTitle = e2eTrackTitle(E2E_ALBUM_ONE);
+  const trackRowTitle = e2eTrackRowTitle(E2E_ALBUM_ONE);
   const activeRow = page.getByTestId("fmdPlaylistDrawerTrackItem").filter({
-    has: page.getByRole("button", { name: `Now playing ${trackTitle}` }),
+    has: page.getByRole("button", { name: `Now playing ${trackRowTitle}` }),
   });
 
   await expect(activeRow).toBeVisible({ timeout: 15_000 });

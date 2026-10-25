@@ -7,6 +7,7 @@ import {
   buildUserTrackFieldsFromRelease,
   buildYoutubeThumbnailUrl,
   formatTopUserTrackHeadLabel,
+  formatTrackPositionTitle,
   formatUserTrackListenLabel,
   formatUserTrackListenTooltip,
   formatUserTrackStatsLabel,
@@ -40,6 +41,12 @@ describe("userTrack utils", () => {
       artist: "Test Artist",
       release_title: "Test Album",
     });
+  });
+
+  it("formatTrackPositionTitle joins position and title", () => {
+    expect(formatTrackPositionTitle("A1", "Gaia")).toBe("A1 - Gaia");
+    expect(formatTrackPositionTitle("A1", "A1 - Gaia")).toBe("A1 - Gaia");
+    expect(formatTrackPositionTitle("A1", "A1")).toBe("A1");
   });
 
   it("formatTopUserTrackHeadLabel combines position and catalog title", () => {

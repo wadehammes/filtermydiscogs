@@ -18,6 +18,7 @@ import type {
   StartPlaybackParams,
   StartReleasePreviewParams,
 } from "src/types/releasePlaybackContext.types";
+import { definedProps } from "src/utils/definedProps";
 import {
   appendQueueItem,
   createPreviewQueueItem,
@@ -27,6 +28,10 @@ import {
   removeQueueItemAtIndex,
   reorderQueueItems,
 } from "src/utils/playbackQueue";
+import {
+  isQueueItemTrackTitlePlaceholder,
+  resolveQueueItemYoutubeVideoId,
+} from "src/utils/playbackQueuePresentation";
 import { isQueueItemReplayOfActiveSession } from "src/utils/playbackQueueReplay";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
 import { resetPlaybackSkipLogToast } from "src/utils/playbackSkippedTrackToast";
@@ -96,6 +101,8 @@ interface QueueActionRefs {
 
 interface UseReleasePlaybackQueueActionsParams {
   dispatchSession: Dispatch<PlaybackSessionAction>;
+  setNowPlayingQueueItem: (item: PlaybackQueueItem | null) => void;
+  setPlaybackTrackTitleOverride: (title: string | null) => void;
   setShouldAutoplayEmbed: (value: boolean) => void;
   setIsPlaybackEmbedMounted: (value: boolean) => void;
   setPlaybackVideoTransitionTargetId: (videoId: string | null) => void;
@@ -135,6 +142,8 @@ interface UseReleasePlaybackQueueActionsParams {
 
 export const useReleasePlaybackQueueActions = ({
   dispatchSession,
+  setNowPlayingQueueItem,
+  setPlaybackTrackTitleOverride,
   setShouldAutoplayEmbed,
   setIsPlaybackEmbedMounted,
   setPlaybackVideoTransitionTargetId,
@@ -243,9 +252,19 @@ export const useReleasePlaybackQueueActions = ({
         youtubeVideoId,
       }: PlayQueueItemOptions = {},
     ) => {
+      const resolvedYoutubeVideoId =
+        youtubeVideoId?.trim() || resolveQueueItemYoutubeVideoId(item);
+
       if (autoplay && !startPaused) {
         isPausedRef.current = false;
       }
+
+      setNowPlayingQueueItem({
+        ...item,
+        ...(resolvedYoutubeVideoId
+          ? { youtubeVideoId: resolvedYoutubeVideoId }
+          : {}),
+      });
 
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
       const isSameRelease = isSameReleaseInstance(
@@ -259,16 +278,19 @@ export const useReleasePlaybackQueueActions = ({
         activeVideoId: activeVideoIdRef.current,
       });
       const forceEmbedReload =
-        !youtubeVideoId &&
+        !resolvedYoutubeVideoId &&
         (replaySameTrack || forceEmbedReloadAfterUnavailableSkip);
-      const preparedEmbedVideoId = youtubeVideoId
-        ? applyTargetEmbedVideoId(youtubeVideoId)
+      const preparedEmbedVideoId = resolvedYoutubeVideoId
+        ? applyTargetEmbedVideoId(resolvedYoutubeVideoId)
         : syncEmbedForQueueItem(item, { forceReload: forceEmbedReload });
 
       if (!preparedEmbedVideoId) {
         prefetchQueueItemEmbed(item);
       }
 
+      setPlaybackTrackTitleOverride(
+        isQueueItemTrackTitlePlaceholder(item) ? null : item.trackTitle,
+      );
       releaseRef.current = item.release;
 
       if (autoplay && !startPaused) {
@@ -278,8 +300,11 @@ export const useReleasePlaybackQueueActions = ({
       const resolutionIndex = item.previewVideoUri
         ? -1
         : findQueueItemResolutionIndex(item);
+      const hasExplicitYoutubeOverride = Boolean(resolvedYoutubeVideoId);
       const pendingTrackPositionForPlay =
-        item.previewVideoUri || resolutionIndex >= 0
+        item.previewVideoUri ||
+        resolutionIndex >= 0 ||
+        hasExplicitYoutubeOverride
           ? null
           : item.trackPosition;
 
@@ -339,11 +364,11 @@ export const useReleasePlaybackQueueActions = ({
         lastSyncedActiveVideoIdRef.current = null;
       }
 
-      if (!rebuildAlbumQueue && resolveQueueItemPlayback(item)) {
+      if (resolveQueueItemPlayback(item)) {
         return;
       }
 
-      if (pendingTrackPositionForPlay === null) {
+      if (pendingTrackPositionForPlay === null && !resolvedYoutubeVideoId) {
         dispatchSession({
           type: "SET_PENDING_TRACK_POSITION",
           position: item.trackPosition,
@@ -357,6 +382,8 @@ export const useReleasePlaybackQueueActions = ({
       clearPlayFromGestureRetries,
       dispatchSession,
       findQueueItemResolutionIndex,
+      setNowPlayingQueueItem,
+      setPlaybackTrackTitleOverride,
       isPausedRef,
       lastSyncedActiveVideoIdRef,
       markEmbedTrackSwitchGrace,
@@ -429,9 +456,12 @@ export const useReleasePlaybackQueueActions = ({
       release: nextRelease,
       trackPosition,
       trackTitle = trackPosition,
+      artist,
+      releaseTitle,
       startPaused = false,
       rebuildAlbumQueue: rebuildAlbumQueueOption,
       youtubeVideoId,
+      upcomingQueue,
     }: StartPlaybackParams) => {
       similarQueueSuppressedAfterClearRef.current = false;
       dispatchSession({ type: "CLEAR_PREVIEW_PENDING" });
@@ -439,14 +469,21 @@ export const useReleasePlaybackQueueActions = ({
         release: nextRelease,
         trackPosition,
         trackTitle,
+        ...definedProps({ youtubeVideoId, artist, releaseTitle }),
       });
 
       const preserveQueue =
-        queueManuallyExtendedRef.current && queueRef.current.length > 0;
+        upcomingQueue === undefined &&
+        queueManuallyExtendedRef.current &&
+        queueRef.current.length > 0;
       let nextQueue: PlaybackQueueItem[];
       let rebuildAlbumQueue: boolean;
 
-      if (preserveQueue) {
+      if (upcomingQueue !== undefined) {
+        queueManuallyExtendedRef.current = true;
+        nextQueue = upcomingQueue;
+        rebuildAlbumQueue = false;
+      } else if (preserveQueue) {
         const existingIndex = findQueueItemIndex(queueRef.current, item);
 
         if (existingIndex >= 0) {
@@ -469,6 +506,7 @@ export const useReleasePlaybackQueueActions = ({
 
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
       const shouldEnableSimilarTail =
+        upcomingQueue === undefined &&
         !startPaused &&
         extendQueueWithSimilarReleasesRef.current &&
         (rebuildAlbumQueue || queueManuallyExtendedRef.current);
@@ -476,6 +514,9 @@ export const useReleasePlaybackQueueActions = ({
         shouldEnableSimilarTail,
       );
       similarQueueGenerationRef.current += 1;
+      if (upcomingQueue !== undefined) {
+        similarQueueModeRef.current = createSimilarQueueMode(false);
+      }
       setUpcomingQueue(nextQueue);
       writePersistedReleasePlayback({
         instanceId: String(nextRelease.instance_id),
@@ -548,10 +589,12 @@ export const useReleasePlaybackQueueActions = ({
       awaitingResumeGestureRef.current = false;
       pendingPlayFromGestureRef.current = true;
       trackPlaybackStarted(nextRelease.instance_id);
-      recordTrackPlayFromQueueItem(
-        createPreviewQueueItem({ release: nextRelease, video }),
-        previewVideoId,
-      );
+      const previewItem = createPreviewQueueItem({
+        release: nextRelease,
+        video,
+      });
+      setNowPlayingQueueItem(previewItem);
+      recordTrackPlayFromQueueItem(previewItem, previewVideoId);
     },
     [
       activeVideoIdRef,
@@ -570,6 +613,7 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueGenerationRef,
       similarQueueModeRef,
       isPlayingRef,
+      setNowPlayingQueueItem,
     ],
   );
 
@@ -579,6 +623,8 @@ export const useReleasePlaybackQueueActions = ({
       trackPosition,
       trackTitle,
       youtubeVideoId,
+      artist,
+      releaseTitle,
     }: AddToQueueParams) => {
       if (
         tryAutoStartOnEmptyQueue(() => {
@@ -595,7 +641,12 @@ export const useReleasePlaybackQueueActions = ({
       }
 
       appendManualQueueItem(
-        createQueueItem({ release: nextRelease, trackPosition, trackTitle }),
+        createQueueItem({
+          release: nextRelease,
+          trackPosition,
+          trackTitle,
+          ...definedProps({ youtubeVideoId, artist, releaseTitle }),
+        }),
       );
     },
     [appendManualQueueItem, startPlayback, tryAutoStartOnEmptyQueue],
@@ -722,6 +773,8 @@ export const useReleasePlaybackQueueActions = ({
   const stopPlayback = useCallback(
     ({ resetSkipLogToast = true }: { resetSkipLogToast?: boolean } = {}) => {
       resetUserTrackRecordingSession();
+      setNowPlayingQueueItem(null);
+      setPlaybackTrackTitleOverride(null);
       if (resetSkipLogToast) {
         resetPlaybackSkipLogToast();
       }
@@ -748,6 +801,7 @@ export const useReleasePlaybackQueueActions = ({
     [
       clearPlayFromGestureRetries,
       dispatchSession,
+      setPlaybackTrackTitleOverride,
       resetEmbedSession,
       embedVideoIdRef,
       isPlayingRef,
@@ -764,6 +818,7 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueModeRef,
       similarQueueTailToastShownRef,
       resetPlaybackSkipState,
+      setNowPlayingQueueItem,
     ],
   );
 

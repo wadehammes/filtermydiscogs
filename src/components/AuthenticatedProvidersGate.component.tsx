@@ -1,11 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { usePathname } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import { PlaybackProvidersShell } from "src/components/PlaybackProvidersShell.component";
 import { isProtectedAppRoute } from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
+import { useAuthenticatedGatePathname } from "src/hooks/useAuthenticatedGatePathname.hook";
 
 const AuthenticatedProvidersLazy = dynamic(
   () =>
@@ -22,24 +21,20 @@ interface AuthenticatedProvidersGateProps {
 const AuthenticatedProvidersGateInner = ({
   children,
 }: AuthenticatedProvidersGateProps) => {
-  const pathname = usePathname();
+  const pathname = useAuthenticatedGatePathname();
   const { state: authState } = useAuth();
   const onProtectedRoute = isProtectedAppRoute(pathname);
-  const needsAuthenticatedShell =
+  const shouldWrapAuthenticatedProviders =
     authState.isAuthenticated || (authState.isCheckingAuth && onProtectedRoute);
 
   useEffect(() => {
-    if (needsAuthenticatedShell) {
+    if (shouldWrapAuthenticatedProviders) {
       void import("src/components/AuthenticatedProviders");
     }
-  }, [needsAuthenticatedShell]);
+  }, [shouldWrapAuthenticatedProviders]);
 
-  if (needsAuthenticatedShell) {
+  if (shouldWrapAuthenticatedProviders) {
     return <AuthenticatedProvidersLazy>{children}</AuthenticatedProvidersLazy>;
-  }
-
-  if (!onProtectedRoute) {
-    return <PlaybackProvidersShell>{children}</PlaybackProvidersShell>;
   }
 
   return children;

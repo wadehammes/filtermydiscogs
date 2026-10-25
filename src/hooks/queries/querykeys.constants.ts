@@ -58,6 +58,10 @@ export const PublicCrateQueryKeys = {
   byId: (crateId: string | null) => ["publicCrate", crateId] as const,
 };
 
+export const PublicPlaylistQueryKeys = {
+  byId: (playlistId: string | null) => ["publicPlaylist", playlistId] as const,
+};
+
 export const MostCratedQueryKeys = {
   list: (limit: number) => ["mostCrated", limit] as const,
 };

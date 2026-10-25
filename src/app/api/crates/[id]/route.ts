@@ -15,6 +15,7 @@ import {
 } from "src/lib/crate-release-mapper";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { revalidatePublicShareSeo } from "src/lib/public-share-cache.server";
 import { updateCrateBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 
@@ -256,6 +257,10 @@ export async function PUT(
 
     const { auditDatabaseOperation } = await import("src/lib/api-helpers");
     auditDatabaseOperation(userIdNum, "Crate", "update", id, updateData);
+
+    if (privateField !== undefined) {
+      revalidatePublicShareSeo({ kind: "crate", id });
+    }
 
     return privateRouteJson({ crate: updatedCrate });
   } catch (error) {

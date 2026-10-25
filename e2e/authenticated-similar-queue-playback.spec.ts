@@ -1,6 +1,6 @@
 import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
 import { E2E_EMBED_MOCK_VIDEO_IDS } from "src/constants/e2eEmbedMock.constants";
-import { e2eTrackTitle } from "src/tests/msw/e2eReleaseDetailData";
+import { e2eTrackPlayButtonLabel } from "src/tests/msw/e2eReleaseDetailData";
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
 import { isE2eSmokeSuite } from "./e2eSuite.constants";
 import { expect, test } from "./fixtures/msw.fixture";
@@ -57,7 +57,7 @@ test.describe("authenticated similar queue tail (MSW)", () => {
     const similarBatchPosted = startWaitingForE2eSimilarTailBatchPost(page);
 
     await page
-      .getByRole("button", { name: `Play ${e2eTrackTitle(E2E_ALBUM_ONE)}` })
+      .getByRole("button", { name: e2eTrackPlayButtonLabel(E2E_ALBUM_ONE) })
       .click();
     await closeReleaseModal(page);
 
@@ -105,7 +105,7 @@ test.describe("authenticated similar queue tail (MSW)", () => {
     await expectReleaseModalShowsE2eTracklist(page, E2E_ALBUM_ONE);
 
     await page
-      .getByRole("button", { name: `Play ${e2eTrackTitle(E2E_ALBUM_ONE)}` })
+      .getByRole("button", { name: e2eTrackPlayButtonLabel(E2E_ALBUM_ONE) })
       .click();
     await closeReleaseModal(page);
 

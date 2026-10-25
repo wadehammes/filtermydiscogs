@@ -234,7 +234,7 @@
 .stats {
   display: grid;
   gap: var(--space-3) var(--space-4);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   list-style: none;
   margin: 0;
   padding: 0;
@@ -242,7 +242,7 @@
 
   @media (width >= 768px) {
     gap: var(--space-4);
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

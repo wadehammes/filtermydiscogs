@@ -1,0 +1,33 @@
+.root {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  flex-shrink: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  gap: 0;
+}
+
+.cell {
+  aspect-ratio: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.image {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.empty {
+  aspect-ratio: 1;
+  background: color-mix(in srgb, var(--muted) 40%, var(--background));
+  border-radius: var(--radius-card);
+  flex-shrink: 0;
+  width: min(100%, 280px);
+}

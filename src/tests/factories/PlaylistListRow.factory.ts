@@ -6,6 +6,8 @@ export type PlaylistListQueryRow = {
   user_id: number;
   id: string;
   name: string;
+  username: string | null;
+  private: boolean;
   created_at: Date;
   updated_at: Date;
   _count: { tracks: number };
@@ -35,6 +37,8 @@ class PlaylistListRowFactory extends BaseFactory<
         "Late night",
         faker.word.noun(),
       ]),
+      username: null,
+      private: true,
       created_at: created,
       updated_at: faker.date.between({ from: created, to: new Date() }),
       _count: { tracks: faker.number.int({ min: 0, max: 40 }) },

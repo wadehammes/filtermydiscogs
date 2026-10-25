@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";
 import { PublicCrateClient } from "src/components/PublicCrate/PublicCrateClient.component";
-import {
-  getMetadataSiteUrl,
-  PAGE_DESCRIPTIONS,
-  SITE_NAME,
-  sitePageTitle,
-} from "src/constants/siteMetadata";
 import { fetchPublicCrateMetadata } from "src/lib/api-helpers";
 import {
   getPublicCrateIdsForStaticGeneration,
+  getPublicCrateMetadataForPage,
   PUBLIC_CRATE_BUILD_PRERENDER_LIMIT,
 } from "src/lib/public-crate.server";
+import {
+  getE2eDemoPublicShareMetadataResolved,
+  shouldNotFoundPublicSharePage,
+} from "src/lib/public-share-e2e.server";
+import { buildPublicSharePageMetadata } from "src/lib/public-share-metadata.server";
 
 export async function generateStaticParams() {
   const ids = await getPublicCrateIdsForStaticGeneration(
@@ -28,10 +29,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
 
-  const baseUrl = getMetadataSiteUrl();
-  const crateUrl = `${baseUrl}/crate/${id}`;
-  const ogImageUrl = new URL(`/api/og/crate/${id}`, baseUrl).href;
-
   let data: Awaited<ReturnType<typeof fetchPublicCrateMetadata>> = null;
 
   try {
@@ -40,81 +37,24 @@ export async function generateMetadata({
     console.error(`Failed to load public crate metadata for ${id}:`, error);
   }
 
-  if (data) {
-    const crateName = data.crate.name;
-    const releaseCount = data.pagination.total;
-    const username = data.crate.username;
-    const description = username
-      ? `Public crate "${crateName}" by ${username} with ${releaseCount} release${releaseCount !== 1 ? "s" : ""} on ${SITE_NAME}`
-      : `Public crate "${crateName}" with ${releaseCount} release${releaseCount !== 1 ? "s" : ""} on ${SITE_NAME}`;
+  const resolved =
+    data !== null
+      ? {
+          name: data.crate.name,
+          username: data.crate.username,
+          itemCount: data.pagination.total,
+        }
+      : getE2eDemoPublicShareMetadataResolved("crate", id);
 
-    return {
-      title: `${crateName}${username ? ` by ${username}` : ""} | ${SITE_NAME}`,
-      description,
-      openGraph: {
-        title: `${crateName}${username ? ` by ${username}` : ""}`,
-        description,
-        url: crateUrl,
-        siteName: SITE_NAME,
-        type: "website",
-        locale: "en-US",
-        images: [
-          {
-            url: ogImageUrl,
-            width: 1200,
-            height: 630,
-            alt: `Public crate: ${crateName}`,
-          },
-        ],
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: `${crateName}${username ? ` by ${username}` : ""}`,
-        description,
-        images: [
-          {
-            url: ogImageUrl,
-            alt: `Public crate: ${crateName}`,
-          },
-        ],
-      },
-    };
+  if (resolved === null) {
+    notFound();
   }
 
-  const fallbackTitle = sitePageTitle("Crate");
-  const fallbackDescription = PAGE_DESCRIPTIONS.crateFallback;
-
-  return {
-    title: fallbackTitle,
-    description: fallbackDescription,
-    openGraph: {
-      title: fallbackTitle,
-      description: fallbackDescription,
-      url: crateUrl,
-      siteName: SITE_NAME,
-      type: "website",
-      locale: "en-US",
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: "Image of Crate Releases",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: fallbackTitle,
-      description: fallbackDescription,
-      images: [
-        {
-          url: ogImageUrl,
-          alt: "Image of Crate Releases",
-        },
-      ],
-    },
-  };
+  return buildPublicSharePageMetadata({
+    kind: "crate",
+    id,
+    resolved,
+  });
 }
 
 export default async function PublicCratePage({
@@ -123,6 +63,17 @@ export default async function PublicCratePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const publicCrate = await getPublicCrateMetadataForPage(id);
+
+  if (
+    shouldNotFoundPublicSharePage({
+      kind: "crate",
+      id,
+      hasServerPayload: publicCrate !== null,
+    })
+  ) {
+    notFound();
+  }
 
   return (
     <PublicAuthLayout footer={<PageFooter />} omitMainLandmark>

@@ -1,7 +1,7 @@
 import type { NetworkFixture } from "@msw/playwright";
 import { expect, type Page } from "@playwright/test";
 import { E2E_EMBED_MOCK_DELAYED_PLAYING_MS } from "src/constants/e2eEmbedMock.constants";
-import { e2eTrackTitle } from "src/tests/msw/e2eReleaseDetailData";
+import { e2eTrackPlayButtonLabel } from "src/tests/msw/e2eReleaseDetailData";
 import { createE2eReleaseByIdHandler } from "src/tests/msw/e2eReleaseHandlers";
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
 import {
@@ -70,7 +70,7 @@ export const startE2eAlbumOneTrackPlayback = async (page: Page) => {
   await openReleaseModalByTitle(page, E2E_ALBUM_ONE);
   await expectReleaseModalShowsE2eTracklist(page, E2E_ALBUM_ONE);
   await page
-    .getByRole("button", { name: `Play ${e2eTrackTitle(E2E_ALBUM_ONE)}` })
+    .getByRole("button", { name: e2eTrackPlayButtonLabel(E2E_ALBUM_ONE) })
     .click();
   await closeReleaseModal(page);
 };

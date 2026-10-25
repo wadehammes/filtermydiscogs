@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { UpdatePlaylistPayload } from "src/api/endpoints/playlists";
 import { api } from "src/api/urls";
 import { useAuth } from "src/context/auth.context";
 import {
@@ -36,6 +37,35 @@ const invalidatePlaylists = (
       queryKey: PlaylistQueryKeys.byUserAndId(userId, playlistId),
     });
   }
+};
+
+export const useUpdatePlaylistMutation = () => {
+  const queryClient = useQueryClient();
+  const {
+    state: { userId },
+  } = useAuth();
+
+  return useMutation({
+    mutationFn: ({
+      playlistId,
+      payload,
+    }: {
+      playlistId: string;
+      payload: UpdatePlaylistPayload;
+    }) => api.updatePlaylist(playlistId, payload),
+    onSuccess: (playlist) => {
+      invalidatePlaylists(queryClient, userId ?? null, playlist.id);
+      if (userId) {
+        queryClient.setQueryData(
+          PlaylistQueryKeys.byUserAndId(userId, playlist.id),
+          playlist,
+        );
+      }
+    },
+    onError: () => {
+      toast.error("Failed to update playlist");
+    },
+  });
 };
 
 export const useCreatePlaylistMutation = () => {

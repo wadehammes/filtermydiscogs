@@ -84,6 +84,7 @@ hook_alternate_specs() {
         src/utils/syncPlaybackEmbedSessionRefs.spec.ts \
         src/utils/trackStatsQueryCache.spec.ts \
         src/utils/releasePlaybackActivePresentation.spec.ts \
+        src/utils/releasePlaybackPendingResolution.spec.ts \
         src/utils/releasePlaybackEmbedConfirm.spec.ts \
         src/utils/embedPlaybackInfoDeliveryConfirm.spec.ts
       ;;

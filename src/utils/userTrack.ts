@@ -119,6 +119,34 @@ export const findTracklistTitleByPosition = (
   return title || null;
 };
 
+export const formatTrackPositionTitle = (
+  trackPosition: string,
+  trackTitle: string,
+): string => {
+  const position = trackPosition.trim();
+  const title = trackTitle.trim();
+
+  if (!position) {
+    return title || "Untitled track";
+  }
+
+  if (!title || title === position) {
+    return position;
+  }
+
+  const positionDashPrefix = `${position.toLowerCase()} - `;
+  const positionSpacePrefix = `${position.toLowerCase()} `;
+
+  if (
+    title.toLowerCase().startsWith(positionDashPrefix) ||
+    title.toLowerCase().startsWith(positionSpacePrefix)
+  ) {
+    return title;
+  }
+
+  return `${position} - ${title}`;
+};
+
 export const formatTopUserTrackHeadLabel = ({
   track_position,
   track_title,
@@ -146,21 +174,7 @@ export const formatTopUserTrackHeadLabel = ({
     return position || "Untitled track";
   }
 
-  if (position && name !== position) {
-    const positionPrefix = `${position.toLowerCase()} `;
-    const positionDashPrefix = `${position.toLowerCase()} - `;
-
-    if (
-      name.toLowerCase().startsWith(positionDashPrefix) ||
-      name.toLowerCase().startsWith(positionPrefix)
-    ) {
-      return name;
-    }
-
-    return `${position} - ${name}`;
-  }
-
-  return name;
+  return formatTrackPositionTitle(position, name);
 };
 
 export const formatUserTrackStatsLabel = (
