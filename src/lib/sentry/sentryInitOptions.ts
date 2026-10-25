@@ -5,6 +5,7 @@ import {
   isDomErrorEventPromiseRejection,
   isGoogleTagManagerYoutubeIntegrationError,
   isSentryDomErrorEventRejectionMessage,
+  isUnattributedExponentParseError,
 } from "src/utils/sentryThirdPartyIntegrationErrors";
 import { isViewTransitionInterruptionError } from "src/utils/viewTransitionInterruptions";
 
@@ -125,6 +126,27 @@ export const sentryBeforeSend = (
   if (
     typeof event.message === "string" &&
     isSentryDomErrorEventRejectionMessage(event.message)
+  ) {
+    return null;
+  }
+
+  const exceptionValue = event.exception?.values?.find(
+    (value) => typeof value.value === "string",
+  )?.value;
+  const frameFilenames =
+    event.exception?.values?.flatMap((value) =>
+      (value.stacktrace?.frames ?? []).flatMap((frame) =>
+        frame.filename ? [frame.filename] : [],
+      ),
+    ) ?? [];
+
+  if (
+    isUnattributedExponentParseError({
+      error: hint.originalException,
+      message:
+        typeof event.message === "string" ? event.message : exceptionValue,
+      frameFilenames,
+    })
   ) {
     return null;
   }

@@ -4,6 +4,7 @@ import {
   isDomErrorEventPromiseRejection,
   isGoogleTagManagerYoutubeIntegrationError,
   isSentryDomErrorEventRejectionMessage,
+  isUnattributedExponentParseError,
 } from "src/utils/sentryThirdPartyIntegrationErrors";
 
 describe("isBrowserSchedulerTerminationError", () => {
@@ -75,6 +76,50 @@ describe("isSentryDomErrorEventRejectionMessage", () => {
   it("when message is unrelated, ignores", () => {
     expect(
       isSentryDomErrorEventRejectionMessage("Network request failed"),
+    ).toBe(false);
+  });
+});
+
+describe("isUnattributedExponentParseError", () => {
+  const message = "Non-number found after exponent indicator";
+
+  it("when Firefox iOS reports the parse error on the document, matches", () => {
+    const error = new SyntaxError(message);
+
+    expect(
+      isUnattributedExponentParseError({
+        error,
+        message: `SyntaxError: ${message}`,
+        frameFilenames: ["https://www.filtermydisco.gs/"],
+      }),
+    ).toBe(true);
+  });
+
+  it("when the same parse error comes from an app script, ignores", () => {
+    const error = new SyntaxError(message);
+    error.stack = [
+      `SyntaxError: ${message}`,
+      "    at parsePayload (https://www.filtermydisco.gs/_next/static/chunks/app.js:10:5)",
+    ].join("\n");
+
+    expect(
+      isUnattributedExponentParseError({
+        error,
+        message,
+        frameFilenames: [
+          "https://www.filtermydisco.gs/_next/static/chunks/app.js",
+        ],
+      }),
+    ).toBe(false);
+  });
+
+  it("when the message is unrelated, ignores", () => {
+    expect(
+      isUnattributedExponentParseError({
+        error: new SyntaxError("Unexpected token"),
+        message: "Unexpected token",
+        frameFilenames: ["https://www.filtermydisco.gs/"],
+      }),
     ).toBe(false);
   });
 });

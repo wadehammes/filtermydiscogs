@@ -125,6 +125,59 @@ describe("sentryInitOptions", () => {
     expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
   });
 
+  it("when Firefox reports an exponent parse error on the document, beforeSend drops the event", () => {
+    const message = "Non-number found after exponent indicator";
+    const error = new SyntaxError(message);
+    const event = {
+      message: `SyntaxError: ${message}`,
+      exception: {
+        values: [
+          {
+            type: "SyntaxError",
+            value: message,
+            stacktrace: {
+              frames: [
+                { filename: "https://www.filtermydisco.gs/", lineno: 1 },
+              ],
+            },
+          },
+        ],
+      },
+    } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
+  });
+
+  it("when an app script throws the exponent parse error, beforeSend keeps the event", () => {
+    const message = "Non-number found after exponent indicator";
+    const error = new SyntaxError(message);
+    error.stack = [
+      `SyntaxError: ${message}`,
+      "    at parsePayload (https://www.filtermydisco.gs/_next/static/chunks/app.js:10:5)",
+    ].join("\n");
+    const event = {
+      exception: {
+        values: [
+          {
+            type: "SyntaxError",
+            value: message,
+            stacktrace: {
+              frames: [
+                {
+                  filename:
+                    "https://www.filtermydisco.gs/_next/static/chunks/app.js",
+                  lineno: 10,
+                },
+              ],
+            },
+          },
+        ],
+      },
+    } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: error })).toBe(event);
+  });
+
   it("when a script DOM error event is rejected, beforeSend drops the event", () => {
     const domError = new Event("error");
     const event = {
