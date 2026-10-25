@@ -31,9 +31,9 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     title: "Build and share playlists",
     description:
       "Save cross-release track lists from your collection. Reorder tracks, play through the in-app queue, and share a public playlist link when you want someone else to listen along.",
-    imageBase: "releases",
+    imageBase: "playlist",
     imageAlt:
-      "Public playlist page with cover art, track list, and in-app playback",
+      "Public playlist page with a cover collage, Play All, and a numbered track list",
   },
   {
     eyebrow: "Crates",

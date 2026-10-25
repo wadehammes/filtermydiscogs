@@ -118,6 +118,19 @@
   gap: 0;
   overflow: hidden;
   padding: 0;
+
+  @media (width >= 768px) {
+    &:last-of-type {
+      grid-column: span 2;
+    }
+  }
+
+  @media (width >= 1024px) {
+    &:nth-child(2),
+    &:nth-child(5) {
+      grid-column: span 2;
+    }
+  }
 }
 
 .tileFeatureCopy {
