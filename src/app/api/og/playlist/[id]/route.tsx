@@ -1,7 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { ImageResponse } from "next/og";
-import { SITE_NAME } from "src/constants/siteMetadata";
-import { PublicShareOgImage } from "src/lib/og/publicShareOgImage";
+import { createPublicShareOgImageResponse } from "src/lib/og/createPublicShareOgImageResponse.server";
 import { getPublicPlaylistForOg } from "src/lib/public-playlist.server";
 import { publicPlaylistCacheTag } from "src/lib/public-share-cache.server";
 
@@ -19,20 +17,13 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const playlist = await getCachedPlaylistForOg(id);
-  const title = playlist?.name ?? "Playlist";
-  const line2 = playlist?.username
-    ? `by ${playlist.username} · ${SITE_NAME}`
-    : SITE_NAME;
-
-  return new ImageResponse(
-    <PublicShareOgImage
-      title={title}
-      line2={line2}
-      coverThumbUrls={playlist?.coverThumbUrls ?? []}
-    />,
-    {
-      height: 630,
-      width: 1200,
-    },
-  );
+  return createPublicShareOgImageResponse({
+    coverThumbUrls: playlist?.coverThumbUrls ?? [],
+    itemCount: playlist?.trackCount ?? null,
+    itemNoun: "track",
+    kind: "playlist",
+    title: playlist?.name ?? "Playlist",
+    updatedAt: playlist?.updatedAt ?? null,
+    username: playlist?.username ?? null,
+  });
 }

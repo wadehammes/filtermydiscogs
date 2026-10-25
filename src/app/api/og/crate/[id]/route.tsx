@@ -1,7 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { ImageResponse } from "next/og";
-import { SITE_NAME } from "src/constants/siteMetadata";
-import { PublicShareOgImage } from "src/lib/og/publicShareOgImage";
+import { createPublicShareOgImageResponse } from "src/lib/og/createPublicShareOgImageResponse.server";
 import { getPublicCrateForOg } from "src/lib/public-crate.server";
 import { publicCrateCacheTag } from "src/lib/public-share-cache.server";
 
@@ -19,20 +17,13 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const crate = await getCachedCrateForOg(id);
-  const title = crate?.name ?? "Crate";
-  const line2 = crate?.username
-    ? `by ${crate.username} · ${SITE_NAME}`
-    : SITE_NAME;
-
-  return new ImageResponse(
-    <PublicShareOgImage
-      title={title}
-      line2={line2}
-      coverThumbUrls={crate?.coverThumbUrls ?? []}
-    />,
-    {
-      height: 630,
-      width: 1200,
-    },
-  );
+  return createPublicShareOgImageResponse({
+    coverThumbUrls: crate?.coverThumbUrls ?? [],
+    itemCount: crate?.releaseCount ?? null,
+    itemNoun: "release",
+    kind: "crate",
+    title: crate?.name ?? "Crate",
+    updatedAt: crate?.updatedAt ?? null,
+    username: crate?.username ?? null,
+  });
 }
