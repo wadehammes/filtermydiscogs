@@ -1,4 +1,5 @@
 import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
+import { E2E_RELEASE_TRACK_POSITION } from "src/tests/msw/e2eReleaseDetailData";
 import { E2E_TRACK_ONE } from "src/tests/msw/e2eSession.constants";
 import { formatTrackPositionTitle } from "src/utils/userTrack";
 import { expect, test } from "./fixtures/publicMsw.fixture";
@@ -14,7 +15,9 @@ test.describe("public shared playlist (MSW)", () => {
     );
     await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
     await expect(
-      page.getByText(formatTrackPositionTitle("A1", E2E_TRACK_ONE)),
+      page.getByText(
+        formatTrackPositionTitle(E2E_RELEASE_TRACK_POSITION, E2E_TRACK_ONE),
+      ),
     ).toBeVisible();
     await expect(
       page.getByText(/share a public playlist link like this one/i),

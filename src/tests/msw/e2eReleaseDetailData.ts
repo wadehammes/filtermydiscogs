@@ -14,7 +14,7 @@ import {
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import { formatTrackPositionTitle } from "src/utils/userTrack";
 
-const E2E_RELEASE_TRACK_POSITION = "A";
+export const E2E_RELEASE_TRACK_POSITION = "A";
 
 const e2eTrackTitle = (albumTitle: string) => `${albumTitle} (E2E Track A)`;
 

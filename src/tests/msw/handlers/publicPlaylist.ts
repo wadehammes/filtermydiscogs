@@ -5,6 +5,7 @@ import {
   LOGIN_DEMO_PUBLIC_PLAYLIST_TITLE,
 } from "src/constants/publicPlaylist.constants";
 import { buildE2eCollectionReleases } from "src/tests/msw/e2eCollectionData";
+import { E2E_RELEASE_TRACK_POSITION } from "src/tests/msw/e2eReleaseDetailData";
 import {
   E2E_AUTH_USERNAME,
   E2E_DISCOGS_RELEASE_ID_ONE,
@@ -33,10 +34,10 @@ export const buildE2eDemoPublicPlaylistResponse =
 
     const tracks: PlaylistTrackRow[] = [
       {
-        track_key: "e2e-release-1:A1",
+        track_key: `e2e-release-1:${E2E_RELEASE_TRACK_POSITION}`,
         sort_order: 10,
         track_title: E2E_TRACK_ONE,
-        track_position: "A1",
+        track_position: E2E_RELEASE_TRACK_POSITION,
         instance_id: "e2e-release-1",
         artist: "Test Artist",
         release_title:
@@ -46,10 +47,10 @@ export const buildE2eDemoPublicPlaylistResponse =
         discogs_release_id: E2E_DISCOGS_RELEASE_ID_ONE,
       },
       {
-        track_key: "e2e-release-2:A1",
+        track_key: `e2e-release-2:${E2E_RELEASE_TRACK_POSITION}`,
         sort_order: 20,
         track_title: E2E_TRACK_TWO,
-        track_position: "A1",
+        track_position: E2E_RELEASE_TRACK_POSITION,
         instance_id: "e2e-release-2",
         artist: "Test Artist",
         release_title:

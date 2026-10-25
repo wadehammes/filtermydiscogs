@@ -56,4 +56,40 @@ describe("resolveQueueItemEmbedTracksVideos", () => {
     expect(result.tracks.length).toBeGreaterThan(0);
     expect(result.videos.length).toBeGreaterThan(0);
   });
+
+  it("uses tracklist embedded on the queued release when cache detail is missing", () => {
+    const currentRelease = releaseFactory.build();
+    const queuedRelease = releaseFactory.build({
+      tracklist: [
+        discogsTrackFactory.build({
+          position: "A2",
+          title: "Second track",
+          type_: "track",
+        }),
+      ],
+      videos: [
+        discogsVideoFactory.youtube({
+          uri: "https://youtube.com/watch?v=abc",
+          title: "A2 vid",
+        }),
+      ],
+    });
+
+    expect(
+      resolveQueueItemEmbedTracksVideos({
+        item: createQueueItem({
+          release: queuedRelease,
+          trackPosition: "A2",
+          trackTitle: "Second track",
+        }),
+        currentRelease,
+        currentTracks: [],
+        currentVideos: [],
+        cachedReleaseDetail: null,
+      }),
+    ).toEqual({
+      tracks: queuedRelease.tracklist,
+      videos: queuedRelease.videos,
+    });
+  });
 });

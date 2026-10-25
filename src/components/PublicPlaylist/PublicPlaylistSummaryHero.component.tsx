@@ -27,18 +27,18 @@ export const PublicPlaylistSummaryHero = ({
     className={classNames(styles.aside, className)}
     data-testid="fmdPublicPlaylistSummaryHero"
   >
-    <div className={styles.coverFrame}>
-      {coverThumbUrls.length > 0 ? (
-        <CoverArtMosaic
-          thumbUrls={coverThumbUrls}
-          layout="fill"
-          aria-label={coverLabel}
-        />
-      ) : (
-        <div className={styles.coverPlaceholder} aria-hidden />
-      )}
-    </div>
-    <div className={styles.copy}>
+    <div className={styles.heroPrimary}>
+      <div className={styles.coverFrame}>
+        {coverThumbUrls.length > 0 ? (
+          <CoverArtMosaic
+            thumbUrls={coverThumbUrls}
+            layout="fill"
+            aria-label={coverLabel}
+          />
+        ) : (
+          <div className={styles.coverPlaceholder} aria-hidden />
+        )}
+      </div>
       <div className={styles.copyDetails}>
         <h1 className={styles.title}>{title}</h1>
         <p
@@ -47,7 +47,7 @@ export const PublicPlaylistSummaryHero = ({
           {metaLine}
         </p>
       </div>
-      {actions ? <div className={styles.actions}>{actions}</div> : null}
     </div>
+    {actions ? <div className={styles.actions}>{actions}</div> : null}
   </header>
 );
