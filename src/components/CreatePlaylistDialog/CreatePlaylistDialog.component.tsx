@@ -19,6 +19,8 @@ const PLAYLIST_NAME_MAX_LENGTH = 120;
 export interface CreatePlaylistDialogProps {
   isOpen: boolean;
   isSubmitting?: boolean;
+  initialName?: string;
+  loadingText?: string;
   onClose: () => void;
   onCreate: (values: CreatePlaylistFormValues) => void | Promise<void>;
   title?: string;
@@ -29,6 +31,8 @@ export interface CreatePlaylistDialogProps {
 export const CreatePlaylistDialog = ({
   isOpen,
   isSubmitting = false,
+  initialName = "",
+  loadingText = "Creating...",
   onClose,
   onCreate,
   title = "New playlist",
@@ -49,9 +53,9 @@ export const CreatePlaylistDialog = ({
 
   useEffect(() => {
     if (isOpen) {
-      reset({ name: "" });
+      reset({ name: initialName });
     }
-  }, [isOpen, reset]);
+  }, [initialName, isOpen, reset]);
 
   const handleClose = () => {
     if (!isSubmitting) {
@@ -88,7 +92,7 @@ export const CreatePlaylistDialog = ({
             size="md"
             disabled={isSubmitDisabled}
             isLoading={isSubmitting}
-            loadingText="Creating..."
+            loadingText={loadingText}
           >
             {submitLabel}
           </Button>

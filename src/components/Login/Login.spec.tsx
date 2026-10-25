@@ -17,6 +17,7 @@ import { LoginPageObject } from "src/components/Login/Login.po";
 import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
 import { LOGIN_PREVIEW_VIDEO_URL } from "src/constants/loginPreviewMedia";
 import { LOGIN_DEMO_PUBLIC_CRATE_PATH } from "src/constants/publicCrate.constants";
+import { HOME_SAMPLE_PUBLIC_PLAYLIST_PATH } from "src/constants/publicPlaylist.constants";
 import {
   LOGIN_PREVIEW_ALT,
   SITE_LEAD,
@@ -88,7 +89,12 @@ describe("Login", () => {
     );
     expect(
       screen.getByRole("link", {
-        name: LOGIN_PAGE_UI_COPY.publicCrateLinkLabel,
+        name: LOGIN_PAGE_UI_COPY.publicShareTeaserPlaylistLinkLabel,
+      }),
+    ).toHaveAttribute("href", HOME_SAMPLE_PUBLIC_PLAYLIST_PATH);
+    expect(
+      screen.getByRole("link", {
+        name: LOGIN_PAGE_UI_COPY.publicShareTeaserCrateLinkLabel,
       }),
     ).toHaveAttribute("href", LOGIN_DEMO_PUBLIC_CRATE_PATH);
   });

@@ -45,6 +45,20 @@
   flex: 1;
 }
 
-.deleteSegment {
-  color: color-mix(in srgb, var(--destructive) 70%, var(--muted-foreground));
+.editMenuPopup {
+  min-width: 11rem;
+}
+
+.editMenuItemIcon {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
 }

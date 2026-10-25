@@ -12,6 +12,7 @@ import { LoginSwitchAccountLink } from "src/components/LoginSwitchAccountLink/Lo
 import { SIGN_IN_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
 import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
 import { LOGIN_DEMO_PUBLIC_CRATE_PATH } from "src/constants/publicCrate.constants";
+import { HOME_SAMPLE_PUBLIC_PLAYLIST_PATH } from "src/constants/publicPlaylist.constants";
 import { SITE_LEAD, SITE_NAME, SITE_TAGLINE } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import accessibilityStyles from "src/styles/modules/accessibility.module.css";
@@ -75,16 +76,24 @@ export const Login = () => {
               <p
                 className={classNames(
                   typography.metaCaption,
-                  styles.publicCrateTeaser,
+                  styles.publicSampleTeaser,
                 )}
               >
+                {LOGIN_PAGE_UI_COPY.publicShareTeaserLead}
+                <Link
+                  href={HOME_SAMPLE_PUBLIC_PLAYLIST_PATH}
+                  className={styles.publicSampleLink}
+                >
+                  {LOGIN_PAGE_UI_COPY.publicShareTeaserPlaylistLinkLabel}
+                </Link>
+                {LOGIN_PAGE_UI_COPY.publicShareTeaserJoiner}
                 <Link
                   href={LOGIN_DEMO_PUBLIC_CRATE_PATH}
-                  className={styles.publicCrateLink}
+                  className={styles.publicSampleLink}
                 >
-                  {LOGIN_PAGE_UI_COPY.publicCrateLinkLabel}
+                  {LOGIN_PAGE_UI_COPY.publicShareTeaserCrateLinkLabel}
                 </Link>
-                {LOGIN_PAGE_UI_COPY.publicCrateTeaserSuffix}
+                {LOGIN_PAGE_UI_COPY.publicShareTeaserSuffix}
               </p>
             </hgroup>
 
