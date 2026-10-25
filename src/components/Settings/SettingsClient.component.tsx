@@ -51,7 +51,7 @@ const isSettingsSectionId = (value: string): value is SettingsSectionId =>
   SETTINGS_SECTIONS.some((section) => section.id === value);
 
 const COMPLETE_LOGOUT_MESSAGE =
-  "This signs you out and revokes stored OAuth tokens on this browser. Your crates and local preferences stay saved—you can sign in again with Discogs when you are ready.";
+  "This signs you out and revokes stored OAuth tokens on this browser. Your crates, playlists, and local preferences stay saved—you can sign in again with Discogs when you are ready.";
 
 const PREFERENCES_SAVED_MESSAGE = "Preferences saved";
 const PREFERENCES_SAVE_ERROR_MESSAGE = "Failed to save preferences";

@@ -20,19 +20,20 @@ class PlaylistDetailFactory extends BaseFactory<
     const created = faker.date.past();
     const trackCount = options?.trackCount ?? 2;
 
-    const instance = {
+    const instance: PlaylistDetail = {
       id: faker.string.uuid(),
       name: faker.helpers.arrayElement([
         "Sunday spins",
         "Late night",
         faker.word.noun(),
       ]),
+      private: false,
       created_at: created.toISOString(),
       updated_at: faker.date
         .between({ from: created, to: new Date() })
         .toISOString(),
       tracks: playlistTrackRowFactory.buildList(trackCount),
-    } satisfies PlaylistDetail;
+    };
 
     const factoryBuilt = mergeFactoryAttributes(instance, attributes);
 

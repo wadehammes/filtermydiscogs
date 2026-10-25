@@ -8,6 +8,7 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
+import { prismaUserFactory } from "src/tests/factories/User.factory";
 
 jest.mock("src/lib/public-crate-query.server", () => ({
   findPublicCrateById: jest.fn(),
@@ -30,6 +31,7 @@ jest.mock("src/lib/db", () => ({
   prisma: {
     crate: { update: jest.fn() },
     crateRelease: { count: jest.fn() },
+    user: { findUnique: jest.fn() },
   },
 }));
 
@@ -55,6 +57,7 @@ let mockFindCrateReleasesForLayout: jest.MockedFunction<
 let mockReleaseCount: jest.MockedFunction<
   DbModule["prisma"]["crateRelease"]["count"]
 >;
+let mockFindUser: jest.MockedFunction<DbModule["prisma"]["user"]["findUnique"]>;
 
 beforeAll(async () => {
   const [routeModule, publicCrateQuery, authRequest, layoutQuery, db] =
@@ -75,6 +78,7 @@ beforeAll(async () => {
     layoutQuery.findCrateReleasesForLayout,
   );
   mockReleaseCount = jest.mocked(db.prisma.crateRelease.count);
+  mockFindUser = jest.mocked(db.prisma.user.findUnique);
 });
 
 describe("GET /api/crates/public/[id]", () => {
@@ -86,6 +90,7 @@ describe("GET /api/crates/public/[id]", () => {
     mockGetOptionalVerifiedUser.mockResolvedValue(null);
     mockReleaseCount.mockResolvedValue(0);
     mockFindCrateReleasesForLayout.mockResolvedValue([]);
+    mockFindUser.mockResolvedValue(null);
   });
 
   it("returns 400 for invalid crate ids", async () => {
@@ -132,5 +137,36 @@ describe("GET /api/crates/public/[id]", () => {
     const body = await response.json();
     expect(body.crate.id).toBe(PUBLIC_CRATE_ID);
     expect(body.crate.private).toBe(false);
+  });
+
+  it("falls back to the owner user row when crate username is unset", async () => {
+    mockFindPublicCrateById.mockResolvedValue(
+      crateFactory.defaultTestCrate({
+        id: PUBLIC_CRATE_ID,
+        private: false,
+        username: null,
+        user_id: 99,
+      }),
+    );
+    mockFindUser.mockResolvedValue(
+      prismaUserFactory.build(
+        { username: "crate-owner" },
+        { userId: 99 },
+      ) as Awaited<ReturnType<DbModule["prisma"]["user"]["findUnique"]>>,
+    );
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/crates/public/${PUBLIC_CRATE_ID}`),
+      { params: Promise.resolve({ id: PUBLIC_CRATE_ID }) },
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      crate: { username: "crate-owner" },
+    });
+    expect(mockFindUser).toHaveBeenCalledWith({
+      where: { discogs_user_id: 99 },
+      select: { username: true },
+    });
   });
 });

@@ -31,6 +31,16 @@ const STAT_ITEMS = [
     getValue: (stats: PublicCommunityStats) => stats.totalReleases,
   },
   {
+    key: "playlists",
+    label: "Playlists created",
+    getValue: (stats: PublicCommunityStats) => stats.totalPlaylists,
+  },
+  {
+    key: "publicPlaylists",
+    label: "Public playlists",
+    getValue: (stats: PublicCommunityStats) => stats.totalPublicPlaylists,
+  },
+  {
     key: "tracksSaved",
     label: "Tracks saved",
     getValue: (stats: PublicCommunityStats) => stats.totalTracksSaved,

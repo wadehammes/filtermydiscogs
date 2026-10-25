@@ -1,6 +1,15 @@
 import { ApiFetchError, parseRetryAfterMs } from "src/api/apiFetchError";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
-import type { PlaylistDetail, PlaylistSummary } from "src/types/playlist.types";
+import type {
+  PlaylistDetail,
+  PlaylistSummary,
+  PublicPlaylistResponse,
+} from "src/types/playlist.types";
+
+export type UpdatePlaylistPayload = {
+  name?: string;
+  private?: boolean;
+};
 
 const throwPlaylistApiError = async (response: Response): Promise<never> => {
   const errorData = (await response.json().catch(() => ({}))) as {
@@ -81,9 +90,31 @@ export const fetchPlaylist = async (
   return data.playlist;
 };
 
+export const fetchPublicPlaylist = async (
+  playlistId: string,
+): Promise<PublicPlaylistResponse> => {
+  const response = await fetch(
+    `/api/playlists/public/${encodeURIComponent(playlistId)}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error("Playlist not found or is private");
+    }
+
+    await throwPlaylistApiError(response);
+  }
+
+  return response.json() as Promise<PublicPlaylistResponse>;
+};
+
 export const updatePlaylist = async (
   playlistId: string,
-  name: string,
+  payload: UpdatePlaylistPayload,
 ): Promise<PlaylistDetail> => {
   const response = await fetch(
     `/api/playlists/${encodeURIComponent(playlistId)}`,
@@ -91,7 +122,7 @@ export const updatePlaylist = async (
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(payload),
     },
   );
 

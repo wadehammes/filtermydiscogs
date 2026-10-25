@@ -54,6 +54,14 @@ export async function GET(
 
     let finalUsername = crate.username;
 
+    if (!finalUsername) {
+      const owner = await prisma.user.findUnique({
+        where: { discogs_user_id: crate.user_id },
+        select: { username: true },
+      });
+      finalUsername = owner?.username ?? null;
+    }
+
     if (!finalUsername && isOwner && viewer?.username) {
       await prisma.crate.update({
         where: {

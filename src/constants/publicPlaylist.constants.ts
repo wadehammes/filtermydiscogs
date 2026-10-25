@@ -1,0 +1,10 @@
+export const PUBLIC_PLAYLIST_STATIC_PARAM_PLACEHOLDER_ID =
+  "a1b2c3d4-e5f6-4789-a012-3456789abcde" as const;
+
+export const LOGIN_DEMO_PUBLIC_PLAYLIST_ID =
+  "11111111-2222-3333-4444-555555555555" as const;
+
+export const LOGIN_DEMO_PUBLIC_PLAYLIST_PATH =
+  `/playlist/${LOGIN_DEMO_PUBLIC_PLAYLIST_ID}` as const;
+
+export const LOGIN_DEMO_PUBLIC_PLAYLIST_TITLE = "E2E Public Demo Playlist";

@@ -17,9 +17,17 @@ import {
   markPlaybackVideoIntroSeen,
   PLAYBACK_VIDEO_INTRO_STORAGE_KEY,
 } from "src/utils/playbackVideoIntroStorage";
+import { formatTrackPositionTitle } from "src/utils/userTrack";
 import { act, render, screen, waitFor } from "test-utils";
 
 const INSTANCE_ID = RELEASE_MINI_PLAYER_INSTANCE_ID;
+
+const trackALabel = formatTrackPositionTitle("A", "Never Gonna Give You Up");
+const trackBLabel = formatTrackPositionTitle(
+  "B",
+  "Never Gonna Give You Up (Instrumental)",
+);
+const shortTrackLabel = formatTrackPositionTitle("1", "Short A");
 
 let po: ReleaseMiniPlayerPageObject;
 
@@ -182,7 +190,7 @@ describe("ReleaseMiniPlayer", () => {
       "data-variant",
       "visible",
     );
-    expect(screen.getByText("Never Gonna Give You Up")).toBeInTheDocument();
+    expect(screen.getByText(trackALabel)).toBeInTheDocument();
   });
 
   it("expands the dock video panel the first time playback becomes ready", async () => {
@@ -525,9 +533,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
@@ -558,9 +564,7 @@ describe("ReleaseMiniPlayer", () => {
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
@@ -597,9 +601,7 @@ describe("ReleaseMiniPlayer", () => {
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
 
     expect(iframe.getAttribute("src")).toBe(initialSrc);
@@ -665,9 +667,7 @@ describe("ReleaseMiniPlayer", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
 
     Object.defineProperty(document, "visibilityState", {
@@ -699,9 +699,7 @@ describe("ReleaseMiniPlayer", () => {
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
 
     expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
@@ -730,9 +728,7 @@ describe("ReleaseMiniPlayer", () => {
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
   });
 
@@ -752,17 +748,13 @@ describe("ReleaseMiniPlayer", () => {
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Previous track" }));
 
     await waitFor(() => {
-      expect(
-        screen.getAllByText("Never Gonna Give You Up").length,
-      ).toBeGreaterThan(0);
+      expect(screen.getAllByText(trackALabel).length).toBeGreaterThan(0);
     });
   });
 
@@ -819,15 +811,13 @@ describe("ReleaseMiniPlayer", () => {
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Never Gonna Give You Up (Instrumental)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Short A")).toBeInTheDocument();
+      expect(screen.getByText(shortTrackLabel)).toBeInTheDocument();
       expect(screen.getByTestId("fmdQueueLength")).toHaveTextContent("0");
     });
   });

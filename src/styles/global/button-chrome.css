@@ -1,0 +1,5 @@
+@layer utilities {
+  button {
+    border-radius: var(--radius-ui);
+  }
+}

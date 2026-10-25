@@ -12,8 +12,20 @@ import {
   E2E_DISCOGS_RELEASE_ID_TWO,
 } from "src/tests/msw/e2eSession.constants";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
+import { formatTrackPositionTitle } from "src/utils/userTrack";
+
+const E2E_RELEASE_TRACK_POSITION = "A";
 
 const e2eTrackTitle = (albumTitle: string) => `${albumTitle} (E2E Track A)`;
+
+export const e2eTrackRowTitle = (albumTitle: string) =>
+  formatTrackPositionTitle(
+    E2E_RELEASE_TRACK_POSITION,
+    e2eTrackTitle(albumTitle),
+  );
+
+export const e2eTrackPlayButtonLabel = (albumTitle: string) =>
+  `Play ${e2eTrackRowTitle(albumTitle)}`;
 
 function buildE2eReleaseDetail(
   id: number,

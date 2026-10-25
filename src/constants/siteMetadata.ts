@@ -38,23 +38,31 @@ export const PRIVATE_PAGE_ROBOTS = {
   follow: false,
 } as const;
 
+export const PUBLIC_SHARE_PAGE_ROBOTS = {
+  index: true,
+  follow: true,
+} as const;
+
 export const PAGE_DESCRIPTIONS = {
   releases:
-    "Search, filter, and sort your Discogs collection. Open releases for tracklists, in-app playback, and per-track play stats, and add albums to crates as you browse.",
+    "Search, filter, and sort your Discogs collection. Open releases for tracklists, in-app playback, and per-track play stats, and add tracks to playlists or albums to crates as you browse.",
   dashboard:
     "Explore collection insights: milestones, style evolution, growth trends, on-repeat tracks, and more.",
   mosaic:
-    "Create cover-art mosaic grids from your collection or crates for social sharing.",
+    "Create cover-art mosaic grids from your collection, crates, or playlists for social sharing.",
   crates:
     "Open your crates to drag reorder, add sections, edit set notes, and track gig packing.",
   cratesDetail:
     "Manage a crate layout with sections, set notes, gig packing, and optional public sharing.",
+  playlists:
+    "Manage cross-release playlists: reorder tracks, play in-app, and share a public link when ready.",
   settings:
     "Manage theme, sync preferences, and stored data for your FilterMyDiscogs account.",
-  about: `About FilterMyDiscogs: collection insights and on-repeat tracks, search and filters, crates with drag reorder, sections, set notes, and gig packing, in-app playback with per-track stats, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
+  about: `About FilterMyDiscogs: collection insights and on-repeat tracks, search and filters, playlists and crates (drag reorder, sections, set notes, gig packing), in-app playback with per-track stats, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
   legal: "Terms of Service and Privacy Policy for FilterMyDiscogs.",
   admin: "Admin statistics and analytics dashboard.",
   crateFallback: "A shared crate on FilterMyDiscogs.",
+  playlistFallback: "A shared playlist on FilterMyDiscogs.",
 } as const;
 
 export const homeStructuredData = () => {

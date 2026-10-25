@@ -3,8 +3,10 @@
 import { useCallback } from "react";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
+import { definedProps } from "src/utils/definedProps";
 import { showPlaybackQueueSuccessToast } from "src/utils/playbackQueueToast";
 import {
   areUpcomingQueuesEqual,
@@ -14,15 +16,17 @@ import {
   orderPlaylistTracks,
   planPlaylistPlaybackStart,
   resolvePlaylistTracksToQueueItems,
-  resolvePlaylistTrackToQueueItem,
   resolvePlaylistTrackYoutubeOverride,
   shouldSyncUpcomingQueueToPlaylistOrder,
 } from "src/utils/playlistPlayback";
 import { toast } from "src/utils/toast";
 
-export const usePlaylistPlayback = () => {
+export const usePlaylistPlayback = (options?: {
+  releases?: DiscogsRelease[];
+}) => {
   const playback = useReleasePlayback();
-  const allReleases = useAllReleases();
+  const allReleasesFromCollection = useAllReleases();
+  const allReleases = options?.releases ?? allReleasesFromCollection;
 
   const startPlaylistAtTrackKey = useCallback(
     (orderedTracks: PlaylistTrackRow[], startTrackKey: string) => {
@@ -43,12 +47,13 @@ export const usePlaylistPlayback = () => {
         trackTitle: plan.startItem.trackTitle,
         rebuildAlbumQueue: false,
         startPaused: false,
-        ...(plan.youtubeVideoId ? { youtubeVideoId: plan.youtubeVideoId } : {}),
+        upcomingQueue: plan.upcomingItems,
+        ...definedProps({
+          artist: plan.startItem.artist,
+          releaseTitle: plan.startItem.releaseTitle,
+          youtubeVideoId: plan.startItem.youtubeVideoId,
+        }),
       });
-
-      if (plan.upcomingItems.length > 0) {
-        playback.replaceUpcomingQueue(plan.upcomingItems);
-      }
 
       return true;
     },
@@ -63,7 +68,11 @@ export const usePlaylistPlayback = () => {
         release: item.release,
         trackPosition: item.trackPosition,
         trackTitle: item.trackTitle,
-        ...(youtubeVideoId ? { youtubeVideoId } : {}),
+        ...definedProps({
+          artist: item.artist,
+          releaseTitle: item.releaseTitle,
+          youtubeVideoId,
+        }),
       });
     },
     [playback],
@@ -108,7 +117,11 @@ export const usePlaylistPlayback = () => {
           trackTitle: firstEntry.item.trackTitle,
           rebuildAlbumQueue: false,
           ...(playback.autoPlayOnQueueAdd ? {} : { startPaused: true }),
-          ...(firstOverride ? { youtubeVideoId: firstOverride } : {}),
+          ...definedProps({
+            artist: firstEntry.item.artist,
+            releaseTitle: firstEntry.item.releaseTitle,
+            youtubeVideoId: firstOverride,
+          }),
         });
 
         for (const entry of playableEntries.slice(1)) {
@@ -139,18 +152,19 @@ export const usePlaylistPlayback = () => {
 
       if (queueItems.length === 0) {
         toast.error(
-          "No playlist tracks are in your collection or ready to play.",
+          options?.releases
+            ? "No tracks on this playlist are available to play."
+            : "No playlist tracks are in your collection or ready to play.",
         );
         return;
       }
 
-      const firstRow = orderedTracks.find((row) =>
-        resolvePlaylistTrackToQueueItem(row, allReleases),
-      );
+      const firstOrderedTrack = orderedTracks[0];
 
       if (
         !(
-          firstRow && startPlaylistAtTrackKey(orderedTracks, firstRow.track_key)
+          firstOrderedTrack &&
+          startPlaylistAtTrackKey(orderedTracks, firstOrderedTrack.track_key)
         )
       ) {
         return;
@@ -166,7 +180,7 @@ export const usePlaylistPlayback = () => {
 
       showPlaybackQueueSuccessToast(queueItems.length);
     },
-    [allReleases, startPlaylistAtTrackKey],
+    [allReleases, options?.releases, startPlaylistAtTrackKey],
   );
 
   const playPlaylistTrack = useCallback(
@@ -187,10 +201,14 @@ export const usePlaylistPlayback = () => {
       );
 
       if (!started) {
-        toast.error("This track is not in your loaded collection.");
+        toast.error(
+          options?.releases
+            ? "This track is not available to play from this playlist."
+            : "This track is not in your loaded collection.",
+        );
       }
     },
-    [startPlaylistAtTrackKey],
+    [options?.releases, startPlaylistAtTrackKey],
   );
 
   const syncPlaylistQueueToTrackOrder = useCallback(

@@ -1,0 +1,5 @@
+export const E2E_PUBLIC_DEMO_OWNER_USERNAME = "testuser";
+
+export const E2E_PUBLIC_DEMO_CRATE_RELEASE_COUNT = 4;
+
+export const E2E_PUBLIC_DEMO_PLAYLIST_TRACK_COUNT = 2;

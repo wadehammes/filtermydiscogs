@@ -5,12 +5,6 @@ import {
 } from "src/components/AuthenticatedProvidersGate.component.po";
 import { screen } from "test-utils";
 
-jest.mock("src/components/PlaybackProvidersShell.component", () => ({
-  PlaybackProvidersShell: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="fmdPlaybackProvidersShell">{children}</div>
-  ),
-}));
-
 jest.mock("next/dynamic", () => ({
   __esModule: true,
   default: () =>
@@ -32,41 +26,69 @@ describe("AuthenticatedProvidersGate", () => {
     po = new AuthenticatedProvidersGatePageObject();
   });
 
-  it("mounts the static playback shell on logged-out public routes including home", () => {
+  it("passes children through on logged-out public routes including home", () => {
     po.renderAuthenticatedProvidersGate({ pathname: "/" });
 
-    expect(screen.getByTestId(po.playbackShellTestId)).toBeInTheDocument();
     expect(
       screen.queryByTestId(po.authenticatedDynamicTestId),
     ).not.toBeInTheDocument();
     expect(screen.getByTestId(po.childProbeTestId)).toBeInTheDocument();
   });
 
-  it("mounts the static playback shell on logged-out public crate routes", () => {
+  it("passes children through on logged-out public crate routes", () => {
     po.renderAuthenticatedProvidersGate({
       pathname: "/crate/ab65c378-fab9-42c0-96bb-c308d413cbbb",
     });
 
-    expect(screen.getByTestId(po.playbackShellTestId)).toBeInTheDocument();
     expect(
       screen.queryByTestId(po.authenticatedDynamicTestId),
     ).not.toBeInTheDocument();
     expect(screen.getByTestId(po.childProbeTestId)).toBeInTheDocument();
   });
 
-  it("passes children through without playback on logged-out protected routes", () => {
+  it("passes children through on logged-out public playlist routes", () => {
+    po.renderAuthenticatedProvidersGate({
+      pathname: "/playlist/11111111-2222-3333-4444-555555555555",
+    });
+
+    expect(
+      screen.queryByTestId(po.authenticatedDynamicTestId),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId(po.childProbeTestId)).toBeInTheDocument();
+  });
+
+  it("passes children through without the authenticated shell on logged-out protected routes", () => {
     po.renderAuthenticatedProvidersGate({ pathname: "/releases" });
 
     expect(
-      screen.queryByTestId(po.playbackShellTestId),
-    ).not.toBeInTheDocument();
-    expect(
       screen.queryByTestId(po.authenticatedDynamicTestId),
     ).not.toBeInTheDocument();
     expect(screen.getByTestId(po.childProbeTestId)).toBeInTheDocument();
   });
 
-  it("uses the dynamic authenticated shell when the session is active", () => {
+  it("uses the dynamic authenticated shell when the session is active on protected routes", () => {
+    po.renderAuthenticatedProvidersGate({
+      pathname: "/releases",
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    expect(
+      screen.getByTestId(po.authenticatedDynamicTestId),
+    ).toBeInTheDocument();
+  });
+
+  it("uses the dynamic authenticated shell when the session is active on public playlist routes", () => {
+    po.renderAuthenticatedProvidersGate({
+      pathname: "/playlist/11111111-2222-3333-4444-555555555555",
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    expect(
+      screen.getByTestId(po.authenticatedDynamicTestId),
+    ).toBeInTheDocument();
+  });
+
+  it("uses the dynamic authenticated shell when the session is active on public crate routes", () => {
     po.renderAuthenticatedProvidersGate({
       pathname: "/crate/ab65c378-fab9-42c0-96bb-c308d413cbbb",
       authInitialState: testAuthenticatedAuthState,
@@ -75,8 +97,22 @@ describe("AuthenticatedProvidersGate", () => {
     expect(
       screen.getByTestId(po.authenticatedDynamicTestId),
     ).toBeInTheDocument();
+  });
+
+  it("passes children through when the live URL is a public playlist but the router pathname still points at a protected route", () => {
+    const playlistPath = "/playlist/11111111-2222-3333-4444-555555555555";
+    const pathnameGetter = jest
+      .spyOn(window.location, "pathname", "get")
+      .mockReturnValue(playlistPath);
+
+    po.setPathname("/releases");
+    po.renderAuthenticatedProvidersGate({ pathname: "/releases" });
+
     expect(
-      screen.queryByTestId(po.playbackShellTestId),
+      screen.queryByTestId(po.authenticatedDynamicTestId),
     ).not.toBeInTheDocument();
+    expect(screen.getByTestId(po.childProbeTestId)).toBeInTheDocument();
+
+    pathnameGetter.mockRestore();
   });
 });

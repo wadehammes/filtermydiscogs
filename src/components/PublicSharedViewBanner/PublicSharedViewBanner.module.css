@@ -1,0 +1,32 @@
+.banner {
+  background: color-mix(in srgb, var(--success) 8%, var(--background));
+  border-bottom: 1px solid color-mix(in srgb, var(--success) 22%, var(--border));
+  inset-inline: 0;
+  padding: var(--space-2) var(--space-4);
+  position: sticky;
+  top: calc(
+    env(safe-area-inset-top, 0px) +
+    var(--space-3) +
+    var(--space-3) +
+    1.75rem
+  );
+  width: 100%;
+  z-index: calc(var(--z-2-sticky) - 1);
+
+  @media (width >= 768px) {
+    top: calc(
+      env(safe-area-inset-top, 0px) +
+      var(--space-4) +
+      var(--space-4) +
+      2rem
+    );
+  }
+}
+
+.text {
+  color: var(--success);
+  font-size: var(--text-xs);
+  line-height: 1.35;
+  margin: 0;
+  text-align: center;
+}

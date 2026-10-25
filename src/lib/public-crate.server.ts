@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { isE2eMockYoutubeEmbedEnabled } from "src/constants/e2ePlayback.constants";
 import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/publicCrate.constants";
 import { isValidCrateId } from "src/lib/crate-id";
@@ -8,6 +8,7 @@ import {
   findPublicCrateById,
   findPublicCrateSummaryById,
 } from "src/lib/public-crate-query.server";
+import { publicCrateCacheTag } from "src/lib/public-share-cache.server";
 import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 
 export const PUBLIC_CRATE_STATIC_PARAMS_LIMIT = 100;
@@ -69,6 +70,7 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
 } | null> {
   "use cache";
   cacheLife({ revalidate: 300 });
+  cacheTag(publicCrateCacheTag(crateId));
 
   try {
     if (!isValidCrateId(crateId)) {

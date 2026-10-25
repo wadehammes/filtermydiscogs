@@ -17,6 +17,7 @@ import type { DiscogsTrack } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
 import {
+  formatTrackPositionTitle,
   formatUserTrackListenLabel,
   type UserTrackStatCounts,
 } from "src/utils/userTrack";
@@ -63,7 +64,7 @@ export const ReleaseTracklist = ({
   isTrackQueued,
   isTrackUnqueueable,
   getPositionLabel,
-  hideTrackPosition = false,
+  hideTrackPosition: _hideTrackPosition = false,
   reserveQueueColumn = false,
   onTrackSelect,
   onTrackQueue,
@@ -126,9 +127,7 @@ export const ReleaseTracklist = ({
     <div className={styles.tracklistPanel}>
       <Tooltip.Provider closeDelay={80} delay={250}>
         <ol
-          className={classNames(styles.tracklist, {
-            [styles.tracklistNoPosition]: hideTrackPosition,
-          })}
+          className={classNames(styles.tracklist, styles.tracklistNoPosition)}
           data-testid="fmdReleaseTracklist"
           aria-label={RELEASE_TRACKLIST_LABEL}
         >
@@ -165,8 +164,10 @@ export const ReleaseTracklist = ({
               track,
               releaseArtistNames,
             });
-            const positionLabel =
-              getPositionLabel?.(track.position) ?? track.position;
+            const trackDisplayTitle = formatTrackPositionTitle(
+              getPositionLabel?.(track.position) ?? track.position,
+              track.title,
+            );
             const trackStats = trackStatsByPosition?.[track.position];
             const trackStatsLabel = trackStats
               ? formatUserTrackListenLabel(trackStats)
@@ -178,7 +179,9 @@ export const ReleaseTracklist = ({
                   <PlayingIndicator isPaused={isPlaybackPaused} />
                 ) : null}
                 <span className={styles.trackTitleStack}>
-                  <span className={styles.trackTitleText}>{track.title}</span>
+                  <span className={styles.trackTitleText}>
+                    {trackDisplayTitle}
+                  </span>
                   {trackCreditsLine ? (
                     <span className={styles.trackCredits}>
                       {trackCreditsLine}
@@ -188,14 +191,7 @@ export const ReleaseTracklist = ({
               </span>
             );
 
-            const trackMainContent = (
-              <>
-                {hideTrackPosition ? null : (
-                  <span className={styles.trackPosition}>{positionLabel}</span>
-                )}
-                {trackTitleContent}
-              </>
-            );
+            const trackMainContent = trackTitleContent;
 
             return (
               <li
@@ -222,7 +218,7 @@ export const ReleaseTracklist = ({
 
                       onTrackSelect?.(track.position);
                     }}
-                    aria-label={`Play ${track.title}`}
+                    aria-label={`Play ${trackDisplayTitle}`}
                     {...definedProps({
                       "aria-current": isActive ? ("true" as const) : undefined,
                     })}
@@ -271,7 +267,7 @@ export const ReleaseTracklist = ({
                       {showTrackRowMenu ? (
                         <ReleaseTrackRowMenu
                           className={styles.trackRowMenu}
-                          trackTitle={track.title}
+                          trackTitle={trackDisplayTitle}
                           triggerClassName={styles.queueButton}
                           canAddToQueue={canAddToQueue}
                           canUnqueue={canUnqueue}

@@ -1,11 +1,13 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { ImageResponse } from "next/og";
 import { SITE_NAME } from "src/constants/siteMetadata";
 import { getPublicCrateForOg } from "src/lib/public-crate.server";
+import { publicCrateCacheTag } from "src/lib/public-share-cache.server";
 
 async function getCachedCrateForOg(id: string) {
   "use cache";
   cacheLife({ revalidate: 300 });
+  cacheTag(publicCrateCacheTag(id));
 
   return getPublicCrateForOg(id);
 }

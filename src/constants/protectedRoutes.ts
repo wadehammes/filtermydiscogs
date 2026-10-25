@@ -14,3 +14,9 @@ export const isProtectedAppRoute = (pathname: string): boolean =>
 
 export const isPublicCrateRoute = (pathname: string): boolean =>
   pathname.startsWith("/crate/") && pathname.length > "/crate/".length;
+
+export const isPublicPlaylistRoute = (pathname: string): boolean =>
+  pathname.startsWith("/playlist/") && pathname.length > "/playlist/".length;
+
+export const isPublicShareRoute = (pathname: string): boolean =>
+  isPublicCrateRoute(pathname) || isPublicPlaylistRoute(pathname);

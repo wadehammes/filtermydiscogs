@@ -13,9 +13,15 @@ export const createPlaylistBodySchema = z.object({
 
 export type CreatePlaylistFormValues = z.infer<typeof createPlaylistBodySchema>;
 
-export const updatePlaylistBodySchema = z.object({
-  name: playlistNameFieldSchema,
-});
+export const updatePlaylistBodySchema = z
+  .object({
+    name: playlistNameFieldSchema.optional(),
+    private: z.boolean().optional(),
+  })
+  .refine(
+    (body) => body.name !== undefined || body.private !== undefined,
+    "At least one field is required",
+  );
 
 export const addPlaylistTrackBodySchema = userTrackMetadataBodySchema;
 

@@ -41,6 +41,7 @@ export const ReleaseMiniPlayer = ({
     release,
     activeTrackPosition,
     activePlaybackTitle,
+    activePlaybackArtist,
     isReleasePreview,
     playbackVideoId,
     embedVideoId,
@@ -121,7 +122,8 @@ export const ReleaseMiniPlayer = ({
     );
   }
 
-  const artistNames = formatArtistNames(release);
+  const artistNames =
+    activePlaybackArtist?.trim() || formatArtistNames(release);
   const thumbUrl = getReleaseImageUrl({
     thumb: release.basic_information.thumb,
     cover_image: release.basic_information.cover_image,

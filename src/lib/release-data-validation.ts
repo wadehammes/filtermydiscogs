@@ -62,3 +62,21 @@ export function toPublicReleaseSnapshot(
     basic_information: sanitizeBasicInformation(release.basic_information),
   };
 }
+
+export function toPublicPlaylistReleaseSnapshot(
+  release: DiscogsRelease,
+): DiscogsRelease {
+  const {
+    notes: _notes,
+    rating: _rating,
+    date_added: _dateAdded,
+    folder_id: _folderId,
+    ...publicFields
+  } = release;
+
+  return {
+    ...publicFields,
+    instance_id: String(release.instance_id),
+    basic_information: sanitizeBasicInformation(release.basic_information),
+  } as DiscogsRelease;
+}

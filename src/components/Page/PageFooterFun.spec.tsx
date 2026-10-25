@@ -6,6 +6,8 @@ import { render, screen } from "test-utils";
 const stats: PublicCommunityStats = {
   totalCrates: 128,
   totalPublicCrates: 12,
+  totalPlaylists: 34,
+  totalPublicPlaylists: 5,
   totalReleases: 4_200,
   totalTracksSaved: 89,
   totalCollectors: 56,
@@ -18,6 +20,8 @@ describe("PageFooterFun", () => {
 
     expect(screen.getByText("Crates created")).toBeInTheDocument();
     expect(screen.getByText("Public crates")).toBeInTheDocument();
+    expect(screen.getByText("Playlists created")).toBeInTheDocument();
+    expect(screen.getByText("Public playlists")).toBeInTheDocument();
     expect(screen.getByText("Releases in crates")).toBeInTheDocument();
     expect(screen.getByText("Tracks saved")).toBeInTheDocument();
     expect(screen.getByText("Collectors")).toBeInTheDocument();

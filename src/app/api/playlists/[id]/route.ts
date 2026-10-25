@@ -6,10 +6,11 @@ import {
 import {
   deletePlaylist,
   getPlaylistDetail,
-  updatePlaylistName,
+  updatePlaylistFields,
 } from "src/lib/playlist.server";
 import { requirePlaylistsFeatureEnabled } from "src/lib/playlistsFeatureGuard.server";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { revalidatePublicShareSeo } from "src/lib/public-share-cache.server";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { updatePlaylistBodySchema } from "src/lib/validation/playlist.schemas";
 
@@ -68,10 +69,21 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const updated = await updatePlaylistName(
+    const { name, private: privateField } = parsedBody.data;
+    const fields: Parameters<typeof updatePlaylistFields>[2] = {};
+
+    if (name !== undefined) {
+      fields.name = name;
+    }
+
+    if (privateField !== undefined) {
+      fields.private = privateField;
+    }
+
+    const updated = await updatePlaylistFields(
       verified.user.userId,
       id,
-      parsedBody.data.name,
+      fields,
     );
 
     if (!updated) {
@@ -79,6 +91,10 @@ export async function PATCH(
     }
 
     const playlist = await getPlaylistDetail(verified.user.userId, id);
+
+    if (privateField !== undefined) {
+      revalidatePublicShareSeo({ kind: "playlist", id });
+    }
 
     return privateRouteJson({ playlist });
   } catch (error) {

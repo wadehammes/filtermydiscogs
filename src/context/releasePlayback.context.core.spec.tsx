@@ -9,6 +9,7 @@ import { basicInformationFactory } from "src/tests/factories/BasicInformation.fa
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
+import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
@@ -20,6 +21,7 @@ import {
 import { PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS } from "src/utils/playbackEmbedStartWatchdog";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
+import { buildStubReleaseForPlaylistTrack } from "src/utils/playlistTrackStubRelease";
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
@@ -128,6 +130,89 @@ describe("ReleasePlaybackProvider — queue and session", () => {
     expect(result.current.activeTrackPosition).toBe("A1");
     expect(result.current.activeVideoId).toBe("te2jJncBVG4");
     expect(result.current.isPlaying).toBe(true);
+  });
+
+  it("exposes activePlaybackTitle from trackTitle and skips queue building for YouTube-only playlist stubs", () => {
+    const track = playlistTrackRowFactory.opening({
+      discogs_release_id: null,
+      track_title: "Playlist opening",
+      youtube_id: "te2jJncBVG4",
+    });
+    const stubRelease = buildStubReleaseForPlaylistTrack(track);
+
+    if (!stubRelease) {
+      throw new Error("expected stub release");
+    }
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: stubRelease,
+        trackPosition: track.track_position,
+        trackTitle: track.track_title,
+        ...(track.youtube_id ? { youtubeVideoId: track.youtube_id } : {}),
+      });
+    });
+
+    expect(result.current.activePlaybackTitle).toBe("A1 - Playlist opening");
+    expect(result.current.isQueueBuilding).toBe(false);
+  });
+
+  it("updates mini-player metadata when switching to a YouTube-only playlist stub from another release", async () => {
+    const mooditaTrack = playlistTrackRowFactory.opening({
+      instance_id: "88002",
+      track_key: "88002:A1",
+      track_title: "Moodita",
+      artist: "D I N",
+      release_title: "Moodita EP",
+      discogs_release_id: null,
+      youtube_id: "moodita-youtube-id",
+    });
+    const mooditaRelease = buildStubReleaseForPlaylistTrack(mooditaTrack);
+
+    if (!mooditaRelease) {
+      throw new Error("expected moodita stub release");
+    }
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.activePlaybackTitle).toBeTruthy();
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: mooditaRelease,
+        trackPosition: mooditaTrack.track_position,
+        trackTitle: mooditaTrack.track_title,
+        ...(mooditaTrack.youtube_id
+          ? { youtubeVideoId: mooditaTrack.youtube_id }
+          : {}),
+        rebuildAlbumQueue: false,
+      });
+    });
+
+    expect(result.current.release?.instance_id).toBe(
+      mooditaRelease.instance_id,
+    );
+    expect(result.current.activePlaybackTitle).toBe("A1 - Moodita");
+    expect(result.current.embedVideoId).toBe("moodita-youtube-id");
+    expect(result.current.release?.basic_information.artists[0]?.name).toBe(
+      "D I N",
+    );
   });
 
   it("requests playVideo when the embed iframe registers after a user gesture", async () => {

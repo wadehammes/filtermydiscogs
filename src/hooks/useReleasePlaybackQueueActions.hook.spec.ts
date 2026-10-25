@@ -92,6 +92,8 @@ const buildHarness = ({
   const { result } = renderHook(() =>
     useReleasePlaybackQueueActions({
       dispatchSession,
+      setNowPlayingQueueItem: jest.fn(),
+      setPlaybackTrackTitleOverride: jest.fn(),
       setShouldAutoplayEmbed: jest.fn(),
       setIsPlaybackEmbedMounted: jest.fn(),
       setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -228,6 +230,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId,
@@ -310,6 +314,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -392,6 +398,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId,
@@ -477,6 +485,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId,
@@ -560,6 +570,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -624,6 +636,87 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(beginPlaybackVideoUiLoading).not.toHaveBeenCalled();
   });
 
+  it("playQueueItem with an explicit youtubeVideoId does not leave a pending track position", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const dispatchSession = jest.fn() as Dispatch<PlaybackSessionAction>;
+    const syncEmbedToVideoId = jest.fn<(videoId: string) => void>();
+    const sharedVideoId = "abc12345678";
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId: jest.fn(),
+        setPlaybackVideoUiLoadingTargetId: jest.fn(),
+        clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance: jest.fn(),
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId,
+        syncEmbedForQueueItem: jest.fn(() => null),
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(false) },
+          similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: false },
+          similarQueueTailToastShownRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
+          releaseRef: { current: release },
+          queueRef: { current: [] },
+          playbackHistoryRef: { current: [] },
+          isPlayingRef: { current: false },
+          isPausedRef: { current: false },
+          releaseDetailIdRef: { current: undefined },
+          tracksRef: { current: [] },
+          lastSyncedActiveVideoIdRef: { current: null },
+          matchedActiveVideoIdRef: { current: null },
+          activeVideoIdRef: { current: null },
+          embedVideoIdRef: { current: null },
+          activeTrackPositionRef: { current: null },
+          isReleasePreviewRef: { current: false },
+        },
+      }),
+    );
+
+    result.current.startPlayback({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Override track",
+      rebuildAlbumQueue: false,
+      youtubeVideoId: sharedVideoId,
+    });
+
+    expect(dispatchSession).toHaveBeenCalledWith({
+      type: "PLAY_QUEUE_ITEM",
+      params: expect.objectContaining({
+        pendingTrackPosition: null,
+      }),
+    });
+    expect(dispatchSession).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: "SET_PENDING_TRACK_POSITION" }),
+    );
+  });
+
   it("playNext passes forceReload to syncEmbedForQueueItem after an unavailable skip advance", () => {
     const release = releaseFactory.withDisplayDefaults();
     const nextItem = createQueueItem({
@@ -644,6 +737,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn(),
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -722,6 +817,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -817,6 +914,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -890,6 +989,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -961,6 +1062,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: jest.fn() as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),
@@ -1207,6 +1310,8 @@ describe("useReleasePlaybackQueueActions", () => {
     const { result } = renderHook(() =>
       useReleasePlaybackQueueActions({
         dispatchSession: dispatchSession as Dispatch<PlaybackSessionAction>,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
         setShouldAutoplayEmbed: jest.fn(),
         setIsPlaybackEmbedMounted: jest.fn(),
         setPlaybackVideoTransitionTargetId: jest.fn(),

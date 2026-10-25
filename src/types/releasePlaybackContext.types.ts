@@ -5,9 +5,12 @@ export interface StartPlaybackParams {
   release: DiscogsRelease;
   trackPosition: string;
   trackTitle?: string;
+  artist?: string | null;
+  releaseTitle?: string | null;
   startPaused?: boolean;
   rebuildAlbumQueue?: boolean;
   youtubeVideoId?: string;
+  upcomingQueue?: PlaybackQueueItem[];
 }
 
 export interface StartReleasePreviewParams {
@@ -20,6 +23,8 @@ export interface AddToQueueParams {
   trackPosition: string;
   trackTitle: string;
   youtubeVideoId?: string;
+  artist?: string | null;
+  releaseTitle?: string | null;
 }
 
 export interface AddPreviewToQueueParams {
@@ -46,6 +51,7 @@ export interface ReleasePlaybackState {
   embedVideoId: string | null;
   playbackVideoId: string | null;
   activePlaybackTitle: string | null;
+  activePlaybackArtist: string | null;
   isReleasePreview: boolean;
   isPlaying: boolean;
   isPaused: boolean;

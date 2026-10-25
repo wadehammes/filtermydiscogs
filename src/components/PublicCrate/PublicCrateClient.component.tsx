@@ -7,6 +7,8 @@ import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConne
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
 import { PublicReleaseModal } from "src/components/PublicReleaseModal/PublicReleaseModal.component";
+import { PublicSharedViewBanner } from "src/components/PublicSharedViewBanner/PublicSharedViewBanner.component";
+import { PublicSharePlaybackShell } from "src/components/PublicSharePlaybackShell/PublicSharePlaybackShell.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { PUBLIC_SHARED_CRATE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { PUBLIC_CRATE_MARKETING_BULLETS } from "src/constants/marketingPublicCopy";
@@ -89,15 +91,9 @@ const PublicCrateLoadedContent = ({
 
   return (
     <>
+      <PublicSharedViewBanner kind="crate" username={crate.username} />
       <div className={styles.container}>
         <div className={styles.content}>
-          {crate.username ? (
-            <div className={styles.notice}>
-              <p className={styles.noticeText}>
-                You are viewing a public crate for {crate.username}
-              </p>
-            </div>
-          ) : null}
           <div className={styles.section}>
             <h1 className={styles.title}>{crate.name}</h1>
             <div className={styles.meta}>
@@ -248,7 +244,9 @@ export const PublicCrateClient = ({ crateId }: PublicCrateClientProps) => {
       data-testid="fmdPublicCrate"
       aria-label={PUBLIC_SHARED_CRATE_MAIN_LABEL}
     >
-      <PublicCrateClientContent crateId={crateId} />
+      <PublicSharePlaybackShell>
+        <PublicCrateClientContent crateId={crateId} />
+      </PublicSharePlaybackShell>
     </main>
   );
 };

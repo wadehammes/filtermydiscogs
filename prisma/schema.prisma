@@ -36,6 +36,8 @@ model Playlist {
   user_id    Int
   id         String   @default(uuid())
   name       String
+  username   String?
+  private    Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -44,6 +46,7 @@ model Playlist {
 
   @@id([user_id, id])
   @@index([user_id])
+  @@index([id, private])
   @@map("playlists")
 }
 
@@ -70,6 +73,7 @@ model UserTrack {
   release_title    String?
   artist           String?
   instance_id      String
+  discogs_release_id Int?
   play_count       Int      @default(0)
   listen_count     Int      @default(0)
   last_played_at   DateTime?

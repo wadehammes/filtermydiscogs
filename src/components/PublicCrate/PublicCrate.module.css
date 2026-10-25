@@ -19,26 +19,6 @@
   width: 100%;
 }
 
-.notice {
-  background: color-mix(in srgb, var(--success) 10%, var(--background));
-  border-left: 3px solid var(--success);
-  border-radius: var(--radius-ui);
-  margin-bottom: var(--space-6);
-  padding: var(--space-4);
-
-  @media (width >= 768px) {
-    margin-bottom: var(--space-8);
-    padding: var(--space-4) var(--space-6);
-  }
-}
-
-.noticeText {
-  color: var(--success);
-  font-size: var(--text-sm);
-  margin: 0;
-  text-align: left;
-}
-
 .section {
   margin-bottom: var(--space-12);
 

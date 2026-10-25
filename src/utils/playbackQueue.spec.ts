@@ -89,6 +89,36 @@ describe("playbackQueue", () => {
     ).toEqual([previewItem, otherAlbumItem]);
   });
 
+  it("creates queue items with optional playlist metadata when provided", () => {
+    const item = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+      youtubeVideoId: "  dQw4w9WgXcQ  ",
+      artist: " Artist ",
+      releaseTitle: " Album ",
+    });
+
+    expect(item.youtubeVideoId).toBe("dQw4w9WgXcQ");
+    expect(item.artist).toBe("Artist");
+    expect(item.releaseTitle).toBe("Album");
+  });
+
+  it("omits blank optional playlist metadata on queue items", () => {
+    const item = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+      youtubeVideoId: "   ",
+      artist: null,
+      releaseTitle: "",
+    });
+
+    expect(item.youtubeVideoId).toBeUndefined();
+    expect(item.artist).toBeUndefined();
+    expect(item.releaseTitle).toBeUndefined();
+  });
+
   it("creates stable queue item keys", () => {
     const item = createQueueItem({
       release,

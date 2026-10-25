@@ -3,3 +3,5 @@ export const LOGIN_DEMO_PUBLIC_CRATE_ID =
 
 export const LOGIN_DEMO_PUBLIC_CRATE_PATH =
   `/crate/${LOGIN_DEMO_PUBLIC_CRATE_ID}` as const;
+
+export const LOGIN_DEMO_PUBLIC_CRATE_TITLE = "E2E Public Demo Crate";

@@ -4,6 +4,7 @@ import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTrackli
 import { artistFactory } from "src/tests/factories/Artist.factory";
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import type { DiscogsTrack } from "src/types";
+import { formatTrackPositionTitle } from "src/utils/userTrack";
 import { render, screen, waitFor } from "test-utils";
 
 const releaseArtistNames = "Rick Astley";
@@ -40,6 +41,12 @@ const tracks: DiscogsTrack[] = [
   }),
 ];
 
+const trackALabel = formatTrackPositionTitle("A", "Never Gonna Give You Up");
+const trackBLabel = formatTrackPositionTitle(
+  "B",
+  "Never Gonna Give You Up (Instrumental)",
+);
+
 describe("ReleaseTracklist", () => {
   it("renders tracks and calls onTrackSelect when a row is clicked", async () => {
     const user = userEvent.setup();
@@ -57,13 +64,13 @@ describe("ReleaseTracklist", () => {
     expect(screen.getByTestId("fmdReleaseTracklist")).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: /Never Gonna Give You Up \(Instrumental\)/,
+        name: `Play ${trackBLabel}`,
       }),
     ).toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", {
-        name: /Never Gonna Give You Up \(Instrumental\)/,
+        name: `Play ${trackBLabel}`,
       }),
     );
 
@@ -82,7 +89,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
 
     expect(
       screen.getByRole("menuitem", { name: "Add YouTube URL" }),
@@ -101,18 +108,14 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    expect(
-      screen.getByText("Never Gonna Give You Up (Instrumental)"),
-    ).toBeInTheDocument();
+    expect(screen.getByText(trackBLabel)).toBeInTheDocument();
     expect(
       screen.queryByRole("button", {
-        name: /Never Gonna Give You Up \(Instrumental\)/,
+        name: `Play ${trackBLabel}`,
       }),
     ).toBeNull();
 
-    await user.click(
-      screen.getByText("Never Gonna Give You Up (Instrumental)"),
-    );
+    await user.click(screen.getByText(trackBLabel));
 
     expect(onTrackSelect).not.toHaveBeenCalled();
   });
@@ -241,7 +244,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up (Instrumental)");
+    await openTrackActionsMenu(user, trackBLabel);
     await user.click(screen.getByRole("menuitem", { name: "Add to queue" }));
 
     expect(onTrackQueue).toHaveBeenCalledWith("B");
@@ -264,7 +267,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
     await user.click(
       screen.getByRole("menuitem", { name: "Remove from queue" }),
     );
@@ -326,7 +329,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    const row = screen.getByText("Never Gonna Give You Up").closest("li");
+    const row = screen.getByText(trackALabel).closest("li");
     expect(row).toHaveAttribute("data-track-queued-at-rest", "");
     expect(
       screen.getByTestId("fmdReleaseTrackQueueCheckIcon"),
@@ -352,7 +355,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
 
     expect(
       screen.getByRole("menuitem", { name: "Remove from queue" }),
@@ -378,7 +381,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
 
     expect(
       screen.queryByRole("menuitem", { name: "Remove from queue" }),
@@ -425,9 +428,10 @@ describe("ReleaseTracklist", () => {
     expect(
       screen.getByTestId("fmdReleaseTrackQueueRemoveIcon"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Never Gonna Give You Up").closest("li"),
-    ).toHaveAttribute("data-track-queued-at-rest", "");
+    expect(screen.getByText(trackALabel).closest("li")).toHaveAttribute(
+      "data-track-queued-at-rest",
+      "",
+    );
   });
 
   it("when a queued row is hovered, opens the actions menu from the menu trigger", async () => {
@@ -445,7 +449,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
 
     expect(screen.getByRole("menuitem", { name: "In queue" })).toHaveAttribute(
       "aria-disabled",
@@ -526,7 +530,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
 
     expect(screen.getByRole("menuitem", { name: "In queue" })).toHaveAttribute(
       "aria-disabled",
@@ -548,7 +552,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
 
     expect(
       screen.getByRole("menuitem", { name: "Use different video" }),
@@ -572,7 +576,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    await openTrackActionsMenu(user, "Never Gonna Give You Up");
+    await openTrackActionsMenu(user, trackALabel);
     await user.click(screen.getByRole("menuitem", { name: "Add YouTube URL" }));
 
     expect(onEditTrackYoutube).toHaveBeenCalledWith("A");

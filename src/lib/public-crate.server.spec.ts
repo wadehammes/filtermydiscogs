@@ -10,6 +10,7 @@ import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/publicCrate.constants"
 
 jest.mock("next/cache", () => ({
   cacheLife: jest.fn(),
+  cacheTag: jest.fn(),
 }));
 
 jest.mock("src/lib/db", () => ({

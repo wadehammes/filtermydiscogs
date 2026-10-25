@@ -38,14 +38,35 @@ describe("resolvePlaylistTrackToQueueItem", () => {
       instanceId: "9001",
       trackPosition: "A1",
       trackTitle: "Opening",
+      artist: "Test Artist",
+      releaseTitle: "Test Album",
+      youtubeVideoId: "dQw4w9WgXcQ",
       release,
     });
   });
 
-  it("returns null when the instance is not in the collection", () => {
-    const trackRow = playlistTrackRowFactory.opening();
+  it("returns null when the instance is not in the collection and has no YouTube override", () => {
+    const trackRow = playlistTrackRowFactory.opening({ youtube_id: null });
 
     expect(resolvePlaylistTrackToQueueItem(trackRow, [])).toBeNull();
+  });
+
+  it("builds a queue item from a YouTube override when the release is missing", () => {
+    const trackRow = playlistTrackRowFactory.opening({
+      instance_id: "4040",
+      track_key: "4040:A1",
+      youtube_id: "dQw4w9WgXcQ",
+    });
+
+    const item = resolvePlaylistTrackToQueueItem(trackRow, []);
+
+    expect(item?.instanceId).toBe("4040");
+    expect(item?.trackTitle).toBe("Opening");
+    expect(item?.release.instance_id).toBe("4040");
+    expect(item?.release.basic_information.thumb).toBe("");
+    expect(item?.release.basic_information.cover_image).toBe("");
+    expect(item?.youtubeVideoId).toBe("dQw4w9WgXcQ");
+    expect(item?.artist).toBe("Test Artist");
   });
 });
 
@@ -57,6 +78,7 @@ describe("resolvePlaylistTracksToQueueItems", () => {
       instance_id: "4040",
       track_key: "4040:B1",
       track_position: "B1",
+      youtube_id: null,
     });
 
     const items = resolvePlaylistTracksToQueueItems(
@@ -89,7 +111,7 @@ describe("planPlaylistPlaybackStart", () => {
   });
 
   it("returns null when no playable row exists from the start key", () => {
-    const tracks = [playlistTrackRowFactory.opening()];
+    const tracks = [playlistTrackRowFactory.opening({ youtube_id: null })];
 
     expect(planPlaylistPlaybackStart(tracks, "9001:A1", [])).toBeNull();
   });

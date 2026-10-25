@@ -17,6 +17,8 @@ import type { PlaylistTrackRow } from "src/types/playlist.types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { isPlaylistTrackActiveInPlayback } from "src/utils/playlistPlayback";
+import { resolvePlaylistTrackReleaseMetaLine } from "src/utils/playlistTrackDisplay";
+import { formatTrackPositionTitle } from "src/utils/userTrack";
 import styles from "./PlaylistDrawerTrackItem.module.css";
 
 export interface PlaylistDrawerTrackItemProps {
@@ -74,9 +76,11 @@ export const PlaylistDrawerTrackItem = ({
     onPlayTrack(track);
   };
 
-  const metaLine = [track.track_position, track.release_title]
-    .filter(Boolean)
-    .join(" · ");
+  const trackLabel = formatTrackPositionTitle(
+    track.track_position,
+    track.track_title,
+  );
+  const metaLine = resolvePlaylistTrackReleaseMetaLine(track, release);
 
   return (
     <div
@@ -136,8 +140,8 @@ export const PlaylistDrawerTrackItem = ({
           onClick={handlePlay}
           aria-label={
             isActiveInPlayback
-              ? `Now playing ${track.track_title}`
-              : `Play ${track.track_title}`
+              ? `Now playing ${trackLabel}`
+              : `Play ${trackLabel}`
           }
           aria-current={isActiveInPlayback ? "true" : undefined}
         >
@@ -159,7 +163,7 @@ export const PlaylistDrawerTrackItem = ({
                 styles.trackTitleText,
               )}
             >
-              {track.track_title}
+              {trackLabel}
             </span>
             {metaLine ? (
               <span
@@ -186,7 +190,7 @@ export const PlaylistDrawerTrackItem = ({
                   styles.dragHandle,
                 )}
                 iconClassName={styles.dragHandleIcon}
-                aria-label={`Reorder ${track.track_title}`}
+                aria-label={`Reorder ${trackLabel}`}
                 {...(dragHandleAttributes ?? {})}
                 {...(dragHandleListeners ?? {})}
               >
@@ -204,7 +208,7 @@ export const PlaylistDrawerTrackItem = ({
               iconClassName={stackStyles.actionIcon}
               onClick={handleRemove}
               disabled={isRemovePending}
-              aria-label={`Remove ${track.track_title} from playlist`}
+              aria-label={`Remove ${trackLabel} from playlist`}
               title="Remove from playlist"
             >
               <MinusIcon />

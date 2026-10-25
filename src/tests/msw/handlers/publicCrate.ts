@@ -1,8 +1,11 @@
 import { HttpResponse, http } from "msw";
-import { LOGIN_DEMO_PUBLIC_CRATE_ID } from "src/constants/publicCrate.constants";
+import {
+  LOGIN_DEMO_PUBLIC_CRATE_ID,
+  LOGIN_DEMO_PUBLIC_CRATE_TITLE,
+} from "src/constants/publicCrate.constants";
+import { E2E_PUBLIC_DEMO_OWNER_USERNAME } from "src/constants/publicShareE2e.constants";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { buildE2eCollectionReleases } from "src/tests/msw/e2eCollectionData";
-import { E2E_AUTH_USERNAME } from "src/tests/msw/e2eSession.constants";
 import type { DiscogsRelease } from "src/types";
 
 const publicDemoReleases = (): DiscogsRelease[] => buildE2eCollectionReleases();
@@ -16,8 +19,8 @@ const E2E_PUBLIC_CRATE_API_PATHS = [
 export function createDefaultPublicCrateApiHandlers() {
   const demoCrate = crateFactory.build({
     id: LOGIN_DEMO_PUBLIC_CRATE_ID,
-    name: "E2E Public Demo Crate",
-    username: E2E_AUTH_USERNAME,
+    name: LOGIN_DEMO_PUBLIC_CRATE_TITLE,
+    username: E2E_PUBLIC_DEMO_OWNER_USERNAME,
     private: false,
     is_default: false,
   });

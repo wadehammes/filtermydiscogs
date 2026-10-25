@@ -120,9 +120,9 @@ export function LegalPageContent() {
               store note content in Postgres.
             </li>
             <li>
-              <strong>Crates:</strong> Crate names and which releases belong in
-              each crate are stored in Postgres so they persist between
-              sessions.
+              <strong>Crates and playlists:</strong> Crate and playlist names,
+              crate release membership, and playlist track rows are stored in
+              Postgres so they persist between sessions.
             </li>
             <li>
               <strong>In-app playback:</strong> Per-track play and listen counts
@@ -188,10 +188,11 @@ export function LegalPageContent() {
             </li>
             <li>
               You can remove everything stored on my side with &quot;Clear All
-              Data&quot; below. That wipes crates, in-app playback stats, and
-              saved preferences from the database and clears local app data in
-              this browser. It does not delete or change your Discogs collection
-              or notes. You&apos;d manage those on Discogs itself.
+              Data&quot; below. That wipes crates, playlists, in-app playback
+              stats, and saved preferences from the database and clears local
+              app data in this browser. It does not delete or change your
+              Discogs collection or notes. You&apos;d manage those on Discogs
+              itself.
             </li>
           </ul>
           <h3 id="cookies">Cookies & Storage</h3>
@@ -274,8 +275,8 @@ export function LegalPageContent() {
           <ul>
             <li>Auth tokens and session cookies</li>
             <li>
-              All crates and crate membership (permanently deleted from
-              Postgres)
+              All crates, playlists, and their release or track membership
+              (permanently deleted from Postgres)
             </li>
             <li>
               In-app playback stats: per-track play and listen counts from
@@ -312,10 +313,11 @@ export function LegalPageContent() {
           </ul>
           <p>
             <strong>Please note:</strong> This signs you out and permanently
-            deletes crates and saved preferences from the database. Logging out
-            without clearing data keeps your crates and preferences. You can
-            sign in again later. Helpful on a shared computer or when you want
-            to reset this app only. It does not undo note edits on Discogs.
+            deletes crates, playlists, and saved preferences from the database.
+            Logging out without clearing data keeps your crates, playlists, and
+            preferences. You can sign in again later. Helpful on a shared
+            computer or when you want to reset this app only. It does not undo
+            note edits on Discogs.
           </p>
           <Suspense fallback={null}>
             <div data-prose-actions>

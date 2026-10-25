@@ -30,8 +30,8 @@ export const AboutClearDataSection = () => {
           Clear stored data
         </h2>
         <p>
-          Wipe auth, crates, preferences, and local caches on this app. Your
-          Discogs collection and notes stay on Discogs.
+          Wipe auth, crates, playlists, preferences, and local caches on this
+          app. Your Discogs collection and notes stay on Discogs.
         </p>
       </div>
 

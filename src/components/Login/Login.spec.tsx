@@ -122,6 +122,7 @@ describe("Login", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("Browse, search, and filter")).toBeInTheDocument();
+    expect(screen.getByText("Build and share playlists")).toBeInTheDocument();
     expect(screen.getByText("Organize and share crates")).toBeInTheDocument();
     expect(
       screen.getAllByRole("link", { name: "About" }).length,
