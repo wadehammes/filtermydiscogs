@@ -636,7 +636,7 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(beginPlaybackVideoUiLoading).not.toHaveBeenCalled();
   });
 
-  it("playQueueItem with an explicit youtubeVideoId does not leave a pending track position", () => {
+  it("when release detail is not loaded, playQueueItem with an explicit youtubeVideoId still pending the target track position", () => {
     const release = releaseFactory.withDisplayDefaults();
     const dispatchSession = jest.fn() as Dispatch<PlaybackSessionAction>;
     const syncEmbedToVideoId = jest.fn<(videoId: string) => void>();
@@ -700,7 +700,7 @@ describe("useReleasePlaybackQueueActions", () => {
 
     result.current.startPlayback({
       release,
-      trackPosition: "A1",
+      trackPosition: "A2",
       trackTitle: "Override track",
       rebuildAlbumQueue: false,
       youtubeVideoId: sharedVideoId,
@@ -709,7 +709,7 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(dispatchSession).toHaveBeenCalledWith({
       type: "PLAY_QUEUE_ITEM",
       params: expect.objectContaining({
-        pendingTrackPosition: null,
+        pendingTrackPosition: "A2",
       }),
     });
     expect(dispatchSession).not.toHaveBeenCalledWith(

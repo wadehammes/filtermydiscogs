@@ -46,6 +46,7 @@ import {
   toPersistedQueueItem,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
+import { readReleaseEmbeddedTracklist } from "src/utils/resolveQueueItemEmbedTracksVideos";
 import {
   recordTrackPlayFromQueueItem,
   resetUserTrackRecordingSession,
@@ -201,15 +202,24 @@ export const useReleasePlaybackQueueActions = ({
     (item: PlaybackQueueItem): number => {
       const itemReleaseId = parseReleaseId(item.release);
 
-      if (
-        itemReleaseId === null ||
-        Number(releaseDetailIdRef.current) !== itemReleaseId ||
-        tracksRef.current.length === 0
-      ) {
+      if (itemReleaseId === null) {
         return -1;
       }
 
-      return findTrackIndexByPosition(tracksRef.current, item.trackPosition);
+      if (
+        Number(releaseDetailIdRef.current) === itemReleaseId &&
+        tracksRef.current.length > 0
+      ) {
+        return findTrackIndexByPosition(tracksRef.current, item.trackPosition);
+      }
+
+      const embeddedTracks = readReleaseEmbeddedTracklist(item.release);
+
+      if (embeddedTracks.length > 0) {
+        return findTrackIndexByPosition(embeddedTracks, item.trackPosition);
+      }
+
+      return -1;
     },
     [releaseDetailIdRef, tracksRef],
   );
@@ -300,11 +310,8 @@ export const useReleasePlaybackQueueActions = ({
       const resolutionIndex = item.previewVideoUri
         ? -1
         : findQueueItemResolutionIndex(item);
-      const hasExplicitYoutubeOverride = Boolean(resolvedYoutubeVideoId);
       const pendingTrackPositionForPlay =
-        item.previewVideoUri ||
-        resolutionIndex >= 0 ||
-        hasExplicitYoutubeOverride
+        item.previewVideoUri || resolutionIndex >= 0
           ? null
           : item.trackPosition;
 

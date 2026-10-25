@@ -19,6 +19,8 @@
 }
 
 .gridFill {
+  grid-template-columns: repeat(var(--cover-mosaic-cols, 1), 1fr);
+  grid-template-rows: repeat(var(--cover-mosaic-rows, 1), 1fr);
   height: 100%;
   width: 100%;
 }

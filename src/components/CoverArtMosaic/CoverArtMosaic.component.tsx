@@ -42,14 +42,12 @@ export const CoverArtMosaic = ({
         role="img"
         aria-label={ariaLabel}
         data-testid="fmdCoverArtMosaic"
+        style={{
+          ["--cover-mosaic-cols" as string]: cols,
+          ["--cover-mosaic-rows" as string]: rows,
+        }}
       >
-        <div
-          className={classNames(styles.grid, styles.gridFill)}
-          style={{
-            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-            gridTemplateRows: `repeat(${rows}, 1fr)`,
-          }}
-        >
+        <div className={classNames(styles.grid, styles.gridFill)}>
           {thumbUrls.map((url, index) => (
             <div key={`${url}-${index}`} className={styles.cell}>
               <Image
@@ -57,7 +55,7 @@ export const CoverArtMosaic = ({
                 alt=""
                 fill
                 className={styles.image}
-                sizes="(width >= 1024px) 256px, (width >= 768px) 144px, 50vw"
+                sizes="(width >= 1024px) 256px, (width >= 768px) 144px, 88px"
                 priority={index === 0}
               />
             </div>

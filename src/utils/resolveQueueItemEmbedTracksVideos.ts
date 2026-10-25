@@ -4,6 +4,26 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { isSameReleaseInstance } from "src/utils/releaseNotes";
 import { flattenTracklist } from "src/utils/releasePlayback";
 
+export const readReleaseEmbeddedTracklist = (
+  release: DiscogsRelease,
+): DiscogsTrack[] => {
+  const tracklist: unknown = release.tracklist;
+
+  if (!Array.isArray(tracklist)) {
+    return [];
+  }
+
+  return flattenTracklist(tracklist as DiscogsTrack[]);
+};
+
+export const readReleaseEmbeddedVideos = (
+  release: DiscogsRelease,
+): DiscogsVideo[] => {
+  const videos: unknown = release.videos;
+
+  return Array.isArray(videos) ? (videos as DiscogsVideo[]) : [];
+};
+
 export const resolveQueueItemEmbedTracksVideos = ({
   item,
   currentRelease,
@@ -21,12 +41,21 @@ export const resolveQueueItemEmbedTracksVideos = ({
     return { tracks: currentTracks, videos: currentVideos };
   }
 
-  if (!cachedReleaseDetail) {
-    return { tracks: [], videos: [] };
+  if (cachedReleaseDetail) {
+    return {
+      tracks: flattenTracklist(cachedReleaseDetail.tracklist ?? []),
+      videos: cachedReleaseDetail.videos ?? [],
+    };
   }
 
-  return {
-    tracks: flattenTracklist(cachedReleaseDetail.tracklist ?? []),
-    videos: cachedReleaseDetail.videos ?? [],
-  };
+  const embeddedTracks = readReleaseEmbeddedTracklist(item.release);
+
+  if (embeddedTracks.length > 0) {
+    return {
+      tracks: embeddedTracks,
+      videos: readReleaseEmbeddedVideos(item.release),
+    };
+  }
+
+  return { tracks: [], videos: [] };
 };
