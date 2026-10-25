@@ -20,6 +20,23 @@ describe("PublicShareOgImage", () => {
     expect(markup.match(/<img/g)?.length).toBe(2);
   });
 
+  it("when cover urls are provided, collage cells use flex layout", () => {
+    const markup = renderToStaticMarkup(
+      <PublicShareOgImage
+        title="Weekend crate"
+        line2="by collector · FilterMyDiscogs"
+        coverThumbUrls={[
+          "https://i.discogs.com/1.jpg",
+          "https://i.discogs.com/2.jpg",
+        ]}
+      />,
+    );
+    const cells = markup.match(/<div style="[^"]*"><img/g) ?? [];
+
+    expect(cells).toHaveLength(2);
+    expect(cells.every((cell) => cell.includes("display:flex"))).toBe(true);
+  });
+
   it("when cover urls are missing, renders the text-only fallback card", () => {
     const markup = renderToStaticMarkup(
       <PublicShareOgImage
