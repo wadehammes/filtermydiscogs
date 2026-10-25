@@ -49,7 +49,7 @@
   overflow-y: auto;
 
   @media (width >= 1024px) {
-    padding-block: var(--space-4);
+    padding-block: var(--space-4) 0;
     padding-inline: var(--space-4);
   }
 }
@@ -75,7 +75,7 @@
       var(--release-mini-player-stack-offset, 0px)
     )
   );
-  padding-bottom: var(--space-3);
+  padding-bottom: var(--space-4);
 }
 
 .mobileDrawerHeaderStack {

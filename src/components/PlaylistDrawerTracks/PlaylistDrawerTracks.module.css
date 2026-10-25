@@ -29,6 +29,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  padding-bottom: var(--space-4);
 
   @media (width >= 1024px) {
     margin-inline: calc(-1 * var(--space-4));
