@@ -2,6 +2,7 @@ import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.fa
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   buildPlaylistMosaicThumbUrls,
+  PLAYLIST_HERO_MOSAIC_MAX_TILES,
   uniqueInstanceIdsInPlaylistOrder,
 } from "src/utils/playlistMosaic";
 
@@ -76,5 +77,42 @@ describe("buildPlaylistMosaicThumbUrls", () => {
     });
 
     expect(urls).toEqual([]);
+  });
+
+  it("when maxTiles is PLAYLIST_HERO_MOSAIC_MAX_TILES, returns only the first four unique releases", () => {
+    const releases = releaseFactory.buildList(5).map((release, index) =>
+      releaseFactory.build({
+        instance_id: `inst-${index}`,
+        basic_information: {
+          ...release.basic_information,
+          thumb: `https://i.discogs.com/${index}.jpg`,
+          cover_image: "",
+        },
+      }),
+    );
+    const tracks = releases.map((release, index) =>
+      playlistTrackRowFactory.build({
+        instance_id: String(release.instance_id),
+        sort_order: (index + 1) * 10,
+      }),
+    );
+    const releaseByInstanceId = new Map(
+      releases.map((release) => [String(release.instance_id), release]),
+    );
+
+    const urls = buildPlaylistMosaicThumbUrls({
+      tracks,
+      releaseByInstanceId,
+      maxTiles: PLAYLIST_HERO_MOSAIC_MAX_TILES,
+    });
+
+    expect(PLAYLIST_HERO_MOSAIC_MAX_TILES).toBe(4);
+    expect(urls).toHaveLength(4);
+    expect(urls).toEqual([
+      "https://i.discogs.com/0.jpg",
+      "https://i.discogs.com/1.jpg",
+      "https://i.discogs.com/2.jpg",
+      "https://i.discogs.com/3.jpg",
+    ]);
   });
 });

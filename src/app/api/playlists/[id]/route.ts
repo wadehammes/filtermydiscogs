@@ -78,6 +78,10 @@ export async function PATCH(
 
     if (privateField !== undefined) {
       fields.private = privateField;
+
+      if (privateField === false && verified.user.username) {
+        fields.username = verified.user.username;
+      }
     }
 
     const updated = await updatePlaylistFields(

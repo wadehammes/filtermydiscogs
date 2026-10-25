@@ -7,7 +7,10 @@ import {
 } from "src/components/PublicPlaylist/PublicPlaylist.po";
 import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
 import { E2E_EMBED_MOCK_VIDEO_IDS } from "src/constants/e2eEmbedMock.constants";
+import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { publicPlaylistResponseFactory } from "src/tests/factories/PublicPlaylistResponse.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
+import { PLAYLIST_HERO_MOSAIC_MAX_TILES } from "src/utils/playlistMosaic";
 import { screen, waitFor } from "test-utils";
 
 describe("PublicPlaylistClient", () => {
@@ -71,6 +74,57 @@ describe("PublicPlaylistClient", () => {
     expect(
       screen.queryByText(/share a public crate link like this one/i),
     ).not.toBeInTheDocument();
+  });
+
+  it("renders a cover collage from unique release art in the summary hero", async () => {
+    const payload = publicPlaylistResponseFactory.build({
+      playlist: {
+        id: po.playlistId,
+        name: "Collage list",
+        username: "collector",
+        private: false,
+        created_at: "2026-01-01T00:00:00.000Z",
+        updated_at: "2026-01-02T00:00:00.000Z",
+      },
+    });
+
+    po.mockPublicPlaylistResponse(payload);
+    po.renderPublicPlaylistClientWithPlaybackShell();
+
+    const mosaic = await screen.findByTestId("fmdCoverArtMosaic");
+    expect(mosaic).toHaveAttribute(
+      "aria-label",
+      "Collage list cover art collage",
+    );
+    expect(mosaic.querySelectorAll("img")).toHaveLength(
+      Math.min(payload.mosaicThumbUrls.length, PLAYLIST_HERO_MOSAIC_MAX_TILES),
+    );
+  });
+
+  it("limits the summary hero collage to the first four unique releases", async () => {
+    const releases = releaseFactory.buildList(5);
+    const tracks = releases.map((release, index) =>
+      playlistTrackRowFactory.build({
+        instance_id: String(release.instance_id),
+        track_key: `${release.instance_id}:A1`,
+        sort_order: (index + 1) * 10,
+      }),
+    );
+    const payload = publicPlaylistResponseFactory.build({
+      tracks,
+      releases,
+      mosaicThumbUrls: releases
+        .map((release) => release.basic_information.thumb)
+        .filter(Boolean),
+    });
+
+    po.mockPublicPlaylistResponse(payload);
+    po.renderPublicPlaylistClientWithPlaybackShell();
+
+    const mosaic = await screen.findByTestId("fmdCoverArtMosaic");
+    expect(mosaic.querySelectorAll("img")).toHaveLength(
+      PLAYLIST_HERO_MOSAIC_MAX_TILES,
+    );
   });
 
   it("renders the public playlist shared-view banner", async () => {

@@ -8,6 +8,8 @@ import {
 
 export const PLAYLIST_MOSAIC_MAX_TILES = 49;
 
+export const PLAYLIST_HERO_MOSAIC_MAX_TILES = 4;
+
 export const uniqueInstanceIdsInPlaylistOrder = (
   tracks: PlaylistTrackRow[],
 ): string[] => {

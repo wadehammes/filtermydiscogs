@@ -1,15 +1,15 @@
 "use client";
 
 import classNames from "classnames";
-import Image from "next/image";
 import type { ReactNode } from "react";
+import { CoverArtMosaic } from "src/components/CoverArtMosaic/CoverArtMosaic.component";
 import typographyStyles from "src/styles/modules/typography.module.css";
 import styles from "./PublicPlaylistSummaryHero.module.css";
 
 export interface PublicPlaylistSummaryHeroProps {
   title: string;
-  coverUrl: string | null;
-  coverAlt: string;
+  coverThumbUrls: string[];
+  coverLabel: string;
   metaLine: string;
   actions?: ReactNode;
   className?: string;
@@ -17,8 +17,8 @@ export interface PublicPlaylistSummaryHeroProps {
 
 export const PublicPlaylistSummaryHero = ({
   title,
-  coverUrl,
-  coverAlt,
+  coverThumbUrls,
+  coverLabel,
   metaLine,
   actions,
   className,
@@ -28,15 +28,11 @@ export const PublicPlaylistSummaryHero = ({
     data-testid="fmdPublicPlaylistSummaryHero"
   >
     <div className={styles.coverFrame}>
-      {coverUrl ? (
-        <Image
-          src={coverUrl}
-          alt={coverAlt}
-          width={256}
-          height={256}
-          className={styles.coverImage}
-          sizes="(width >= 1024px) 256px, (width >= 768px) 144px, 100vw"
-          priority
+      {coverThumbUrls.length > 0 ? (
+        <CoverArtMosaic
+          thumbUrls={coverThumbUrls}
+          layout="fill"
+          aria-label={coverLabel}
         />
       ) : (
         <div className={styles.coverPlaceholder} aria-hidden />

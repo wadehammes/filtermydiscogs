@@ -1,6 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { ImageResponse } from "next/og";
 import { SITE_NAME } from "src/constants/siteMetadata";
+import { PublicShareOgImage } from "src/lib/og/publicShareOgImage";
 import { getPublicCrateForOg } from "src/lib/public-crate.server";
 import { publicCrateCacheTag } from "src/lib/public-share-cache.server";
 
@@ -24,23 +25,11 @@ export async function GET(
     : SITE_NAME;
 
   return new ImageResponse(
-    <div
-      style={{
-        alignItems: "center",
-        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-        color: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        fontSize: 48,
-        height: "100%",
-        justifyContent: "center",
-        padding: 64,
-        width: "100%",
-      }}
-    >
-      <div style={{ fontSize: 56, fontWeight: 700 }}>{title}</div>
-      <div style={{ fontSize: 28, marginTop: 24, opacity: 0.9 }}>{line2}</div>
-    </div>,
+    <PublicShareOgImage
+      title={title}
+      line2={line2}
+      coverThumbUrls={crate?.coverThumbUrls ?? []}
+    />,
     {
       height: 630,
       width: 1200,

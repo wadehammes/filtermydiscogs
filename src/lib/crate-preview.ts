@@ -15,6 +15,27 @@ export const extractPreviewThumbUrl = (releaseData: unknown): string => {
   });
 };
 
+export const listCrateCoverThumbUrlsInOrder = (
+  rows: { release_data: unknown }[],
+  maxThumbs: number,
+): string[] => {
+  const urls: string[] = [];
+
+  for (const row of rows) {
+    if (urls.length >= maxThumbs) {
+      break;
+    }
+
+    const url = extractPreviewThumbUrl(row.release_data);
+
+    if (url && !url.startsWith("data:")) {
+      urls.push(url);
+    }
+  }
+
+  return urls;
+};
+
 export const groupPreviewThumbsByCrateId = (
   rows: { crate_id: string; release_data: unknown }[],
 ): Map<string, string[]> => {

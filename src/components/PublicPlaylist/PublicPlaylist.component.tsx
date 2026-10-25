@@ -29,7 +29,10 @@ import type {
 } from "src/types/playlist.types";
 import { formatDate } from "src/utils/dateHelpers";
 import { writeLastPlayedPlaylistId } from "src/utils/lastPlayedPlaylistStorage";
-import { resolvePlaylistTrackThumbUrl } from "src/utils/playlistMosaic";
+import {
+  buildPlaylistMosaicThumbUrls,
+  PLAYLIST_HERO_MOSAIC_MAX_TILES,
+} from "src/utils/playlistMosaic";
 import { orderPlaylistTracks } from "src/utils/playlistPlayback";
 import styles from "./PublicPlaylist.module.css";
 
@@ -78,21 +81,20 @@ export const PublicPlaylistClient = ({
     apiReleases,
   });
 
-  const playlistCover = useMemo(() => {
-    const firstTrack = orderedTracks[0];
-    if (!firstTrack) {
-      return { url: null as string | null, alt: "" };
+  const coverThumbUrls = useMemo(() => {
+    const heroMaxTiles = PLAYLIST_HERO_MOSAIC_MAX_TILES;
+    const fromTracks = buildPlaylistMosaicThumbUrls({
+      tracks: orderedTracks,
+      releaseByInstanceId,
+      maxTiles: heroMaxTiles,
+    });
+
+    if (fromTracks.length > 0) {
+      return fromTracks;
     }
 
-    const release = releaseByInstanceId.get(String(firstTrack.instance_id));
-    const url = resolvePlaylistTrackThumbUrl(firstTrack, release);
-    const alt =
-      release?.basic_information.title ??
-      firstTrack.release_title ??
-      firstTrack.track_title;
-
-    return { url: url || null, alt };
-  }, [orderedTracks, releaseByInstanceId]);
+    return (data?.mosaicThumbUrls ?? []).slice(0, heroMaxTiles);
+  }, [orderedTracks, releaseByInstanceId, data?.mosaicThumbUrls]);
 
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     usePublicSelectedReleaseModal({ fallbackReleases: releases });
@@ -185,8 +187,8 @@ export const PublicPlaylistClient = ({
             <PublicPlaylistSummaryHero
               className={styles.playlistAside}
               title={playlist.name}
-              coverUrl={playlistCover.url}
-              coverAlt={playlistCover.alt || playlist.name}
+              coverThumbUrls={coverThumbUrls}
+              coverLabel={`${playlist.name} cover art collage`}
               metaLine={heroMetaParts.join(" · ")}
               actions={
                 <Button

@@ -6,6 +6,7 @@ jest.mock("src/lib/db", () => ({
     playlistTrack: { findMany: jest.fn() },
     crateRelease: { findMany: jest.fn() },
     userTrack: { update: jest.fn() },
+    user: { findUnique: jest.fn() },
     $transaction: jest.fn((operations: Promise<unknown>[]) =>
       Promise.all(operations),
     ),
@@ -47,6 +48,9 @@ let mockPlaylistTrackFindMany: jest.MockedFunction<
 let mockCrateReleaseFindMany: jest.MockedFunction<
   DbModule["prisma"]["crateRelease"]["findMany"]
 >;
+let mockUserFindUnique: jest.MockedFunction<
+  DbModule["prisma"]["user"]["findUnique"]
+>;
 
 const PLAYLIST_ID = "11111111-2222-3333-4444-555555555555";
 const USER_ID = 123;
@@ -67,6 +71,7 @@ describe("loadPublicPlaylist", () => {
     );
     mockPlaylistTrackFindMany = jest.mocked(db.prisma.playlistTrack.findMany);
     mockCrateReleaseFindMany = jest.mocked(db.prisma.crateRelease.findMany);
+    mockUserFindUnique = jest.mocked(db.prisma.user.findUnique);
   });
 
   it("returns release snapshots keyed by playlist track instance ids", async () => {
@@ -122,5 +127,26 @@ describe("loadPublicPlaylist", () => {
       "https://i.discogs.com/test-cover.jpg",
     ]);
     expect(payload?.releases[0]).not.toHaveProperty("notes");
+  });
+
+  it("when playlist username is unset, resolves owner username for the payload", async () => {
+    mockFindPublicPlaylistById.mockResolvedValue({
+      user_id: USER_ID,
+      id: PLAYLIST_ID,
+      name: "Shared",
+      username: null,
+      private: false,
+      created_at: new Date("2026-01-01T00:00:00.000Z"),
+      updated_at: new Date("2026-01-02T00:00:00.000Z"),
+    });
+    mockUserFindUnique.mockResolvedValue({
+      username: "collector",
+    } as Awaited<ReturnType<DbModule["prisma"]["user"]["findUnique"]>>);
+    mockPlaylistTrackFindMany.mockResolvedValue([]);
+    mockCrateReleaseFindMany.mockResolvedValue([]);
+
+    const payload = await loadPublicPlaylist(PLAYLIST_ID);
+
+    expect(payload?.playlist.username).toBe("collector");
   });
 });

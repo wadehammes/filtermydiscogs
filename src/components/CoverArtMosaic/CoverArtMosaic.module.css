@@ -6,13 +6,27 @@
   overflow: hidden;
 }
 
+.rootFill {
+  border-radius: 0;
+  box-shadow: none;
+  height: 100%;
+  width: 100%;
+}
+
 .grid {
   display: grid;
   gap: 0;
 }
 
+.gridFill {
+  height: 100%;
+  width: 100%;
+}
+
 .cell {
   aspect-ratio: 1;
+  min-height: 0;
+  min-width: 0;
   overflow: hidden;
   position: relative;
 }
