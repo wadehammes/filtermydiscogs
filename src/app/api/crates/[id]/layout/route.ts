@@ -19,6 +19,7 @@ import {
 } from "src/lib/crate-release-mapper";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { revalidatePublicCrateShareWhenPublic } from "src/lib/public-share-cache.server";
 import { parseCrateLayoutPutRequest } from "src/lib/validation/crate.schemas";
 
 export async function PUT(
@@ -125,6 +126,8 @@ export async function PUT(
       layout_item_count: parsedRequest.data.items.length,
       marker_count: markers.length,
     });
+
+    await revalidatePublicCrateShareWhenPublic(crateId);
 
     return privateRouteJson({
       success: true,

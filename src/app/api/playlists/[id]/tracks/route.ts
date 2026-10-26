@@ -10,6 +10,7 @@ import {
 } from "src/lib/playlist.server";
 import { requirePlaylistsFeatureEnabled } from "src/lib/playlistsFeatureGuard.server";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { revalidatePublicPlaylistShareWhenPublic } from "src/lib/public-share-cache.server";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import {
   addPlaylistTrackBodySchema,
@@ -61,6 +62,10 @@ export async function POST(
       );
     }
 
+    if (result.created) {
+      await revalidatePublicPlaylistShareWhenPublic(id);
+    }
+
     return privateRouteJson({ sort_order: result.sort_order }, { status: 201 });
   } catch (error) {
     return createErrorResponse(error, {
@@ -105,6 +110,8 @@ export async function DELETE(
     if (!removed) {
       return privateRouteJson({ error: "Track not found" }, { status: 404 });
     }
+
+    await revalidatePublicPlaylistShareWhenPublic(id);
 
     return privateRouteJson({ success: true });
   } catch (error) {
@@ -153,6 +160,8 @@ export async function PUT(
         { status: 400 },
       );
     }
+
+    await revalidatePublicPlaylistShareWhenPublic(id);
 
     return privateRouteJson({ success: true });
   } catch (error) {

@@ -34,6 +34,13 @@ jest.mock("src/lib/db", () => ({
 
 jest.mock("src/lib/api-helpers");
 
+jest.mock("src/lib/public-share-cache.server", () => ({
+  revalidatePublicCrateShareWhenPublic: jest.fn(),
+}));
+
+type PublicShareCacheModule =
+  typeof import("src/lib/public-share-cache.server");
+
 type RouteModule = typeof import("src/app/api/crates/[id]/layout/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
 type DbModule = typeof import("src/lib/db");
@@ -61,6 +68,9 @@ let mockMarkerUpsert: jest.MockedFunction<
   DbModule["prisma"]["crateSetMarker"]["upsert"]
 >;
 let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
+let mockRevalidatePublicCrateShareWhenPublic: jest.MockedFunction<
+  PublicShareCacheModule["revalidatePublicCrateShareWhenPublic"]
+>;
 
 const CRATE_ID = "crate-1";
 const USER_ID = 42;
@@ -78,10 +88,11 @@ const createPutRequest = (body: unknown) =>
   });
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, db] = await Promise.all([
+  const [routeModule, apiHelpers, db, publicShareCache] = await Promise.all([
     import("src/app/api/crates/[id]/layout/route"),
     import("src/lib/api-helpers"),
     import("src/lib/db"),
+    import("src/lib/public-share-cache.server"),
   ]);
 
   PUT = routeModule.PUT;
@@ -95,6 +106,9 @@ beforeAll(async () => {
   mockMarkerDeleteMany = jest.mocked(db.prisma.crateSetMarker.deleteMany);
   mockMarkerUpsert = jest.mocked(db.prisma.crateSetMarker.upsert);
   mockAudit = jest.mocked(apiHelpers.auditDatabaseOperation);
+  mockRevalidatePublicCrateShareWhenPublic = jest.mocked(
+    publicShareCache.revalidatePublicCrateShareWhenPublic,
+  );
 });
 
 describe("PUT /api/crates/[id]/layout", () => {
@@ -176,6 +190,7 @@ describe("PUT /api/crates/[id]/layout", () => {
     mockReleaseUpdate.mockResolvedValue({} as never);
     mockMarkerDeleteMany.mockResolvedValue({ count: 0 });
     mockMarkerUpsert.mockResolvedValue({} as never);
+    mockRevalidatePublicCrateShareWhenPublic.mockResolvedValue(undefined);
   });
 
   it("reorders releases and adds a marker", async () => {
@@ -198,6 +213,9 @@ describe("PUT /api/crates/[id]/layout", () => {
     expect(mockReleaseUpdate).toHaveBeenCalledTimes(2);
     expect(mockMarkerUpsert).toHaveBeenCalledTimes(1);
     expect(mockAudit).toHaveBeenCalled();
+    expect(mockRevalidatePublicCrateShareWhenPublic).toHaveBeenCalledWith(
+      CRATE_ID,
+    );
   });
 
   it("rejects duplicate releases in the payload", async () => {

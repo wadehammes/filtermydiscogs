@@ -7,14 +7,12 @@ import {
 import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { revalidatePublicCrateShareWhenPublic } from "src/lib/public-share-cache.server";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 import { clearCrateFoundBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { toPrismaInputJsonValue } from "src/utils/toPrismaJsonValue";
 
-/**
- * Clear packed status for all releases in a crate
- */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -80,9 +78,6 @@ export async function PATCH(
   }
 }
 
-/**
- * Add a release to a crate
- */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -99,7 +94,6 @@ export async function POST(
 
     const { id } = await params;
 
-    // Verify crate exists and belongs to user
     const crate = await prisma.crate.findUnique({
       where: {
         user_id_id: {
@@ -132,7 +126,6 @@ export async function POST(
     const release = validation.release;
     const instanceId = release.instance_id;
 
-    // Check if release is already in crate
     const existingRelease = await prisma.crateRelease.findUnique({
       where: {
         user_id_crate_id_instance_id: {
@@ -151,7 +144,6 @@ export async function POST(
       );
     }
 
-    // Normalize release data - ensure instance_id is a string in the JSON
     const normalizedRelease = {
       ...release,
       instance_id: instanceId,
@@ -175,10 +167,11 @@ export async function POST(
       });
     });
 
-    // Audit log
     auditDatabaseOperation(userIdNum, "CrateRelease", "create", instanceId, {
       crate_id: id,
     });
+
+    await revalidatePublicCrateShareWhenPublic(id);
 
     return privateRouteJson({ success: true }, { status: 201 });
   } catch (error) {
