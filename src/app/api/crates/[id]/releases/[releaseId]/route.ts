@@ -7,10 +7,8 @@ import {
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { revalidatePublicCrateShareWhenPublic } from "src/lib/public-share-cache.server";
 
-/**
- * Update packed status for a release in a crate
- */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; releaseId: string }> },
@@ -111,9 +109,6 @@ export async function PATCH(
   }
 }
 
-/**
- * Remove a release from a crate
- */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; releaseId: string }> },
@@ -130,7 +125,6 @@ export async function DELETE(
 
     const { id, releaseId } = await params;
 
-    // Verify crate exists and belongs to user
     const crate = await prisma.crate.findUnique({
       where: {
         user_id_id: {
@@ -145,7 +139,6 @@ export async function DELETE(
       return privateRouteJson({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Remove release from crate
     try {
       await prisma.crateRelease.delete({
         where: {
@@ -157,12 +150,10 @@ export async function DELETE(
         },
       });
 
-      // Audit log
       auditDatabaseOperation(userIdNum, "CrateRelease", "delete", releaseId, {
         crate_id: id,
       });
     } catch (error) {
-      // Check if it was a not found error
       const sanitized = sanitizeError(error);
       if (sanitized.code === "NOT_FOUND") {
         return privateRouteJson(
@@ -172,6 +163,8 @@ export async function DELETE(
       }
       throw error;
     }
+
+    await revalidatePublicCrateShareWhenPublic(id);
 
     return privateRouteJson({ success: true });
   } catch (error) {

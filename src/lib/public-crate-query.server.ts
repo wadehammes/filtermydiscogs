@@ -47,3 +47,23 @@ export const findPublicCrateById = async (
 
   return crates[0] ?? null;
 };
+
+export const listPublicCrateIdsFrom = async (
+  crateIds: readonly string[],
+): Promise<string[]> => {
+  const uniqueIds = [...new Set(crateIds)];
+
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  const crates = await prisma.crate.findMany({
+    where: {
+      id: { in: uniqueIds },
+      private: false,
+    },
+    select: { id: true },
+  });
+
+  return crates.map((crate) => crate.id);
+};

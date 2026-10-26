@@ -33,6 +33,13 @@ jest.mock("src/lib/release-data-validation", () => ({
 
 jest.mock("src/lib/api-helpers");
 
+jest.mock("src/lib/public-share-cache.server", () => ({
+  revalidatePublicCrateSharesWhenPublic: jest.fn(),
+}));
+
+type PublicShareCacheModule =
+  typeof import("src/lib/public-share-cache.server");
+
 type RouteModule =
   typeof import("src/app/api/crates/membership/[instanceId]/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
@@ -54,6 +61,9 @@ let mockTransaction: jest.MockedFunction<DbModule["prisma"]["$transaction"]>;
 let mockValidateRelease: jest.MockedFunction<
   ReleaseValidationModule["validateReleaseDataForStorage"]
 >;
+let mockRevalidatePublicCrateSharesWhenPublic: jest.MockedFunction<
+  PublicShareCacheModule["revalidatePublicCrateSharesWhenPublic"]
+>;
 
 const INSTANCE_ID = "12345";
 const USER_ID = 42;
@@ -67,12 +77,14 @@ const releasePayload = {
 };
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, db, releaseValidation] = await Promise.all([
-    import("src/app/api/crates/membership/[instanceId]/route"),
-    import("src/lib/api-helpers"),
-    import("src/lib/db"),
-    import("src/lib/release-data-validation"),
-  ]);
+  const [routeModule, apiHelpers, db, releaseValidation, publicShareCache] =
+    await Promise.all([
+      import("src/app/api/crates/membership/[instanceId]/route"),
+      import("src/lib/api-helpers"),
+      import("src/lib/db"),
+      import("src/lib/release-data-validation"),
+      import("src/lib/public-share-cache.server"),
+    ]);
 
   GET = routeModule.GET;
   PUT = routeModule.PUT;
@@ -84,6 +96,9 @@ beforeAll(async () => {
   mockTransaction = jest.mocked(db.prisma.$transaction);
   mockValidateRelease = jest.mocked(
     releaseValidation.validateReleaseDataForStorage,
+  );
+  mockRevalidatePublicCrateSharesWhenPublic = jest.mocked(
+    publicShareCache.revalidatePublicCrateSharesWhenPublic,
   );
 });
 
@@ -180,6 +195,7 @@ describe("PUT /api/crates/membership/[instanceId]", () => {
           create: jest.fn(),
         },
       })) as DbModule["prisma"]["$transaction"]);
+    mockRevalidatePublicCrateSharesWhenPublic.mockResolvedValue(undefined);
   });
 
   it("returns auth error when user is not verified", async () => {
@@ -219,5 +235,8 @@ describe("PUT /api/crates/membership/[instanceId]", () => {
       crateIds: ["crate-a", "crate-b"],
     });
     expect(mockTransaction).toHaveBeenCalled();
+    expect(mockRevalidatePublicCrateSharesWhenPublic).toHaveBeenCalledWith([
+      "crate-b",
+    ]);
   });
 });

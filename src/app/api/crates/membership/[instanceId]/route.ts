@@ -7,6 +7,7 @@ import {
 import { getPrependCrateLayoutSortOrderForCrate } from "src/lib/crate-layout.server";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
+import { revalidatePublicCrateSharesWhenPublic } from "src/lib/public-share-cache.server";
 import { validateReleaseDataForStorage } from "src/lib/release-data-validation";
 import { setReleaseCrateMembershipBodySchema } from "src/lib/validation/crate.schemas";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -170,6 +171,11 @@ export async function PUT(
       added: crateIdsToAdd,
       removed: crateIdsToRemove,
     });
+
+    await revalidatePublicCrateSharesWhenPublic([
+      ...crateIdsToAdd,
+      ...crateIdsToRemove,
+    ]);
 
     return privateRouteJson({
       success: true,
