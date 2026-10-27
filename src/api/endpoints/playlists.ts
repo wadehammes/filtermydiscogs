@@ -1,14 +1,18 @@
 import { ApiFetchError, parseRetryAfterMs } from "src/api/apiFetchError";
+import type { PlaylistTrackVoteBody } from "src/lib/validation/playlistTrackVote.schemas";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import type {
   PlaylistDetail,
   PlaylistSummary,
+  PlaylistTrackVoteResponse,
+  PublicPlaylistEngagementResponse,
   PublicPlaylistResponse,
 } from "src/types/playlist.types";
 
 export type UpdatePlaylistPayload = {
   name?: string;
   private?: boolean;
+  publicDescription?: string | null;
 };
 
 const throwPlaylistApiError = async (response: Response): Promise<never> => {
@@ -53,14 +57,23 @@ export const fetchPlaylists = async (
   return data.playlists;
 };
 
-export const createPlaylist = async (
-  name: string,
-): Promise<PlaylistSummary> => {
+export type CreatePlaylistPayload = {
+  name: string;
+  publicDescription?: string;
+};
+
+export const createPlaylist = async ({
+  name,
+  publicDescription,
+}: CreatePlaylistPayload): Promise<PlaylistSummary> => {
   const response = await fetch("/api/playlists", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({
+      name,
+      ...(publicDescription !== undefined ? { publicDescription } : {}),
+    }),
   });
 
   if (!response.ok) {
@@ -98,6 +111,8 @@ export const fetchPublicPlaylist = async (
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      cache: "no-store",
     },
   );
 
@@ -110,6 +125,77 @@ export const fetchPublicPlaylist = async (
   }
 
   return response.json() as Promise<PublicPlaylistResponse>;
+};
+
+export const recordPublicPlaylistView = async (
+  playlistId: string,
+): Promise<PublicPlaylistEngagementResponse> => {
+  const response = await fetch(
+    `/api/playlists/public/${encodeURIComponent(playlistId)}/view`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    },
+  );
+
+  if (response.status === 404) {
+    throw new ApiFetchError(404, "Playlist not found or is private");
+  }
+
+  if (!response.ok) {
+    await throwPlaylistApiError(response);
+  }
+
+  return response.json() as Promise<PublicPlaylistEngagementResponse>;
+};
+
+export const votePublicPlaylistTrack = async (
+  playlistId: string,
+  body: PlaylistTrackVoteBody,
+): Promise<PlaylistTrackVoteResponse> => {
+  const response = await fetch(
+    `/api/playlists/public/${encodeURIComponent(playlistId)}/tracks/vote`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (response.status === 404) {
+    throw new ApiFetchError(404, "Playlist or track not found");
+  }
+
+  if (!response.ok) {
+    await throwPlaylistApiError(response);
+  }
+
+  return response.json() as Promise<PlaylistTrackVoteResponse>;
+};
+
+export const recordPublicPlaylistPlay = async (
+  playlistId: string,
+): Promise<PublicPlaylistEngagementResponse> => {
+  const response = await fetch(
+    `/api/playlists/public/${encodeURIComponent(playlistId)}/play`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    },
+  );
+
+  if (response.status === 404) {
+    throw new ApiFetchError(404, "Playlist not found or is private");
+  }
+
+  if (!response.ok) {
+    await throwPlaylistApiError(response);
+  }
+
+  return response.json() as Promise<PublicPlaylistEngagementResponse>;
 };
 
 export const updatePlaylist = async (

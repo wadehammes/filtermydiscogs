@@ -69,8 +69,11 @@ export const useReleasePlaylistPickerController = ({
   );
 
   const handleCreate = useCallback(
-    async ({ name }: CreatePlaylistFormValues) => {
-      const created = await createPlaylistMutation.mutateAsync(name.trim());
+    async ({ name, publicDescription }: CreatePlaylistFormValues) => {
+      const created = await createPlaylistMutation.mutateAsync({
+        name: name.trim(),
+        publicDescription,
+      });
       await addTrackMutation.mutateAsync({
         playlistId: created.id,
         metadata,

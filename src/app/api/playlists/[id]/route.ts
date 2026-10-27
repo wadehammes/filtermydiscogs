@@ -69,7 +69,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const { name, private: privateField } = parsedBody.data;
+    const { name, private: privateField, publicDescription } = parsedBody.data;
     const fields: Parameters<typeof updatePlaylistFields>[2] = {};
 
     if (name !== undefined) {
@@ -84,6 +84,10 @@ export async function PATCH(
       }
     }
 
+    if (publicDescription !== undefined) {
+      fields.publicDescription = publicDescription;
+    }
+
     const updated = await updatePlaylistFields(
       verified.user.userId,
       id,
@@ -96,7 +100,7 @@ export async function PATCH(
 
     const playlist = await getPlaylistDetail(verified.user.userId, id);
 
-    if (privateField !== undefined) {
+    if (privateField !== undefined || publicDescription !== undefined) {
       revalidatePublicShareSeo({ kind: "playlist", id });
     }
 

@@ -49,8 +49,11 @@ export const PlaylistSelector = ({
   );
 
   const handleCreatePlaylist = useCallback(
-    async ({ name }: CreatePlaylistFormValues) => {
-      const created = await createPlaylistMutation.mutateAsync(name.trim());
+    async ({ name, publicDescription }: CreatePlaylistFormValues) => {
+      const created = await createPlaylistMutation.mutateAsync({
+        name: name.trim(),
+        publicDescription,
+      });
       onPlaylistChange(created.id);
       onAfterPlaylistCreate?.(created.id);
       setIsCreateDialogOpen(false);

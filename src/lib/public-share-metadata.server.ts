@@ -8,6 +8,7 @@ import {
   siteCanonicalUrl,
   sitePageTitle,
 } from "src/constants/siteMetadata";
+import { resolvePlaylistPublicShareMetaDescription } from "src/utils/publicPlaylistDescription";
 
 export type PublicShareMetadataKind = "crate" | "playlist";
 
@@ -15,6 +16,7 @@ type PublicShareMetadataResolved = {
   name: string;
   username: string | null;
   itemCount: number;
+  publicDescription?: string | null;
 };
 
 type BuildPublicSharePageMetadataInput = {
@@ -117,7 +119,13 @@ export const buildPublicSharePageMetadata = ({
   const byline = username ? ` by ${username}` : "";
   const title = `${name}${byline} | ${SITE_NAME}`;
   const ogTitle = `${name}${byline}`;
-  const description = buildShareDescription({ kind, ...resolved });
+  const description =
+    kind === "playlist"
+      ? resolvePlaylistPublicShareMetaDescription(
+          resolved.publicDescription,
+          () => buildShareDescription({ kind, ...resolved }),
+        )
+      : buildShareDescription({ kind, ...resolved });
 
   return {
     title,

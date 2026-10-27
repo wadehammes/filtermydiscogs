@@ -27,6 +27,27 @@ describe("buildPublicSharePageMetadata", () => {
     );
   });
 
+  it("when a public playlist has an owner description, uses it for meta description", () => {
+    const playlistId = "11111111-2222-3333-4444-555555555555";
+    const metadata = buildPublicSharePageMetadata({
+      kind: "playlist",
+      id: playlistId,
+      resolved: {
+        name: "Rotation",
+        username: "dj-test",
+        itemCount: 8,
+        publicDescription: "Sunday morning deep house from my collection.",
+      },
+    });
+
+    expect(metadata.description).toBe(
+      "Sunday morning deep house from my collection.",
+    );
+    expect(metadata.openGraph?.description).toBe(
+      "Sunday morning deep house from my collection.",
+    );
+  });
+
   it("when a public playlist resolves without username, omits byline in title", () => {
     const playlistId = "11111111-2222-3333-4444-555555555555";
     const metadata = buildPublicSharePageMetadata({

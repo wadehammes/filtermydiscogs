@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { renderHook } from "@testing-library/react";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { testUnauthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { createQueueItem } from "src/utils/playbackQueue";
+import { renderFeatureHook } from "test-utils";
 
 const mockStartPlayback = jest.fn();
 const mockAddToQueue = jest.fn();
@@ -41,6 +43,39 @@ jest.mock("src/utils/playbackQueueToast", () => ({
   showPlaybackQueueSuccessToast: jest.fn(),
 }));
 
+jest.mock("src/api/urls", () => {
+  const actual =
+    jest.requireActual<typeof import("src/api/urls")>("src/api/urls");
+
+  return {
+    ...actual,
+    api: {
+      ...actual.api,
+      recordPublicPlaylistPlay: jest.fn(() =>
+        Promise.resolve({
+          ok: true,
+          shareStats: { publicViewCount: 0, publicPlayCount: 1 },
+        }),
+      ),
+      recordPublicPlaylistView: jest.fn(() =>
+        Promise.resolve({
+          ok: true,
+          shareStats: { publicViewCount: 1, publicPlayCount: 0 },
+        }),
+      ),
+    },
+  };
+});
+
+const queryClient = createTestQueryClient();
+
+const renderPlaylistPlaybackHook = () =>
+  renderFeatureHook(() => usePlaylistPlayback(), {
+    queryClient,
+    authInitialState: testUnauthenticatedAuthState,
+    includeCollectionSync: false,
+  });
+
 let usePlaylistPlayback: typeof import("src/hooks/usePlaylistPlayback.hook")["usePlaylistPlayback"];
 
 beforeEach(async () => {
@@ -69,7 +104,7 @@ describe("usePlaylistPlayback", () => {
       }),
     ];
 
-    const { result } = renderHook(() => usePlaylistPlayback());
+    const { result } = renderPlaylistPlaybackHook();
 
     result.current.playPlaylistTracks(tracks);
 
@@ -104,7 +139,7 @@ describe("usePlaylistPlayback", () => {
       }),
     ];
 
-    const { result } = renderHook(() => usePlaylistPlayback());
+    const { result } = renderPlaylistPlaybackHook();
 
     result.current.playPlaylistTrack(secondTrack, tracks);
 
@@ -149,7 +184,7 @@ describe("usePlaylistPlayback", () => {
       }),
     ];
 
-    const { result } = renderHook(() => usePlaylistPlayback());
+    const { result } = renderPlaylistPlaybackHook();
 
     result.current.syncPlaylistQueueToTrackOrder(tracks);
 
@@ -176,7 +211,7 @@ describe("usePlaylistPlayback", () => {
     playbackSession.release = release;
     playbackSession.activeTrackPosition = "B1";
 
-    const { result } = renderHook(() => usePlaylistPlayback());
+    const { result } = renderPlaylistPlaybackHook();
 
     result.current.addPlaylistToQueue(tracks);
 
@@ -205,7 +240,7 @@ describe("usePlaylistPlayback", () => {
       }),
     ];
 
-    const { result } = renderHook(() => usePlaylistPlayback());
+    const { result } = renderPlaylistPlaybackHook();
 
     result.current.addPlaylistToQueue(tracks);
 

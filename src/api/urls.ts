@@ -38,9 +38,12 @@ import {
   fetchPlaylist,
   fetchPlaylists,
   fetchPublicPlaylist,
+  recordPublicPlaylistPlay,
+  recordPublicPlaylistView,
   removeTrackFromPlaylist,
   reorderPlaylistTracks,
   updatePlaylist,
+  votePublicPlaylistTrack,
 } from "src/api/endpoints/playlists";
 import {
   fetchDiscogsRelease,
@@ -90,6 +93,9 @@ export const api = {
   playlists: fetchPlaylists,
   publicCrate: fetchPublicCrate,
   publicPlaylist: fetchPublicPlaylist,
+  recordPublicPlaylistPlay,
+  recordPublicPlaylistView,
+  votePublicPlaylistTrack,
   removeTrackFromPlaylist,
   reorderPlaylistTracks,
   releaseCrateMembership: fetchReleaseCrateMembership,

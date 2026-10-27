@@ -84,12 +84,6 @@
   width: 3.5rem;
 }
 
-.playbackTrailing {
-  justify-content: center;
-  min-width: 2rem;
-  padding-inline: var(--space-2) var(--space-3);
-}
-
 .playbackControlButton {
   align-items: center;
   appearance: none;

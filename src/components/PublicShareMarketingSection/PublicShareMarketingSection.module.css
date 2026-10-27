@@ -1,0 +1,117 @@
+.root {
+  border-top: 1px dashed var(--border);
+  margin-bottom: var(--space-12);
+  padding-top: var(--space-16);
+
+  @media (width >= 768px) {
+    margin-bottom: var(--space-16);
+    padding-top: var(--space-20);
+  }
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+
+  @media (width >= 1024px) {
+    align-items: start;
+    gap: var(--space-8);
+    grid-template-columns: minmax(0, 1.5fr) minmax(16rem, 1fr);
+  }
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.heading {
+  color: var(--foreground);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  margin: 0;
+
+  @media (width >= 768px) {
+    font-size: var(--text-2xl);
+  }
+}
+
+.lede {
+  color: var(--muted-foreground);
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  margin: 0;
+
+  @media (width >= 768px) {
+    font-size: var(--text-xl);
+  }
+}
+
+.learnMore {
+  font-size: var(--text-base);
+  margin: 0;
+}
+
+.ctaCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
+
+  @media (width >= 1024px) {
+    border-top: 3px solid var(--primary);
+  }
+}
+
+.ctaHeading {
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.ctaText {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ctaButtonWrap {
+  width: 100%;
+
+  & > * {
+    width: 100%;
+  }
+}
+
+.ctaNote {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.inlineLink {
+  color: var(--link);
+  text-decoration: none;
+  transition: color var(--transition-normal);
+
+  &:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+  }
+}
+
+.connectButton {
+  width: 100%;
+}

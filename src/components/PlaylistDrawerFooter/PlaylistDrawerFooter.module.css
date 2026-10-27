@@ -1,9 +1,11 @@
 .footer {
+  --playlist-drawer-footer-section-gap: var(--space-3);
+
   background: var(--background);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  gap: var(--space-4);
+  gap: var(--playlist-drawer-footer-section-gap);
   position: relative;
   z-index: 1;
   width: 100%;
@@ -13,6 +15,13 @@
     padding-block: var(--space-3);
     padding-inline: var(--space-4);
   }
+}
+
+.footerActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--playlist-drawer-footer-section-gap);
+  width: 100%;
 }
 
 .footerSegmented {

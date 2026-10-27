@@ -33,7 +33,7 @@ import {
   useRemoveTrackFromPlaylistMutation,
   useReorderPlaylistTracksMutation,
 } from "src/hooks/mutations/usePlaylistMutations";
-import { usePlaylistQuery } from "src/hooks/queries/usePlaylistsQuery";
+import { useActivePlaylistDetail } from "src/hooks/useActivePlaylistDetail.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { usePlaylistPlayback } from "src/hooks/usePlaylistPlayback.hook";
 import type { DiscogsRelease } from "src/types";
@@ -63,11 +63,7 @@ export const PlaylistDrawerTracks = () => {
 
     return map;
   }, [allReleases]);
-  const { data: playlist, isLoading } = usePlaylistQuery({
-    userId,
-    playlistId: activePlaylistId,
-    enabled: Boolean(activePlaylistId),
-  });
+  const { data: playlist, isLoading } = useActivePlaylistDetail();
   const playlistId = activePlaylistId ?? "";
   const removeTrackMutation = useRemoveTrackFromPlaylistMutation(playlistId);
   const reorderTracksMutation = useReorderPlaylistTracksMutation(playlistId);

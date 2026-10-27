@@ -1,5 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UpdatePlaylistPayload } from "src/api/endpoints/playlists";
+import type {
+  CreatePlaylistPayload,
+  UpdatePlaylistPayload,
+} from "src/api/endpoints/playlists";
 import { api } from "src/api/urls";
 import { useAuth } from "src/context/auth.context";
 import {
@@ -75,7 +78,7 @@ export const useCreatePlaylistMutation = () => {
   } = useAuth();
 
   return useMutation({
-    mutationFn: (name: string) => api.createPlaylist(name),
+    mutationFn: (payload: CreatePlaylistPayload) => api.createPlaylist(payload),
     onSuccess: () => {
       invalidatePlaylists(queryClient, userId ?? null);
     },

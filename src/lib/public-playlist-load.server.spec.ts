@@ -90,6 +90,9 @@ describe("loadPublicPlaylist", () => {
       name: "Shared",
       username: "dj",
       private: false,
+      public_description: null,
+      public_view_count: 5,
+      public_play_count: 2,
       created_at: new Date("2026-01-01T00:00:00.000Z"),
       updated_at: new Date("2026-01-02T00:00:00.000Z"),
     });
@@ -98,6 +101,8 @@ describe("loadPublicPlaylist", () => {
       {
         sort_order: 1,
         track_key: "instance-9001:A1",
+        up_count: 0,
+        down_count: 0,
         user_track: {
           track_title: "Track one",
           track_position: "A1",
@@ -126,6 +131,10 @@ describe("loadPublicPlaylist", () => {
     expect(payload?.mosaicThumbUrls).toEqual([
       "https://i.discogs.com/test-cover.jpg",
     ]);
+    expect(payload?.shareStats).toEqual({
+      publicViewCount: 5,
+      publicPlayCount: 2,
+    });
     expect(payload?.releases[0]).not.toHaveProperty("notes");
   });
 
@@ -136,6 +145,9 @@ describe("loadPublicPlaylist", () => {
       name: "Shared",
       username: null,
       private: false,
+      public_description: null,
+      public_view_count: 0,
+      public_play_count: 0,
       created_at: new Date("2026-01-01T00:00:00.000Z"),
       updated_at: new Date("2026-01-02T00:00:00.000Z"),
     });
@@ -148,5 +160,29 @@ describe("loadPublicPlaylist", () => {
     const payload = await loadPublicPlaylist(PLAYLIST_ID);
 
     expect(payload?.playlist.username).toBe("collector");
+  });
+
+  it("when a public playlist row is provided, skips findPublicPlaylistById", async () => {
+    mockFindPublicPlaylistById.mockResolvedValue(null);
+    mockPlaylistTrackFindMany.mockResolvedValue([]);
+    mockCrateReleaseFindMany.mockResolvedValue([]);
+
+    const payload = await loadPublicPlaylist(PLAYLIST_ID, {
+      playlist: {
+        user_id: USER_ID,
+        id: PLAYLIST_ID,
+        name: "Shared",
+        username: "dj",
+        private: false,
+        public_description: null,
+        public_view_count: 0,
+        public_play_count: 0,
+        created_at: new Date("2026-01-01T00:00:00.000Z"),
+        updated_at: new Date("2026-01-02T00:00:00.000Z"),
+      },
+    });
+
+    expect(mockFindPublicPlaylistById).not.toHaveBeenCalled();
+    expect(payload?.playlist.id).toBe(PLAYLIST_ID);
   });
 });

@@ -3,6 +3,8 @@ import type { PlaylistTrackRow } from "src/types/playlist.types";
 export const mapPlaylistTrackRow = (row: {
   sort_order: number;
   track_key: string;
+  up_count: number;
+  down_count: number;
   user_track: {
     track_title: string;
     track_position: string;
@@ -22,4 +24,6 @@ export const mapPlaylistTrackRow = (row: {
   release_title: row.user_track.release_title,
   youtube_id: row.user_track.youtube_id,
   discogs_release_id: row.user_track.discogs_release_id,
+  upCount: row.up_count ?? 0,
+  downCount: row.down_count ?? 0,
 });

@@ -28,6 +28,8 @@ class PlaylistTrackRowFactory extends BaseFactory<
       release_title: nullish([faker.music.album()]),
       youtube_id: nullish(["dQw4w9WgXcQ"]),
       discogs_release_id: null,
+      upCount: 0,
+      downCount: 0,
     };
 
     const factoryBuilt = mergeFactoryAttributes(instance, attributes);

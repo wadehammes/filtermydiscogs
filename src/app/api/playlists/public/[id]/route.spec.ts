@@ -7,7 +7,9 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest } from "next/server";
-import { playlistDetailFactory } from "src/tests/factories/PlaylistDetail.factory";
+import { publicPlaylistInfoFactory } from "src/tests/factories/PublicPlaylistInfo.factory";
+import { publicPlaylistResponseFactory } from "src/tests/factories/PublicPlaylistResponse.factory";
+import { publicPlaylistRowFactory } from "src/tests/factories/PublicPlaylistRow.factory";
 
 jest.mock("src/lib/ip-rate-limit", () => ({
   getIpRateLimitResponse: jest.fn(() => null),
@@ -24,6 +26,12 @@ jest.mock("src/lib/public-playlist-query.server", () => ({
 
 jest.mock("src/lib/public-playlist-load.server", () => ({
   loadPublicPlaylist: jest.fn(),
+}));
+
+jest.mock("src/lib/playlist-track-vote.server", () => ({
+  attachViewerVotesToPlaylistTracks: jest.fn(
+    async (_ownerUserId, _playlistId, tracks) => tracks,
+  ),
 }));
 
 jest.mock("src/lib/db", () => ({
@@ -91,37 +99,69 @@ describe("GET /api/playlists/public/[id]", () => {
   });
 
   it("returns public playlist payload when found", async () => {
-    mockFindPublicPlaylistById.mockResolvedValue({
+    const playlistRow = publicPlaylistRowFactory.build({
       user_id: 1,
       id: PUBLIC_PLAYLIST_ID,
       name: "Shared mix",
       username: "dj",
-      private: false,
-      created_at: new Date("2026-01-01"),
-      updated_at: new Date("2026-01-02"),
     });
+    mockFindPublicPlaylistById.mockResolvedValue(playlistRow);
 
-    const detail = playlistDetailFactory.build({ id: PUBLIC_PLAYLIST_ID });
-    mockLoadPublicPlaylist.mockResolvedValue({
-      playlist: {
+    const payload = publicPlaylistResponseFactory.build({
+      playlist: publicPlaylistInfoFactory.forDemoPage({
         id: PUBLIC_PLAYLIST_ID,
-        name: detail.name,
+        name: "Shared mix",
         username: "dj",
-        private: false,
-        created_at: detail.created_at,
-        updated_at: detail.updated_at,
-      },
-      tracks: detail.tracks,
-      releases: [],
-      mosaicThumbUrls: [],
+      }),
     });
+    mockLoadPublicPlaylist.mockResolvedValue(payload);
 
     const response = await GET(new NextRequest("http://localhost/api"), {
       params: Promise.resolve({ id: PUBLIC_PLAYLIST_ID }),
     });
 
     expect(response.status).toBe(200);
-    const body = (await response.json()) as { playlist: { name: string } };
-    expect(body.playlist.name).toBe(detail.name);
+    expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(PUBLIC_PLAYLIST_ID, {
+      playlist: playlistRow,
+    });
+    const body = (await response.json()) as {
+      playlist: { name: string };
+      viewerIsOwner?: boolean;
+    };
+    expect(body.playlist.name).toBe(payload.playlist.name);
+    expect(body.viewerIsOwner).toBe(false);
+  });
+
+  it("when the viewer owns the playlist, does not attach viewer vote state", async () => {
+    const playlistRow = publicPlaylistRowFactory.build({
+      user_id: 42,
+      id: PUBLIC_PLAYLIST_ID,
+    });
+    mockFindPublicPlaylistById.mockResolvedValue(playlistRow);
+    mockGetOptionalVerifiedUser.mockResolvedValue({
+      userId: 42,
+      username: "owner",
+    });
+    mockLoadPublicPlaylist.mockResolvedValue(
+      publicPlaylistResponseFactory.build({
+        playlist: publicPlaylistInfoFactory.forDemoPage({
+          id: PUBLIC_PLAYLIST_ID,
+        }),
+      }),
+    );
+
+    const voteModule = await import("src/lib/playlist-track-vote.server");
+    const mockAttach = jest.mocked(
+      voteModule.attachViewerVotesToPlaylistTracks,
+    );
+
+    const response = await GET(new NextRequest("http://localhost/api"), {
+      params: Promise.resolve({ id: PUBLIC_PLAYLIST_ID }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(mockAttach).not.toHaveBeenCalled();
+    const body = (await response.json()) as { viewerIsOwner?: boolean };
+    expect(body.viewerIsOwner).toBe(true);
   });
 });

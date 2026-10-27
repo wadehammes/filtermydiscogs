@@ -1,0 +1,75 @@
+.root {
+  border-bottom: 1px dashed var(--border);
+  flex-shrink: 0;
+  padding-bottom: var(--space-3);
+  width: 100%;
+}
+
+.statList {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+  margin: 0;
+}
+
+.statItem {
+  align-items: center;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column-reverse;
+  gap: 0.125rem;
+  justify-content: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.statLabel {
+  color: var(--muted-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.statLabelTrigger {
+  appearance: none;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: help;
+  font: inherit;
+  padding: 0;
+  text-align: center;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.statValue {
+  color: var(--foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-medium);
+  line-height: 1.2;
+  margin: 0;
+  min-width: 0;
+}
+
+.tooltipPositioner {
+  z-index: var(--z-7-tooltip);
+}
+
+.tooltipPopup {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-md);
+  color: var(--popover-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  max-width: 14rem;
+  padding: var(--space-2) var(--space-3);
+}

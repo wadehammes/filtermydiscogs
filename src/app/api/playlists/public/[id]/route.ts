@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
@@ -7,8 +8,14 @@ import {
   getIpRateLimitResponse,
   PUBLIC_CRATE_RATE_LIMIT_CONFIG,
 } from "src/lib/ip-rate-limit";
+import { attachViewerVotesToPlaylistTracks } from "src/lib/playlist-track-vote.server";
 import { loadPublicPlaylist } from "src/lib/public-playlist-load.server";
 import { findPublicPlaylistById } from "src/lib/public-playlist-query.server";
+import {
+  buildPlaylistTrackVoterKey,
+  readPublicPlaylistAnonymousVoterId,
+  setPublicPlaylistAnonymousVoterCookie,
+} from "src/lib/public-playlist-voter.server";
 
 export async function GET(
   request: NextRequest,
@@ -59,7 +66,7 @@ export async function GET(
       });
     }
 
-    const payload = await loadPublicPlaylist(id);
+    const payload = await loadPublicPlaylist(id, { playlist: playlistRow });
 
     if (!payload) {
       return NextResponse.json(
@@ -72,11 +79,45 @@ export async function GET(
       payload.playlist.username = viewer.username;
     }
 
-    return NextResponse.json(payload, {
-      headers: {
-        "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+    let anonymousVoterId = readPublicPlaylistAnonymousVoterId(request);
+    let issuedAnonymousVoterId: string | null = null;
+
+    if (!(isOwner || viewer?.userId || anonymousVoterId)) {
+      issuedAnonymousVoterId = randomUUID();
+      anonymousVoterId = issuedAnonymousVoterId;
+    }
+
+    if (!isOwner) {
+      const voterKey = buildPlaylistTrackVoterKey(
+        viewer?.userId,
+        anonymousVoterId,
+      );
+      payload.tracks = await attachViewerVotesToPlaylistTracks(
+        playlistRow.user_id,
+        playlistRow.id,
+        payload.tracks,
+        voterKey,
+      );
+    }
+
+    const response = NextResponse.json(
+      {
+        ...payload,
+        viewerIsOwner: isOwner,
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0",
+          Vary: "Cookie",
+        },
+      },
+    );
+
+    if (issuedAnonymousVoterId) {
+      setPublicPlaylistAnonymousVoterCookie(response, issuedAnonymousVoterId);
+    }
+
+    return response;
   } catch (error) {
     const sanitized = logSanitizedApiRouteFailure(
       "/api/playlists/public/[id]",

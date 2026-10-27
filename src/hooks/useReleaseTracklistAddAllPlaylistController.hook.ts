@@ -63,8 +63,11 @@ export const useReleaseTracklistAddAllPlaylistController = ({
   );
 
   const handleCreate = useCallback(
-    async ({ name }: CreatePlaylistFormValues) => {
-      const created = await createPlaylistMutation.mutateAsync(name.trim());
+    async ({ name, publicDescription }: CreatePlaylistFormValues) => {
+      const created = await createPlaylistMutation.mutateAsync({
+        name: name.trim(),
+        publicDescription,
+      });
       await addAllToPlaylist(created.id, created.name);
       setShowCreateDialog(false);
     },
