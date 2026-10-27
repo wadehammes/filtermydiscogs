@@ -5,6 +5,7 @@ import {
   ABOUT_GITHUB_LINKS,
   ABOUT_SUPPORT_EMAIL,
 } from "src/constants/about.constants";
+import { SITE_NAME } from "src/constants/siteMetadata";
 import styles from "./Legal.module.css";
 import { LegalDataManagementActions } from "./LegalDataManagementActions.client";
 
@@ -15,10 +16,10 @@ export function LegalPageContent() {
         <section data-prose-section>
           <h2>Terms of Service</h2>
           <p>
-            FilterMyDiscogs is a free tool for browsing and organizing your
-            Discogs collection. It stays in continuous beta: features change
-            often and bugs are expected. These terms describe how the app works
-            and what to expect.
+            {SITE_NAME} is a free tool for browsing and organizing your Discogs
+            collection. It stays in continuous beta: features change often and
+            bugs are expected. These terms describe how the app works and what
+            to expect.
           </p>
           <ul>
             <li>
@@ -269,8 +270,8 @@ export function LegalPageContent() {
         >
           <h2>Data Management</h2>
           <p>
-            If you want a clean slate in FilterMyDiscogs, &quot;Clear All
-            Data&quot; removes the following:
+            If you want a clean slate in {SITE_NAME}, &quot;Clear All Data&quot;
+            removes the following:
           </p>
           <ul>
             <li>Auth tokens and session cookies</li>

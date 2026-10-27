@@ -3,10 +3,12 @@ import {
   LOGIN_PAGE_SITE_COPY,
 } from "./loginPageCopy.registry";
 
-export const SITE_NAME = "FilterMyDiscogs";
+export const SITE_NAME = "FilterMyDisco.gs";
 export const SITE_WORDMARK = "FILTERMYDISCO.GS";
 export const SITE_DOMAIN_LABEL = "FilterMyDisco.gs";
 export const DEFAULT_SITE_URL = "https://www.filtermydisco.gs";
+
+export const FMD_HTTP_USER_AGENT = `${SITE_NAME}/1.0 (+${DEFAULT_SITE_URL})`;
 export const SITE_GITHUB_URL = "https://github.com/wadehammes/filtermydiscogs";
 export const SITE_INSTAGRAM_URL = "https://www.instagram.com/filtermydiscogs";
 
@@ -57,13 +59,12 @@ export const PAGE_DESCRIPTIONS = {
     "Manage a crate layout with sections, set notes, gig packing, and optional public sharing.",
   playlists:
     "Manage cross-release playlists: reorder tracks, play in-app, and share a public link when ready.",
-  settings:
-    "Manage theme, sync preferences, and stored data for your FilterMyDiscogs account.",
-  about: `About FilterMyDiscogs: collection insights and on-repeat tracks, search and filters, playlists and crates (drag reorder, sections, set notes, gig packing), in-app playback with per-track stats, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
-  legal: "Terms of Service and Privacy Policy for FilterMyDiscogs.",
+  settings: `Manage theme, sync preferences, and stored data for your ${SITE_NAME} account.`,
+  about: `About ${SITE_NAME}: collection insights and on-repeat tracks, search and filters, playlists and crates (drag reorder, sections, set notes, gig packing), in-app playback with per-track stats, mosaics, and how we handle your data. Includes ${COLLECTION_FORMATS_PHRASE}.`,
+  legal: `Terms of Service and Privacy Policy for ${SITE_NAME}.`,
   admin: "Admin statistics and analytics dashboard.",
-  crateFallback: "A shared crate on FilterMyDiscogs.",
-  playlistFallback: "A shared playlist on FilterMyDiscogs.",
+  crateFallback: `A shared crate on ${SITE_NAME}.`,
+  playlistFallback: `A shared playlist on ${SITE_NAME}.`,
 } as const;
 
 export const homeStructuredData = () => {

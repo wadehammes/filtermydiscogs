@@ -109,12 +109,12 @@ describe("Login", () => {
     expect(screen.getByText("Mosaics")).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Collections insights dashboard with stats, charts, on-repeat track leaders, and collection milestones",
+        name: "Collection insights dashboard with stats, charts, on-repeat leaders, and milestones",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Releases page with search, filters, tracklist, in-app player, and release cards",
+        name: "Releases page with search, flexible filters, random view, tracklist, in-app player, and release cards",
       }),
     ).toBeInTheDocument();
     expect(
@@ -127,7 +127,9 @@ describe("Login", () => {
         name: "Cover-art mosaic grid generated from a collection of release artwork",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Browse, search, and filter")).toBeInTheDocument();
+    expect(
+      screen.getByText("Find hidden gems in your collection"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Build and share playlists")).toBeInTheDocument();
     expect(screen.getByText("Organize and share crates")).toBeInTheDocument();
     expect(
@@ -138,7 +140,7 @@ describe("Login", () => {
     ).toHaveAttribute("href", "/about#support");
     expect(screen.getByTestId("fmdPageFooterFun")).toBeInTheDocument();
     expect(
-      screen.getByText("Live totals from collectors using FilterMyDiscogs."),
+      screen.getByText("Live totals from collectors using FilterMyDisco.gs."),
     ).toBeInTheDocument();
     expect(screen.getByText("128")).toBeInTheDocument();
     expect(screen.getByText("Crates created")).toBeInTheDocument();

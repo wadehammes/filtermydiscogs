@@ -1,19 +1,23 @@
-jest.mock("src/components/Page/PageFooter.server", () => ({
-  PageFooter: () => (
-    <>
-      <div data-testid="fmdPageFooterFun">
-        <p>Community stats</p>
-        <p>Live totals from collectors using FilterMyDiscogs.</p>
-        <p>128</p>
-        <p>Crates created</p>
-      </div>
-      <footer>
-        <a href="/about">About</a>
-        <a href="/about#support">Contribute to the project</a>
-      </footer>
-    </>
-  ),
-}));
+jest.mock("src/components/Page/PageFooter.server", () => {
+  const { SITE_NAME } = require("src/constants/siteMetadata");
+
+  return {
+    PageFooter: () => (
+      <>
+        <div data-testid="fmdPageFooterFun">
+          <p>Community stats</p>
+          <p>Live totals from collectors using {SITE_NAME}.</p>
+          <p>128</p>
+          <p>Crates created</p>
+        </div>
+        <footer>
+          <a href="/about">About</a>
+          <a href="/about#support">Contribute to the project</a>
+        </footer>
+      </>
+    ),
+  };
+});
 
 import { PageFooter } from "src/components/Page/PageFooter.server";
 import { PublicAuthLayout } from "src/components/PublicAuthLayout/PublicAuthLayout.component";

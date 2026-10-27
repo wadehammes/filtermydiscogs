@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
+import { FMD_HTTP_USER_AGENT } from "src/constants/siteMetadata";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import {
   fetchDiscogsCdnImage,
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
       path: fetchTarget.path,
       init: {
         headers: {
-          "User-Agent": "FilterMyDiscogs/1.0 (https://filtermydiscogs.com)",
+          "User-Agent": FMD_HTTP_USER_AGENT,
         },
       },
     });

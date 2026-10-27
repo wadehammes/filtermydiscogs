@@ -7,6 +7,7 @@ import {
   DONATION_MIN_DOLLARS,
   DONATION_PRESET_AMOUNTS_CENTS,
 } from "src/constants/donate.constants";
+import { SITE_NAME } from "src/constants/siteMetadata";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAboutDonationForm } from "src/hooks/useAboutDonationForm.hook";
 import typography from "src/styles/modules/typography.module.css";
@@ -49,7 +50,7 @@ export const AboutDonationSection = () => {
           id="about-support"
           className={classNames(styles.tileHeading, styles.donationHeading)}
         >
-          Help keep FilterMyDiscogs free
+          Help keep {SITE_NAME} free
         </h2>
         <p className={styles.tileBody}>
           If this app has made your collection easier to actually use, consider

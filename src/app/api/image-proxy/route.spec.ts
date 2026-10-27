@@ -190,7 +190,7 @@ describe("GET /api/image-proxy", () => {
       "https://i.discogs.com/example-cover.jpeg",
       expect.objectContaining({
         headers: expect.objectContaining({
-          "User-Agent": expect.stringContaining("FilterMyDiscogs"),
+          "User-Agent": expect.stringContaining("FilterMyDisco.gs"),
         }),
       }),
     );

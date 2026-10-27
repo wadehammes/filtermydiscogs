@@ -2,25 +2,25 @@
 
 # FilterMyDisco.gs
 
-A web application to filter and explore your Discogs collection, including vinyl, CDs, tapes, and every other format Discogs supports.
+Free companion app for your Discogs collection: flexible filters, search, playback, crates, playlists, and stats. Every format Discogs supports.
 
 ## Features
 
-- **Discogs OAuth**: Secure login with your Discogs account
-- **Full collection browse**: Paginated sync across every format Discogs supports, with local cache for faster return visits
-- **Search & filters**: Search by title, artist, label, or notes; filter by genre/style, year, and format (with ANY / ALL / NONE match modes); save named filter views
+- **Discogs OAuth**: Sign in with your Discogs account
+- **Flexible filters**: Require-all and exclude on genres, styles, formats, and years; dropdowns follow the visible grid. Saved views; resume filters after load
+- **Search & browse**: Search title, artist, label, or notes; full collection sync with IndexedDB cache for faster return visits
 - **Sorting & views**: Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
-- **In-app playback**: Preview tracks from a persistent mini player and queue while you browse; set or change a **YouTube link per track** on your collection copy when Discogs has no embed or you want a different upload; listen counts on release tracklists and play/listen leaderboards on the dashboard (stored on our server when you play)
-- **Playlists** (progressive rollout): Save cross-release track lists; manage, reorder, and play from the Releases side panel (Crates | Playlists toggle when enabled); share a public link; mix with the queue by adding tracks from release tracklists (per-track menus or **Add all to…** for queue and playlists)
-- **Crates**: Build lists for gigs or themes; drag to reorder, add sections, write set notes, track gig packing, and share a public link — same Releases side panel as playlists
-- **Collection insights**: Dashboard with milestones, style evolution, growth charts, and On repeat (most played and listened tracks)
-- **Mosaic generator**: Browse cover-art grids from your collection, crates, or playlists (click any tile for release details); export as JPEG or PNG
-- **Settings**: Theme (light / dark / system), default Releases side panel (crates or playlists), playback queue options (auto-play on add, optional similar-release tail), collection sync, filter persistence, analytics consent, and clear stored data
-- **Responsive UI**: Desktop sidebar for crates/playlists on Releases, mobile drawers, and touch-friendly filters; fast route transitions on authenticated pages (Next.js instant navigation)
-- **Discogs outage notice**: When Discogs is down you stay signed in, see a notice with a link to [Discogs status](https://status.discogs.com), and your collection loads once Discogs is back
-- **Deploy refresh**: In production, a toast prompts you to reload when a newer app version is available
-- **Core Web Vitals**: With analytics consent, field CWV metrics flow to GTM as `webVital` events (Next.js `useReportWebVitals`)
+- **In-app playback**: Mini player and queue while you browse; per-track **YouTube** links when Discogs has no embed; optional similar-release queue tail in Settings; listen counts on tracklists and play/listen stats on the dashboard
+- **Playlists** (progressive rollout): Cross-release track lists from the Releases side panel; reorder, play, share a public link (listeners can play without signing in); **Add all to…** from tracklists
+- **Crates**: Stage picks from Releases in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
+- **Collection insights**: Dashboard milestones, style evolution, growth and artist/label charts, most-crated releases, on-this-day adds, weekly recap, and On repeat
+- **Mosaic generator**: Cover grids from your collection, crates, or playlists; export JPEG or PNG
+- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, clear data
+- **Responsive UI**: Desktop sidebar and mobile drawers; fast route transitions on authenticated pages
+- **Discogs outage notice**: Stay signed in with a link to [Discogs status](https://status.discogs.com); collection loads when Discogs is back
+- **Deploy refresh**: Toast to reload when a newer production build is available
+- **Core Web Vitals**: With analytics consent, field metrics to GTM as `webVital` events
 
 ## Setup
 
@@ -128,8 +128,8 @@ The app will be available at `http://localhost:6767`.
 ## Usage
 
 1. Click **Connect with Discogs** on the home page and authorize the app
-2. Browse **Releases** — search, filter, sort, open release details, edit notes/ratings, preview tracks, queue or playlist actions from track menus, bulk **Add all to…** (queue or playlists) from the tracklist toolbar, and set per-track YouTube links when needed
-3. On **Releases**, use the side panel — **Crates** always; **Playlists** when your deployment has them enabled — stage picks in the crate drawer, or create playlists and add tracks from release tracklist menus
+2. Browse **Releases** — narrow by genre, format, and year (filter lists update as the grid shrinks); search, sort, or try random view; open release details; preview tracks; queue or playlist from track menus; **Add all to…** from the tracklist toolbar; set per-track YouTube links when needed
+3. On **Releases**, use the side panel — **Crates** always; **Playlists** when enabled — stage albums into crates or add tracks to playlists while you browse
 4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Releases
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
 6. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu

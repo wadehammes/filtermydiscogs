@@ -15,7 +15,7 @@ import { PublicSharePlaybackShell } from "src/components/PublicSharePlaybackShel
 import tracklistStyles from "src/components/ReleaseTracklist/ReleaseTracklist.module.css";
 import { PUBLIC_SHARED_PLAYLIST_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { PUBLIC_PLAYLIST_MARKETING_BULLETS } from "src/constants/marketingPublicCopy";
-import { SITE_LEAD } from "src/constants/siteMetadata";
+import { SITE_LEAD, SITE_NAME } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { usePublicPlaylistQuery } from "src/hooks/queries/usePublicPlaylistQuery";
@@ -240,7 +240,7 @@ export const PublicPlaylistClient = ({
           <section className={classNames(styles.section, styles.aboutSection)}>
             <div className={styles.twoColumnLayout}>
               <div className={styles.aboutContent}>
-                <h2 className={styles.heading}>About FilterMyDiscogs</h2>
+                <h2 className={styles.heading}>About {SITE_NAME}</h2>
                 <p className={styles.text}>{SITE_LEAD}</p>
                 <p className={styles.text}>Key features:</p>
                 <PublicMarketingFeatureList

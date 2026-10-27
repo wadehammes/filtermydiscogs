@@ -1,19 +1,19 @@
 import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 
 export const LOGIN_PAGE_SITE_COPY = {
-  tagline: "Your Discogs collection, unlocked",
-  lead: "Discogs is where your collection lives. FilterMyDiscogs is the free app to dig through it: search, filter, queue tracks, build playlists, pack crates, spot trends, and more.",
+  tagline: "Discover and play your collection",
+  lead: "Discogs catalogs your physical media. FilterMyDisco.gs is a free companion app to search and filter it, discover hidden gems, queue tracks for in-app playback, and build playlists and crates.",
   description:
-    "Discogs is where your collection lives. FilterMyDiscogs is the free app to dig through it: search, filter, queue tracks, build playlists, pack crates, spot trends, and more.",
+    "Discogs catalogs your physical media. FilterMyDisco.gs is a free companion app to search and filter it, discover hidden gems, queue tracks for in-app playback, and build playlists and crates.",
   previewAltSuffix:
-    "app preview with release cards, filters, in-app playback, playlists, crate layout and packing tools, collection insights, and on-repeat track stats",
+    "app preview with advanced collection filters, release cards, in-app playback, playlists, crates, collection insights, and on-repeat stats",
 } as const;
 
 export const LOGIN_PAGE_UI_COPY = {
   bottomCtaHeading: "Ready to connect your collection?",
   featuresSectionHeading: "What you can do",
   featuresSectionLede:
-    "Five ways to get more from the records you already own.",
+    "Find physical media faster, then play it, pack it, and share it.",
   publicShareTeaserLead: "Listen to a ",
   publicShareTeaserPlaylistLinkLabel: "shared playlist",
   publicShareTeaserJoiner: " or browse a ",

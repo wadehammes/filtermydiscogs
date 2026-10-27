@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import { SITE_NAME } from "src/constants/siteMetadata";
 import { formatCommunityStatValue } from "src/lib/formatCommunityStatValue";
 import VinylRecord from "src/styles/icons/vinyl-record.svg";
 import type { PublicCommunityStats } from "src/types/public-stats.types";
@@ -72,7 +73,7 @@ export const PageFooterFun = ({
             [styles.onGradientMuted]: variant === "gradient",
           })}
         >
-          Live totals from collectors using FilterMyDiscogs.
+          Live totals from collectors using {SITE_NAME}.
         </p>
       </div>
 

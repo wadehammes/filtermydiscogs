@@ -1,3 +1,4 @@
+import { FMD_HTTP_USER_AGENT } from "src/constants/siteMetadata";
 import { z } from "zod";
 
 const youtubeOembedResponseSchema = z.object({
@@ -22,7 +23,7 @@ export const fetchYoutubeOembedMetadata = async (
 
   const response = await fetch(oembedUrl, {
     headers: {
-      "User-Agent": "FilterMyDiscogs/1.0 (https://filtermydiscogs.com)",
+      "User-Agent": FMD_HTTP_USER_AGENT,
     },
   });
 
