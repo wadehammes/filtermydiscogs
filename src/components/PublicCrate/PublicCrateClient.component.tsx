@@ -1,19 +1,15 @@
 "use client";
 
-import classNames from "classnames";
 import Link from "next/link";
 import { useMemo } from "react";
-import { LoginConnectButton } from "src/components/LoginConnectButton/LoginConnectButton.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
 import { PublicReleaseModal } from "src/components/PublicReleaseModal/PublicReleaseModal.component";
 import { PublicSharedViewBanner } from "src/components/PublicSharedViewBanner/PublicSharedViewBanner.component";
+import { PublicShareMarketingSection } from "src/components/PublicShareMarketingSection/PublicShareMarketingSection.component";
 import { PublicSharePlaybackShell } from "src/components/PublicSharePlaybackShell/PublicSharePlaybackShell.component";
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { PUBLIC_SHARED_CRATE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
-import { PUBLIC_CRATE_MARKETING_BULLETS } from "src/constants/marketingPublicCopy";
-import { SITE_LEAD, SITE_NAME } from "src/constants/siteMetadata";
-import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
 import { usePublicSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
@@ -24,45 +20,6 @@ import styles from "./PublicCrate.module.css";
 interface PublicCrateClientProps {
   crateId: string;
 }
-
-type MarketingBullet = {
-  label: string;
-  text: string;
-};
-
-const PublicMarketingFeatureList = ({
-  bullets,
-}: {
-  bullets: MarketingBullet[];
-}) => {
-  return (
-    <ul className={styles.list}>
-      {bullets.map((bullet) => (
-        <li key={bullet.label} className={styles.listItem}>
-          <strong>{bullet.label}</strong>: {bullet.text}
-        </li>
-      ))}
-    </ul>
-  );
-};
-
-const PublicCrateAboutSections = () => {
-  return (
-    <section className={styles.section}>
-      <h2 className={styles.heading}>About {SITE_NAME}</h2>
-      <p className={styles.text}>{SITE_LEAD}</p>
-      <p className={styles.text}>Key features:</p>
-      <PublicMarketingFeatureList
-        bullets={[...PUBLIC_CRATE_MARKETING_BULLETS]}
-      />
-      <p className={styles.text}>
-        <Link href="/about" className={styles.inlineLink}>
-          Learn more about FilterMyDisco.gs
-        </Link>
-      </p>
-    </section>
-  );
-};
 
 const PublicCrateLoadedContent = ({
   crate,
@@ -79,7 +36,6 @@ const PublicCrateLoadedContent = ({
     ReturnType<typeof usePublicCrateQuery>["data"]
   >["pagination"];
 }) => {
-  const { login } = useAuth();
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     usePublicSelectedReleaseModal({ fallbackReleases: releases });
 
@@ -94,80 +50,47 @@ const PublicCrateLoadedContent = ({
       <PublicSharedViewBanner kind="crate" username={crate.username} />
       <div className={styles.container}>
         <div className={styles.content}>
-          <div className={styles.section}>
-            <h1 className={styles.title}>{crate.name}</h1>
-            <div className={styles.meta}>
-              {crate.username ? (
-                <>
-                  By {crate.username}
-                  {" · "}
-                </>
-              ) : null}
-              {pagination.total} release{pagination.total !== 1 ? "s" : ""}
-              <div className={styles.metaContainer}>
-                {crate.created_at ? (
-                  <span>Created {formatDate(String(crate.created_at))}</span>
+          <div className={styles.publicShareStack}>
+            <div className={styles.section}>
+              <h1 className={styles.title}>{crate.name}</h1>
+              <div className={styles.meta}>
+                {crate.username ? (
+                  <>
+                    By {crate.username}
+                    {" · "}
+                  </>
                 ) : null}
-                {crate.updated_at &&
-                  new Date(crate.updated_at).getTime() !==
-                    new Date(crate.created_at).getTime() && (
-                    <time dateTime={String(crate.updated_at)}>
-                      Updated {formatDate(String(crate.updated_at))}
-                    </time>
-                  )}
-              </div>
-            </div>
-          </div>
-
-          {releases.length > 0 ? (
-            <div className={styles.section}>
-              <ReleaseCardGrid
-                releases={releases}
-                onReleaseClick={handleReleaseClick}
-              />
-            </div>
-          ) : (
-            <div className={styles.section}>
-              <p className={styles.text}>This crate is empty.</p>
-            </div>
-          )}
-
-          <section className={classNames(styles.section, styles.aboutSection)}>
-            <div className={styles.twoColumnLayout}>
-              <div className={styles.aboutContent}>
-                <h2 className={styles.heading}>About {SITE_NAME}</h2>
-                <p className={styles.text}>{SITE_LEAD}</p>
-                <p className={styles.text}>Key features:</p>
-                <PublicMarketingFeatureList
-                  bullets={[...PUBLIC_CRATE_MARKETING_BULLETS]}
-                />
-                <p className={styles.text}>
-                  <Link href="/about" className={styles.inlineLink}>
-                    Learn more
-                  </Link>
-                </p>
-              </div>
-
-              <div className={styles.loginModule}>
-                <h2 className={styles.heading}>Get Started</h2>
-                <p className={styles.text}>
-                  Connect your Discogs account to start exploring and organizing
-                  your collection.
-                </p>
-                <div className={styles.loginButtonContainer}>
-                  <LoginConnectButton
-                    onClick={login}
-                    className={styles.connectButton}
-                  />
+                {pagination.total} release{pagination.total !== 1 ? "s" : ""}
+                <div className={styles.metaContainer}>
+                  {crate.created_at ? (
+                    <span>Created {formatDate(String(crate.created_at))}</span>
+                  ) : null}
+                  {crate.updated_at &&
+                    new Date(crate.updated_at).getTime() !==
+                      new Date(crate.created_at).getTime() && (
+                      <time dateTime={String(crate.updated_at)}>
+                        Updated {formatDate(String(crate.updated_at))}
+                      </time>
+                    )}
                 </div>
-                <p className={styles.loginNote}>
-                  <Link href="/legal" className={styles.inlineLink}>
-                    Terms & Privacy
-                  </Link>
-                </p>
               </div>
             </div>
-          </section>
+
+            {releases.length > 0 ? (
+              <div className={styles.section}>
+                <ReleaseCardGrid
+                  releases={releases}
+                  onReleaseClick={handleReleaseClick}
+                />
+              </div>
+            ) : (
+              <div className={styles.section}>
+                <p className={styles.text}>This crate is empty.</p>
+              </div>
+            )}
+
+            <PublicShareMarketingSection />
+          </div>
           <PlaybackScrollSpacer />
         </div>
       </div>
@@ -218,7 +141,7 @@ const PublicCrateClientContent = ({ crateId }: PublicCrateClientProps) => {
               </Link>
             </p>
           </div>
-          <PublicCrateAboutSections />
+          <PublicShareMarketingSection />
         </div>
       </div>
     );

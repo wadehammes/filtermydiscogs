@@ -43,6 +43,7 @@ export async function generateMetadata({
           name: data.playlist.name,
           username: data.playlist.username,
           itemCount: data.trackCount,
+          publicDescription: data.playlist.publicDescription,
         }
       : getE2eDemoPublicShareMetadataResolved("playlist", id);
 

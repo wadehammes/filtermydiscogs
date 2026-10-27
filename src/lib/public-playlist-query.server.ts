@@ -6,6 +6,9 @@ const PUBLIC_PLAYLIST_SELECT = {
   name: true,
   username: true,
   private: true,
+  public_view_count: true,
+  public_play_count: true,
+  public_description: true,
   created_at: true,
   updated_at: true,
 } as const;
@@ -16,6 +19,9 @@ export type PublicPlaylistRow = {
   name: string;
   username: string | null;
   private: boolean;
+  public_view_count: number;
+  public_play_count: number;
+  public_description: string | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -51,6 +57,7 @@ export const findPublicPlaylistSummaryById = async (
 ): Promise<{
   name: string;
   username: string | null;
+  publicDescription: string | null;
   trackCount: number;
 } | null> => {
   const playlist = await findPublicPlaylistById(playlistId);
@@ -69,6 +76,7 @@ export const findPublicPlaylistSummaryById = async (
   return {
     name: playlist.name,
     username: playlist.username,
+    publicDescription: playlist.public_description,
     trackCount,
   };
 };

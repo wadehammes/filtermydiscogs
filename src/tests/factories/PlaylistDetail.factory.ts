@@ -28,6 +28,9 @@ class PlaylistDetailFactory extends BaseFactory<
         faker.word.noun(),
       ]),
       private: false,
+      publicDescription: null,
+      publicViewCount: 0,
+      publicPlayCount: 0,
       created_at: created.toISOString(),
       updated_at: faker.date
         .between({ from: created, to: new Date() })

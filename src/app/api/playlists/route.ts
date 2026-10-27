@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
     const playlist = await createPlaylist(
       verified.user.userId,
       parsedBody.data.name,
+      parsedBody.data.publicDescription,
     );
 
     return privateRouteJson({ playlist }, { status: 201 });

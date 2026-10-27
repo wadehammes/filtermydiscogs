@@ -45,6 +45,8 @@ export const buildE2eDemoPublicPlaylistResponse =
           null,
         youtube_id: E2E_EMBED_MOCK_VIDEO_IDS.normal,
         discogs_release_id: E2E_DISCOGS_RELEASE_ID_ONE,
+        upCount: 0,
+        downCount: 0,
       },
       {
         track_key: `e2e-release-2:${E2E_RELEASE_TRACK_POSITION}`,
@@ -58,6 +60,8 @@ export const buildE2eDemoPublicPlaylistResponse =
           null,
         youtube_id: E2E_EMBED_MOCK_VIDEO_IDS.normal,
         discogs_release_id: E2E_DISCOGS_RELEASE_ID_TWO,
+        upCount: 0,
+        downCount: 0,
       },
     ];
 
@@ -69,6 +73,7 @@ export const buildE2eDemoPublicPlaylistResponse =
         name: LOGIN_DEMO_PUBLIC_PLAYLIST_TITLE,
         username: E2E_AUTH_USERNAME,
         private: false,
+        publicDescription: null,
         created_at: now,
         updated_at: now,
       },
@@ -77,6 +82,10 @@ export const buildE2eDemoPublicPlaylistResponse =
       mosaicThumbUrls: releases
         .map((release) => release.basic_information.thumb)
         .filter((url): url is string => Boolean(url)),
+      shareStats: {
+        publicViewCount: 0,
+        publicPlayCount: 0,
+      },
     };
   };
 

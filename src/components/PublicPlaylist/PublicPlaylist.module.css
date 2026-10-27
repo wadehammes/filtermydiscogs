@@ -19,10 +19,22 @@
   width: 100%;
 }
 
+.publicShareStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  min-width: 0;
+  width: 100%;
+
+  @media (width >= 768px) {
+    gap: var(--space-20);
+  }
+}
+
 .playlistWorkspace {
   display: grid;
   gap: var(--space-8);
-  margin-bottom: var(--space-10);
+  margin-bottom: 0;
   width: 100%;
 
   @media (width >= 1024px) {
@@ -77,79 +89,6 @@
   }
 }
 
-.aboutSection {
-  border-top: 1px dashed var(--border);
-  padding-top: var(--space-16);
-
-  @media (width >= 768px) {
-    padding-top: var(--space-20);
-  }
-}
-
-.twoColumnLayout {
-  align-items: stretch;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  min-width: 0;
-  width: 100%;
-
-  @media (width >= 1024px) {
-    align-items: flex-start;
-    flex-direction: row;
-    gap: 8rem;
-  }
-}
-
-.aboutContent {
-  flex: 2.5;
-  min-width: 0;
-  width: 100%;
-}
-
-.loginModule {
-  align-items: flex-start;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--primary) 10%, var(--card)),
-    color-mix(in srgb, var(--primary) 5%, var(--card))
-  );
-  border: 2px solid var(--primary);
-  border-radius: var(--radius-card);
-  box-sizing: border-box;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--space-4);
-  justify-content: flex-start;
-  min-width: 0;
-  padding: var(--space-6) var(--space-4);
-  width: 100%;
-
-  @media (width >= 768px) {
-    padding: var(--space-6) var(--space-8);
-  }
-}
-
-.loginButtonContainer {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.connectButton {
-  width: 100%;
-}
-
-.loginNote {
-  color: var(--muted-foreground);
-  font-size: var(--text-sm);
-  margin-bottom: 0;
-  text-align: center;
-  width: 100%;
-}
-
 .text {
   color: var(--muted-foreground);
   font-size: var(--text-base);
@@ -166,18 +105,6 @@
     color: var(--link-hover);
     text-decoration: underline;
   }
-}
-
-.list {
-  color: var(--muted-foreground);
-  font-size: var(--text-base);
-  line-height: 1.6;
-  margin: 0 0 var(--space-4);
-  padding-left: var(--space-6);
-}
-
-.listItem {
-  margin-bottom: var(--space-2);
 }
 
 .playButton {

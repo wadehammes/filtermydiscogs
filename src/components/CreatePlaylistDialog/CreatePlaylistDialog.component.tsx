@@ -5,9 +5,10 @@ import { useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { FormDialog } from "src/components/FormDialog/FormDialog.component";
+import { PLAYLIST_PUBLIC_DESCRIPTION_MAX_LENGTH } from "src/constants/publicPlaylist.constants";
 import {
   type CreatePlaylistFormValues,
-  createPlaylistBodySchema,
+  createPlaylistFormSchema,
 } from "src/lib/validation/playlist.schemas";
 import modalFormFieldStyles from "src/styles/modules/modal-form-field.module.css";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
@@ -20,6 +21,7 @@ export interface CreatePlaylistDialogProps {
   isOpen: boolean;
   isSubmitting?: boolean;
   initialName?: string;
+  initialPublicDescription?: string;
   loadingText?: string;
   onClose: () => void;
   onCreate: (values: CreatePlaylistFormValues) => void | Promise<void>;
@@ -32,6 +34,7 @@ export const CreatePlaylistDialog = ({
   isOpen,
   isSubmitting = false,
   initialName = "",
+  initialPublicDescription = "",
   loadingText = "Creating...",
   onClose,
   onCreate,
@@ -40,11 +43,12 @@ export const CreatePlaylistDialog = ({
   submitLabel = "Create playlist",
 }: CreatePlaylistDialogProps) => {
   const nameInputId = useId();
+  const publicDescriptionInputId = useId();
 
   const { register, handleSubmit, reset, watch } =
     useForm<CreatePlaylistFormValues>({
-      resolver: zodResolver(createPlaylistBodySchema),
-      defaultValues: { name: "" },
+      resolver: zodResolver(createPlaylistFormSchema),
+      defaultValues: { name: "", publicDescription: "" },
     });
 
   const nameValue = watch("name");
@@ -53,9 +57,12 @@ export const CreatePlaylistDialog = ({
 
   useEffect(() => {
     if (isOpen) {
-      reset({ name: initialName });
+      reset({
+        name: initialName,
+        publicDescription: initialPublicDescription,
+      });
     }
-  }, [initialName, isOpen, reset]);
+  }, [initialName, initialPublicDescription, isOpen, reset]);
 
   const handleClose = () => {
     if (!isSubmitting) {
@@ -64,7 +71,7 @@ export const CreatePlaylistDialog = ({
   };
 
   const handleCreate = handleSubmit(async (values) => {
-    await onCreate({ name: values.name });
+    await onCreate(values);
   });
 
   return (
@@ -117,6 +124,29 @@ export const CreatePlaylistDialog = ({
             autoComplete="off"
             disabled={isSubmitting}
             {...register("name")}
+            data-1p-ignore
+          />
+        </FormDialog.Field>
+        <FormDialog.Field
+          label="Public description"
+          htmlFor={publicDescriptionInputId}
+        >
+          <p className={styles.fieldHint}>
+            Optional. Shown on your public playlist page and in link previews
+            when the playlist is public.
+          </p>
+          <textarea
+            id={publicDescriptionInputId}
+            rows={3}
+            maxLength={PLAYLIST_PUBLIC_DESCRIPTION_MAX_LENGTH}
+            className={validatedFieldClass(
+              modalFormFieldStyles.textarea,
+              modalInputStyles.textarea,
+            )}
+            placeholder="What is this playlist about?"
+            autoComplete="off"
+            disabled={isSubmitting}
+            {...register("publicDescription")}
             data-1p-ignore
           />
         </FormDialog.Field>

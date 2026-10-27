@@ -134,6 +134,30 @@ describe("/api/playlists", () => {
     expect(mockCreatePlaylist).toHaveBeenCalledWith(
       verifiedUser.user.userId,
       "Sunday",
+      undefined,
+    );
+  });
+
+  it("POST persists optional publicDescription on create", async () => {
+    const playlist = playlistSummaryFactory.empty({ name: "Sunday" });
+    mockCreatePlaylist.mockResolvedValue(playlist);
+
+    const response = await POST(
+      new NextRequest("http://localhost/api/playlists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Sunday",
+          publicDescription: "Morning warm-up set.",
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(mockCreatePlaylist).toHaveBeenCalledWith(
+      verifiedUser.user.userId,
+      "Sunday",
+      "Morning warm-up set.",
     );
   });
 

@@ -20,11 +20,8 @@ test.describe("public shared playlist (MSW)", () => {
       ),
     ).toBeVisible();
     await expect(
-      page.getByText(/without signing in like this one/i),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/public crate link like this one/i),
-    ).toHaveCount(0);
+      page.getByRole("link", { name: "Learn more" }),
+    ).toHaveAttribute("href", "/about");
   });
 
   test("starts playback from Play All without a provider error", async ({

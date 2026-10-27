@@ -22,8 +22,38 @@
 }
 
 .trackMetaColumn {
+  align-items: center;
+  display: flex;
   flex: 1;
+  gap: var(--space-2);
   min-width: 0;
+}
+
+@property --playlist-hot-track-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes playlistHotTrackBorderRotate {
+  to {
+    --playlist-hot-track-border-angle: 360deg;
+  }
+}
+
+.listItemHot {
+  animation: playlistHotTrackBorderRotate 5s linear infinite;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    conic-gradient(
+      from var(--playlist-hot-track-border-angle),
+      var(--primary),
+      color-mix(in srgb, var(--warning) 70%, var(--primary)),
+      var(--primary)
+    )
+    border-box;
+  border: 2px solid transparent;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 .playButton {

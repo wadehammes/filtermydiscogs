@@ -1,3 +1,4 @@
+import { PLAYLIST_PUBLIC_DESCRIPTION_MAX_LENGTH } from "src/constants/publicPlaylist.constants";
 import { userTrackMetadataBodySchema } from "src/lib/validation/userTrack.schemas";
 import { z } from "zod";
 
@@ -7,19 +8,39 @@ const playlistNameFieldSchema = z
   .min(1, "Playlist name is required")
   .max(120, "Playlist name must be 120 characters or less");
 
-export const createPlaylistBodySchema = z.object({
+const playlistPublicDescriptionFieldSchema = z
+  .string()
+  .max(
+    PLAYLIST_PUBLIC_DESCRIPTION_MAX_LENGTH,
+    `Public description must be ${PLAYLIST_PUBLIC_DESCRIPTION_MAX_LENGTH} characters or less`,
+  );
+
+export const createPlaylistFormSchema = z.object({
   name: playlistNameFieldSchema,
+  publicDescription: playlistPublicDescriptionFieldSchema,
 });
 
-export type CreatePlaylistFormValues = z.infer<typeof createPlaylistBodySchema>;
+export type CreatePlaylistFormValues = z.infer<typeof createPlaylistFormSchema>;
+
+export const createPlaylistBodySchema = createPlaylistFormSchema
+  .pick({ name: true })
+  .extend({
+    publicDescription: playlistPublicDescriptionFieldSchema.optional(),
+  });
 
 export const updatePlaylistBodySchema = z
   .object({
     name: playlistNameFieldSchema.optional(),
     private: z.boolean().optional(),
+    publicDescription: playlistPublicDescriptionFieldSchema
+      .nullable()
+      .optional(),
   })
   .refine(
-    (body) => body.name !== undefined || body.private !== undefined,
+    (body) =>
+      body.name !== undefined ||
+      body.private !== undefined ||
+      body.publicDescription !== undefined,
     "At least one field is required",
   );
 

@@ -5,13 +5,11 @@ import { type ChangeEvent, useCallback, useId } from "react";
 import Button from "src/components/Button/Button.component";
 import shareStyles from "src/components/CrateShareControls/CrateShareControls.module.css";
 import { usePlaylistDrawerContext } from "src/components/PlaylistDrawer/PlaylistDrawer.context";
-import { useAuth } from "src/context/auth.context";
 import { useUpdatePlaylistMutation } from "src/hooks/mutations/usePlaylistMutations";
-import { usePlaylistQuery } from "src/hooks/queries/usePlaylistsQuery";
+import { useActivePlaylistDetail } from "src/hooks/useActivePlaylistDetail.hook";
 import { copyToClipboard } from "src/utils/copyToClipboard";
 import { getSiteUrl } from "src/utils/helpers";
 import { toast } from "src/utils/toast";
-import styles from "./PlaylistShareControls.module.css";
 
 interface PlaylistShareControlsProps {
   className?: string;
@@ -24,14 +22,7 @@ export const PlaylistShareControls = ({
   const shareLabelId = useId();
   const shareDescriptionId = useId();
   const { activePlaylistId } = usePlaylistDrawerContext();
-  const {
-    state: { userId },
-  } = useAuth();
-  const { data: playlist } = usePlaylistQuery({
-    userId,
-    playlistId: activePlaylistId,
-    enabled: Boolean(activePlaylistId),
-  });
+  const { data: playlist } = useActivePlaylistDetail();
   const updatePlaylistMutation = useUpdatePlaylistMutation();
   const isPublic = playlist?.private === false;
   const isDisabled =
@@ -39,7 +30,6 @@ export const PlaylistShareControls = ({
   const shareDescription = isPublic
     ? "Anyone with the link can view this playlist."
     : "Only you can view this playlist.";
-
   const handleCopyPress = useCallback(async () => {
     if (!activePlaylistId) {
       return;
@@ -100,7 +90,6 @@ export const PlaylistShareControls = ({
       className={classNames(
         shareStyles.shareRow,
         shareStyles.shareRowFooter,
-        styles.root,
         className,
       )}
       data-testid="fmdPlaylistShareControls"

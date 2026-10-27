@@ -1,8 +1,12 @@
 import { backfillPlaylistTrackDiscogsReleaseIds } from "src/lib/backfill-user-track-discogs-release-id-search.server";
 import { prisma } from "src/lib/db";
+import { mapPlaylistEngagementCounts } from "src/lib/playlist-engagement.server";
 import { mapPlaylistTrackRow } from "src/lib/playlist-track-map.server";
 import { hydratePublicPlaylistReleases } from "src/lib/public-playlist-discogs.server";
-import { findPublicPlaylistById } from "src/lib/public-playlist-query.server";
+import {
+  findPublicPlaylistById,
+  type PublicPlaylistRow,
+} from "src/lib/public-playlist-query.server";
 import { resolvePublicShareUsername } from "src/lib/public-share-username.server";
 import {
   toPublicPlaylistReleaseSnapshot,
@@ -58,10 +62,16 @@ const loadOwnerReleaseSnapshots = async (
     .filter((release): release is DiscogsRelease => release !== undefined);
 };
 
+export type LoadPublicPlaylistOptions = {
+  playlist?: PublicPlaylistRow;
+};
+
 export const loadPublicPlaylist = async (
   playlistId: string,
+  options?: LoadPublicPlaylistOptions,
 ): Promise<PublicPlaylistResponse | null> => {
-  const playlist = await findPublicPlaylistById(playlistId);
+  const playlist =
+    options?.playlist ?? (await findPublicPlaylistById(playlistId));
 
   if (!playlist) {
     return null;
@@ -76,6 +86,8 @@ export const loadPublicPlaylist = async (
     select: {
       sort_order: true,
       track_key: true,
+      up_count: true,
+      down_count: true,
       user_track: {
         select: {
           track_title: true,
@@ -127,9 +139,11 @@ export const loadPublicPlaylist = async (
       name: playlist.name,
       username,
       private: playlist.private,
+      publicDescription: playlist.public_description,
       created_at: playlist.created_at.toISOString(),
       updated_at: playlist.updated_at.toISOString(),
     },
+    shareStats: mapPlaylistEngagementCounts(playlist),
     tracks,
     releases,
     mosaicThumbUrls,

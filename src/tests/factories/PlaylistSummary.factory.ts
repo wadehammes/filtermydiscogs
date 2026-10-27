@@ -28,10 +28,16 @@ class PlaylistSummaryFactory extends BaseFactory<
       trackCount: faker.number.int({ min: 0, max: 40 }),
       created_at: created.toISOString(),
       updated_at: updated.toISOString(),
-    } satisfies Omit<PlaylistSummary, "containsTrack" | "private">;
+    } satisfies Omit<
+      PlaylistSummary,
+      "containsTrack" | "private" | "publicViewCount" | "publicPlayCount"
+    >;
 
     const _allKeysMustBeInTheInstance: KeysMatch<
-      Omit<PlaylistSummary, "containsTrack" | "private">,
+      Omit<
+        PlaylistSummary,
+        "containsTrack" | "private" | "publicViewCount" | "publicPlayCount"
+      >,
       typeof base
     > = undefined;
 

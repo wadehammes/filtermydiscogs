@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, waitFor } from "@testing-library/react";
 import { api } from "src/api/urls";
 import { useReleasePlaylistPickerController } from "src/hooks/useReleasePlaylistPickerController.hook";
+import { playlistSummaryFactory } from "src/tests/factories/PlaylistSummary.factory";
 import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
@@ -98,5 +99,56 @@ describe("useReleasePlaylistPickerController", () => {
       metadata.track_key,
     );
     expect(mockApi.addTrackToPlaylist).not.toHaveBeenCalled();
+  });
+
+  it("when creating a playlist from the dialog, posts name and publicDescription then adds the track", async () => {
+    if (!jest.isMockFunction(mockApi.createPlaylist)) {
+      Object.assign(mockApi, { createPlaylist: jest.fn() });
+    }
+    if (!jest.isMockFunction(mockApi.addTrackToPlaylist)) {
+      Object.assign(mockApi, { addTrackToPlaylist: jest.fn() });
+    }
+
+    const created = playlistSummaryFactory.build({ name: "New list" });
+    mockApiResponse(
+      true,
+      mockApi.createPlaylist,
+      created,
+      new Error("Create playlist failed"),
+    );
+    mockApiResponse(
+      true,
+      mockApi.addTrackToPlaylist,
+      { sort_order: 0 },
+      new Error("Add track to playlist failed"),
+    );
+
+    const metadata = trackMetadataBodyFactory.opening();
+
+    const { result } = renderFeatureHook(
+      () =>
+        useReleasePlaylistPickerController({
+          metadata,
+          trackTitle: "Opening",
+        }),
+      { authInitialState: testAuthenticatedAuthState },
+    );
+
+    await act(async () => {
+      await result.current.createDialogProps.onCreate({
+        name: "  New list  ",
+        publicDescription: "For the floor",
+      });
+    });
+
+    expect(mockApi.createPlaylist).toHaveBeenCalledWith({
+      name: "New list",
+      publicDescription: "For the floor",
+    });
+    expect(mockApi.addTrackToPlaylist).toHaveBeenCalledWith(
+      created.id,
+      metadata,
+    );
+    expect(result.current.createDialogProps.isOpen).toBe(false);
   });
 });

@@ -100,7 +100,11 @@ export async function getPublicPlaylistForOg(playlistId: string): Promise<{
 export async function getPublicPlaylistMetadataForPage(
   playlistId: string,
 ): Promise<{
-  playlist: { name: string; username: string | null };
+  playlist: {
+    name: string;
+    username: string | null;
+    publicDescription: string | null;
+  };
   trackCount: number;
 } | null> {
   "use cache";
@@ -121,6 +125,7 @@ export async function getPublicPlaylistMetadataForPage(
       playlist: {
         name: summary.name,
         username: summary.username,
+        publicDescription: summary.publicDescription,
       },
       trackCount: summary.trackCount,
     };

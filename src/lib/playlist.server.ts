@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "src/lib/db";
+import { mapPlaylistEngagementCounts } from "src/lib/playlist-engagement.server";
 import { mapPlaylistTrackRow } from "src/lib/playlist-track-map.server";
 import { ensureUserTrackMetadata } from "src/lib/user-track.server";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import type { PlaylistDetail, PlaylistSummary } from "src/types/playlist.types";
+import { normalizePlaylistPublicDescriptionForStorage } from "src/utils/publicPlaylistDescription";
 
 const playlistWhere = (userId: number, playlistId: string) => ({
   user_id_id: { user_id: userId, id: playlistId },
@@ -28,6 +30,8 @@ type PlaylistSummaryRow = {
   id: string;
   name: string;
   private: boolean;
+  public_view_count: number;
+  public_play_count: number;
   created_at: Date;
   updated_at: Date;
   _count: { tracks: number };
@@ -38,11 +42,14 @@ const mapPlaylistSummaryRow = (
   row: PlaylistSummaryRow,
   options?: { trackKey?: string },
 ): PlaylistSummary => {
+  const engagement = mapPlaylistEngagementCounts(row);
   const summary: PlaylistSummary = {
     id: row.id,
     name: row.name,
     trackCount: row._count.tracks,
     private: row.private,
+    publicViewCount: engagement.publicViewCount,
+    publicPlayCount: engagement.publicPlayCount,
     created_at: toIso(row.created_at),
     updated_at: toIso(row.updated_at),
   };
@@ -74,6 +81,8 @@ export const listPlaylistsForUser = async (
       id: true,
       name: true,
       private: true,
+      public_view_count: true,
+      public_play_count: true,
       created_at: true,
       updated_at: true,
       _count: { select: { tracks: true } },
@@ -97,17 +106,30 @@ export const listPlaylistsForUser = async (
 export const createPlaylist = async (
   userId: number,
   name: string,
+  publicDescription?: string | null,
 ): Promise<PlaylistSummary> => {
   const row = await prisma.playlist.create({
     data: {
       user_id: userId,
       id: randomUUID(),
       name: name.trim(),
+      ...(publicDescription !== undefined
+        ? {
+            public_description:
+              publicDescription === null
+                ? null
+                : normalizePlaylistPublicDescriptionForStorage(
+                    publicDescription,
+                  ),
+          }
+        : {}),
     },
     select: {
       id: true,
       name: true,
       private: true,
+      public_view_count: true,
+      public_play_count: true,
       created_at: true,
       updated_at: true,
       _count: { select: { tracks: true } },
@@ -127,6 +149,9 @@ export const getPlaylistDetail = async (
       id: true,
       name: true,
       private: true,
+      public_description: true,
+      public_view_count: true,
+      public_play_count: true,
       created_at: true,
       updated_at: true,
       tracks: {
@@ -134,6 +159,8 @@ export const getPlaylistDetail = async (
         select: {
           sort_order: true,
           track_key: true,
+          up_count: true,
+          down_count: true,
           user_track: {
             select: {
               track_title: true,
@@ -154,10 +181,15 @@ export const getPlaylistDetail = async (
     return null;
   }
 
+  const engagement = mapPlaylistEngagementCounts(playlist);
+
   return {
     id: playlist.id,
     name: playlist.name,
     private: playlist.private,
+    publicDescription: playlist.public_description,
+    publicViewCount: engagement.publicViewCount,
+    publicPlayCount: engagement.publicPlayCount,
     created_at: toIso(playlist.created_at),
     updated_at: toIso(playlist.updated_at),
     tracks: playlist.tracks.map(mapPlaylistTrackRow),
@@ -168,6 +200,7 @@ export type UpdatePlaylistFields = {
   name?: string;
   private?: boolean;
   username?: string;
+  publicDescription?: string | null;
 };
 
 export const updatePlaylistFields = async (
@@ -179,6 +212,7 @@ export const updatePlaylistFields = async (
     name?: string;
     private?: boolean;
     username?: string | null;
+    public_description?: string | null;
   } = {};
 
   if (fields.name !== undefined) {
@@ -191,6 +225,15 @@ export const updatePlaylistFields = async (
 
   if (fields.username !== undefined) {
     data.username = fields.username.trim() || null;
+  }
+
+  if (fields.publicDescription !== undefined) {
+    data.public_description =
+      fields.publicDescription === null
+        ? null
+        : normalizePlaylistPublicDescriptionForStorage(
+            fields.publicDescription,
+          );
   }
 
   if (Object.keys(data).length === 0) {

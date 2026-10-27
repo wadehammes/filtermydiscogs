@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import Image from "next/image";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
+import { PublicPlaylistTrackVoteControls } from "src/components/PublicPlaylistTrackVoteControls/PublicPlaylistTrackVoteControls.component";
 import tracklistStyles from "src/components/ReleaseTracklist/ReleaseTracklist.module.css";
 import {
   useReleasePlaybackActions,
@@ -21,17 +22,23 @@ import { formatTrackPositionTitle } from "src/utils/userTrack";
 import styles from "./PublicPlaylistTrackItem.module.css";
 
 export interface PublicPlaylistTrackItemProps {
+  playlistId: string;
   track: PlaylistTrackRow;
   release: DiscogsRelease | null;
   index: number;
+  ownerUserId?: number | null;
+  viewerIsOwner?: boolean;
   onReleaseClick?: (instanceId: string) => void;
   onPlayTrack: (track: PlaylistTrackRow) => void;
 }
 
 export const PublicPlaylistTrackItem = ({
+  playlistId,
   track,
   release,
   index,
+  ownerUserId,
+  viewerIsOwner = false,
   onReleaseClick,
   onPlayTrack,
 }: PublicPlaylistTrackItemProps) => {
@@ -167,12 +174,14 @@ export const PublicPlaylistTrackItem = ({
             ) : null}
           </span>
         </button>
-        <div
-          className={classNames(
-            tracklistStyles.trackTrailing,
-            styles.playbackTrailing,
+        <div className={tracklistStyles.trackTrailing}>
+          {viewerIsOwner ? null : (
+            <PublicPlaylistTrackVoteControls
+              playlistId={playlistId}
+              track={track}
+              {...(ownerUserId !== undefined ? { ownerUserId } : {})}
+            />
           )}
-        >
           <button
             type="button"
             className={styles.playbackControlButton}

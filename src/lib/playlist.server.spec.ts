@@ -2,9 +2,29 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { Prisma } from "@prisma/client";
 import { playlistDetailFactory } from "src/tests/factories/PlaylistDetail.factory";
 import { playlistListRowFactory } from "src/tests/factories/PlaylistListRow.factory";
+import {
+  type PlaylistDetailFindUniqueRow,
+  type PlaylistEngagementSelectRow,
+  type PlaylistIdRow,
+  type PlaylistListFindManyRow,
+  type PlaylistListFindManyWithTrackKeyRow,
+  type PlaylistTrackKeyOnlyRow,
+  type PlaylistTrackMaxSortOrderAggregate,
+  playlistDetailFindUniqueRowFactory,
+  playlistEngagementSelectRowFactory,
+  playlistIdRowFactory,
+  playlistTrackKeyOnlyRowFactory,
+  playlistTrackMaxSortOrderAggregateFactory,
+} from "src/tests/factories/PlaylistQueryPrisma.factory";
 import { playlistSummaryFactory } from "src/tests/factories/PlaylistSummary.factory";
+import type { PlaylistTrackCreateResultRow } from "src/tests/factories/PlaylistTrackPrisma.factory";
+import {
+  playlistDetailTrackJoinRowFromDomain,
+  playlistTrackCreateResultRowFactory,
+} from "src/tests/factories/PlaylistTrackPrisma.factory";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -31,26 +51,26 @@ jest.mock("src/lib/user-track.server", () => ({
   ensureUserTrackMetadata: jest.fn(),
 }));
 
-type DbModule = typeof import("src/lib/db");
-
 let listPlaylistsForUser: typeof import("src/lib/playlist.server")["listPlaylistsForUser"];
 let getPlaylistDetail: typeof import("src/lib/playlist.server")["getPlaylistDetail"];
 let addTrackToPlaylist: typeof import("src/lib/playlist.server")["addTrackToPlaylist"];
 let reorderPlaylistTracks: typeof import("src/lib/playlist.server")["reorderPlaylistTracks"];
-let mockPlaylistFindUnique: jest.MockedFunction<
-  DbModule["prisma"]["playlist"]["findUnique"]
+let mockPlaylistFindUnique: jest.Mock<
+  (
+    ...args: unknown[]
+  ) => Promise<PlaylistIdRow | PlaylistDetailFindUniqueRow | null>
 >;
-let mockPlaylistUpdate: jest.MockedFunction<
-  DbModule["prisma"]["playlist"]["update"]
+let mockPlaylistUpdate: jest.Mock<
+  (...args: unknown[]) => Promise<PlaylistEngagementSelectRow>
 >;
-let mockAggregate: jest.MockedFunction<
-  DbModule["prisma"]["playlistTrack"]["aggregate"]
+let mockAggregate: jest.Mock<
+  (...args: unknown[]) => Promise<PlaylistTrackMaxSortOrderAggregate>
 >;
-let mockPlaylistTrackFindUnique: jest.MockedFunction<
-  DbModule["prisma"]["playlistTrack"]["findUnique"]
+let mockPlaylistTrackFindUnique: jest.Mock<
+  (...args: unknown[]) => Promise<null>
 >;
-let mockPlaylistTrackCreate: jest.MockedFunction<
-  DbModule["prisma"]["playlistTrack"]["create"]
+let mockPlaylistTrackCreate: jest.Mock<
+  (...args: unknown[]) => Promise<PlaylistTrackCreateResultRow>
 >;
 let mockEnsureUserTrackMetadata: jest.MockedFunction<
   typeof import("src/lib/user-track.server")["ensureUserTrackMetadata"]
@@ -72,13 +92,25 @@ beforeEach(async () => {
   getPlaylistDetail = playlistModule.getPlaylistDetail;
   addTrackToPlaylist = playlistModule.addTrackToPlaylist;
   reorderPlaylistTracks = playlistModule.reorderPlaylistTracks;
-  mockPlaylistFindUnique = jest.mocked(db.prisma.playlist.findUnique);
-  mockPlaylistUpdate = jest.mocked(db.prisma.playlist.update);
-  mockAggregate = jest.mocked(db.prisma.playlistTrack.aggregate);
-  mockPlaylistTrackFindUnique = jest.mocked(db.prisma.playlistTrack.findUnique);
+  mockPlaylistFindUnique = mockPrismaDelegate<
+    PlaylistIdRow | PlaylistDetailFindUniqueRow | null
+  >(jest.mocked(db.prisma.playlist.findUnique));
+  mockPlaylistUpdate = mockPrismaDelegate<PlaylistEngagementSelectRow>(
+    jest.mocked(db.prisma.playlist.update),
+  );
+  mockAggregate = mockPrismaDelegate<PlaylistTrackMaxSortOrderAggregate>(
+    jest.mocked(db.prisma.playlistTrack.aggregate),
+  );
+  mockPlaylistTrackFindUnique = mockPrismaDelegate<null>(
+    jest.mocked(db.prisma.playlistTrack.findUnique),
+  );
   mockPlaylistTrackFindUnique.mockResolvedValue(null);
-  mockPlaylistTrackCreate = jest.mocked(db.prisma.playlistTrack.create);
-  mockPlaylistUpdate.mockResolvedValue({} as never);
+  mockPlaylistTrackCreate = mockPrismaDelegate<PlaylistTrackCreateResultRow>(
+    jest.mocked(db.prisma.playlistTrack.create),
+  );
+  mockPlaylistUpdate.mockResolvedValue(
+    playlistEngagementSelectRowFactory.build(),
+  );
   mockEnsureUserTrackMetadata = jest.mocked(
     userTrackModule.ensureUserTrackMetadata,
   );
@@ -87,14 +119,22 @@ beforeEach(async () => {
 describe("addTrackToPlaylist", () => {
   it("upserts UserTrack metadata then appends a playlist track with next sort_order", async () => {
     const metadata = trackMetadataBodyFactory.opening();
-    mockPlaylistFindUnique.mockResolvedValue({ id: PLAYLIST_ID } as never);
-    mockAggregate.mockResolvedValue({ _max: { sort_order: 10 } } as never);
-    mockPlaylistTrackCreate.mockResolvedValue({
-      user_id: USER_ID,
-      playlist_id: PLAYLIST_ID,
-      track_key: metadata.track_key,
-      sort_order: 11,
-    });
+    mockPlaylistFindUnique.mockResolvedValue(
+      playlistIdRowFactory.build({ id: PLAYLIST_ID }),
+    );
+    mockAggregate.mockResolvedValue(
+      playlistTrackMaxSortOrderAggregateFactory.build({
+        _max: { sort_order: 10 },
+      }),
+    );
+    mockPlaylistTrackCreate.mockResolvedValue(
+      playlistTrackCreateResultRowFactory.fromTrackMetadata(
+        USER_ID,
+        PLAYLIST_ID,
+        metadata.track_key,
+        11,
+      ),
+    );
 
     const result = await addTrackToPlaylist(USER_ID, PLAYLIST_ID, metadata);
 
@@ -112,8 +152,14 @@ describe("addTrackToPlaylist", () => {
 
   it("returns duplicate when create hits a unique constraint", async () => {
     const metadata = trackMetadataBodyFactory.opening();
-    mockPlaylistFindUnique.mockResolvedValue({ id: PLAYLIST_ID } as never);
-    mockAggregate.mockResolvedValue({ _max: { sort_order: 0 } } as never);
+    mockPlaylistFindUnique.mockResolvedValue(
+      playlistIdRowFactory.build({ id: PLAYLIST_ID }),
+    );
+    mockAggregate.mockResolvedValue(
+      playlistTrackMaxSortOrderAggregateFactory.build({
+        _max: { sort_order: 0 },
+      }),
+    );
     mockPlaylistTrackCreate.mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
         code: "P2002",
@@ -131,10 +177,11 @@ describe("listPlaylistsForUser", () => {
   it("returns summaries with track counts", async () => {
     const { prisma } = await import("src/lib/db");
     const listRow = playlistListRowFactory.forListTest({
-      user_id: USER_ID,
       id: PLAYLIST_ID,
     });
-    jest.mocked(prisma.playlist.findMany).mockResolvedValue([listRow]);
+    mockPrismaDelegate<PlaylistListFindManyRow[]>(
+      jest.mocked(prisma.playlist.findMany),
+    ).mockResolvedValue([listRow]);
 
     const rows = await listPlaylistsForUser(USER_ID);
 
@@ -143,6 +190,8 @@ describe("listPlaylistsForUser", () => {
         id: listRow.id,
         name: listRow.name,
         private: listRow.private,
+        publicViewCount: listRow.public_view_count,
+        publicPlayCount: listRow.public_play_count,
         trackCount: listRow._count.tracks,
         created_at: listRow.created_at.toISOString(),
         updated_at: listRow.updated_at.toISOString(),
@@ -153,16 +202,13 @@ describe("listPlaylistsForUser", () => {
   it("returns containsTrack when listing with a trackKey", async () => {
     const { prisma } = await import("src/lib/db");
     const trackKey = "instance-1:A1";
-    const listRow = playlistListRowFactory.forListTest({
-      user_id: USER_ID,
+    const listRow = playlistListRowFactory.withTrackKeyProbe({
       id: PLAYLIST_ID,
+      tracks: [playlistTrackKeyOnlyRowFactory.build({ track_key: trackKey })],
     });
-    jest.mocked(prisma.playlist.findMany).mockResolvedValue([
-      {
-        ...listRow,
-        tracks: [{ track_key: trackKey }],
-      },
-    ] as never);
+    mockPrismaDelegate<PlaylistListFindManyWithTrackKeyRow[]>(
+      jest.mocked(prisma.playlist.findMany),
+    ).mockResolvedValue([listRow]);
 
     const rows = await listPlaylistsForUser(USER_ID, { trackKey });
 
@@ -171,6 +217,8 @@ describe("listPlaylistsForUser", () => {
         id: listRow.id,
         name: listRow.name,
         private: listRow.private,
+        publicViewCount: listRow.public_view_count,
+        publicPlayCount: listRow.public_play_count,
         trackCount: listRow._count.tracks,
         created_at: listRow.created_at.toISOString(),
         updated_at: listRow.updated_at.toISOString(),
@@ -194,28 +242,18 @@ describe("listPlaylistsForUser", () => {
 describe("getPlaylistDetail", () => {
   it("maps playlist tracks from joined UserTrack rows", async () => {
     const trackRow = playlistTrackRowFactory.opening();
-    mockPlaylistFindUnique.mockResolvedValue({
-      id: PLAYLIST_ID,
-      name: "Sunday",
-      private: false,
-      created_at: new Date("2026-10-01T00:00:00.000Z"),
-      updated_at: new Date("2026-10-02T00:00:00.000Z"),
-      tracks: [
-        {
-          sort_order: trackRow.sort_order,
-          track_key: trackRow.track_key,
-          user_track: {
-            track_title: trackRow.track_title,
-            track_position: trackRow.track_position,
-            instance_id: trackRow.instance_id,
-            artist: trackRow.artist,
-            release_title: trackRow.release_title,
-            youtube_id: trackRow.youtube_id,
-            discogs_release_id: trackRow.discogs_release_id,
-          },
-        },
-      ],
-    } as never);
+    mockPlaylistFindUnique.mockResolvedValue(
+      playlistDetailFindUniqueRowFactory.build({
+        id: PLAYLIST_ID,
+        name: "Sunday",
+        private: false,
+        public_view_count: 0,
+        public_play_count: 0,
+        created_at: new Date("2026-10-01T00:00:00.000Z"),
+        updated_at: new Date("2026-10-02T00:00:00.000Z"),
+        tracks: [playlistDetailTrackJoinRowFromDomain(trackRow)],
+      }),
+    );
 
     const detail = await getPlaylistDetail(USER_ID, PLAYLIST_ID);
 
@@ -233,13 +271,15 @@ describe("getPlaylistDetail", () => {
 describe("reorderPlaylistTracks", () => {
   it("rejects duplicate track keys in the request body", async () => {
     const { prisma } = await import("src/lib/db");
-    mockPlaylistFindUnique.mockResolvedValue({ id: PLAYLIST_ID } as never);
-    jest
-      .mocked(prisma.playlistTrack.findMany)
-      .mockResolvedValue([
-        { track_key: "9001:A1" },
-        { track_key: "9001:A2" },
-      ] as never);
+    mockPlaylistFindUnique.mockResolvedValue(
+      playlistIdRowFactory.build({ id: PLAYLIST_ID }),
+    );
+    mockPrismaDelegate<PlaylistTrackKeyOnlyRow[]>(
+      jest.mocked(prisma.playlistTrack.findMany),
+    ).mockResolvedValue([
+      playlistTrackKeyOnlyRowFactory.build({ track_key: "9001:A1" }),
+      playlistTrackKeyOnlyRowFactory.build({ track_key: "9001:A2" }),
+    ]);
 
     const reordered = await reorderPlaylistTracks(USER_ID, PLAYLIST_ID, [
       "9001:A1",

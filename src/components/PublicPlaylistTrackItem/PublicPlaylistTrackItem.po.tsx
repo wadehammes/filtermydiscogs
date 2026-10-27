@@ -49,6 +49,7 @@ const defaultPlaybackState: Pick<
 };
 
 const defaultProps: PublicPlaylistTrackItemProps = {
+  playlistId: "11111111-2222-3333-4444-555555555555",
   track: playlistTrackRowFactory.opening(),
   release: releaseFactory.withDisplayDefaults({ instance_id: 9001 }),
   index: 1,

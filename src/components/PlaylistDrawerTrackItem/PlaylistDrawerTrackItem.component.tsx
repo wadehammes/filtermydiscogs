@@ -7,6 +7,7 @@ import type { MouseEvent, Ref } from "react";
 import crateItemStyles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicator.component";
+import { PlaylistDrawerTrackVoteStats } from "src/components/PlaylistDrawerTrackItem/PlaylistDrawerTrackVoteStats.component";
 import { useReleasePlaybackState } from "src/context/releasePlayback.context";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
@@ -18,6 +19,7 @@ import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { isPlaylistTrackActiveInPlayback } from "src/utils/playlistPlayback";
 import { resolvePlaylistTrackReleaseMetaLine } from "src/utils/playlistTrackDisplay";
+import { isHotPlaylistTrack } from "src/utils/playlistTrackVote";
 import { formatTrackPositionTitle } from "src/utils/userTrack";
 import styles from "./PlaylistDrawerTrackItem.module.css";
 
@@ -81,12 +83,15 @@ export const PlaylistDrawerTrackItem = ({
     track.track_title,
   );
   const metaLine = resolvePlaylistTrackReleaseMetaLine(track, release);
+  const isHotTrack = isHotPlaylistTrack(track);
+  const showVoteStats = track.upCount > 0 || track.downCount > 0;
 
   return (
     <div
       className={classNames(crateItemStyles.listItem, {
         [styles.listItemActive]: isActiveInPlayback,
         [styles.listItemDragging]: isDragging,
+        [styles.listItemHot]: isHotTrack,
       })}
       data-testid="fmdPlaylistDrawerTrackItem"
       {...(isActiveInPlayback ? { "data-playlist-track-active": "" } : {})}
@@ -177,6 +182,7 @@ export const PlaylistDrawerTrackItem = ({
             ) : null}
           </div>
         </button>
+        {showVoteStats ? <PlaylistDrawerTrackVoteStats track={track} /> : null}
       </div>
       <div className={crateItemStyles.listItemActions}>
         <div className={stackStyles.overlayActions}>

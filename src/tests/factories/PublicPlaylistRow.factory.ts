@@ -28,6 +28,9 @@ class PublicPlaylistRowFactory extends BaseFactory<
       ]),
       username: nullish([faker.internet.username()]),
       private: false,
+      public_view_count: 0,
+      public_play_count: 0,
+      public_description: null,
       created_at: created,
       updated_at: updated,
     };

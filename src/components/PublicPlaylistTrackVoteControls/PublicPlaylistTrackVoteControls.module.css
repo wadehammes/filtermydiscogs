@@ -1,0 +1,84 @@
+.root {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: var(--space-1);
+}
+
+.voteUpWrap {
+  display: inline-flex;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.voteCountSup {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  inset-block-start: 0.0625rem;
+  inset-inline-end: 0.0625rem;
+  line-height: 1;
+  pointer-events: none;
+  position: absolute;
+}
+
+.voteButton {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ui);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.75rem;
+  justify-content: center;
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+  width: 1.75rem;
+
+  svg {
+    display: block;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--foreground) 8%, transparent);
+    color: var(--foreground);
+  }
+}
+
+.voteButtonUpPressed {
+  background: transparent;
+  color: var(--primary);
+
+  &:hover:not(:disabled) {
+    background: transparent;
+    color: var(--primary);
+  }
+}
+
+.voteButtonDownPressed {
+  background: transparent;
+  color: var(--destructive);
+
+  &:hover:not(:disabled) {
+    background: transparent;
+    color: var(--destructive);
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
+import { useRecordPublicPlaylistPlayMutation } from "src/hooks/mutations/usePublicPlaylistEngagementMutations";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -23,10 +24,23 @@ import { toast } from "src/utils/toast";
 
 export const usePlaylistPlayback = (options?: {
   releases?: DiscogsRelease[];
+  publicEngagementPlaylistId?: string;
 }) => {
   const playback = useReleasePlayback();
   const allReleasesFromCollection = useAllReleases();
   const allReleases = options?.releases ?? allReleasesFromCollection;
+  const { mutate: recordPublicPlaylistPlay } =
+    useRecordPublicPlaylistPlayMutation();
+
+  const recordPublicPlaylistPlayIfNeeded = useCallback(() => {
+    const playlistId = options?.publicEngagementPlaylistId?.trim();
+
+    if (!playlistId) {
+      return;
+    }
+
+    recordPublicPlaylistPlay(playlistId);
+  }, [options?.publicEngagementPlaylistId, recordPublicPlaylistPlay]);
 
   const startPlaylistAtTrackKey = useCallback(
     (orderedTracks: PlaylistTrackRow[], startTrackKey: string) => {
@@ -178,9 +192,15 @@ export const usePlaylistPlayback = (options?: {
         );
       }
 
+      recordPublicPlaylistPlayIfNeeded();
       showPlaybackQueueSuccessToast(queueItems.length);
     },
-    [allReleases, options?.releases, startPlaylistAtTrackKey],
+    [
+      allReleases,
+      options?.releases,
+      recordPublicPlaylistPlayIfNeeded,
+      startPlaylistAtTrackKey,
+    ],
   );
 
   const playPlaylistTrack = useCallback(
@@ -206,9 +226,16 @@ export const usePlaylistPlayback = (options?: {
             ? "This track is not available to play from this playlist."
             : "This track is not in your loaded collection.",
         );
+        return;
       }
+
+      recordPublicPlaylistPlayIfNeeded();
     },
-    [options?.releases, startPlaylistAtTrackKey],
+    [
+      options?.releases,
+      recordPublicPlaylistPlayIfNeeded,
+      startPlaylistAtTrackKey,
+    ],
   );
 
   const syncPlaylistQueueToTrackOrder = useCallback(
