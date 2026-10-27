@@ -1,6 +1,7 @@
 import { instant } from "@next/playwright";
 import { expect, test } from "@playwright/test";
 import { ABOUT_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
+import { SITE_TAGLINE } from "src/constants/siteMetadata";
 import {
   clickPublicNavLinkAndWaitForUrl,
   instantNavContentTimeout,
@@ -31,7 +32,7 @@ test.describe("instant navigation", () => {
     );
     await expect(
       page.getByRole("heading", {
-        name: "Your Discogs collection, unlocked",
+        name: SITE_TAGLINE,
       }),
     ).toBeVisible();
   });

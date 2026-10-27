@@ -20,10 +20,10 @@ test.describe("public shared playlist (MSW)", () => {
       ),
     ).toBeVisible();
     await expect(
-      page.getByText(/share a public playlist link like this one/i),
+      page.getByText(/without signing in like this one/i),
     ).toBeVisible();
     await expect(
-      page.getByText(/share a public crate link like this one/i),
+      page.getByText(/public crate link like this one/i),
     ).toHaveCount(0);
   });
 

@@ -16,7 +16,7 @@ describe("marketingPublicCopy", () => {
 
   it("uses playlist demo language on public playlist pages only", () => {
     expect(MARKETING_PLAYLIST_BULLET_PUBLIC_PAGE.text).toMatch(
-      /public playlist link like this one/i,
+      /like this one/i,
     );
     expect(PUBLIC_PLAYLIST_MARKETING_BULLETS).toContain(
       MARKETING_PLAYLIST_BULLET_PUBLIC_PAGE,

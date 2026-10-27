@@ -1,1 +1,1 @@
-FilterMyDiscogs: browse, filter, and organize your Discogs collection
+FilterMyDisco.gs: browse, filter, and organize your Discogs collection

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { ABOUT_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
+import { SITE_TAGLINE } from "src/constants/siteMetadata";
 import { expectLoginLanding } from "./helpers/authenticatedExpectations";
 
 test.describe("public routes", () => {
@@ -27,7 +28,9 @@ test.describe("public routes", () => {
       page.getByRole("main", { name: ABOUT_PAGE_MAIN_LABEL }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Your Discogs collection, unlocked" }),
+      page.getByRole("heading", {
+        name: SITE_TAGLINE,
+      }),
     ).toBeVisible();
   });
 });

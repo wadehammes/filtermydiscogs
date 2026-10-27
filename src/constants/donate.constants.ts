@@ -1,3 +1,4 @@
+import { SITE_NAME } from "src/constants/siteMetadata";
 import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.constants";
 
 export const DONATION_PRESET_AMOUNTS_CENTS = [500, 1000, 2500] as const;
@@ -20,9 +21,8 @@ export const DONATION_SUCCESS_QUERY_PARAM = "donated";
 export const DONATION_SUCCESS_QUERY_VALUE = "1";
 
 export const DONATION_PRODUCT = {
-  name: "Support FilterMyDiscogs",
-  description:
-    "Thank you for helping keep FilterMyDiscogs free and the roadmap moving.",
+  name: `Support ${SITE_NAME}`,
+  description: `Thank you for helping keep ${SITE_NAME} free and the roadmap moving.`,
 };
 
 export const getDonateCheckoutUrls = (siteUrl: string) => ({

@@ -2,6 +2,7 @@
 
 import styles from "src/components/AppToaster/AppToaster.module.css";
 import Button from "src/components/Button/Button.component";
+import { SITE_NAME } from "src/constants/siteMetadata";
 import { SUPPORT_PROJECT_TOAST_ID } from "src/constants/supportProjectToast.constants";
 import { HeartSolidIcon } from "src/styles/icons/HeartSolidIcon.component";
 import { showPersistentActionToast } from "src/utils/actionToast";
@@ -16,7 +17,7 @@ export const showSupportProjectToast = ({
 }) => {
   showPersistentActionToast({
     id: SUPPORT_PROJECT_TOAST_ID,
-    title: "Enjoying FilterMyDiscogs?",
+    title: `Enjoying ${SITE_NAME}?`,
     description:
       "If this app helps you dig through your collection, consider supporting the project.",
     toastClassName: "fmd-support-project-toast",

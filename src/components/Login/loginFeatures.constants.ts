@@ -9,28 +9,28 @@ export type LoginFeature = {
 
 export const LOGIN_FEATURES: LoginFeature[] = [
   {
+    eyebrow: "Filter",
+    title: "Find hidden gems in your collection",
+    description:
+      "Combine filters on genres, styles, formats, and years to narrow your collection. Search, saved views, random shuffle, in-app preview, queues, playlists, and notes synced with Discogs.",
+    imageBase: "releases",
+    imageAlt:
+      "Releases page with search, flexible filters, random view, tracklist, in-app player, and release cards",
+  },
+  {
     eyebrow: "Insights",
     title: "Collection insights dashboard",
     description:
-      "See milestones, style evolution, and growth trends with charts and stats. On repeat highlights the tracks you play and listen to most. Spot patterns in your buying habits and follow the story your records tell over time.",
+      "Milestones, style evolution, and growth charts, plus on-this-day adds and a weekly recap. See which releases land in the most crates, and which tracks you play and listen to most.",
     imageBase: "dashboard",
     imageAlt:
-      "Collections insights dashboard with stats, charts, on-repeat track leaders, and collection milestones",
-  },
-  {
-    eyebrow: "Browse",
-    title: "Browse, search, and filter",
-    description:
-      "Rediscover albums across your library. Search by title, artist, or label, switch between grid and table views, and open any release for its tracklist. Preview tracks with the in-app player, add tracks to playlists or the queue, see listen counts on each tracklist, and add or edit collection notes that stay synced with Discogs.",
-    imageBase: "releases",
-    imageAlt:
-      "Releases page with search, filters, tracklist, in-app player, and release cards",
+      "Collection insights dashboard with stats, charts, on-repeat leaders, and milestones",
   },
   {
     eyebrow: "Playlists",
     title: "Build and share playlists",
     description:
-      "Save cross-release track lists from your collection. Reorder tracks, play through the in-app queue, and share a public playlist link when you want someone else to listen along.",
+      "Save cross-release track lists from your collection. Reorder tracks, play through the in-app queue, and share a public link. Listeners can hit play without signing in.",
     imageBase: "playlist",
     imageAlt:
       "Public playlist page with a cover collage, Play All, and a numbered track list",
@@ -39,16 +39,16 @@ export const LOGIN_FEATURES: LoginFeature[] = [
     eyebrow: "Crates",
     title: "Organize and share crates",
     description:
-      "Build crates for DJ gigs, themed album lists, or favorites. Drag to reorder releases, split the list with sections, add set notes, and track gig packing on the crate page. Share a public crate link when you want someone else to browse your picks.",
+      "Build crates for DJ gigs, themed lists, or favorites. Stage albums from Releases as you browse, then reorder, add sections, set notes, and check off gig packing. Share a public crate link when you want someone else to browse your picks.",
     imageBase: "crates",
     imageAlt:
       "Crate page with drag reorder, section groups, set notes, and gig packing checklist",
   },
   {
     eyebrow: "Mosaics",
-    title: "Generate cover-art mosaics",
+    title: "Cover-art mosaics",
     description:
-      "Turn your collection, a crate, or playlist art into a cover-art grid for social sharing. Pick formats and sizes for Instagram, headers, or print. A quick visual snapshot of what you are spinning.",
+      "Turn your collection, a crate, or playlist into a cover grid for social or print. Pick a size and export JPEG or PNG. A fast snapshot of what you are spinning.",
     imageBase: "mosaic",
     imageAlt:
       "Cover-art mosaic grid generated from a collection of release artwork",

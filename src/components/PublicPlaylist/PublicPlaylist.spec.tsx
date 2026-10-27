@@ -69,10 +69,10 @@ describe("PublicPlaylistClient", () => {
     expect(screen.getByText(/2 tracks/)).toBeInTheDocument();
     expect(mockPrivatePlaylistApi).not.toHaveBeenCalled();
     expect(
-      screen.getByText(/share a public playlist link like this one/i),
+      screen.getByText(/without signing in like this one/i),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(/share a public crate link like this one/i),
+      screen.queryByText(/public crate link like this one/i),
     ).not.toBeInTheDocument();
   });
 

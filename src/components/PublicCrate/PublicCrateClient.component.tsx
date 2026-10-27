@@ -12,7 +12,7 @@ import { PublicSharePlaybackShell } from "src/components/PublicSharePlaybackShel
 import { ReleaseCardGrid } from "src/components/ReleaseCardGrid/ReleaseCardGrid.component";
 import { PUBLIC_SHARED_CRATE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { PUBLIC_CRATE_MARKETING_BULLETS } from "src/constants/marketingPublicCopy";
-import { SITE_LEAD } from "src/constants/siteMetadata";
+import { SITE_LEAD, SITE_NAME } from "src/constants/siteMetadata";
 import { useAuth } from "src/context/auth.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { usePublicCrateQuery } from "src/hooks/queries/usePublicCrateQuery";
@@ -49,7 +49,7 @@ const PublicMarketingFeatureList = ({
 const PublicCrateAboutSections = () => {
   return (
     <section className={styles.section}>
-      <h2 className={styles.heading}>About FilterMyDiscogs</h2>
+      <h2 className={styles.heading}>About {SITE_NAME}</h2>
       <p className={styles.text}>{SITE_LEAD}</p>
       <p className={styles.text}>Key features:</p>
       <PublicMarketingFeatureList
@@ -135,7 +135,7 @@ const PublicCrateLoadedContent = ({
           <section className={classNames(styles.section, styles.aboutSection)}>
             <div className={styles.twoColumnLayout}>
               <div className={styles.aboutContent}>
-                <h2 className={styles.heading}>About FilterMyDiscogs</h2>
+                <h2 className={styles.heading}>About {SITE_NAME}</h2>
                 <p className={styles.text}>{SITE_LEAD}</p>
                 <p className={styles.text}>Key features:</p>
                 <PublicMarketingFeatureList

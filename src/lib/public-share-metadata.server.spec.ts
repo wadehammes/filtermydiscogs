@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { PAGE_DESCRIPTIONS, SITE_NAME } from "src/constants/siteMetadata";
 import { buildPublicSharePageMetadata } from "src/lib/public-share-metadata.server";
 
 describe("buildPublicSharePageMetadata", () => {
@@ -14,7 +15,7 @@ describe("buildPublicSharePageMetadata", () => {
       },
     });
 
-    expect(metadata.title).toBe("Weekend picks by dj-crate | FilterMyDiscogs");
+    expect(metadata.title).toBe(`Weekend picks by dj-crate | ${SITE_NAME}`);
     expect(metadata.description).toContain('Public crate "Weekend picks"');
     expect(metadata.description).toContain("12 releases");
     expect(metadata.robots).toEqual({ index: true, follow: true });
@@ -38,7 +39,7 @@ describe("buildPublicSharePageMetadata", () => {
       },
     });
 
-    expect(metadata.title).toBe("Rotation | FilterMyDiscogs");
+    expect(metadata.title).toBe(`Rotation | ${SITE_NAME}`);
     expect(metadata.description).toContain('Public playlist "Rotation"');
     expect(metadata.description).toContain("1 track");
     expect(metadata.robots).toEqual({ index: true, follow: true });
@@ -54,8 +55,8 @@ describe("buildPublicSharePageMetadata", () => {
       resolved: null,
     });
 
-    expect(metadata.title).toBe("Playlist | FilterMyDiscogs");
-    expect(metadata.description).toBe("A shared playlist on FilterMyDiscogs.");
+    expect(metadata.title).toBe(`Playlist | ${SITE_NAME}`);
+    expect(metadata.description).toBe(PAGE_DESCRIPTIONS.playlistFallback);
     expect(metadata.robots).toEqual({ index: false, follow: false });
     expect(metadata.alternates?.canonical).toBeUndefined();
   });
