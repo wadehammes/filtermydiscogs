@@ -27,7 +27,7 @@ export interface PublicPlaylistTrackItemProps {
   release: DiscogsRelease | null;
   index: number;
   ownerUserId?: number | null;
-  viewerIsOwner?: boolean;
+  showTrackVoteControls?: boolean;
   onReleaseClick?: (instanceId: string) => void;
   onPlayTrack: (track: PlaylistTrackRow) => void;
 }
@@ -38,7 +38,7 @@ export const PublicPlaylistTrackItem = ({
   release,
   index,
   ownerUserId,
-  viewerIsOwner = false,
+  showTrackVoteControls = true,
   onReleaseClick,
   onPlayTrack,
 }: PublicPlaylistTrackItemProps) => {
@@ -175,13 +175,13 @@ export const PublicPlaylistTrackItem = ({
           </span>
         </button>
         <div className={tracklistStyles.trackTrailing}>
-          {viewerIsOwner ? null : (
+          {showTrackVoteControls ? (
             <PublicPlaylistTrackVoteControls
               playlistId={playlistId}
               track={track}
-              {...(ownerUserId !== undefined ? { ownerUserId } : {})}
+              {...definedProps({ ownerUserId })}
             />
-          )}
+          ) : null}
           <button
             type="button"
             className={styles.playbackControlButton}
