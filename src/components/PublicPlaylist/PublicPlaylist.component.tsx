@@ -33,6 +33,7 @@ import {
   PLAYLIST_HERO_MOSAIC_MAX_TILES,
 } from "src/utils/playlistMosaic";
 import { orderPlaylistTracks } from "src/utils/playlistPlayback";
+import { shouldShowPublicPlaylistTrackVotes } from "src/utils/publicPlaylistViewerAccess";
 import styles from "./PublicPlaylist.module.css";
 
 interface PublicPlaylistClientProps {
@@ -89,8 +90,16 @@ export const PublicPlaylistClient = ({
   });
 
   const {
-    state: { userId },
+    state: { userId, username, isAuthenticated, isCheckingAuth },
   } = useAuth();
+
+  const showTrackVoteControls =
+    data != null &&
+    shouldShowPublicPlaylistTrackVotes(data, {
+      isCheckingAuth,
+      isAuthenticated,
+      username,
+    });
 
   const handlePlayAll = useCallback(() => {
     if (orderedTracks.length === 0) {
@@ -208,7 +217,7 @@ export const PublicPlaylistClient = ({
                           playlistId={playlist.id}
                           index={trackIndex + 1}
                           track={track}
-                          viewerIsOwner={data.viewerIsOwner === true}
+                          showTrackVoteControls={showTrackVoteControls}
                           release={
                             releaseByInstanceId.get(
                               String(track.instance_id),
