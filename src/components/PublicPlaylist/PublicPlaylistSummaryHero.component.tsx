@@ -41,6 +41,22 @@ export const PublicPlaylistSummaryHero = ({
   };
   const showShareStats =
     publicPlaylistShareStatsHasVisibleCounts(resolvedShareStats);
+  const viewEngagementLabel =
+    resolvedShareStats.publicViewCount > 0
+      ? formatPublicPlaylistShareStatCountLabel(
+          resolvedShareStats.publicViewCount,
+          "view",
+          "views",
+        )
+      : null;
+  const playEngagementLabel =
+    resolvedShareStats.publicPlayCount > 0
+      ? formatPublicPlaylistShareStatCountLabel(
+          resolvedShareStats.publicPlayCount,
+          "play",
+          "plays",
+        )
+      : null;
 
   return (
     <header
@@ -78,28 +94,24 @@ export const PublicPlaylistSummaryHero = ({
           >
             {showShareStats ? (
               <>
-                {resolvedShareStats.publicViewCount > 0 ? (
-                  <span className={styles.engagementItem}>
+                {viewEngagementLabel ? (
+                  <span
+                    className={styles.engagementItem}
+                    role="img"
+                    aria-label={viewEngagementLabel}
+                    title={viewEngagementLabel}
+                  >
                     <EyeIcon className={styles.engagementIcon} aria-hidden />
-                    <span>
-                      {formatPublicPlaylistShareStatCountLabel(
-                        resolvedShareStats.publicViewCount,
-                        "view",
-                        "views",
-                      )}
-                    </span>
                   </span>
                 ) : null}
-                {resolvedShareStats.publicPlayCount > 0 ? (
-                  <span className={styles.engagementItem}>
+                {playEngagementLabel ? (
+                  <span
+                    className={styles.engagementItem}
+                    role="img"
+                    aria-label={playEngagementLabel}
+                    title={playEngagementLabel}
+                  >
                     <PlayIcon className={styles.engagementIcon} aria-hidden />
-                    <span>
-                      {formatPublicPlaylistShareStatCountLabel(
-                        resolvedShareStats.publicPlayCount,
-                        "play",
-                        "plays",
-                      )}
-                    </span>
                   </span>
                 ) : null}
               </>
