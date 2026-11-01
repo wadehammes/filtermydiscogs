@@ -12,12 +12,16 @@ import {
 } from "src/tests/BasePageObject.po";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 import type { RenderResult } from "test-utils";
 
 jest.mock("src/api/urls");
 
 const mockApi = jest.mocked(api);
+const crateDrawerReleasesApiError = new Error(
+  "Crate drawer releases API failed",
+);
 
 export class CrateDrawerReleasesPageObject extends BasePageObject {
   public testId = "fmdCrateDrawerReleases";
@@ -33,12 +37,20 @@ export class CrateDrawerReleasesPageObject extends BasePageObject {
   }
 
   mockCrateResolved(value: Awaited<ReturnType<typeof mockApi.crate>>): void {
-    this.mockApi.crate.mockResolvedValue(value);
+    mockApiResponse(
+      true,
+      this.mockApi.crate,
+      value,
+      crateDrawerReleasesApiError,
+    );
   }
 
   mockClearAllPackedSuccess(): void {
-    this.mockApi.clearAllPackedInCrate.mockResolvedValue(
+    mockApiResponse(
+      true,
+      this.mockApi.clearAllPackedInCrate,
       crateMutationSuccessFactory.clearPacked(1),
+      crateDrawerReleasesApiError,
     );
   }
 

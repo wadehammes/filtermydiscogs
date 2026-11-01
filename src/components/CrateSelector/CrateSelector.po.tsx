@@ -1,21 +1,18 @@
-import { api } from "src/api/urls";
-import {
-  checkAuthStatus,
-  getUsernameFromCookies,
-  parseAuthUrlParams,
-} from "src/services/auth.service";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
-import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { createCrateResponseFactory } from "src/tests/factories/CreateCrateResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  pageObjectApiError,
+  pageObjectMockApi,
+} from "src/tests/mocks/pageObjectMockedApi";
+import { setupPageObjectAuthenticatedAuthService } from "src/tests/mocks/setupPageObjectAuthenticatedAuthService";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { RenderResult } from "test-utils";
 import { render, screen, waitFor } from "test-utils";
@@ -24,12 +21,7 @@ import { CrateSelector } from "./CrateSelector.component";
 jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
 
-const mockApi = jest.mocked(api);
-const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
-const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
-const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
-
-const apiError = new Error("API request failed");
+const mockApi = pageObjectMockApi;
 
 export type CrateSelectorRenderProps = {
   allowCreate?: boolean;
@@ -51,15 +43,13 @@ export class CrateSelectorPageObject extends BasePageObject {
     jest.clearAllMocks();
     localStorage.clear();
 
-    mockGetUsernameFromCookies.mockReturnValue("testuser");
-    mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
+    setupPageObjectAuthenticatedAuthService();
 
     mockApiResponse(
       true,
       mockApi.crates,
       cratesResponseFactory.withCrates(this.crates),
-      apiError,
+      pageObjectApiError,
     );
 
     mockApi.crate.mockImplementation(async (crateId: string) => {
@@ -76,21 +66,21 @@ export class CrateSelectorPageObject extends BasePageObject {
       true,
       mockApi.createCrate,
       createCrateResponseFactory.named("My New Crate"),
-      apiError,
+      pageObjectApiError,
     );
 
     mockApiResponse(
       true,
       mockApi.updateCrate,
       createCrateResponseFactory.named("Renamed Crate", { id: "1" }),
-      apiError,
+      pageObjectApiError,
     );
 
     mockApiResponse(
       true,
       mockApi.syncCrates,
       crateMutationSuccessFactory.sync(0),
-      apiError,
+      pageObjectApiError,
     );
   }
 
@@ -116,7 +106,7 @@ export class CrateSelectorPageObject extends BasePageObject {
       true,
       mockApi.createCrate,
       createCrateResponseFactory.named(crateName, { id: crateId }),
-      apiError,
+      pageObjectApiError,
     );
   }
 
@@ -126,7 +116,7 @@ export class CrateSelectorPageObject extends BasePageObject {
       true,
       mockApi.crates,
       cratesResponseFactory.withCrates(crates),
-      apiError,
+      pageObjectApiError,
     );
   }
 
@@ -135,7 +125,7 @@ export class CrateSelectorPageObject extends BasePageObject {
       true,
       mockApi.updateCrate,
       createCrateResponseFactory.named(crateName, { id: crateId }),
-      apiError,
+      pageObjectApiError,
     );
   }
 

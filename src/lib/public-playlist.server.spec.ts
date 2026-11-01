@@ -103,14 +103,28 @@ describe("getPublicPlaylistIdsForStaticGeneration", () => {
   });
 
   it("when query fails, returns placeholder id for generateStaticParams", async () => {
+    const { reportInfrastructureFailure } = await import(
+      "src/lib/sentry/reportInfrastructureFailure"
+    );
+    const reportFailure = jest.mocked(reportInfrastructureFailure);
     mockFindMany.mockRejectedValue(new Error("too many connections"));
 
     await expect(getPublicPlaylistIdsForStaticGeneration(25)).resolves.toEqual([
       PUBLIC_PLAYLIST_STATIC_PARAM_PLACEHOLDER_ID,
     ]);
+
+    expect(reportFailure).toHaveBeenCalledWith(
+      "public_playlist",
+      expect.objectContaining({ message: "too many connections" }),
+      { operation: "static_generation" },
+    );
   });
 
   it("when query fails during production build, returns demo playlist id", async () => {
+    const { reportInfrastructureFailure } = await import(
+      "src/lib/sentry/reportInfrastructureFailure"
+    );
+    const reportFailure = jest.mocked(reportInfrastructureFailure);
     process.env.NEXT_PHASE = "phase-production-build";
     mockFindMany.mockRejectedValue(new Error("too many connections"));
 
@@ -118,6 +132,12 @@ describe("getPublicPlaylistIdsForStaticGeneration", () => {
       LOGIN_DEMO_PUBLIC_PLAYLIST_ID,
       PUBLIC_PLAYLIST_STATIC_PARAM_PLACEHOLDER_ID,
     ]);
+
+    expect(reportFailure).toHaveBeenCalledWith(
+      "public_playlist",
+      expect.objectContaining({ message: "too many connections" }),
+      { operation: "static_generation" },
+    );
   });
 
   it("when public playlists exist, returns fallback ids plus playlist ids", async () => {

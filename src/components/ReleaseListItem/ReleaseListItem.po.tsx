@@ -1,25 +1,21 @@
-import { api } from "src/api/urls";
-import {
-  checkAuthStatus,
-  getUsernameFromCookies,
-  parseAuthUrlParams,
-} from "src/services/auth.service";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
-import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
-import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  pageObjectApiError,
+  pageObjectMockApi,
+} from "src/tests/mocks/pageObjectMockedApi";
+import { setupPageObjectAuthenticatedAuthService } from "src/tests/mocks/setupPageObjectAuthenticatedAuthService";
+import { wireReleaseCrateActionApiMocks } from "src/tests/mocks/wireReleaseCrateActionApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease, ReleaseListItemProps } from "src/types";
 import type { RenderResult } from "test-utils";
@@ -28,16 +24,9 @@ import { ReleaseListItem } from "./ReleaseListItem.component";
 
 jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
-jest.mock("src/analytics/analytics", () => ({
-  trackEvent: jest.fn(),
-}));
+jest.mock("src/analytics/analytics");
 
-const mockApi = jest.mocked(api);
-const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
-const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
-const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
-
-const apiError = new Error("API request failed");
+const mockApi = pageObjectMockApi;
 
 export type ReleaseListItemRenderProps = Partial<
   Omit<ReleaseListItemProps, "release">
@@ -58,58 +47,37 @@ export class ReleaseListItemPageObject extends BasePageObject {
 
   setupMocks() {
     jest.clearAllMocks();
-
-    mockGetUsernameFromCookies.mockReturnValue("testuser");
-    mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
+    setupPageObjectAuthenticatedAuthService();
 
     mockApiResponse(
       true,
       mockApi.discogsRelease,
       discogsReleaseJsonFactory.withTracklistAndVideos(),
-      apiError,
+      pageObjectApiError,
     );
 
     mockApiResponse(
       true,
       mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
-      apiError,
+      pageObjectApiError,
     );
 
     mockApiResponse(
       true,
       mockApi.crates,
       cratesResponseFactory.withCrate(this.defaultCrateWithCount),
-      apiError,
+      pageObjectApiError,
     );
 
     mockApiResponse(
       true,
       mockApi.crate,
       crateWithReleasesResponseFactory.empty(this.defaultCrate),
-      apiError,
+      pageObjectApiError,
     );
 
-    mockApiResponse(
-      true,
-      mockApi.addReleaseToCrate,
-      crateMutationSuccessFactory.build(),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.removeReleaseFromCrate,
-      crateMutationSuccessFactory.build(),
-      apiError,
-    );
-
-    mockApiResponse(
-      true,
-      mockApi.releaseCrateMembership,
-      releaseCrateMembershipResponseFactory.build(),
-      apiError,
-    );
+    wireReleaseCrateActionApiMocks(mockApi);
   }
 
   mockCrateContainsRelease(release: DiscogsRelease) {
@@ -119,7 +87,7 @@ export class ReleaseListItemPageObject extends BasePageObject {
       crateWithReleasesResponseFactory.withReleases(this.defaultCrate, [
         release,
       ]),
-      apiError,
+      pageObjectApiError,
     );
   }
 

@@ -46,10 +46,15 @@ export class TrackYoutubeOverrideDialogPageObject extends BasePageObject {
       { ok: true },
       apiError,
     );
-    this.mockFetchYoutubeOembed.mockResolvedValue({
-      title: "Never Gonna Give You Up",
-      authorName: "Rick Astley",
-    });
+    mockApiResponse(
+      true,
+      this.mockFetchYoutubeOembed,
+      {
+        title: "Never Gonna Give You Up",
+        authorName: "Rick Astley",
+      },
+      apiError,
+    );
   }
 
   renderTrackYoutubeOverrideDialog(

@@ -6,6 +6,7 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import {
   TestProviders,
@@ -24,8 +25,20 @@ jest.mock("src/api/urls", () => ({
     discogsRelease: jest.fn(),
     playlist: jest.fn(),
     publicPlaylist: jest.fn(),
+    recordPublicPlaylistView: jest.fn(),
+    recordPublicPlaylistPlay: jest.fn(),
   },
 }));
+
+const mockApi = jest.mocked(api);
+const publicPlaylistEngagementApiError = new Error(
+  "Public playlist engagement API request failed",
+);
+
+const defaultPublicPlaylistEngagementResponse = {
+  ok: true as const,
+  shareStats: { publicViewCount: 0, publicPlayCount: 0 },
+};
 
 export const mockPublicPlaylistApi = jest.mocked(api.publicPlaylist);
 export const mockPrivatePlaylistApi = jest.mocked(api.playlist);
@@ -71,6 +84,18 @@ export class PublicPlaylistPageObject extends BasePageObject {
           id: Number(releaseId),
         }),
       ),
+    );
+    mockApiResponse(
+      true,
+      mockApi.recordPublicPlaylistView,
+      defaultPublicPlaylistEngagementResponse,
+      publicPlaylistEngagementApiError,
+    );
+    mockApiResponse(
+      true,
+      mockApi.recordPublicPlaylistPlay,
+      defaultPublicPlaylistEngagementResponse,
+      publicPlaylistEngagementApiError,
     );
   }
 

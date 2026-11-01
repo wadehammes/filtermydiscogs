@@ -16,7 +16,9 @@ import {
 import type { DiscogsRelease } from "src/types";
 import type {
   PlaylistTrackRow,
+  PublicPlaylistEngagementResponse,
   PublicPlaylistResponse,
+  PublicPlaylistShareStats,
 } from "src/types/playlist.types";
 
 const E2E_PUBLIC_PLAYLIST_API_PATHS = [
@@ -24,6 +26,56 @@ const E2E_PUBLIC_PLAYLIST_API_PATHS = [
   "http://localhost:6767/api/playlists/public/:playlistId",
   "http://127.0.0.1:6767/api/playlists/public/:playlistId",
 ] as const;
+
+const E2E_PUBLIC_PLAYLIST_VIEW_API_PATHS = [
+  "/api/playlists/public/:playlistId/view",
+  "http://localhost:6767/api/playlists/public/:playlistId/view",
+  "http://127.0.0.1:6767/api/playlists/public/:playlistId/view",
+] as const;
+
+const E2E_PUBLIC_PLAYLIST_PLAY_API_PATHS = [
+  "/api/playlists/public/:playlistId/play",
+  "http://localhost:6767/api/playlists/public/:playlistId/play",
+  "http://127.0.0.1:6767/api/playlists/public/:playlistId/play",
+] as const;
+
+let e2eDemoPublicPlaylistShareStats: PublicPlaylistShareStats = {
+  publicViewCount: 0,
+  publicPlayCount: 0,
+};
+
+export const resetE2eDemoPublicPlaylistEngagement = (): void => {
+  e2eDemoPublicPlaylistShareStats = {
+    publicViewCount: 0,
+    publicPlayCount: 0,
+  };
+};
+
+const isE2eDemoPublicPlaylistId = (playlistId: string): boolean =>
+  playlistId === LOGIN_DEMO_PUBLIC_PLAYLIST_ID;
+
+const buildE2eDemoPublicPlaylistEngagementResponse = (
+  shareStats: PublicPlaylistShareStats,
+): PublicPlaylistEngagementResponse => ({
+  ok: true,
+  shareStats,
+});
+
+const recordE2eDemoPublicPlaylistView = (): PublicPlaylistShareStats => {
+  e2eDemoPublicPlaylistShareStats = {
+    ...e2eDemoPublicPlaylistShareStats,
+    publicViewCount: e2eDemoPublicPlaylistShareStats.publicViewCount + 1,
+  };
+  return e2eDemoPublicPlaylistShareStats;
+};
+
+const recordE2eDemoPublicPlaylistPlay = (): PublicPlaylistShareStats => {
+  e2eDemoPublicPlaylistShareStats = {
+    ...e2eDemoPublicPlaylistShareStats,
+    publicPlayCount: e2eDemoPublicPlaylistShareStats.publicPlayCount + 1,
+  };
+  return e2eDemoPublicPlaylistShareStats;
+};
 
 export const buildE2eDemoPublicPlaylistResponse =
   (): PublicPlaylistResponse => {
@@ -82,26 +134,54 @@ export const buildE2eDemoPublicPlaylistResponse =
       mosaicThumbUrls: releases
         .map((release) => release.basic_information.thumb)
         .filter((url): url is string => Boolean(url)),
-      shareStats: {
-        publicViewCount: 0,
-        publicPlayCount: 0,
-      },
+      shareStats: { ...e2eDemoPublicPlaylistShareStats },
     };
   };
 
-export const createDefaultPublicPlaylistApiHandlers = () => {
-  const respond = ({
-    params,
-  }: {
-    params: Record<string, string | readonly string[] | undefined>;
-  }) => {
-    const playlistId = String(params.playlistId);
+type PublicPlaylistRouteParams = {
+  params: Record<string, string | readonly string[] | undefined>;
+};
 
-    if (playlistId !== LOGIN_DEMO_PUBLIC_PLAYLIST_ID) {
-      return HttpResponse.json(
-        { error: "Playlist not found or is private" },
-        { status: 404 },
-      );
+const publicPlaylistNotFoundResponse = () =>
+  HttpResponse.json(
+    { error: "Playlist not found or is private" },
+    { status: 404 },
+  );
+
+const requireE2eDemoPublicPlaylistId = ({
+  params,
+}: PublicPlaylistRouteParams) => {
+  const playlistId = String(params.playlistId);
+
+  if (!isE2eDemoPublicPlaylistId(playlistId)) {
+    return publicPlaylistNotFoundResponse();
+  }
+
+  return playlistId;
+};
+
+const respondPublicPlaylistEngagementPost = (
+  context: PublicPlaylistRouteParams,
+  recordEngagement: () => PublicPlaylistShareStats,
+) => {
+  const playlistIdOrResponse = requireE2eDemoPublicPlaylistId(context);
+
+  if (typeof playlistIdOrResponse !== "string") {
+    return playlistIdOrResponse;
+  }
+
+  const shareStats = recordEngagement();
+  return HttpResponse.json(
+    buildE2eDemoPublicPlaylistEngagementResponse(shareStats),
+  );
+};
+
+export const createDefaultPublicPlaylistApiHandlers = () => {
+  const respondGet = (context: PublicPlaylistRouteParams) => {
+    const playlistIdOrResponse = requireE2eDemoPublicPlaylistId(context);
+
+    if (typeof playlistIdOrResponse !== "string") {
+      return playlistIdOrResponse;
     }
 
     return HttpResponse.json(buildE2eDemoPublicPlaylistResponse(), {
@@ -111,5 +191,25 @@ export const createDefaultPublicPlaylistApiHandlers = () => {
     });
   };
 
-  return E2E_PUBLIC_PLAYLIST_API_PATHS.map((path) => http.get(path, respond));
+  const respondViewPost = (context: PublicPlaylistRouteParams) =>
+    respondPublicPlaylistEngagementPost(
+      context,
+      recordE2eDemoPublicPlaylistView,
+    );
+
+  const respondPlayPost = (context: PublicPlaylistRouteParams) =>
+    respondPublicPlaylistEngagementPost(
+      context,
+      recordE2eDemoPublicPlaylistPlay,
+    );
+
+  return [
+    ...E2E_PUBLIC_PLAYLIST_API_PATHS.map((path) => http.get(path, respondGet)),
+    ...E2E_PUBLIC_PLAYLIST_VIEW_API_PATHS.map((path) =>
+      http.post(path, respondViewPost),
+    ),
+    ...E2E_PUBLIC_PLAYLIST_PLAY_API_PATHS.map((path) =>
+      http.post(path, respondPlayPost),
+    ),
+  ];
 };

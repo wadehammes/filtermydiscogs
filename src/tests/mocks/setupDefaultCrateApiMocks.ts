@@ -3,6 +3,7 @@ import { api } from "src/api/urls";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { buildDefaultCrateApiFixtures } from "src/tests/fixtures/defaultCrateApiFixtures";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupDefaultPlaylistApiMocks } from "src/tests/mocks/setupDefaultPlaylistApiMocks";
 import { setupDefaultTrackStatsApiMock } from "src/tests/mocks/setupDefaultTrackStatsApiMock";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
 
@@ -40,4 +41,5 @@ export function setupDefaultCrateApiMocks(
   }
 
   setupDefaultTrackStatsApiMock(mockApi);
+  setupDefaultPlaylistApiMocks(mockApi);
 }

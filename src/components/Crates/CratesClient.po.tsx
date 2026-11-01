@@ -1,21 +1,17 @@
-import { api } from "src/api/urls";
-import {
-  checkAuthStatus,
-  getUsernameFromCookies,
-  parseAuthUrlParams,
-} from "src/services/auth.service";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
-import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
+import {
+  pageObjectApiError,
+  pageObjectMockApi,
+} from "src/tests/mocks/pageObjectMockedApi";
+import { bootstrapAuthenticatedDesktopPageObject } from "src/tests/mocks/setupAuthenticatedDesktopPageObjectMocks";
 import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { CrateWithCount } from "src/types/crate.types";
@@ -26,15 +22,9 @@ import CratesClient from "./CratesClient.component";
 
 jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
-jest.mock("src/analytics/analytics", () => ({
-  trackEvent: jest.fn(),
-}));
+jest.mock("src/analytics/analytics");
 
-const mockApi = jest.mocked(api);
-const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
-const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
-const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
-const apiError = new Error("API request failed");
+const mockApi = pageObjectMockApi;
 
 const defaultHubCrates = (): CrateWithCount[] => [
   crateWithCountFactory.build({
@@ -69,18 +59,13 @@ export class CratesClientPageObject extends BasePageObject {
   }
 
   setupMocks(crates: CrateWithCount[] = defaultHubCrates()) {
-    jest.clearAllMocks();
-    setupMockMatchMedia({ desktop: true });
-
-    mockGetUsernameFromCookies.mockReturnValue("testuser");
-    mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
+    bootstrapAuthenticatedDesktopPageObject();
 
     mockApiResponse(
       true,
       mockApi.crates,
       cratesResponseFactory.withCrates(crates),
-      apiError,
+      pageObjectApiError,
     );
 
     mockApi.crate.mockImplementation(async (crateId: string) => {
@@ -99,7 +84,7 @@ export class CratesClientPageObject extends BasePageObject {
       true,
       mockApi.discogsCollection,
       collectionFactory.empty(),
-      apiError,
+      pageObjectApiError,
     );
   }
 

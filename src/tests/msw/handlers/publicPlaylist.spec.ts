@@ -1,8 +1,15 @@
-import { describe, expect, it } from "@jest/globals";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { LOGIN_DEMO_PUBLIC_PLAYLIST_ID } from "src/constants/publicPlaylist.constants";
-import { buildE2eDemoPublicPlaylistResponse } from "src/tests/msw/handlers/publicPlaylist";
+import {
+  buildE2eDemoPublicPlaylistResponse,
+  resetE2eDemoPublicPlaylistEngagement,
+} from "src/tests/msw/handlers/publicPlaylist";
 
 describe("buildE2eDemoPublicPlaylistResponse", () => {
+  beforeEach(() => {
+    resetE2eDemoPublicPlaylistEngagement();
+  });
+
   it("returns playable demo tracks with YouTube ids for public playlist E2E", () => {
     const payload = buildE2eDemoPublicPlaylistResponse();
 
@@ -12,5 +19,9 @@ describe("buildE2eDemoPublicPlaylistResponse", () => {
       true,
     );
     expect(payload.releases).toHaveLength(2);
+    expect(payload.shareStats).toEqual({
+      publicViewCount: 0,
+      publicPlayCount: 0,
+    });
   });
 });

@@ -4,6 +4,7 @@
   "ignoreDependencies": [
     "@svgr/webpack",
     "identity-obj-proxy",
+    "jest-fixed-jsdom",
     "jest-fetch-mock",
     "jest-location-mock",
     "typescript-langservice",
@@ -44,7 +45,8 @@
     ".jest/setEnvVars.ts",
     "src/tests/mocks/mockCanvas.mock.ts",
     "src/tests/mocks/mockNextRouter.mock.ts",
-    "src/lib/__mocks__/api-helpers.ts"
+    "src/lib/__mocks__/api-helpers.ts",
+    "src/styles/modules/dashboard-stack.module.css"
   ],
   "overrides": [
     {

@@ -8,7 +8,7 @@ import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { render } from "test-utils";
 
@@ -22,7 +22,6 @@ const defaultProps: PlaylistSelectorProps = {
 };
 
 const mockApi = jest.mocked(api);
-const playlistsApiError = new Error("Playlists API request failed");
 
 export class PlaylistSelectorPageObject extends BasePageObject {
   public testId = "fmdPlaylistSelector";
@@ -34,7 +33,7 @@ export class PlaylistSelectorPageObject extends BasePageObject {
 
   setupMocks(): void {
     jest.clearAllMocks();
-    mockApiResponse(true, mockApi.playlists, [], playlistsApiError);
+    setupDefaultCrateApiMocks(mockApi);
   }
 
   private playlistSelectorElement(overrides: PlaylistSelectorRenderProps = {}) {
