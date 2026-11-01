@@ -1,5 +1,14 @@
 import { describe, expect, it } from "@jest/globals";
-import { formatPublicPlaylistShareStatsLine } from "src/utils/playlistShareStats";
+import {
+  formatPublicPlaylistShareStatCount,
+  formatPublicPlaylistShareStatsLine,
+} from "src/utils/playlistShareStats";
+
+describe("formatPublicPlaylistShareStatCount", () => {
+  it("formats the count with locale grouping", () => {
+    expect(formatPublicPlaylistShareStatCount(1200)).toBe("1,200");
+  });
+});
 
 describe("formatPublicPlaylistShareStatsLine", () => {
   it("formats views and plays when counts are positive", () => {
