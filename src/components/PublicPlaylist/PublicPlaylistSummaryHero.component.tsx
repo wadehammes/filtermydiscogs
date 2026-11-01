@@ -8,6 +8,7 @@ import PlayIcon from "src/styles/icons/play-thin.svg";
 import typographyStyles from "src/styles/modules/typography.module.css";
 import type { PublicPlaylistShareStats } from "src/types/playlist.types";
 import {
+  formatPublicPlaylistShareStatCount,
   formatPublicPlaylistShareStatCountLabel,
   publicPlaylistShareStatsHasVisibleCounts,
 } from "src/utils/playlistShareStats";
@@ -85,40 +86,43 @@ export const PublicPlaylistSummaryHero = ({
           >
             {metaLine}
           </p>
-          <div
-            className={classNames(
-              typographyStyles.metaCaption,
-              styles.engagementMetaLine,
-            )}
-            {...(showShareStats ? {} : { "aria-hidden": true as const })}
-          >
-            {showShareStats ? (
-              <>
-                {viewEngagementLabel ? (
-                  <span
-                    className={styles.engagementItem}
-                    role="img"
-                    aria-label={viewEngagementLabel}
-                    title={viewEngagementLabel}
-                  >
-                    <EyeIcon className={styles.engagementIcon} aria-hidden />
+          {showShareStats ? (
+            <div
+              className={classNames(
+                typographyStyles.metaCaption,
+                styles.engagementMetaLine,
+              )}
+            >
+              {viewEngagementLabel ? (
+                <span
+                  className={styles.engagementItem}
+                  role="img"
+                  aria-label={viewEngagementLabel}
+                >
+                  <EyeIcon className={styles.engagementIcon} aria-hidden />
+                  <span aria-hidden>
+                    {formatPublicPlaylistShareStatCount(
+                      resolvedShareStats.publicViewCount,
+                    )}
                   </span>
-                ) : null}
-                {playEngagementLabel ? (
-                  <span
-                    className={styles.engagementItem}
-                    role="img"
-                    aria-label={playEngagementLabel}
-                    title={playEngagementLabel}
-                  >
-                    <PlayIcon className={styles.engagementIcon} aria-hidden />
+                </span>
+              ) : null}
+              {playEngagementLabel ? (
+                <span
+                  className={styles.engagementItem}
+                  role="img"
+                  aria-label={playEngagementLabel}
+                >
+                  <PlayIcon className={styles.engagementIcon} aria-hidden />
+                  <span aria-hidden>
+                    {formatPublicPlaylistShareStatCount(
+                      resolvedShareStats.publicPlayCount,
+                    )}
                   </span>
-                ) : null}
-              </>
-            ) : (
-              "\u00a0"
-            )}
-          </div>
+                </span>
+              ) : null}
+            </div>
+          ) : null}
           {trimmedDescription ? (
             <p className={styles.publicDescription}>{trimmedDescription}</p>
           ) : null}

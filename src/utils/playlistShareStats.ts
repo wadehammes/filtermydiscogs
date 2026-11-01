@@ -1,10 +1,14 @@
 import type { PublicPlaylistShareStats } from "src/types/playlist.types";
 
+export const formatPublicPlaylistShareStatCount = (count: number): string =>
+  count.toLocaleString();
+
 export const formatPublicPlaylistShareStatCountLabel = (
   count: number,
   singular: string,
   plural: string,
-): string => `${count.toLocaleString()} ${count === 1 ? singular : plural}`;
+): string =>
+  `${formatPublicPlaylistShareStatCount(count)} ${count === 1 ? singular : plural}`;
 
 export const formatPublicPlaylistShareStatsLine = (
   stats: PublicPlaylistShareStats,
