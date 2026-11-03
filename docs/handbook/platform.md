@@ -186,6 +186,10 @@ Full list: [`package.json`](../../package.json).
 
 Wire-up: **`pnpm exec fallow agent install --harness cursor --without hooks --without skill`** — refreshes [`.cursor/mcp.json`](../../.cursor/mcp.json) after Fallow upgrades without recreating **`.agents/skills/fallow`** or commit hooks. Agent context comes from MCP tool descriptions, **`.cursor/rules/`**, **`.cursor/skills/`**, and the task map in **`AGENTS.md`**. Optional local skill: read **`node_modules/fallow/skills/fallow/SKILL.md`** after **`pnpm install`**, or **`fallow agent install --user`** for **`~/.agents/skills/fallow`**.
 
+### pnpm `overrides` (transitive security)
+
+[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) **`overrides`** pin patched minimums for transitive npm advisories when upstream packages lag (alongside **`svgo`**, **`picomatch`**, **`postcss`**, **`hono`**, …). Current security floor includes **`zod`** (Flags SDK chain), **`glob`** / **`minimatch`** (Jest coverage / tooling), and **`vitest`** / **`@vitest/mocker`** at **`4.1.12`** via overrides only (transitive optional peers of **`@testing-library/jest-dom`** / **`jest-location-mock`** — the app runs **Jest**, not Vitest). After changing overrides, run **`pnpm install`**, **`pnpm lint:all`**, and **`pnpm test:ci`**. **`deepmerge`** had no patched release at last review — track Dependabot separately. Dependabot opens weekly PRs ([`.github/dependabot.yml`](../../.github/dependabot.yml)); prefer removing an override once every consumer natively depends on a fixed version.
+
 ### `pg` and `@types/pg`
 
 [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) **`catalog`** pins **`pg`** and **`@types/pg`** together; **`package.json`** references both via **`catalog:`**. **`@prisma/adapter-pg`** also depends on **`@types/pg`** — pnpm dedupes to one copy when ranges align; duplicate DefinitelyTyped versions break **`new PrismaPg(pool)`** under **`exactOptionalPropertyTypes`**. When bumping Postgres client deps, edit the catalog entries only, run **`pnpm install`**, then **`pnpm tsc:ci`**.
