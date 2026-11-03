@@ -75,7 +75,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@flags-sdk/vercel": "^1.6.0",
-    "@hookform/resolvers": "^6.0.2",
+    "@hookform/resolvers": "^7.0.0",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@sentry/core": "^11.10.0",
