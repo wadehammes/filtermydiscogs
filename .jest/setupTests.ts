@@ -83,6 +83,10 @@ jest.mock("next/image", () => ({
     sizes: _sizes,
     priority: _priority,
     quality: _quality,
+    unoptimized: _unoptimized,
+    placeholder: _placeholder,
+    blurDataURL: _blurDataURL,
+    loader: _loader,
     ...imgProps
   }: {
     src: string;
@@ -92,6 +96,10 @@ jest.mock("next/image", () => ({
     sizes?: string;
     priority?: boolean;
     quality?: number;
+    unoptimized?: boolean;
+    placeholder?: string;
+    blurDataURL?: string;
+    loader?: unknown;
     [key: string]: unknown;
   }) =>
     React.createElement("img", {

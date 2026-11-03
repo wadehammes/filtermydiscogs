@@ -10,7 +10,7 @@ import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { render } from "test-utils";
 
@@ -34,7 +34,6 @@ const defaultProps = {
 } satisfies ReleaseTrackRowMenuProps;
 
 const mockApi = jest.mocked(api);
-const playlistsApiError = new Error("Playlists API request failed");
 
 export class ReleaseTrackRowMenuPageObject extends BasePageObject {
   public testId = "fmdReleaseTrackRowMenu";
@@ -50,7 +49,7 @@ export class ReleaseTrackRowMenuPageObject extends BasePageObject {
 
   setupMocks(): void {
     jest.clearAllMocks();
-    mockApiResponse(true, mockApi.playlists, [], playlistsApiError);
+    setupDefaultCrateApiMocks(mockApi);
   }
 
   private releaseTrackRowMenuElement(

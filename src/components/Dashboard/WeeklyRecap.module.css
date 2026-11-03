@@ -1,8 +1,5 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  width: 100%;
+  composes: stack from "../../styles/modules/dashboard-stack.module.css";
 }
 
 .summaryCard {

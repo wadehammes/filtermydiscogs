@@ -1,6 +1,8 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { beforeEach, describe, expect, it } from "@jest/globals";
+import { api } from "src/api/urls";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { testUnauthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import type { DiscogsRelease } from "src/types";
@@ -43,29 +45,17 @@ jest.mock("src/utils/playbackQueueToast", () => ({
   showPlaybackQueueSuccessToast: jest.fn(),
 }));
 
-jest.mock("src/api/urls", () => {
-  const actual =
-    jest.requireActual<typeof import("src/api/urls")>("src/api/urls");
+jest.mock("src/api/urls", () => ({
+  api: {
+    recordPublicPlaylistPlay: jest.fn(),
+    recordPublicPlaylistView: jest.fn(),
+  },
+}));
 
-  return {
-    ...actual,
-    api: {
-      ...actual.api,
-      recordPublicPlaylistPlay: jest.fn(() =>
-        Promise.resolve({
-          ok: true,
-          shareStats: { publicViewCount: 0, publicPlayCount: 1 },
-        }),
-      ),
-      recordPublicPlaylistView: jest.fn(() =>
-        Promise.resolve({
-          ok: true,
-          shareStats: { publicViewCount: 1, publicPlayCount: 0 },
-        }),
-      ),
-    },
-  };
-});
+const mockApi = jest.mocked(api);
+const publicPlaylistEngagementApiError = new Error(
+  "Public playlist engagement API request failed",
+);
 
 const queryClient = createTestQueryClient();
 
@@ -80,6 +70,24 @@ let usePlaylistPlayback: typeof import("src/hooks/usePlaylistPlayback.hook")["us
 
 beforeEach(async () => {
   jest.clearAllMocks();
+  mockApiResponse(
+    true,
+    mockApi.recordPublicPlaylistPlay,
+    {
+      ok: true,
+      shareStats: { publicViewCount: 0, publicPlayCount: 1 },
+    },
+    publicPlaylistEngagementApiError,
+  );
+  mockApiResponse(
+    true,
+    mockApi.recordPublicPlaylistView,
+    {
+      ok: true,
+      shareStats: { publicViewCount: 1, publicPlayCount: 0 },
+    },
+    publicPlaylistEngagementApiError,
+  );
   playbackSession.isMiniPlayerVisible = false;
   playbackSession.isPlaying = false;
   playbackSession.autoPlayOnQueueAdd = true;

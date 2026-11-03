@@ -1,22 +1,18 @@
-import { api } from "src/api/urls";
-import {
-  checkAuthStatus,
-  getUsernameFromCookies,
-  parseAuthUrlParams,
-} from "src/services/auth.service";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
-import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
-import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { releaseCrateMembershipResponseFactory } from "src/tests/factories/ReleaseCrateMembershipResponse.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  pageObjectApiError,
+  pageObjectMockApi,
+} from "src/tests/mocks/pageObjectMockedApi";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
+import { setupPageObjectAuthenticatedAuthService } from "src/tests/mocks/setupPageObjectAuthenticatedAuthService";
+import { wireReleaseCrateActionApiMocks } from "src/tests/mocks/wireReleaseCrateActionApiMocks";
 import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
@@ -44,11 +40,7 @@ jest.mock("src/hooks/usePillClickHandler.hook", () => ({
   usePillClickHandler: () => jest.fn(),
 }));
 
-const mockApi = jest.mocked(api);
-const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
-const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
-const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
-const apiError = new Error("API request failed");
+const mockApi = pageObjectMockApi;
 
 const defaultCrateWithCount = crateWithCountFactory.defaultTestCrate();
 const mockActiveCrateInstanceIds = new Set<string>();
@@ -118,34 +110,15 @@ export class ReleasesTablePageObject extends BasePageObject {
     jest.clearAllMocks();
     mockFiltersDispatch.mockReset();
     mockActiveCrateInstanceIds.clear();
-    mockGetUsernameFromCookies.mockReturnValue("testuser");
-    mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
+    setupPageObjectAuthenticatedAuthService();
     setupDefaultCrateApiMocks(mockApi);
     mockApiResponse(
       true,
       mockApi.collectionFields,
       discogsCollectionFieldsResponseFactory.forReleaseNotes(),
-      apiError,
+      pageObjectApiError,
     );
-    mockApiResponse(
-      true,
-      mockApi.addReleaseToCrate,
-      crateMutationSuccessFactory.build(),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.removeReleaseFromCrate,
-      crateMutationSuccessFactory.build(),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      mockApi.releaseCrateMembership,
-      releaseCrateMembershipResponseFactory.build(),
-      apiError,
-    );
+    wireReleaseCrateActionApiMocks(mockApi);
   }
 
   resetCrateMocks() {

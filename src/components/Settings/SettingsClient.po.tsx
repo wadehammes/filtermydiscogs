@@ -1,33 +1,26 @@
-import { api } from "src/api/urls";
 import SettingsClient from "src/components/Settings/SettingsClient.component";
-import {
-  checkAuthStatus,
-  getUsernameFromCookies,
-  parseAuthUrlParams,
-} from "src/services/auth.service";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
-import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
-import { collectionFactory } from "src/tests/factories/Collection.factory";
-import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
-import { discogsCollectionFieldsResponseFactory } from "src/tests/factories/DiscogsCollectionFieldsResponse.factory";
-import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import type { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
-import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
+import {
+  pageObjectApiError,
+  pageObjectMockApi,
+} from "src/tests/mocks/pageObjectMockedApi";
+import {
+  setupSettingsClientPageObjectMocks,
+  wireDefaultUpdateUserPreferencesPageObjectMocks,
+  wireDefaultUserPreferencesPageObjectMocks,
+} from "src/tests/mocks/setupSettingsClientPageObjectMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 
 jest.mock("src/api/urls");
 jest.mock("src/services/auth.service");
-jest.mock("src/analytics/analytics", () => ({
-  trackEvent: jest.fn(),
-}));
-
+jest.mock("src/analytics/analytics");
 jest.mock("src/utils/toast", () => ({
   toast: {
     success: jest.fn(),
@@ -35,14 +28,8 @@ jest.mock("src/utils/toast", () => ({
   },
 }));
 
-const mockApi = jest.mocked(api);
-const mockCheckAuthStatus = jest.mocked(checkAuthStatus);
-const mockGetUsernameFromCookies = jest.mocked(getUsernameFromCookies);
-const mockParseAuthUrlParams = jest.mocked(parseAuthUrlParams);
-const apiError = new Error("API request failed");
-
 export class SettingsClientPageObject extends BasePageObject {
-  mockApi = mockApi;
+  mockApi = pageObjectMockApi;
 
   constructor(props: BasePageObjectProps = {}) {
     super(props);
@@ -50,56 +37,26 @@ export class SettingsClientPageObject extends BasePageObject {
   }
 
   setupMocks() {
-    jest.clearAllMocks();
-    setupMockMatchMedia({ desktop: true });
-
-    mockGetUsernameFromCookies.mockReturnValue("testuser");
-    mockCheckAuthStatus.mockResolvedValue(authStatusFactory.authenticated());
-    mockParseAuthUrlParams.mockReturnValue(authUrlParamsFactory.empty());
-
-    setupDefaultCrateApiMocks(this.mockApi);
-    this.mockDefaultUserPreferences();
-    this.mockDefaultUpdateUserPreferences();
-    mockApiResponse(
-      true,
-      this.mockApi.discogsCollection,
-      collectionFactory.empty(),
-      apiError,
-    );
-    mockApiResponse(
-      true,
-      this.mockApi.collectionFields,
-      discogsCollectionFieldsResponseFactory.forReleaseNotes(),
-      apiError,
-    );
-    this.mockApi.clearData.mockResolvedValue(
-      crateMutationSuccessFactory.build(),
-    );
-    this.mockApi.logout.mockResolvedValue(crateMutationSuccessFactory.build());
+    setupSettingsClientPageObjectMocks();
   }
 
   mockDefaultUserPreferences(): void {
-    mockApiResponse(
-      true,
-      this.mockApi.userPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      apiError,
-    );
+    wireDefaultUserPreferencesPageObjectMocks();
   }
 
   mockUserPreferences(
     preferences: ReturnType<typeof userPreferencesFactory.asApiResponse>,
   ): void {
-    mockApiResponse(true, this.mockApi.userPreferences, preferences, apiError);
+    mockApiResponse(
+      true,
+      this.mockApi.userPreferences,
+      preferences,
+      pageObjectApiError,
+    );
   }
 
   mockDefaultUpdateUserPreferences(): void {
-    mockApiResponse(
-      true,
-      this.mockApi.updateUserPreferences,
-      userPreferencesFactory.defaultsApiResponse(),
-      apiError,
-    );
+    wireDefaultUpdateUserPreferencesPageObjectMocks();
   }
 
   mockUpdateUserPreferences(
@@ -109,7 +66,7 @@ export class SettingsClientPageObject extends BasePageObject {
       true,
       this.mockApi.updateUserPreferences,
       preferences,
-      apiError,
+      pageObjectApiError,
     );
   }
 

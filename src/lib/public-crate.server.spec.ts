@@ -100,12 +100,22 @@ describe("getPublicCrateIdsForStaticGeneration", () => {
   });
 
   it("when build query fails, returns demo crate id for generateStaticParams", async () => {
+    const { reportInfrastructureFailure } = await import(
+      "src/lib/sentry/reportInfrastructureFailure"
+    );
+    const reportFailure = jest.mocked(reportInfrastructureFailure);
     process.env.NEXT_PHASE = "phase-production-build";
     mockFindMany.mockRejectedValue(new Error("too many connections"));
 
     await expect(getPublicCrateIdsForStaticGeneration(25)).resolves.toEqual([
       LOGIN_DEMO_PUBLIC_CRATE_ID,
     ]);
+
+    expect(reportFailure).toHaveBeenCalledWith(
+      "public_crate",
+      expect.objectContaining({ message: "too many connections" }),
+      { operation: "static_generation_ids" },
+    );
   });
 });
 
