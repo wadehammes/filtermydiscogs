@@ -127,7 +127,7 @@
     "@types/react-dom": "^19.3.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv-cli": "^11.1.0",
-    "fallow": "3.38.0",
+    "fallow": "3.38.1",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
