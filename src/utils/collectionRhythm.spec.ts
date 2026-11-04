@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import type { DiscogsRelease } from "src/types";
 import {
   calculateAcquisitionStreaks,
   calculateYearInReview,
@@ -121,5 +122,15 @@ describe("calculateAcquisitionStreaks", () => {
 
   it("returns null for an empty collection", () => {
     expect(calculateAcquisitionStreaks([])).toBeNull();
+  });
+
+  it("accepts readonly release lists from deferred analytics resolution", () => {
+    const releases: readonly DiscogsRelease[] = [
+      releaseFactory.build({ date_added: "2024-01-10T12:00:00.000Z" }),
+    ];
+
+    expect(calculateAcquisitionStreaks(releases)).toMatchObject({
+      busiestDay: { label: "Jan 10, 2024", count: 1 },
+    });
   });
 });

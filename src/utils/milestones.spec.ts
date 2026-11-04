@@ -25,6 +25,13 @@ const milestoneReleaseId = (
     ?.instance_id;
 
 describe("milestones", () => {
+  it("accepts readonly release lists from deferred analytics resolution", () => {
+    const releases: readonly DiscogsRelease[] =
+      buildReleasesByAcquisitionOrder(3);
+
+    expect(calculateMilestones(releases).length).toBeGreaterThan(0);
+  });
+
   it("sorts milestones chronologically by add date", () => {
     const releases = releaseFactory.buildList(100, {}, { artistCount: 1 });
 

@@ -1,12 +1,14 @@
 import { describe, expect, it } from "@jest/globals";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import type { DiscogsRelease } from "src/types";
 import {
   calculateCollectionStats,
   calculateFormatMixSummary,
   calculateFormatTagDistribution,
   calculateGenreDistribution,
   calculateMediaTypeDistribution,
+  detectDuplicates,
 } from "src/utils/collectionAnalytics";
 
 describe("calculateCollectionStats", () => {
@@ -157,5 +159,23 @@ describe("calculateFormatMixSummary", () => {
       topMediaTypePercent: 67,
       topTags: [{ label: "LP", count: 2 }],
     });
+  });
+});
+
+describe("readonly release inputs", () => {
+  it("accepts readonly lists from deferred analytics resolution", () => {
+    const releases: readonly DiscogsRelease[] = [
+      releaseFactory.build({
+        rating: 4,
+        basic_information: basicInformationFactory.build({
+          genres: ["Electronic"],
+          artists: [{ name: "Artist One" }],
+          labels: [{ name: "Label One" }],
+        }),
+      }),
+    ];
+
+    expect(calculateCollectionStats(releases).totalReleases).toBe(1);
+    expect(detectDuplicates(releases)).toEqual([]);
   });
 });
