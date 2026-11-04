@@ -63,14 +63,9 @@ export const hydratePublicPlaylistReleases = async ({
   const detailByReleaseId = new Map<number, DiscogsReleaseDetail>();
   const uniqueReleaseIds = [...new Set(releaseIdByInstanceId.values())];
 
-  const fetchedDetails = await Promise.all(
-    uniqueReleaseIds.map(async (releaseId) => ({
-      releaseId,
-      detail: await fetchDiscogsReleaseDetailById(releaseId),
-    })),
-  );
+  for (const releaseId of uniqueReleaseIds) {
+    const detail = await fetchDiscogsReleaseDetailById(releaseId);
 
-  for (const { releaseId, detail } of fetchedDetails) {
     if (detail) {
       detailByReleaseId.set(releaseId, detail);
     }
