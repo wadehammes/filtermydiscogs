@@ -241,6 +241,31 @@ describe("Select", () => {
     expect(handleChange).toHaveBeenCalledWith(["option2"]);
   });
 
+  it("shows shortLabel on the trigger and full label in the menu", async () => {
+    const handleChange = jest.fn();
+    po.renderSelect({
+      value: "option1",
+      onChange: handleChange,
+      options: [
+        selectOptionFactory.build({
+          value: "option1",
+          label: "Date Added newest",
+          menuField: "Date Added",
+          menuOrder: "newest",
+          shortLabel: "Date Added ↓",
+        }),
+      ],
+    });
+
+    expect(screen.getByText("Date Added ↓")).toBeInTheDocument();
+    expect(screen.queryByText("newest")).not.toBeInTheDocument();
+
+    await openSelect();
+
+    expect(screen.getByText("Date Added")).toBeInTheDocument();
+    expect(screen.getByText("newest")).toBeInTheDocument();
+  });
+
   it("displays selected options in multiple mode", () => {
     const handleChange = jest.fn();
     po.renderSelect({

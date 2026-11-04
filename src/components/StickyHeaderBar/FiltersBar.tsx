@@ -1,14 +1,13 @@
 import { Activity, useCallback, useMemo, useState } from "react";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
+import { CollectionSortControls } from "src/components/CollectionSortControls/CollectionSortControls.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { FilterViewsMenu } from "src/components/FilterViewsMenu/FilterViewsMenu.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
-import Select from "src/components/Select/Select.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
-import { SORTING_OPTIONS } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
@@ -30,6 +29,7 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
     handleYearChange,
     handleFormatChange,
     handleSortChange,
+    handleSortSecondaryChange,
     handleStyleOperatorChange,
     handleFormatOperatorChange,
     handleYearOperatorChange,
@@ -40,6 +40,7 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
     selectedYears,
     selectedFormats,
     selectedSort,
+    selectedSortSecondary,
     styleOperator,
     formatOperator,
     yearOperator,
@@ -134,16 +135,12 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
                 options={FILTER_ANY_NONE_OPERATOR_OPTIONS}
               />
             </div>
-            <Select
-              label="Sort by"
-              options={SORTING_OPTIONS.map((option) => ({
-                value: option.value,
-                label: option.name,
-              }))}
-              value={selectedSort}
-              onChange={handleSortChange}
+            <CollectionSortControls
+              primarySort={selectedSort}
+              secondarySort={selectedSortSecondary}
+              onPrimarySortChange={handleSortChange}
+              onSecondarySortChange={handleSortSecondaryChange}
               disabled={fetchingCollection}
-              placeholder="Select sort option..."
             />
           </div>
 

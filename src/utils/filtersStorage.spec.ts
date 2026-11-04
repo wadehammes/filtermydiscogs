@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import {
   clearPersistedFilters,
   defaultPersistedFilters,
@@ -22,6 +23,7 @@ describe("filtersStorage", () => {
       selectedYears: [1970],
       selectedFormats: ["LP"],
       selectedSort: "AZTitle",
+      selectedSortSecondary: SortSecondaryValues.None,
       styleOperator: "AND",
       formatOperator: "NONE",
       yearOperator: "OR",
@@ -55,6 +57,7 @@ describe("filtersStorage", () => {
       selectedYears: [1970],
       selectedFormats: ["LP"],
       selectedSort: "AZTitle",
+      selectedSortSecondary: SortSecondaryValues.None,
       styleOperator: "AND",
       formatOperator: "OR",
       yearOperator: "OR",
@@ -83,6 +86,7 @@ describe("filtersStorage", () => {
       selectedYears: [1970],
       selectedFormats: ["LP"],
       selectedSort: "AZTitle",
+      selectedSortSecondary: SortSecondaryValues.None,
       styleOperator: "AND",
       formatOperator: "OR",
       yearOperator: "OR",
@@ -130,6 +134,24 @@ describe("filtersStorage", () => {
     expect(
       parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
     ).toEqual(defaultPersistedFilters);
+  });
+
+  it("clears Then by when it conflicts with the primary sort field on read", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        ...defaultPersistedFilters,
+        selectedSort: SortValues.DateAddedNew,
+        selectedSortSecondary: SortValues.DateAddedOld,
+      }),
+    );
+
+    expect(
+      parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
+    ).toMatchObject({
+      selectedSort: SortValues.DateAddedNew,
+      selectedSortSecondary: SortSecondaryValues.None,
+    });
   });
 
   it("returns defaults for invalid sort and style operator values", () => {
@@ -187,6 +209,7 @@ describe("filtersStorage", () => {
       formatOperator: "OR" as const,
       styleOperator: "OR" as const,
       selectedSort: defaultPersistedFilters.selectedSort,
+      selectedSortSecondary: defaultPersistedFilters.selectedSortSecondary,
       selectedFormats: [],
       selectedYears: [],
       selectedStyles: ["Acid"],

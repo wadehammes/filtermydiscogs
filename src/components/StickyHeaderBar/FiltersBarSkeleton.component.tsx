@@ -1,4 +1,6 @@
 import classNames from "classnames";
+import { CollectionSortControlsJoin } from "src/components/CollectionSortControls/CollectionSortControls.component";
+import collectionSortStyles from "src/components/CollectionSortControls/CollectionSortControls.module.css";
 import BookmarkIcon from "src/styles/icons/bookmark-thin.svg";
 import ChevronIcon from "src/styles/icons/chevron-right-thin.svg";
 import SearchIcon from "src/styles/icons/search-thin.svg";
@@ -141,11 +143,46 @@ export function FiltersBarSkeleton() {
               </div>
             </div>
           </div>
-          <div className={styles.selectShell} aria-hidden>
-            <div className={classNames(styles.placeholderLine, pulseSurface)} />
-            <span className={styles.chevron}>
-              <ChevronIcon />
-            </span>
+          <div
+            className={collectionSortStyles.sortFilterGroup}
+            data-testid="fmdCollectionSortControls"
+            aria-hidden
+          >
+            <div data-testid="fmdSelect" aria-hidden>
+              <div
+                className={styles.styleFilterPrimaryShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(
+                    styles.placeholderLineWide,
+                    pulseSurface,
+                  )}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
+            </div>
+            <CollectionSortControlsJoin />
+            <div data-testid="fmdSelect" aria-hidden>
+              <div
+                className={styles.styleFilterPrimaryShell}
+                data-filter-control-trigger
+                aria-hidden
+              >
+                <div
+                  className={classNames(
+                    styles.placeholderLineWide,
+                    pulseSurface,
+                  )}
+                />
+                <span className={styles.chevron}>
+                  <ChevronIcon />
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

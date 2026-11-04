@@ -2,7 +2,11 @@ import {
   FILTER_ANY_NONE_OPERATOR_OPTIONS,
   FILTER_MATCH_OPERATOR_OPTIONS,
 } from "src/constants/filterMatchOperators";
-import { SORTING_OPTIONS } from "src/constants/sorting";
+import {
+  findSortOptionByValue,
+  SORTING_SECONDARY_OPTIONS,
+} from "src/constants/sorting";
+import { SortSecondaryValues } from "src/constants/sortValues";
 import type {
   PersistedFiltersJson,
   StyleOperator,
@@ -205,9 +209,21 @@ export const formatFilterViewSummary = (
 
   if (normalized.selectedSort !== defaultPersistedFilters.selectedSort) {
     const sortLabel =
-      SORTING_OPTIONS.find((option) => option.value === normalized.selectedSort)
-        ?.name ?? normalized.selectedSort;
+      findSortOptionByValue(normalized.selectedSort)?.name ??
+      normalized.selectedSort;
     parts.push(`Sort: ${sortLabel}`);
+  }
+
+  if (
+    normalized.selectedSortSecondary !== SortSecondaryValues.None &&
+    normalized.selectedSortSecondary !==
+      defaultPersistedFilters.selectedSortSecondary
+  ) {
+    const thenByLabel =
+      SORTING_SECONDARY_OPTIONS.find(
+        (option) => option.value === normalized.selectedSortSecondary,
+      )?.name ?? normalized.selectedSortSecondary;
+    parts.push(`Then by: ${thenByLabel}`);
   }
 
   return parts.length > 0 ? parts.join(" · ") : "Default filters";

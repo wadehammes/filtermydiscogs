@@ -1,8 +1,13 @@
 import { useCallback } from "react";
 import {
+  type CollectionSortSecondary,
+  type SortValues,
+  VALID_SORT_SECONDARY_VALUES,
+  VALID_SORT_VALUES,
+} from "src/constants/sortValues";
+import {
   type FiltersActions,
   FiltersActionTypes,
-  type SortValues,
 } from "src/context/filters.context";
 import {
   useFacetOptions,
@@ -10,6 +15,7 @@ import {
   useFormatOperator,
   useSelectedFormats,
   useSelectedSort,
+  useSelectedSortSecondary,
   useSelectedStyles,
   useSelectedYears,
   useStyleOperator,
@@ -54,6 +60,7 @@ export const useFilterHandlers = () => {
   const selectedYears = useSelectedYears();
   const selectedFormats = useSelectedFormats();
   const selectedSort = useSelectedSort();
+  const selectedSortSecondary = useSelectedSortSecondary();
   const styleOperator = useStyleOperator();
   const formatOperator = useFormatOperator();
   const yearOperator = useYearOperator();
@@ -99,10 +106,28 @@ export const useFilterHandlers = () => {
     (value: string | string[]) => {
       const sortValue = Array.isArray(value) ? value[0] : value;
 
-      if (sortValue) {
+      if (sortValue && VALID_SORT_VALUES.has(sortValue)) {
         filtersDispatch({
           type: FiltersActionTypes.SetSort,
           payload: sortValue as SortValues,
+        });
+      }
+    },
+    [filtersDispatch],
+  );
+
+  const handleSortSecondaryChange = useCallback(
+    (value: string | string[]) => {
+      const sortValue = Array.isArray(value) ? value[0] : value;
+
+      if (!sortValue) {
+        return;
+      }
+
+      if (VALID_SORT_SECONDARY_VALUES.has(sortValue)) {
+        filtersDispatch({
+          type: FiltersActionTypes.SetSortSecondary,
+          payload: sortValue as CollectionSortSecondary,
         });
       }
     },
@@ -141,6 +166,7 @@ export const useFilterHandlers = () => {
     handleYearChange,
     handleFormatChange,
     handleSortChange,
+    handleSortSecondaryChange,
     handleStyleOperatorChange,
     handleFormatOperatorChange,
     handleYearOperatorChange,
@@ -160,6 +186,7 @@ export const useFilterHandlers = () => {
     selectedYears,
     selectedFormats,
     selectedSort,
+    selectedSortSecondary,
     styleOperator,
     formatOperator,
     yearOperator,
