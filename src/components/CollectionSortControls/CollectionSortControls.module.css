@@ -117,6 +117,13 @@
   flex: 0 0 var(--collection-sort-join-width);
 }
 
+.sortThenByHint {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  margin: 0;
+}
+
 .sortSelectPopup {
   min-width: max(var(--anchor-width), 11.5rem);
 }

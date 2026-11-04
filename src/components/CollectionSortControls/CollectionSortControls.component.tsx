@@ -14,6 +14,9 @@ import styles from "./CollectionSortControls.module.css";
 
 const PRIMARY_SORT_SELECT_OPTIONS = getPrimarySortSelectOptions();
 
+const SORT_THEN_BY_HINT =
+  "Then by only changes order when two releases tie on Sort by. For Date Added, adds on the same day count as a tie.";
+
 export const CollectionSortControlsJoin = () => (
   <div
     className={styles.sortJoin}
@@ -50,9 +53,6 @@ export const CollectionSortControls = ({
     [primarySort],
   );
 
-  const sortControlsTitle =
-    "Sort by sets the main order. Then by breaks ties on the same value—for date added, ties are the same UTC calendar day.";
-
   const sortSelects = (
     <>
       <Select
@@ -88,7 +88,8 @@ export const CollectionSortControls = ({
           <span className={styles.sortLabelJoinGap} aria-hidden />
           <span className={styles.sortFieldLabel}>Then by</span>
         </div>
-        <div className={styles.sortFilterGroup} title={sortControlsTitle}>
+        <p className={styles.sortThenByHint}>{SORT_THEN_BY_HINT}</p>
+        <div className={styles.sortFilterGroup} title={SORT_THEN_BY_HINT}>
           {sortSelects}
         </div>
       </div>
@@ -99,7 +100,7 @@ export const CollectionSortControls = ({
     <div
       className={classNames(styles.sortFilterGroup, className)}
       data-testid="fmdCollectionSortControls"
-      title={sortControlsTitle}
+      title={SORT_THEN_BY_HINT}
     >
       {sortSelects}
     </div>
