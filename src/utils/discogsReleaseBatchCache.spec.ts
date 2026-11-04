@@ -1,5 +1,5 @@
-import { QueryClient } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { QueryClient } from "@tanstack/react-query";
 import { api } from "src/api/urls";
 import { RELEASE_BATCH_MAX_IDS } from "src/constants/collection";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
@@ -8,6 +8,7 @@ import {
   chunkDiscogsReleaseIds,
   fetchDiscogsReleaseDetailsIntoCache,
   getUncachedDiscogsReleaseIds,
+  normalizeDiscogsReleaseIds,
   readDiscogsReleaseDetailsFromCache,
 } from "src/utils/discogsReleaseBatchCache";
 
@@ -22,6 +23,14 @@ describe("discogsReleaseBatchCache", () => {
     queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
+  });
+
+  it("when release ids are duplicated or out of order, normalizes to sorted unique strings", () => {
+    expect(normalizeDiscogsReleaseIds(["2", "1", "2", "3"])).toEqual([
+      "1",
+      "2",
+      "3",
+    ]);
   });
 
   it("chunks release ids at RELEASE_BATCH_MAX_IDS", () => {

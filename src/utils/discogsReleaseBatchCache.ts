@@ -4,6 +4,15 @@ import { RELEASE_BATCH_MAX_IDS } from "src/constants/collection";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 
+export const EMPTY_DISCOGS_RELEASE_DETAIL_MAP = new Map<
+  string,
+  DiscogsReleaseDetail
+>();
+
+export const normalizeDiscogsReleaseIds = (
+  releaseIds: readonly string[],
+): string[] => [...new Set(releaseIds.map(String))].sort();
+
 export const chunkDiscogsReleaseIds = (releaseIds: string[]): string[][] => {
   if (releaseIds.length === 0) {
     return [];
@@ -11,7 +20,11 @@ export const chunkDiscogsReleaseIds = (releaseIds: string[]): string[][] => {
 
   const chunks: string[][] = [];
 
-  for (let index = 0; index < releaseIds.length; index += RELEASE_BATCH_MAX_IDS) {
+  for (
+    let index = 0;
+    index < releaseIds.length;
+    index += RELEASE_BATCH_MAX_IDS
+  ) {
     chunks.push(releaseIds.slice(index, index + RELEASE_BATCH_MAX_IDS));
   }
 
@@ -29,7 +42,7 @@ export const getUncachedDiscogsReleaseIds = (
       ) === undefined,
   );
 
-export const seedDiscogsReleaseDetailCache = (
+const seedDiscogsReleaseDetailCache = (
   queryClient: QueryClient,
   releases: Record<string, DiscogsReleaseDetail>,
 ): void => {
@@ -60,11 +73,19 @@ export const readDiscogsReleaseDetailsFromCache = (
   return map;
 };
 
+export const readDiscogsReleaseDetailFromCache = (
+  queryClient: QueryClient,
+  releaseId: string,
+): DiscogsReleaseDetail | undefined =>
+  queryClient.getQueryData<DiscogsReleaseDetail>(
+    discogsReleaseQueryOptions(releaseId).queryKey,
+  );
+
 export const fetchDiscogsReleaseDetailsIntoCache = async (
   queryClient: QueryClient,
-  releaseIds: string[],
+  releaseIds: readonly string[],
 ): Promise<void> => {
-  const uniqueIds = [...new Set(releaseIds)];
+  const uniqueIds = normalizeDiscogsReleaseIds(releaseIds);
   const idsToFetch = getUncachedDiscogsReleaseIds(queryClient, uniqueIds);
 
   if (idsToFetch.length === 0) {

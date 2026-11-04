@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
-import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import { useTopUserTracksQuery } from "src/hooks/queries/useTopUserTracksQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import dashboardCardStyles from "src/styles/modules/dashboard-card.module.css";
 import type { DiscogsRelease } from "src/types";
 import type { TopUserTrack } from "src/types/dashboard.types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
 import { definedProps } from "src/utils/definedProps";
+import { EMPTY_DISCOGS_RELEASE_DETAIL_MAP } from "src/utils/discogsReleaseBatchCache";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { buildCatalogTitleByTrackKey } from "src/utils/userTrack";
 import { DashboardTrackItem } from "./DashboardTrackItem.component";
@@ -163,7 +164,7 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
     return buildCatalogTitleByTrackKey(
       leaderboardTracks,
       releaseIndex,
-      releaseDetailById ?? new Map(),
+      releaseDetailById ?? EMPTY_DISCOGS_RELEASE_DETAIL_MAP,
     );
   }, [leaderboardTracks, releaseDetailById, releaseIndex]);
 

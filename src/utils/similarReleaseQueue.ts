@@ -1,14 +1,13 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
-import { fetchDiscogsReleaseDetailsIntoCache } from "src/utils/discogsReleaseBatchCache";
+import {
+  fetchDiscogsReleaseDetailsIntoCache,
+  readDiscogsReleaseDetailFromCache,
+} from "src/utils/discogsReleaseBatchCache";
 import { buildFullPlayableAlbumQueue } from "src/utils/playbackQueue";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import { flattenTracklist } from "src/utils/releasePlayback";
-
-const getCachedReleaseDetail = (queryClient: QueryClient, releaseId: string) =>
-  queryClient.getQueryData(discogsReleaseQueryOptions(releaseId).queryKey);
 
 export const prefetchSimilarReleaseDetails = async ({
   similarReleases,
@@ -47,7 +46,10 @@ export const fetchPlayableQueuesForSimilarReleases = async ({
         return [];
       }
 
-      const detail = getCachedReleaseDetail(queryClient, String(releaseId));
+      const detail = readDiscogsReleaseDetailFromCache(
+        queryClient,
+        String(releaseId),
+      );
 
       if (!detail) {
         return [];

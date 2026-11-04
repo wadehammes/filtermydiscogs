@@ -7,7 +7,12 @@ import {
 import { useMemo } from "react";
 import { DiscogsReleaseBatchQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
+  DISCOGS_RELEASE_DETAIL_GC_MS,
+  DISCOGS_RELEASE_DETAIL_STALE_MS,
+} from "src/hooks/queries/useDiscogsReleaseQuery";
+import {
   fetchDiscogsReleaseDetailsIntoCache,
+  normalizeDiscogsReleaseIds,
   readDiscogsReleaseDetailsFromCache,
 } from "src/utils/discogsReleaseBatchCache";
 
@@ -20,7 +25,7 @@ export const hydrateDiscogsReleaseDetailsQueryOptions = (
   releaseIds: readonly string[],
   queryClient: QueryClient,
 ) => {
-  const normalizedIds = [...new Set(releaseIds.map(String))].sort();
+  const normalizedIds = normalizeDiscogsReleaseIds(releaseIds);
 
   return queryOptions({
     queryKey: DiscogsReleaseBatchQueryKeys.hydration(normalizedIds),
@@ -28,8 +33,8 @@ export const hydrateDiscogsReleaseDetailsQueryOptions = (
       await fetchDiscogsReleaseDetailsIntoCache(queryClient, normalizedIds);
       return readDiscogsReleaseDetailsFromCache(queryClient, normalizedIds);
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: DISCOGS_RELEASE_DETAIL_STALE_MS,
+    gcTime: DISCOGS_RELEASE_DETAIL_GC_MS,
   });
 };
 
@@ -39,12 +44,12 @@ export const useHydrateDiscogsReleaseDetails = ({
 }: UseHydrateDiscogsReleaseDetailsParams) => {
   const queryClient = useQueryClient();
   const normalizedIds = useMemo(
-    () => [...new Set(releaseIds.map(String))].sort(),
+    () => normalizeDiscogsReleaseIds(releaseIds),
     [releaseIds],
   );
-  const options = hydrateDiscogsReleaseDetailsQueryOptions(
-    normalizedIds,
-    queryClient,
+  const options = useMemo(
+    () => hydrateDiscogsReleaseDetailsQueryOptions(normalizedIds, queryClient),
+    [normalizedIds, queryClient],
   );
 
   return useQuery({

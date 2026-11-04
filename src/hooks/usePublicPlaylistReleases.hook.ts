@@ -3,13 +3,13 @@
 import { useMemo } from "react";
 import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import type { DiscogsRelease } from "src/types";
-import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
 import {
   collectUniquePlaylistDiscogsReleaseIds,
   mergePlaylistReleaseWithDiscogsDetail,
   resolveDiscogsReleaseIdForPlaylistTrack,
 } from "src/utils/discogsReleaseArt";
+import { EMPTY_DISCOGS_RELEASE_DETAIL_MAP } from "src/utils/discogsReleaseBatchCache";
 
 export const usePublicPlaylistReleases = ({
   tracks,
@@ -32,15 +32,11 @@ export const usePublicPlaylistReleases = ({
     [apiReleaseByInstanceId, tracks],
   );
 
-  const { data: hydratedReleaseDetails } = useHydrateDiscogsReleaseDetails({
-    releaseIds: uniqueDiscogsReleaseIds,
-    enabled: uniqueDiscogsReleaseIds.length > 0,
-  });
-
-  const discogsDetailByReleaseId = useMemo(
-    () => hydratedReleaseDetails ?? new Map<string, DiscogsReleaseDetail>(),
-    [hydratedReleaseDetails],
-  );
+  const { data: hydratedReleaseDetails = EMPTY_DISCOGS_RELEASE_DETAIL_MAP } =
+    useHydrateDiscogsReleaseDetails({
+      releaseIds: uniqueDiscogsReleaseIds,
+      enabled: uniqueDiscogsReleaseIds.length > 0,
+    });
 
   const releaseByInstanceId = useMemo(() => {
     const map = new Map(apiReleaseByInstanceId);
@@ -57,7 +53,7 @@ export const usePublicPlaylistReleases = ({
         continue;
       }
 
-      const detail = discogsDetailByReleaseId.get(String(discogsId));
+      const detail = hydratedReleaseDetails.get(String(discogsId));
 
       if (!detail) {
         continue;
@@ -70,7 +66,7 @@ export const usePublicPlaylistReleases = ({
     }
 
     return map;
-  }, [apiReleaseByInstanceId, discogsDetailByReleaseId, tracks]);
+  }, [apiReleaseByInstanceId, hydratedReleaseDetails, tracks]);
 
   const releases = useMemo(() => {
     const seen = new Set<string>();

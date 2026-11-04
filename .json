@@ -1,0 +1,104 @@
+{
+  "trunk": "staging",
+  "currentBranch": "11-04-perf-p6-idle-release-modal-prefetch",
+  "branches": [
+    {
+      "name": "11-04-fix-javascript-nextjs-13",
+      "head": "4b86b811a721a680aa4dc24b92ad144e85eeab41",
+      "base": "b660c5e000bf9e915a85ae715f83f1fcb6d87fee",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1279,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1279",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "11-04-perf-p1-batch-discogs-releases",
+      "head": "4a335c4f1d8d804de3a4451a8fcfd5ae4764118d",
+      "base": "4b86b811a721a680aa4dc24b92ad144e85eeab41",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1280,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1280",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "11-04-perf-p2-playlist-server-sequential",
+      "head": "8ead057c76d69ab9dc35ce50c149488f4031d2b7",
+      "base": "4a335c4f1d8d804de3a4451a8fcfd5ae4764118d",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1281,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1281",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "11-04-perf-p3-dashboard-lazy-growth-chart",
+      "head": "bc3e64841852902dea446e6765e38d6a727a235c",
+      "base": "8ead057c76d69ab9dc35ce50c149488f4031d2b7",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1282,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1282",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "11-04-perf-p4-defer-large-collection-analytics",
+      "head": "fdab9a9deb06d0ed00631bcb02a9b33f6bfec60f",
+      "base": "bc3e64841852902dea446e6765e38d6a727a235c",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1283,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1283",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "11-04-perf-p5-css-module-class-guard",
+      "head": "cb0bb111f38b97757ceb7e1d42418aaf6d8c2464",
+      "base": "fdab9a9deb06d0ed00631bcb02a9b33f6bfec60f",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1284,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1284",
+        "state": "OPEN"
+      }
+    },
+    {
+      "name": "11-04-perf-p6-idle-release-modal-prefetch",
+      "head": "3de8eb7f91e4983804cbeaf444291959ff84d63e",
+      "base": "cb0bb111f38b97757ceb7e1d42418aaf6d8c2464",
+      "isCurrent": true,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false,
+      "pr": {
+        "number": 1285,
+        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1285",
+        "state": "OPEN"
+      }
+    }
+  ]
+}
