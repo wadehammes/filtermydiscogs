@@ -534,6 +534,13 @@ flowchart TD
 
 Wire Slack in **Settings → Integrations → Slack** so alerts land in a low-noise channel; keep preview/dev out of alert filters.
 
+**Unattributed inline `SyntaxError` filters** ([`sentryInitOptions.ts`](../../src/lib/sentry/sentryInitOptions.ts) → [`sentryThirdPartyIntegrationErrors.ts`](../../src/utils/sentryThirdPartyIntegrationErrors.ts)): dropped when the stack has no app **`.js`** frame; same message **with** a script frame is kept for triage.
+
+| Issue | Message (abbrev.) | Predicate |
+| ----- | ----------------- | --------- |
+| **JAVASCRIPT-NEXTJS-11** / **12** | Non-number found after exponent indicator | [`isUnattributedExponentParseError`](../../src/utils/sentryThirdPartyIntegrationErrors.ts) |
+| **JAVASCRIPT-NEXTJS-13** | appendChild … Unexpected identifier `as` | [`isUnattributedAppendChildScriptSyntaxError`](../../src/utils/sentryThirdPartyIntegrationErrors.ts) |
+
 **Snapshot (2026-11-04):** **JAVASCRIPT-NEXTJS-13** (`SyntaxError: Failed to execute 'appendChild' on 'Node': Unexpected identifier 'as'`, anonymous stack — inline script parse noise, often extensions or third-party injection; Chrome OS, 1 user) — [`beforeSend`](../../src/lib/sentry/sentryInitOptions.ts) drops via [`isUnattributedAppendChildScriptSyntaxError`](../../src/utils/sentryThirdPartyIntegrationErrors.ts). Same message with a `.js` frame is kept. Close with **`Fixes JAVASCRIPT-NEXTJS-13`**.
 
 **Snapshot (2026-10-25):** **JAVASCRIPT-NEXTJS-11** / **12** (`SyntaxError: Non-number found after exponent indicator`, Firefox iOS, document URL line 1, no script frame) — [`beforeSend`](../../src/lib/sentry/sentryInitOptions.ts) drops the event via [`isUnattributedExponentParseError`](../../src/utils/sentryThirdPartyIntegrationErrors.ts). The same message from a `.js` frame is kept. Close with **`Fixes JAVASCRIPT-NEXTJS-11`** and **`Fixes JAVASCRIPT-NEXTJS-12`**.
