@@ -1,6 +1,10 @@
 import { atom, type Getter, type Setter } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
-import { SortValues } from "src/constants/sortValues";
+import {
+  type CollectionSortSecondary,
+  SortSecondaryValues,
+  SortValues,
+} from "src/constants/sortValues";
 import { FILTERS_STORAGE_KEY } from "src/constants/storageKeys";
 import type { DiscogsRelease } from "src/types";
 import type {
@@ -8,6 +12,7 @@ import type {
   StyleOperator,
   YearOperator,
 } from "src/types/filters.types";
+import { normalizeThenBySortSelection } from "src/utils/collectionSortOptions";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import { getFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import {
@@ -27,6 +32,7 @@ export interface FiltersState {
   selectedYears: number[];
   selectedFormats: string[];
   selectedSort: SortValues;
+  selectedSortSecondary: CollectionSortSecondary;
   styleOperator: StyleOperator;
   formatOperator: StyleOperator;
   yearOperator: YearOperator;
@@ -47,6 +53,7 @@ export enum FiltersActionTypes {
   ToggleYear = "TOGGLE_YEAR",
   ToggleFormat = "TOGGLE_FORMAT",
   SetSort = "SET_SORT",
+  SetSortSecondary = "SET_SORT_SECONDARY",
   ClearStyles = "CLEAR_STYLES",
   SetStyles = "SET_STYLES",
   SetStyleOperator = "SET_STYLE_OPERATOR",
@@ -84,6 +91,10 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.SetSort;
       payload: SortValues;
+    }
+  | {
+      type: FiltersActionTypes.SetSortSecondary;
+      payload: CollectionSortSecondary;
     }
   | {
       type: FiltersActionTypes.ClearStyles;
@@ -266,6 +277,7 @@ const getActiveFilterInputs = (get: Getter) => {
       selectedFormats: [...inactiveFilterSelectionDefaults.selectedFormats],
       searchQuery: inactiveFilterSelectionDefaults.searchQuery,
       selectedSort: SortValues.DateAddedNew,
+      selectedSortSecondary: SortSecondaryValues.None,
       styleOperator: inactiveFilterSelectionDefaults.styleOperator,
       formatOperator: inactiveFilterSelectionDefaults.formatOperator,
       yearOperator: inactiveFilterSelectionDefaults.yearOperator,
@@ -278,6 +290,7 @@ const getActiveFilterInputs = (get: Getter) => {
     selectedFormats: get(selectedFormatsAtom),
     searchQuery: get(searchQueryAtom),
     selectedSort: get(selectedSortAtom),
+    selectedSortSecondary: get(selectedSortSecondaryAtom),
     styleOperator: get(styleOperatorAtom),
     formatOperator: get(formatOperatorAtom),
     yearOperator: get(yearOperatorAtom),
@@ -288,6 +301,9 @@ export const selectedStylesAtom = sessionFieldAtom("selectedStyles");
 export const selectedYearsAtom = sessionFieldAtom("selectedYears");
 export const selectedFormatsAtom = sessionFieldAtom("selectedFormats");
 export const selectedSortAtom = sessionFieldAtom("selectedSort");
+export const selectedSortSecondaryAtom = sessionFieldAtom(
+  "selectedSortSecondary",
+);
 export const styleOperatorAtom = sessionFieldAtom("styleOperator");
 export const formatOperatorAtom = sessionFieldAtom("formatOperator");
 export const yearOperatorAtom = sessionFieldAtom("yearOperator");
@@ -346,11 +362,11 @@ export const facetOptionsAtom = atom(
 export const sortedFilteredReleasesAtom = atom((get) => {
   const { filteredReleases } = get(filterDerivedStateAtom);
 
-  if (!get(collectionFiltersActiveAtom)) {
-    return filteredReleases;
-  }
-
-  return sortReleasesUtil(filteredReleases, get(selectedSortAtom));
+  return sortReleasesUtil(
+    filteredReleases,
+    get(selectedSortAtom),
+    get(selectedSortSecondaryAtom),
+  );
 });
 
 export const filteredReleasesAtom = atom((get) => {
@@ -367,6 +383,7 @@ export const filtersStateAtom = atom<FiltersState>((get) => ({
   selectedYears: get(selectedYearsAtom),
   selectedFormats: get(selectedFormatsAtom),
   selectedSort: get(selectedSortAtom),
+  selectedSortSecondary: get(selectedSortSecondaryAtom),
   styleOperator: get(styleOperatorAtom),
   formatOperator: get(formatOperatorAtom),
   yearOperator: get(yearOperatorAtom),
@@ -389,6 +406,7 @@ const applyFilterChange = (
     selectedYears?: number[];
     selectedFormats?: string[];
     selectedSort?: SortValues;
+    selectedSortSecondary?: CollectionSortSecondary;
     styleOperator?: StyleOperator;
     formatOperator?: StyleOperator;
     yearOperator?: YearOperator;
@@ -409,6 +427,9 @@ const applyFilterChange = (
   }
   if (updates.selectedSort !== undefined) {
     set(selectedSortAtom, updates.selectedSort);
+  }
+  if (updates.selectedSortSecondary !== undefined) {
+    set(selectedSortSecondaryAtom, updates.selectedSortSecondary);
   }
   if (updates.styleOperator !== undefined) {
     set(styleOperatorAtom, updates.styleOperator);
@@ -446,6 +467,7 @@ const persistedFilterActionTypes = new Set<FiltersActions["type"]>([
   FiltersActionTypes.ToggleYear,
   FiltersActionTypes.ToggleFormat,
   FiltersActionTypes.SetSort,
+  FiltersActionTypes.SetSortSecondary,
   FiltersActionTypes.ClearStyles,
   FiltersActionTypes.SetStyles,
   FiltersActionTypes.SetStyleOperator,
@@ -510,9 +532,28 @@ export const filtersDispatchAtom = atom(
         return;
       }
 
-      case FiltersActionTypes.SetSort:
-        applyFilterChange(get, set, { selectedSort: action.payload });
+      case FiltersActionTypes.SetSort: {
+        const nextSecondary = normalizeThenBySortSelection(
+          action.payload,
+          get(selectedSortSecondaryAtom),
+        );
+        applyFilterChange(get, set, {
+          selectedSort: action.payload,
+          selectedSortSecondary: nextSecondary,
+        });
         return;
+      }
+
+      case FiltersActionTypes.SetSortSecondary: {
+        const nextSecondary = normalizeThenBySortSelection(
+          get(selectedSortAtom),
+          action.payload,
+        );
+        applyFilterChange(get, set, {
+          selectedSortSecondary: nextSecondary,
+        });
+        return;
+      }
 
       case FiltersActionTypes.ClearStyles:
         applyFilterChange(get, set, { selectedStyles: [] });
@@ -589,6 +630,10 @@ export const filtersDispatchAtom = atom(
           selectedYears: [...action.payload.selectedYears],
           selectedFormats: [...action.payload.selectedFormats],
           selectedSort: action.payload.selectedSort,
+          selectedSortSecondary: normalizeThenBySortSelection(
+            action.payload.selectedSort,
+            action.payload.selectedSortSecondary,
+          ),
           styleOperator: action.payload.styleOperator,
           formatOperator: action.payload.formatOperator,
           yearOperator: action.payload.yearOperator,

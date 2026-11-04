@@ -1,4 +1,9 @@
-import { SortValues, VALID_SORT_VALUES } from "src/constants/sortValues";
+import {
+  SortSecondaryValues,
+  SortValues,
+  VALID_SORT_SECONDARY_VALUES,
+  VALID_SORT_VALUES,
+} from "src/constants/sortValues";
 import { FILTERS_STORAGE_KEY } from "src/constants/storageKeys";
 import type { PersistedFiltersState } from "src/types/filters.types";
 import {
@@ -7,6 +12,7 @@ import {
   VALID_YEAR_OPERATORS,
   type YearOperator,
 } from "src/types/filters.types";
+import { normalizeThenBySortSelection } from "src/utils/collectionSortOptions";
 import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
 
 export type { PersistedFiltersState } from "src/types/filters.types";
@@ -17,6 +23,7 @@ export const defaultPersistedFilters: PersistedFiltersState = {
   selectedYears: [],
   selectedFormats: [],
   selectedSort: SortValues.DateAddedNew,
+  selectedSortSecondary: SortSecondaryValues.None,
   styleOperator: "OR",
   formatOperator: "OR",
   yearOperator: "OR",
@@ -29,6 +36,7 @@ export const inactiveFilterSelectionDefaults = {
   selectedFormats: defaultPersistedFilters.selectedFormats,
   searchQuery: defaultPersistedFilters.searchQuery,
   selectedSort: defaultPersistedFilters.selectedSort,
+  selectedSortSecondary: defaultPersistedFilters.selectedSortSecondary,
   styleOperator: defaultPersistedFilters.styleOperator,
   formatOperator: defaultPersistedFilters.formatOperator,
   yearOperator: defaultPersistedFilters.yearOperator,
@@ -67,6 +75,8 @@ const isValidPersistedFilters = (
     isStringArray(state.selectedFormats) &&
     typeof state.selectedSort === "string" &&
     VALID_SORT_VALUES.has(state.selectedSort) &&
+    typeof state.selectedSortSecondary === "string" &&
+    VALID_SORT_SECONDARY_VALUES.has(state.selectedSortSecondary) &&
     typeof state.styleOperator === "string" &&
     VALID_STYLE_OPERATORS.has(state.styleOperator as StyleOperator) &&
     typeof state.formatOperator === "string" &&
@@ -92,6 +102,21 @@ const parsePersistedFiltersValue = (
   if ("selectedSort" in candidate) {
     candidate.selectedSort = migratePersistedSort(candidate.selectedSort);
   }
+
+  if (
+    !(
+      typeof candidate.selectedSortSecondary === "string" &&
+      VALID_SORT_SECONDARY_VALUES.has(candidate.selectedSortSecondary)
+    )
+  ) {
+    candidate.selectedSortSecondary =
+      defaultPersistedFilters.selectedSortSecondary;
+  }
+
+  candidate.selectedSortSecondary = normalizeThenBySortSelection(
+    candidate.selectedSort,
+    candidate.selectedSortSecondary,
+  );
 
   if (isValidPersistedFilters(candidate)) {
     return candidate;
@@ -157,6 +182,7 @@ const canonicalizePersistedFiltersForCompare = (
     ),
     selectedFormats: [...normalized.selectedFormats].sort(),
     selectedSort: normalized.selectedSort,
+    selectedSortSecondary: normalized.selectedSortSecondary,
     styleOperator: normalized.styleOperator,
     formatOperator: normalized.formatOperator,
     yearOperator: normalized.yearOperator,

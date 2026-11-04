@@ -6,6 +6,7 @@ import {
   dismissPendingFiltersRestoreAtom,
   pendingFiltersRestoreAtom,
 } from "src/atoms/filters.atoms";
+import { SortSecondaryValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import {
@@ -103,6 +104,7 @@ describe("FiltersProvider", () => {
         selectedYears: [1984],
         selectedFormats: ["LP"],
         selectedSort: SortValues.AZTitle,
+        selectedSortSecondary: SortSecondaryValues.None,
         styleOperator: "AND",
         formatOperator: "OR",
         yearOperator: "OR",
@@ -196,6 +198,7 @@ describe("FiltersProvider", () => {
         selectedYears: [],
         selectedFormats: [],
         selectedSort: SortValues.DateAddedNew,
+        selectedSortSecondary: SortSecondaryValues.None,
         styleOperator: "OR",
         formatOperator: "OR",
         yearOperator: "OR",

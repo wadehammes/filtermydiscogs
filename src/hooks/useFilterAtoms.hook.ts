@@ -16,6 +16,7 @@ import {
   searchQueryAtom,
   selectedFormatsAtom,
   selectedSortAtom,
+  selectedSortSecondaryAtom,
   selectedStylesAtom,
   selectedYearsAtom,
   sessionFiltersAtom,
@@ -93,6 +94,12 @@ export const useSelectedSort = () => {
   useFiltersScope();
 
   return useAtomValue(selectedSortAtom);
+};
+
+export const useSelectedSortSecondary = () => {
+  useFiltersScope();
+
+  return useAtomValue(selectedSortSecondaryAtom);
 };
 
 export const useStyleOperator = () => {

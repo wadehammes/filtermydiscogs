@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { Prisma } from "@prisma/client";
-import { SortValues } from "src/constants/sortValues";
+import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import type {
   PersistedFiltersJson,
@@ -45,6 +45,7 @@ class PersistedFiltersFactory extends BaseFactory<
         SortValues.AZArtist,
         SortValues.AZTitle,
       ]),
+      selectedSortSecondary: SortSecondaryValues.None,
       styleOperator: faker.helpers.arrayElement([
         "AND",
         "OR",

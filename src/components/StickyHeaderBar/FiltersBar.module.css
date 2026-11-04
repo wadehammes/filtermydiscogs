@@ -28,7 +28,6 @@
     margin: 0 auto;
     padding: 0 var(--space-3);
 
-    & [data-filter-control-trigger],
     & .searchBar .input {
       height: var(--input-height);
       max-height: var(--input-height);
@@ -51,6 +50,7 @@
     gap: 0;
     height: var(--input-height);
     min-width: 0;
+    overflow: hidden;
 
     & > [data-testid="fmdAutocompleteSelect"],
     & > [data-testid="fmdSelect"] {

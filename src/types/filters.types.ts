@@ -1,4 +1,7 @@
-import type { SortValues } from "src/constants/sortValues";
+import type {
+  CollectionSortSecondary,
+  SortValues,
+} from "src/constants/sortValues";
 
 export type StyleOperator = "AND" | "OR" | "NONE";
 
@@ -26,6 +29,7 @@ export type PersistedFiltersJson = {
   selectedYears: number[];
   selectedFormats: string[];
   selectedSort: SortValues;
+  selectedSortSecondary: CollectionSortSecondary;
   styleOperator: StyleOperator;
   formatOperator: StyleOperator;
   yearOperator: YearOperator;

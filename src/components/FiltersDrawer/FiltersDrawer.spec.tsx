@@ -39,8 +39,26 @@ describe("FiltersDrawer", () => {
     expect(screen.getByText("Release Year")).toBeInTheDocument();
     expect(screen.getByText("Format Type")).toBeInTheDocument();
     expect(screen.getByText("Sort by")).toBeInTheDocument();
-    expect(screen.getByText("Order")).toBeInTheDocument();
+    expect(screen.getByText("Then by")).toBeInTheDocument();
     expect(screen.getByTestId("fmdFilterViewsMenu")).toBeInTheDocument();
+  });
+
+  it("shows compact sort labels on triggers and full names in the open menu", async () => {
+    po.renderFiltersDrawer({
+      sessionFilters: {
+        ...defaultPersistedFilters,
+        selectedSort: SortValues.DateAddedOld,
+      },
+    });
+
+    expect(screen.getByText("Date Added ↑")).toBeInTheDocument();
+    expect(screen.queryByText("oldest")).not.toBeInTheDocument();
+
+    await openFilterSelect("Sort by");
+
+    expect(
+      screen.getByRole("option", { name: "Date Added oldest" }),
+    ).toBeInTheDocument();
   });
 
   it("opens the Views menu from the filters drawer", async () => {
@@ -352,7 +370,7 @@ describe("FiltersDrawer", () => {
       },
     });
 
-    for (const name of ["Sort by", "Order", "Match"] as const) {
+    for (const name of ["Sort by", "Then by", "Match"] as const) {
       await openFilterSelect(name);
 
       expectFilterPopupAboveBottomDrawer(screen.getByRole("listbox", { name }));

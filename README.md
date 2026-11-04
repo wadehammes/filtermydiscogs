@@ -9,7 +9,7 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Discogs OAuth**: Sign in with your Discogs account
 - **Flexible filters**: Require-all and exclude on genres, styles, formats, and years; dropdowns follow the visible grid. Saved views; resume filters after load
 - **Search & browse**: Search title, artist, label, or notes; full collection sync with IndexedDB cache for faster return visits
-- **Sorting & views**: Sort by label, artist, title, date added, year, rating, and more; card, list (table on desktop), or random view
+- **Sorting & views**: Primary sort (label, artist, title, date added, year, rating, …) plus optional **Then by** tie-breaker; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
 - **In-app playback**: Mini player and queue while you browse; per-track **YouTube** links when Discogs has no embed; optional similar-release queue tail in Settings; listen counts on tracklists and play/listen stats on the dashboard
 - **Playlists** (progressive rollout): Cross-release track lists from the Releases side panel; reorder, play, share a public link (listeners can play without signing in); **Add all to…** from tracklists
@@ -41,7 +41,7 @@ mise run ci-full    # same unit gates + full Playwright (all specs × desktop/ph
 mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + test:changed + fallow:audit
 ```
 
-**Zed:** open the repo as a folder so [`.zed/settings.json`](./.zed/settings.json) applies (workspace TypeScript 6 language service + CSS Modules **`composes`** hints). Reload after **`pnpm install`**.
+**Zed:** Open the repo as a folder so [`.zed/settings.json`](./.zed/settings.json) applies — **`vtsls`** uses the **`typescript-langservice`** devDependency (TS 6 **`tsserver`**; builds use **TypeScript 7** **`tsc`**). Reload after **`pnpm install`**. In **LSP → vtsls** logs, confirm **`Using tsserver from: …/typescript-langservice/lib/tsserver.js`**.
 
 ### Discogs OAuth Setup
 

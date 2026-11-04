@@ -27,8 +27,12 @@ const hasStoredCharCount = (count: number | undefined): count is number =>
 interface SelectOption {
   value: string;
   label: string;
+  shortLabel?: string;
+  menuField?: string;
+  menuOrder?: string;
   isDefault?: boolean;
   storedCharCount?: number;
+  separatorBefore?: boolean;
 }
 
 interface SelectProps {
@@ -40,6 +44,8 @@ interface SelectProps {
   multiple?: boolean;
   placeholder?: string;
   className?: string;
+  popupClassName?: string;
+  listClassName?: string;
   showLabel?: boolean;
   clearable?: boolean;
 }
@@ -77,6 +83,8 @@ const SelectComponent = ({
   multiple = false,
   placeholder,
   className,
+  popupClassName,
+  listClassName,
   showLabel = false,
   clearable = false,
 }: SelectProps) => {
@@ -124,7 +132,7 @@ const SelectComponent = ({
       }
 
       const option = options.find((item) => item.value === selectedValue);
-      return option?.label ?? placeholder ?? "";
+      return option?.shortLabel ?? option?.label ?? placeholder ?? "";
     },
     [multiple, options, placeholder],
   );
@@ -139,6 +147,11 @@ const SelectComponent = ({
       disabled={disabled}
       {...definedProps({
         "aria-label": showLabel ? undefined : label,
+        title:
+          selectedSingleOption?.shortLabel &&
+          selectedSingleOption.shortLabel !== selectedSingleOption.label
+            ? selectedSingleOption.label
+            : undefined,
       })}
     >
       <span className={styles.value}>
@@ -205,13 +218,22 @@ const SelectComponent = ({
               sideOffset={4}
               style={positionerStyle}
             >
-              <BaseSelect.Popup className={styles.popup}>
-                <BaseSelect.List className={styles.listbox} aria-label={label}>
+              <BaseSelect.Popup
+                className={classNames(styles.popup, popupClassName)}
+              >
+                <BaseSelect.List
+                  className={classNames(styles.listbox, listClassName)}
+                  aria-label={label}
+                >
                   {options.map((option) => (
                     <BaseSelect.Item
                       key={option.value}
                       value={option.value}
-                      className={styles.option}
+                      aria-label={option.label}
+                      className={classNames(
+                        styles.option,
+                        option.separatorBefore && styles.optionGroupStart,
+                      )}
                     >
                       <span className={styles.optionContent}>
                         <BaseSelect.ItemIndicator className={styles.checkmark}>
@@ -220,7 +242,18 @@ const SelectComponent = ({
                         <span className={styles.optionLabel}>
                           <span className={styles.optionLabelPrimary}>
                             <BaseSelect.ItemText>
-                              {option.label}
+                              {option.menuField ? (
+                                <>
+                                  <span>{option.menuField}</span>
+                                  {option.menuOrder ? (
+                                    <span className={styles.optionMenuOrder}>
+                                      {option.menuOrder}
+                                    </span>
+                                  ) : null}
+                                </>
+                              ) : (
+                                option.label
+                              )}
                             </BaseSelect.ItemText>
                             {hasStoredCharCount(option.storedCharCount) ? (
                               <SelectStoredCharCount

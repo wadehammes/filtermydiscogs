@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { SortValues } from "src/constants/sortValues";
+import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsRelease } from "src/types";
 import { sortReleases } from "./sortReleases";
@@ -320,7 +320,6 @@ describe("sortReleases", () => {
 
     const result = sortReleases(releases, SortValues.AZTitle);
 
-    // Numeric prefixes should come before non-numeric
     expect(result[0]?.basic_information.title).toBe("2 Album");
     expect(result[1]?.basic_information.title).toBe("10 Album");
     expect(result[2]?.basic_information.title).toBe("Album");
@@ -381,7 +380,6 @@ describe("sortReleases", () => {
 
     const result = sortReleases(releases, SortValues.AZArtist);
 
-    // Empty artist should come first (empty string sorts before "artist")
     expect(result[0]).toEqual(release1);
     expect(result[1]).toEqual(release2);
   });
@@ -401,7 +399,6 @@ describe("sortReleases", () => {
 
     const result = sortReleases(releases, SortValues.AZTitle);
 
-    // Empty title should come first
     expect(result[0]).toEqual(release1);
     expect(result[1]).toEqual(release2);
   });
@@ -421,7 +418,6 @@ describe("sortReleases", () => {
 
     const result = sortReleases(releases, SortValues.AZLabel);
 
-    // Empty label should come first
     expect(result[0]).toEqual(release1);
     expect(result[1]).toEqual(release2);
   });
@@ -468,7 +464,6 @@ describe("sortReleases", () => {
     const result = sortReleases(releases, SortValues.DateAddedNew);
 
     expect(result).toHaveLength(2);
-    // Order may be stable but not guaranteed for equal values
   });
 
   it("handles releases with same year", () => {
@@ -519,5 +514,114 @@ describe("sortReleases", () => {
     const result = sortReleases(releases, SortValues.AZTitle);
 
     expect(result).toHaveLength(2);
+  });
+
+  it("sorts by artist then date added when a secondary sort is set", () => {
+    const releaseAOld = releaseFactory.build({
+      basic_information: {
+        artists: [{ name: "Alpha", id: 1, resource_url: "", anvil: "" }],
+      },
+      date_added: "2020-01-01T00:00:00Z",
+    });
+    const releaseANew = releaseFactory.build({
+      basic_information: {
+        artists: [{ name: "Alpha", id: 1, resource_url: "", anvil: "" }],
+      },
+      date_added: "2024-01-01T00:00:00Z",
+    });
+    const releaseB = releaseFactory.build({
+      basic_information: {
+        artists: [{ name: "Beta", id: 2, resource_url: "", anvil: "" }],
+      },
+      date_added: "2025-01-01T00:00:00Z",
+    });
+    const releases = [releaseANew, releaseB, releaseAOld];
+
+    const result = sortReleases(
+      releases,
+      SortValues.AZArtist,
+      SortValues.DateAddedNew,
+    );
+
+    expect(result.map((release) => release.id)).toEqual([
+      releaseANew.id,
+      releaseAOld.id,
+      releaseB.id,
+    ]);
+  });
+
+  it("uses calendar-day buckets for date-added primary when secondary sort is active", () => {
+    const releaseLaterZebra = releaseFactory.build({
+      basic_information: {
+        artists: [{ name: "Zebra", id: 1, resource_url: "", anvil: "" }],
+      },
+      date_added: "2024-06-01T20:00:00.000Z",
+    });
+    const releaseEarlierAlpha = releaseFactory.build({
+      basic_information: {
+        artists: [{ name: "Alpha", id: 2, resource_url: "", anvil: "" }],
+      },
+      date_added: "2024-06-01T08:00:00.000Z",
+    });
+    const releaseOtherDay = releaseFactory.build({
+      basic_information: {
+        artists: [{ name: "Beta", id: 3, resource_url: "", anvil: "" }],
+      },
+      date_added: "2025-01-01T00:00:00.000Z",
+    });
+    const releases = [releaseLaterZebra, releaseOtherDay, releaseEarlierAlpha];
+
+    const result = sortReleases(
+      releases,
+      SortValues.DateAddedNew,
+      SortValues.AZArtist,
+    );
+
+    expect(result.map((release) => release.id)).toEqual([
+      releaseOtherDay.id,
+      releaseEarlierAlpha.id,
+      releaseLaterZebra.id,
+    ]);
+  });
+
+  it("ignores secondary sort when it conflicts with the primary field", () => {
+    const releaseOld = releaseFactory.build({
+      date_added: "2020-01-01T00:00:00Z",
+    });
+    const releaseNew = releaseFactory.build({
+      date_added: "2024-01-01T00:00:00Z",
+    });
+    const releases = [releaseNew, releaseOld];
+
+    const primaryOnly = sortReleases(releases, SortValues.DateAddedNew);
+    const withConflict = sortReleases(
+      releases,
+      SortValues.DateAddedNew,
+      SortValues.DateAddedOld,
+    );
+
+    expect(withConflict.map((release) => release.id)).toEqual(
+      primaryOnly.map((release) => release.id),
+    );
+  });
+
+  it("ignores secondary sort when it is None", () => {
+    const release1 = releaseFactory.build({
+      basic_information: { title: "B" },
+    });
+    const release2 = releaseFactory.build({
+      basic_information: { title: "A" },
+    });
+
+    const withNone = sortReleases(
+      [release1, release2],
+      SortValues.AZTitle,
+      SortSecondaryValues.None,
+    );
+    const primaryOnly = sortReleases([release1, release2], SortValues.AZTitle);
+
+    expect(withNone.map((release) => release.id)).toEqual(
+      primaryOnly.map((release) => release.id),
+    );
   });
 });

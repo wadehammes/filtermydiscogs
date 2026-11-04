@@ -10,7 +10,8 @@ describe("FiltersBarSkeleton", () => {
     const { container } = render(<FiltersBarSkeleton />);
 
     expect(screen.getByTestId("fmdFiltersBarSkeleton")).toBeInTheDocument();
-    expect(container.querySelectorAll("svg")).toHaveLength(10);
+    expect(container.querySelectorAll("svg")).toHaveLength(12);
+    expect(screen.getByTestId("fmdCollectionSortJoin")).toBeInTheDocument();
   });
 
   it("renders the Views menu skeleton before search", () => {

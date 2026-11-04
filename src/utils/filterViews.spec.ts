@@ -90,6 +90,7 @@ describe("filterViews", () => {
         formatOperator: "OR",
         styleOperator: "OR",
         selectedSort: session.selectedSort,
+        selectedSortSecondary: session.selectedSortSecondary,
         selectedFormats: [],
         selectedYears: [],
         selectedStyles: ["Deep House", "Acid"],
@@ -120,8 +121,18 @@ describe("filterViews", () => {
         selectedSort: SortValues.AZArtist,
       }),
     ).toBe(
-      'Search: "blue note" · Format: Vinyl · Year: 1999 (NONE) · Sort: Artist (A-Z)',
+      'Search: "blue note" · Format: Vinyl · Year: 1999 (NONE) · Sort: Artist A–Z',
     );
+  });
+
+  it("includes then-by sort in saved view summaries when set", () => {
+    expect(
+      formatFilterViewSummary({
+        ...defaultPersistedFilters,
+        selectedSort: SortValues.AZArtist,
+        selectedSortSecondary: SortValues.DateAddedOld,
+      }),
+    ).toBe("Sort: Artist A–Z · Then by: Date Added · oldest");
   });
 
   it("detects duplicate names and saveable filter state", () => {

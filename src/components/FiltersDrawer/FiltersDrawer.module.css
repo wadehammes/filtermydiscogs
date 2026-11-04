@@ -85,14 +85,7 @@
   text-align: center;
 }
 
-.sortFilterGroup {
-  display: flex;
-  flex-direction: row;
-  gap: var(--space-2);
+.drawerSortControls {
+  flex: none;
   width: 100%;
-
-  & > * {
-    flex: 1 1 0;
-    min-width: 0;
-  }
 }

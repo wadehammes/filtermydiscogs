@@ -1,17 +1,16 @@
 import classNames from "classnames";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   type AutocompleteOption,
   AutocompleteSelect,
 } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import Button from "src/components/Button/Button.component";
+import { CollectionSortControls } from "src/components/CollectionSortControls/CollectionSortControls.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
 import { FilterViewsMenu } from "src/components/FilterViewsMenu/FilterViewsMenu.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
-import Select from "src/components/Select/Select.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
-import { SORTING_CATEGORIES } from "src/constants/sorting";
 import { useCollectionContext } from "src/context/collection.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useAppliedFilterCount } from "src/hooks/useFilterAtoms.hook";
@@ -96,14 +95,12 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
   const { state: collectionState } = useCollectionContext();
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const appliedFilterCount = useAppliedFilterCount();
-  const [sortCategory, setSortCategory] =
-    useState<keyof typeof SORTING_CATEGORIES>("alphabetical");
-
   const {
     handleStyleChange,
     handleYearChange,
     handleFormatChange,
     handleSortChange,
+    handleSortSecondaryChange,
     handleStyleOperatorChange,
     handleFormatOperatorChange,
     handleYearOperatorChange,
@@ -114,6 +111,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
     selectedYears,
     selectedFormats,
     selectedSort,
+    selectedSortSecondary,
     styleOperator,
     formatOperator,
     yearOperator,
@@ -130,29 +128,6 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
     return `Filters (${appliedFilterCount})`;
   }, [appliedFilterCount]);
-
-  const categoryOptions = [
-    { value: "alphabetical", label: "Alphabetical" },
-    { value: "chronological", label: "Chronological" },
-    { value: "rating", label: "Rating" },
-  ];
-
-  const currentSortOptions = SORTING_CATEGORIES[sortCategory].map((sort) => ({
-    value: sort.value,
-    label: sort.name,
-  }));
-
-  const handleCategoryChange = (value: string | string[]) => {
-    const category = (
-      Array.isArray(value) ? value[0] : value
-    ) as keyof typeof SORTING_CATEGORIES;
-    setSortCategory(category);
-
-    const firstOption = SORTING_CATEGORIES[category][0];
-    if (firstOption) {
-      handleSortChange(firstOption.value);
-    }
-  };
 
   const selectedYearValues = useMemo(
     () => selectedYears.map((year) => year.toString()),
@@ -242,26 +217,15 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
         )}
 
         <div className={styles.filterSection}>
-          <div className={styles.sortFilterGroup}>
-            <Select
-              showLabel
-              label="Sort by"
-              options={categoryOptions}
-              value={sortCategory}
-              onChange={handleCategoryChange}
-              disabled={fetchingCollection}
-              placeholder="Select category..."
-            />
-            <Select
-              showLabel
-              label="Order"
-              options={currentSortOptions}
-              value={selectedSort}
-              onChange={handleSortChange}
-              disabled={fetchingCollection}
-              placeholder="Select order..."
-            />
-          </div>
+          <CollectionSortControls
+            showLabel
+            className={styles.drawerSortControls}
+            primarySort={selectedSort}
+            secondarySort={selectedSortSecondary}
+            onPrimarySortChange={handleSortChange}
+            onSecondarySortChange={handleSortSecondaryChange}
+            disabled={fetchingCollection}
+          />
         </div>
       </div>
     </BottomDrawer>

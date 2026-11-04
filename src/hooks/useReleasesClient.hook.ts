@@ -22,6 +22,7 @@ import {
   useSearchQuery,
   useSelectedFormats,
   useSelectedSort,
+  useSelectedSortSecondary,
   useSelectedStyles,
   useSelectedYears,
   useSortedFilteredReleases,
@@ -67,6 +68,7 @@ export const useReleasesClient = ({
   const sortedFilteredReleases = useSortedFilteredReleases();
   const searchQuery = useSearchQuery();
   const selectedSort = useSelectedSort();
+  const selectedSortSecondary = useSelectedSortSecondary();
   const selectedStyles = useSelectedStyles();
   const selectedYears = useSelectedYears();
   const selectedFormats = useSelectedFormats();
@@ -94,6 +96,7 @@ export const useReleasesClient = ({
         searchQuery,
         selectedFormats.join("\0"),
         selectedSort,
+        selectedSortSecondary,
         selectedStyles.join("\0"),
         selectedYears.join("\0"),
         styleOperator,
@@ -105,6 +108,7 @@ export const useReleasesClient = ({
       searchQuery,
       selectedFormats,
       selectedSort,
+      selectedSortSecondary,
       selectedStyles,
       selectedYears,
       styleOperator,

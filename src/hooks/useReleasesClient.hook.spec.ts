@@ -445,4 +445,48 @@ describe("useReleasesClient infinite scroll", () => {
       );
     });
   });
+
+  it("resets the visible window when then-by sort changes", async () => {
+    mockApiResponse(
+      true,
+      mockFetchDiscogsCollection,
+      buildSinglePageCollection(releaseFactory.buildList(250)),
+      new Error("fail"),
+    );
+
+    const { result, rerender } = renderFeatureHook(
+      () => useReleasesClientHarness(document.createElement("div")),
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.releaseCount).toBe(250);
+    });
+
+    triggerSentinelIntersection(result.current.infiniteScrollRef);
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.visibleReleases).toHaveLength(
+        INITIAL_VISIBLE_RELEASES + VISIBLE_BATCH_SIZE,
+      );
+    });
+
+    act(() => {
+      result.current.filtersDispatch({
+        type: FiltersActionTypes.SetSortSecondary,
+        payload: SortValues.AZTitle,
+      });
+    });
+
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.visibleReleases).toHaveLength(
+        INITIAL_VISIBLE_RELEASES,
+      );
+    });
+  });
 });

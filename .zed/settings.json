@@ -4,6 +4,15 @@
       "settings": {
         "typescript": {
           "tsdk": "node_modules/typescript-langservice/lib"
+        },
+        "javascript": {
+          "tsdk": "node_modules/typescript-langservice/lib"
+        },
+        "vtsls": {
+          "autoUseWorkspaceTsdk": true,
+          "typescript": {
+            "globalTsdk": "node_modules/typescript-langservice/lib"
+          }
         }
       }
     },
@@ -13,6 +22,20 @@
           "customData": ["./src/styles/css-modules-custom-data.json"]
         }
       }
+    }
+  },
+  "languages": {
+    "TypeScript": {
+      "language_servers": ["vtsls", "!typescript-language-server", "..."]
+    },
+    "TSX": {
+      "language_servers": ["vtsls", "!typescript-language-server", "..."]
+    },
+    "JavaScript": {
+      "language_servers": ["vtsls", "!typescript-language-server", "..."]
+    },
+    "JSX": {
+      "language_servers": ["vtsls", "!typescript-language-server", "..."]
     }
   }
 }
