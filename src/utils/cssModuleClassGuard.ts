@@ -1,18 +1,9 @@
 const CSS_MODULE_CLASS_PATTERN = /^\.([a-zA-Z_][\w-]*)\s*\{/gm;
 
-export const listCssModuleClassNames = (cssSource: string): string[] => {
-  const classNames: string[] = [];
-
-  for (const match of cssSource.matchAll(CSS_MODULE_CLASS_PATTERN)) {
-    const className = match[1];
-
-    if (className) {
-      classNames.push(className);
-    }
-  }
-
-  return classNames;
-};
+export const listCssModuleClassNames = (cssSource: string): string[] =>
+  [...cssSource.matchAll(CSS_MODULE_CLASS_PATTERN)].flatMap((match) =>
+    match[1] ? [match[1]] : [],
+  );
 
 export const findUnusedCssModuleClasses = (
   cssSource: string,
