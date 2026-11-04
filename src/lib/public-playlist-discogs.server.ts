@@ -41,11 +41,14 @@ export const hydratePublicPlaylistReleases = async ({
     ...new Set(tracks.map((track) => String(track.instance_id))),
   ];
 
+  const trackByInstanceId = new Map(
+    tracks.map((track) => [String(track.instance_id), track] as const),
+  );
   const releaseIdByInstanceId = new Map<string, number>();
 
   for (const instanceId of instanceIds) {
-    const track =
-      tracks.find((row) => String(row.instance_id) === instanceId) ?? null;
+    const track = trackByInstanceId.get(instanceId);
+
     if (!track) {
       continue;
     }
