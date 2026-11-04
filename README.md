@@ -26,7 +26,7 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 
 ### Prerequisites
 
-- Node.js 24+ and pnpm (via [mise](https://mise.jdx.dev/) recommended — versions in [`.tool-versions`](./.tool-versions))
+- Node.js 26+ and pnpm (via [mise](https://mise.jdx.dev/) recommended — versions in [`.tool-versions`](./.tool-versions))
 - A Discogs account
 - Discogs API credentials
 - A Postgres database (Vercel / Prisma Postgres for deployed envs)
@@ -159,7 +159,7 @@ The app will be available at `http://localhost:6767`.
 - **Feature flags**: [Flags SDK](https://flags-sdk.dev) + Vercel (`flags`, `@flags-sdk/vercel`; definitions in [`flags.ts`](./flags.ts)) — e.g. progressive **playlists** rollout and per-user allowlists (Discogs **username** / **user id** via Vercel dashboard rules; details in [platform.md → Feature flags](./docs/handbook/platform.md#feature-flags-vercel))
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
 - **Forms**: React Hook Form + Zod 4
-- **Tooling**: pnpm 12, mise (Node 24 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
+- **Tooling**: pnpm 12, mise (Node 26 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
 - **Analytics**: Google Tag Manager (consent-aware)
 - **Error monitoring**: Sentry 11 ([`@sentry/nextjs`](./package.json); optional via env — Session Replay, in-app bug report, **`/monitoring`** tunnel). Production **`pnpm build`** applies SDK **`bundleSizeOptimizations`** in [`next.config.ts`](./next.config.ts) (see [platform.md → Error monitoring](./docs/handbook/platform.md#error-monitoring-sentry)).
 
