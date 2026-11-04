@@ -31,7 +31,7 @@ import { DashboardDistributionChartsLazy } from "./DashboardDistributionChartsLa
 import { DashboardHero } from "./DashboardHero.component";
 import { DashboardSection } from "./DashboardSection.component";
 import { DashboardSkeleton } from "./DashboardSkeleton.component";
-import { GrowthChart } from "./GrowthChart.component";
+import { DashboardGrowthChartLazy } from "./DashboardGrowthChartLazy.component";
 import { MostCrated } from "./MostCrated.component";
 import { OnThisDay } from "./OnThisDay.component";
 import { StyleEvolution } from "./StyleEvolution.component";
@@ -181,7 +181,10 @@ function DashboardClientContent() {
                 <CollectionRhythm
                   acquisitionStreaks={analytics.acquisitionStreaks}
                 />
-                <GrowthChart growthData={analytics.growth} hideHeading={true} />
+                <DashboardGrowthChartLazy
+                  growthData={analytics.growth}
+                  hideHeading={true}
+                />
               </DashboardSection>
 
               <DashboardSection
