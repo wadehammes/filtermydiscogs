@@ -15,17 +15,6 @@ export const buildCollectionReleaseFromDiscogsDetail = (
   instanceId: string,
 ): DiscogsRelease => buildDiscogsReleaseFromDetail(detail, instanceId);
 
-export const fetchDiscogsReleaseDetailById = async (
-  releaseId: number,
-): Promise<DiscogsReleaseDetail | null> => {
-  const releases = await fetchDiscogsReleaseRecordsSequential({
-    releaseIds: [String(releaseId)],
-    useAuthenticatedSession: false,
-  });
-
-  return releases[String(releaseId)] ?? null;
-};
-
 export const hydratePublicPlaylistReleases = async ({
   tracks,
   crateSnapshotsByInstanceId,
