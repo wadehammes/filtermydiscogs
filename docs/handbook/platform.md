@@ -28,7 +28,7 @@ Both run via **`pnpm handbook:check`**. Playback/queue/track-stats work is never
 
 | Script                                                     | When to use                                                                                                                                                                                                                                         |
 | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`scripts/jest-changed.sh`](../../scripts/jest-changed.sh) | **`pnpm test:changed`** — fast local/agent Jest before push; Cursor **`stop`** hook **[`jest-changed-check.sh`](../../.cursor/hooks/jest-changed-check.sh)** runs the same with worktree files. Jest infra changes trigger full **`pnpm test:ci`**. |
+| [`scripts/jest-changed.sh`](../../scripts/jest-changed.sh) | **`pnpm test:changed`** — fast local/agent Jest before push; Cursor **`stop`** hook **[`jest-changed-check.sh`](../../.cursor/hooks/jest-changed-check.sh)** runs the same with worktree files. Jest infra changes trigger full **`pnpm test:ci`**. When a changed **`src/utils/*.ts`** file still has its colocated **`.spec.ts`** on **`HEAD`** but the spec was deleted locally, the script exits with a restore hint instead of Jest **`ENOENT`**. |
 
 ## Branching and GitHub rulesets
 
