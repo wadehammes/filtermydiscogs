@@ -27,6 +27,11 @@ export const DiscogsReleaseQueryKeys = {
   byId: (releaseId: string) => ["discogsRelease", releaseId] as const,
 };
 
+export const DiscogsReleaseBatchQueryKeys = {
+  hydration: (releaseIds: readonly string[]) =>
+    ["discogsReleaseBatchHydration", ...releaseIds] as const,
+};
+
 export const CratesQueryKeys = {
   all: () => ["crates"] as const,
   byUserId: (userId: string | number | null) =>

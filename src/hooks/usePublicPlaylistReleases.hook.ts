@@ -1,8 +1,7 @@
 "use client";
 
-import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
+import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import type { DiscogsRelease } from "src/types";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
@@ -33,26 +32,15 @@ export const usePublicPlaylistReleases = ({
     [apiReleaseByInstanceId, tracks],
   );
 
-  const releaseDetailQueries = useQueries({
-    queries: uniqueDiscogsReleaseIds.map((releaseId) => ({
-      ...discogsReleaseQueryOptions(releaseId),
-      enabled: uniqueDiscogsReleaseIds.length > 0,
-    })),
+  const { data: hydratedReleaseDetails } = useHydrateDiscogsReleaseDetails({
+    releaseIds: uniqueDiscogsReleaseIds,
+    enabled: uniqueDiscogsReleaseIds.length > 0,
   });
 
-  const discogsDetailByReleaseId = useMemo(() => {
-    const map = new Map<string, DiscogsReleaseDetail>();
-
-    uniqueDiscogsReleaseIds.forEach((releaseId, index) => {
-      const detail = releaseDetailQueries[index]?.data;
-
-      if (detail) {
-        map.set(releaseId, detail);
-      }
-    });
-
-    return map;
-  }, [releaseDetailQueries, uniqueDiscogsReleaseIds]);
+  const discogsDetailByReleaseId = useMemo(
+    () => hydratedReleaseDetails ?? new Map<string, DiscogsReleaseDetail>(),
+    [hydratedReleaseDetails],
+  );
 
   const releaseByInstanceId = useMemo(() => {
     const map = new Map(apiReleaseByInstanceId);

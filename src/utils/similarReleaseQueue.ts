@@ -1,34 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { api } from "src/api/urls";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
-import type { DiscogsRelease, DiscogsReleaseDetail } from "src/types";
+import type { DiscogsRelease } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
+import { fetchDiscogsReleaseDetailsIntoCache } from "src/utils/discogsReleaseBatchCache";
 import { buildFullPlayableAlbumQueue } from "src/utils/playbackQueue";
 import { parseReleaseId } from "src/utils/releaseNotes";
 import { flattenTracklist } from "src/utils/releasePlayback";
-
-const getUncachedReleaseIds = (
-  queryClient: QueryClient,
-  releaseIds: string[],
-) =>
-  releaseIds.filter(
-    (releaseId) =>
-      queryClient.getQueryData(
-        discogsReleaseQueryOptions(releaseId).queryKey,
-      ) === undefined,
-  );
-
-const seedReleaseDetailCache = (
-  queryClient: QueryClient,
-  releases: Record<string, DiscogsReleaseDetail>,
-) => {
-  for (const [releaseId, detail] of Object.entries(releases)) {
-    queryClient.setQueryData(
-      discogsReleaseQueryOptions(releaseId).queryKey,
-      detail,
-    );
-  }
-};
 
 const getCachedReleaseDetail = (queryClient: QueryClient, releaseId: string) =>
   queryClient.getQueryData(discogsReleaseQueryOptions(releaseId).queryKey);
@@ -50,14 +27,7 @@ export const prefetchSimilarReleaseDetails = async ({
     }
   }
 
-  const idsToFetch = getUncachedReleaseIds(queryClient, [...releaseIds]);
-
-  if (idsToFetch.length === 0) {
-    return;
-  }
-
-  const batchReleases = await api.discogsReleaseBatch(idsToFetch);
-  seedReleaseDetailCache(queryClient, batchReleases ?? {});
+  await fetchDiscogsReleaseDetailsIntoCache(queryClient, [...releaseIds]);
 };
 
 export const fetchPlayableQueuesForSimilarReleases = async ({

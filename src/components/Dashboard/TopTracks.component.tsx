@@ -1,10 +1,9 @@
 "use client";
 
-import { useQueries } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo } from "react";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
+import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import { useTopUserTracksQuery } from "src/hooks/queries/useTopUserTracksQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import dashboardCardStyles from "src/styles/modules/dashboard-card.module.css";
@@ -134,11 +133,9 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
     return [...ids];
   }, [leaderboardTracks, releaseIndex]);
 
-  const releaseDetailQueries = useQueries({
-    queries: uniqueReleaseIds.map((releaseId) => ({
-      ...discogsReleaseQueryOptions(releaseId),
-      enabled: !isLoading && uniqueReleaseIds.length > 0,
-    })),
+  const { data: releaseDetailById } = useHydrateDiscogsReleaseDetails({
+    releaseIds: uniqueReleaseIds,
+    enabled: !isLoading && uniqueReleaseIds.length > 0,
   });
 
   const coverUrlByInstanceId = useMemo(() => {
@@ -163,19 +160,12 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
   }, [allReleases]);
 
   const catalogTitleByTrackKey = useMemo(() => {
-    const releaseDetailById = new Map(
-      uniqueReleaseIds.map((releaseId, index) => [
-        releaseId,
-        releaseDetailQueries[index]?.data,
-      ]),
-    );
-
     return buildCatalogTitleByTrackKey(
       leaderboardTracks,
       releaseIndex,
-      releaseDetailById,
+      releaseDetailById ?? new Map(),
     );
-  }, [leaderboardTracks, releaseDetailQueries, releaseIndex, uniqueReleaseIds]);
+  }, [leaderboardTracks, releaseDetailById, releaseIndex]);
 
   if (isLoading) {
     return <p className={styles.status}>Loading playback stats…</p>;
