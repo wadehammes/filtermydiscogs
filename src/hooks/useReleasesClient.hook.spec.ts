@@ -18,10 +18,17 @@ import {
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { prefetchReleaseModalChunk } from "src/utils/prefetchReleaseModalChunk";
+import { scheduleIdleWork } from "src/utils/scheduleIdleWork";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
 jest.mock("src/utils/prefetchReleaseModalChunk", () => ({
   prefetchReleaseModalChunk: jest.fn(),
+}));
+
+jest.mock("src/utils/scheduleIdleWork", () => ({
+  scheduleIdleWork: jest.fn((work: () => void) => {
+    work();
+  }),
 }));
 
 jest.mock("src/api/urls", () => ({
@@ -34,6 +41,7 @@ jest.mock("src/api/urls", () => ({
 const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
 const mockUpdateUserPreferences = jest.mocked(api.updateUserPreferences);
 const mockPrefetchReleaseModalChunk = jest.mocked(prefetchReleaseModalChunk);
+const mockScheduleIdleWork = jest.mocked(scheduleIdleWork);
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
 const mockUseSearchParams = jest.mocked(useSearchParams);
@@ -122,6 +130,7 @@ describe("useReleasesClient", () => {
     });
 
     await waitFor(() => {
+      expect(mockScheduleIdleWork).toHaveBeenCalledTimes(1);
       expect(mockPrefetchReleaseModalChunk).toHaveBeenCalledTimes(1);
     });
   });

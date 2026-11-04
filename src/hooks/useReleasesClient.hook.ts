@@ -43,6 +43,7 @@ import {
 } from "src/hooks/useViewAtoms.hook";
 import type { DiscogsRelease } from "src/types";
 import { prefetchReleaseModalChunk } from "src/utils/prefetchReleaseModalChunk";
+import { scheduleIdleWork } from "src/utils/scheduleIdleWork";
 
 interface UseReleasesClientOptions {
   scrollElement?: HTMLElement | null;
@@ -166,7 +167,7 @@ export const useReleasesClient = ({
   });
 
   useEffect(() => {
-    prefetchReleaseModalChunk();
+    scheduleIdleWork(prefetchReleaseModalChunk);
   }, []);
 
   const toggleRandomModeForView = useEffectEvent(
