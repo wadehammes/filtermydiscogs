@@ -26,9 +26,7 @@ jest.mock("src/utils/prefetchReleaseModalChunk", () => ({
 }));
 
 jest.mock("src/utils/scheduleIdleWork", () => ({
-  scheduleIdleWork: jest.fn((work: () => void) => {
-    work();
-  }),
+  scheduleIdleWork: jest.fn(),
 }));
 
 jest.mock("src/api/urls", () => ({
@@ -117,7 +115,7 @@ describe("useReleasesClient", () => {
     );
   });
 
-  it("prefetches the release modal lazy chunk once on mount", async () => {
+  it("when the releases client mounts, schedules release modal chunk prefetch for idle time", async () => {
     mockApiResponse(
       true,
       mockFetchDiscogsCollection,
@@ -131,8 +129,12 @@ describe("useReleasesClient", () => {
 
     await waitFor(() => {
       expect(mockScheduleIdleWork).toHaveBeenCalledTimes(1);
-      expect(mockPrefetchReleaseModalChunk).toHaveBeenCalledTimes(1);
+      expect(mockScheduleIdleWork).toHaveBeenCalledWith(
+        prefetchReleaseModalChunk,
+      );
     });
+
+    expect(mockPrefetchReleaseModalChunk).not.toHaveBeenCalled();
   });
 
   it("loads releases and tracks selected release modal state", async () => {

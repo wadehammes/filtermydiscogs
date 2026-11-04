@@ -1,8 +1,6 @@
 export const scheduleIdleWork = (work: () => void): void => {
   if (typeof globalThis.requestIdleCallback === "function") {
-    globalThis.requestIdleCallback(() => {
-      work();
-    });
+    globalThis.requestIdleCallback(work);
     return;
   }
 

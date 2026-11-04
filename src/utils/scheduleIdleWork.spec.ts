@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 import { scheduleIdleWork } from "src/utils/scheduleIdleWork";
 
 describe("scheduleIdleWork", () => {
@@ -15,11 +22,13 @@ describe("scheduleIdleWork", () => {
 
   it("when requestIdleCallback exists, runs work on idle", () => {
     const work = jest.fn();
-    const idleCallback = jest.fn((callback: IdleRequestCallback) => {
-      callback({ didTimeout: false, timeRemaining: () => 50 });
-    });
-    globalThis.requestIdleCallback =
-      idleCallback as typeof requestIdleCallback;
+    const idleCallback = jest.fn<(callback: IdleRequestCallback) => number>(
+      (callback) => {
+        callback({ didTimeout: false, timeRemaining: () => 50 });
+        return 1;
+      },
+    );
+    globalThis.requestIdleCallback = idleCallback;
 
     scheduleIdleWork(work);
 
