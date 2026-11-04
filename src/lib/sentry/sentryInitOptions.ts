@@ -147,11 +147,12 @@ export const sentryBeforeSend = (
     frameFilenames,
   };
 
-  if (isUnattributedExponentParseError(unattributedSyntaxContext)) {
-    return null;
-  }
+  const shouldDropUnattributedSyntaxError = [
+    isUnattributedExponentParseError,
+    isUnattributedAppendChildScriptSyntaxError,
+  ].some((predicate) => predicate(unattributedSyntaxContext));
 
-  if (isUnattributedAppendChildScriptSyntaxError(unattributedSyntaxContext)) {
+  if (shouldDropUnattributedSyntaxError) {
     return null;
   }
 
