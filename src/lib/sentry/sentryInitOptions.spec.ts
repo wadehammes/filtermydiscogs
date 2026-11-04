@@ -148,6 +148,30 @@ describe("sentryInitOptions", () => {
     expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
   });
 
+  it("when appendChild inline script syntax fails without a script frame, beforeSend drops the event", () => {
+    const message =
+      "Failed to execute 'appendChild' on 'Node': Unexpected identifier 'as'";
+    const error = new SyntaxError(message);
+    const event = {
+      message,
+      exception: {
+        values: [
+          {
+            type: "SyntaxError",
+            value: message,
+            stacktrace: {
+              frames: [
+                { filename: "https://www.filtermydisco.gs/", lineno: 1 },
+              ],
+            },
+          },
+        ],
+      },
+    } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
+  });
+
   it("when an app script throws the exponent parse error, beforeSend keeps the event", () => {
     const message = "Non-number found after exponent indicator";
     const error = new SyntaxError(message);
