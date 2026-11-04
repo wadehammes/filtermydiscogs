@@ -8,7 +8,7 @@ export interface StyleEvolutionData {
 }
 
 export function calculateStyleEvolution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): StyleEvolutionData[] {
   if (releases.length === 0) {
     return [];

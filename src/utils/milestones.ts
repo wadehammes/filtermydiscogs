@@ -69,7 +69,7 @@ export const compareDiscogsReleasesByDateAdded = (
 };
 
 export function calculateMilestones(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): CollectionMilestone[] {
   if (releases.length === 0) {
     return [];

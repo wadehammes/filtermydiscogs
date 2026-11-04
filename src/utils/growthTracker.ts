@@ -2,7 +2,7 @@ import type { DiscogsRelease } from "src/types";
 import type { GrowthDataPoint } from "src/types/dashboard.types";
 
 export function analyzeGrowthFromDates(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): GrowthDataPoint[] {
   if (releases.length === 0) {
     return [];
@@ -46,7 +46,7 @@ export function analyzeGrowthFromDates(
 }
 
 export function analyzeGrowthByYear(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): GrowthDataPoint[] {
   if (releases.length === 0) {
     return [];

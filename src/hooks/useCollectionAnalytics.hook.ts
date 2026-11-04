@@ -16,17 +16,16 @@ import {
 import { calculateAcquisitionStreaks } from "src/utils/collectionRhythm";
 import { analyzeGrowthFromDates } from "src/utils/growthTracker";
 import { calculateMilestones } from "src/utils/milestones";
+import { resolveAnalyticsReleases } from "src/utils/resolveAnalyticsReleases";
 import { calculateStyleEvolution } from "src/utils/styleEvolution";
 
 export const useCollectionAnalytics = (): CollectionAnalytics | null => {
   const releases = useAllReleases();
   const deferredReleases = useDeferredValue(releases);
-  const analyticsReleases =
-    releases.length === 0
-      ? releases
-      : deferredReleases.length > 0
-        ? deferredReleases
-        : releases;
+  const analyticsReleases = resolveAnalyticsReleases(
+    releases,
+    deferredReleases,
+  );
 
   return useMemo(() => {
     if (!analyticsReleases || analyticsReleases.length === 0) {
