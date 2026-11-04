@@ -28,10 +28,10 @@ import { DashboardArtistLabelChartsLazy } from "./DashboardArtistLabelChartsLazy
 import styles from "./DashboardClient.module.css";
 import { DashboardComparativeGrowthChartsLazy } from "./DashboardComparativeGrowthChartsLazy.component";
 import { DashboardDistributionChartsLazy } from "./DashboardDistributionChartsLazy.component";
+import { DashboardGrowthChartLazy } from "./DashboardGrowthChartLazy.component";
 import { DashboardHero } from "./DashboardHero.component";
 import { DashboardSection } from "./DashboardSection.component";
 import { DashboardSkeleton } from "./DashboardSkeleton.component";
-import { DashboardGrowthChartLazy } from "./DashboardGrowthChartLazy.component";
 import { MostCrated } from "./MostCrated.component";
 import { OnThisDay } from "./OnThisDay.component";
 import { StyleEvolution } from "./StyleEvolution.component";
