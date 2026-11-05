@@ -140,6 +140,16 @@
       }
     },
     {
+      "includes": ["src/lib/og/publicShareOgImage.tsx"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["docs/handbook/**/*.md"],
       "formatter": {
         "enabled": false
