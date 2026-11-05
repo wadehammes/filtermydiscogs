@@ -3,7 +3,6 @@ import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import styles from "./ReleaseCard.module.css";
-import { releaseCardImageContainerStyle } from "./releaseCardImageContainerStyle";
 
 interface ReleaseCardImageProps {
   release: DiscogsRelease;
@@ -32,7 +31,6 @@ export const ReleaseCardImage = ({
     <div className={styles.imageShell}>
       <div
         className={styles.imageContainer}
-        style={releaseCardImageContainerStyle(thumbUrl)}
         {...definedProps(activateProps ?? {})}
       >
         {thumbUrl ? (
@@ -45,11 +43,6 @@ export const ReleaseCardImage = ({
             {...(priority
               ? { priority: true, loading: "eager" as const }
               : { loading: "lazy" as const })}
-            style={{
-              position: "relative",
-              zIndex: 2,
-              filter: "none",
-            }}
             sizes="200px"
           />
         ) : null}
