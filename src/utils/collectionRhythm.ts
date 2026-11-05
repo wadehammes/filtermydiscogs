@@ -181,7 +181,7 @@ const toPeriodHighlight = (
   period ? { label: period.label, count: period.count } : null;
 
 export const calculateYearInReview = (
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
   referenceDate = new Date(),
   timeframe: YearInReviewTimeframe = "year",
 ): YearInReviewSummary | null => {
@@ -328,7 +328,7 @@ export const calculateYearInReview = (
 };
 
 export const calculateAcquisitionStreaks = (
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): AcquisitionStreaksSummary | null => {
   if (releases.length === 0) {
     return null;

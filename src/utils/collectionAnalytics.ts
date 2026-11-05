@@ -54,7 +54,7 @@ export const toDistributionData = (
 };
 
 export function calculateCollectionStats(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): CollectionStats {
   if (releases.length === 0) {
     return {
@@ -118,7 +118,9 @@ export function calculateCollectionStats(
   };
 }
 
-export function detectDuplicates(releases: DiscogsRelease[]): DuplicateGroup[] {
+export function detectDuplicates(
+  releases: readonly DiscogsRelease[],
+): DuplicateGroup[] {
   const masterIdGroups = new Map<number, DiscogsRelease[]>();
   const titleArtistGroups = new Map<string, DiscogsRelease[]>();
   const duplicateGroups: DuplicateGroup[] = [];
@@ -178,7 +180,7 @@ export function detectDuplicates(releases: DiscogsRelease[]): DuplicateGroup[] {
 }
 
 export function calculateStyleDistribution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): DistributionData[] {
   const styleCounts = new Map<string, number>();
 
@@ -203,7 +205,7 @@ export function calculateStyleDistribution(
 }
 
 export function calculateGenreDistribution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): DistributionData[] {
   const genreCounts = new Map<string, number>();
 
@@ -222,7 +224,7 @@ export function calculateGenreDistribution(
 }
 
 export function calculateDecadeDistribution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): DistributionData[] {
   const decadeCounts = new Map<string, number>();
 
@@ -249,7 +251,7 @@ export function calculateDecadeDistribution(
 }
 
 export function calculateMediaTypeDistribution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): DistributionData[] {
   const mediaTypeCounts = new Map<string, number>();
 
@@ -266,7 +268,7 @@ export function calculateMediaTypeDistribution(
 }
 
 export function calculateFormatTagDistribution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): DistributionData[] {
   const tagCounts = new Map<string, number>();
 
@@ -292,7 +294,7 @@ export function calculateFormatTagDistribution(
 }
 
 export function calculateFormatMixSummary(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): FormatMixSummary | null {
   if (releases.length === 0) {
     return null;
@@ -320,7 +322,7 @@ export function calculateFormatMixSummary(
 }
 
 export function calculateArtistDistribution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): DistributionData[] {
   const artistCounts = new Map<string, number>();
 
@@ -344,7 +346,7 @@ export function calculateArtistDistribution(
 }
 
 export function calculateLabelDistribution(
-  releases: DiscogsRelease[],
+  releases: readonly DiscogsRelease[],
 ): DistributionData[] {
   const labelCounts = new Map<string, number>();
 
