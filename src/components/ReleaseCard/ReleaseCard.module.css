@@ -20,7 +20,6 @@
   scroll-margin-top: 15.625rem;
   text-align: left;
   text-decoration: none;
-  transition: transform var(--transition-bounce);
   width: 100%;
 
   &.inCrate {
@@ -34,8 +33,13 @@
         var(--shadow-lg),
         inset 0 0 0 1px var(--release-card-stroke-hover);
       color: inherit;
+      outline: 3px solid var(--release-card-stroke-hover);
+      outline-offset: 2px;
       text-decoration: none;
-      transform: translateY(-2px);
+    }
+
+    &.inCrate:hover {
+      outline-color: var(--primary);
     }
   }
 }
@@ -62,24 +66,6 @@
   flex-shrink: 0;
   position: relative;
   width: 100%;
-
-  &::after {
-    background: linear-gradient(
-      to bottom,
-      rgb(0 0 0 / 55%) 0%,
-      rgb(0 0 0 / 22%) 45%,
-      transparent 75%
-    );
-    border-radius: var(--radius-card) var(--radius-card) 0 0;
-    content: "";
-    height: 46%;
-    left: 0;
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 5;
-  }
 }
 
 .imageShell {
