@@ -50,6 +50,33 @@ is_src_ts_file() {
   esac
 }
 
+colocated_util_spec_path() {
+  case "$1" in
+    src/utils/*.ts)
+      printf '%s\n' "${1%.ts}.spec.ts"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+assert_colocated_util_spec_on_disk() {
+  local production_path="$1"
+  local spec_path=""
+
+  spec_path="$(colocated_util_spec_path "$production_path")" || return 0
+
+  if [ -f "$ROOT/$spec_path" ]; then
+    return 0
+  fi
+
+  if git cat-file -e "HEAD:${spec_path}" 2>/dev/null; then
+    echo "jest-changed: restore ${spec_path} (deleted locally; paired with ${production_path})." >&2
+    exit 1
+  fi
+}
+
 jest_targets=()
 find_related=()
 
@@ -77,6 +104,7 @@ while IFS= read -r path; do
     if [[ "$path" == *.types.ts ]]; then
       continue
     fi
+    assert_colocated_util_spec_on_disk "$path"
     find_related+=("$path")
   fi
 done <<EOF
