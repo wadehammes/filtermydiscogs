@@ -1,6 +1,6 @@
 import "server-only";
 
-import { fetchDiscogsReleaseRecord } from "src/lib/fetchDiscogsReleaseRecord.server";
+import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
 import { toPublicPlaylistReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
@@ -14,21 +14,6 @@ export const buildCollectionReleaseFromDiscogsDetail = (
   detail: DiscogsReleaseDetail,
   instanceId: string,
 ): DiscogsRelease => buildDiscogsReleaseFromDetail(detail, instanceId);
-
-export const fetchDiscogsReleaseDetailById = async (
-  releaseId: number,
-): Promise<DiscogsReleaseDetail | null> => {
-  const releaseUrl = `https://api.discogs.com/releases/${releaseId}`;
-
-  try {
-    return (await fetchDiscogsReleaseRecord({
-      releaseUrl,
-      useAuthenticatedSession: false,
-    })) as DiscogsReleaseDetail;
-  } catch {
-    return null;
-  }
-};
 
 export const hydratePublicPlaylistReleases = async ({
   tracks,
@@ -66,12 +51,13 @@ export const hydratePublicPlaylistReleases = async ({
   const detailByReleaseId = new Map<number, DiscogsReleaseDetail>();
   const uniqueReleaseIds = [...new Set(releaseIdByInstanceId.values())];
 
-  for (const releaseId of uniqueReleaseIds) {
-    const detail = await fetchDiscogsReleaseDetailById(releaseId);
+  const releasesById = await fetchDiscogsReleaseRecordsSequential({
+    releaseIds: uniqueReleaseIds.map(String),
+    useAuthenticatedSession: false,
+  });
 
-    if (detail) {
-      detailByReleaseId.set(releaseId, detail);
-    }
+  for (const [releaseId, detail] of Object.entries(releasesById)) {
+    detailByReleaseId.set(Number(releaseId), detail);
   }
 
   const releases: DiscogsRelease[] = [];
