@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import Image from "next/image";
 import { memo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
@@ -7,15 +6,14 @@ import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
-import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleaseCard.module.css";
+import { ReleaseCardImage } from "./ReleaseCardImage.component";
 import {
   ReleaseCardCatalog,
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
 import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
-import { releaseCardImageContainerStyle } from "./releaseCardImageContainerStyle";
 
 const PublicReleaseCardComponent = ({
   release,
@@ -59,14 +57,6 @@ const PublicReleaseCardComponent = ({
     type: "label",
   });
 
-  const activateProps = canOpen
-    ? getReleaseActivateProps({
-        onActivate: openRelease,
-        ariaLabel: `Open release details for ${title}`,
-        onFocus: prefetchReleaseOpen,
-      })
-    : undefined;
-
   return release ? (
     <div
       className={classNames(styles.releaseCard, {
@@ -75,30 +65,14 @@ const PublicReleaseCardComponent = ({
       data-testid="fmdPublicReleaseCard"
       {...definedProps(prefetchPointerProps ?? {})}
     >
-      <div className={styles.imageShell}>
-        <div
-          className={styles.imageContainer}
-          style={releaseCardImageContainerStyle(thumbUrl)}
-          {...definedProps(activateProps ?? {})}
-        >
-          {thumbUrl && (
-            <Image
-              src={thumbUrl}
-              height={200}
-              width={200}
-              quality={85}
-              alt={release.basic_information.title}
-              loading="lazy"
-              style={{
-                position: "relative",
-                zIndex: 2,
-                filter: "none",
-              }}
-              sizes="200px"
-            />
-          )}
-        </div>
-      </div>
+      <ReleaseCardImage
+        release={release}
+        thumbUrl={thumbUrl}
+        {...definedProps({
+          onReleaseOpen: canOpen ? openRelease : undefined,
+          onReleasePrefetch: canOpen ? prefetchReleaseOpen : undefined,
+        })}
+      />
       <div className={styles.contentContainer}>
         <div className={styles.mainContent}>
           <ReleaseCardCatalog catno={catno} />
