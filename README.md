@@ -255,6 +255,7 @@ If **`create-release`** failed on **Reset Main**, use [`platform.md` → Branchi
 ## Cursor (optional)
 
 Agent wiring for this repo (also documented in [`docs/handbook/platform.md` → Cursor](./docs/handbook/platform.md#cursor-agents)):
+
 - **Hooks** — [`.cursor/hooks.json`](./.cursor/hooks.json): brief session handbook pointer, convention guards on edits, commit via [`scripts/git-commit.sh`](./scripts/git-commit.sh), optional session-end drift/lint/tests (see [platform.md → Cursor](./docs/handbook/platform.md#cursor-agents)).
 - **Rules / skills** — [`.cursor/rules/`](./.cursor/rules/), [`.cursor/skills/README.md`](./.cursor/skills/README.md) (task checklists; handbook stays canonical).
 - **MCP (Cursor)** — [`.cursor/mcp.json`](./.cursor/mcp.json): **Fallow** (local `pnpm exec fallow-mcp`; optional `pnpm fallow:health`) and **Sentry** ([`https://mcp.sentry.dev/mcp`](https://mcp.sentry.dev/) — OAuth; project-scoped URL recommended — see [platform.md → Cursor](./docs/handbook/platform.md#cursor-agents)).
@@ -269,6 +270,7 @@ The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place f
 **Agents (Cursor):** [AGENTS.md](./AGENTS.md). Cursor rules and skills live under [`.cursor/`](./.cursor/). Use the task map in [`docs/handbook/llms.md`](./docs/handbook/llms.md) to route work to the right handbook chapter.
 
 **Suggested reading order**
+
 - **New to the project:** [architecture.md](./docs/handbook/architecture.md), then [conventions.md](./docs/handbook/conventions.md), then skim [patterns.md](./docs/handbook/patterns.md).
 - **Agents / task routing:** [llms.md](./docs/handbook/llms.md).
 - **Discogs OAuth or API:** [discogs.md](./docs/handbook/discogs.md).

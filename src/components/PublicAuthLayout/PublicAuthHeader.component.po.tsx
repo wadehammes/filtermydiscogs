@@ -42,7 +42,6 @@ export class PublicAuthHeaderPageObject extends BasePageObject {
   private renderUi({
     authenticatedNavPage,
     currentPage = "home",
-    authInitialState = testUnauthenticatedAuthState,
   }: PublicAuthHeaderRenderProps = {}): ReactElement {
     return (
       <SeedCollectionFilters releases={[releaseFactory.withDisplayDefaults()]}>
