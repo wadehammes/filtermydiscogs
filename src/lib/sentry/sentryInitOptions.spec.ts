@@ -172,6 +172,53 @@ describe("sentryInitOptions", () => {
     expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
   });
 
+  it("when a wallet extension injects window.ethereum on the document, beforeSend drops the event", () => {
+    const message =
+      "undefined is not an object (evaluating 'window.ethereum.selectedAddress = undefined')";
+    const error = new TypeError(message);
+    const event = {
+      message: `TypeError: ${message}`,
+      exception: {
+        values: [
+          {
+            type: "TypeError",
+            value: message,
+            stacktrace: {
+              frames: [
+                { filename: "https://www.filtermydisco.gs/mosaic", lineno: 1 },
+              ],
+            },
+          },
+        ],
+      },
+    } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
+  });
+
+  it("when a browser extension references __firefox__ on the document, beforeSend drops the event", () => {
+    const message = "Can't find variable: __firefox__";
+    const error = new ReferenceError(message);
+    const event = {
+      message: `ReferenceError: ${message}`,
+      exception: {
+        values: [
+          {
+            type: "ReferenceError",
+            value: message,
+            stacktrace: {
+              frames: [
+                { filename: "https://www.filtermydisco.gs/", lineno: 1 },
+              ],
+            },
+          },
+        ],
+      },
+    } as ErrorEvent;
+
+    expect(sentryBeforeSend(event, { originalException: error })).toBeNull();
+  });
+
   it("when an app script throws the exponent parse error, beforeSend keeps the event", () => {
     const message = "Non-number found after exponent indicator";
     const error = new SyntaxError(message);

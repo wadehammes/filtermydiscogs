@@ -76,24 +76,24 @@ const isAppendChildScriptSyntaxErrorMessage = (message: string): boolean => {
 const filenamesIncludeScript = (filenames: string[]): boolean =>
   filenames.some((filename) => SCRIPT_FILENAME.test(filename));
 
-const isUnattributedInlineScriptSyntaxError = ({
+const isUnattributedDocumentError = ({
   error,
   message,
   frameFilenames,
-  matchesSyntaxMessage,
+  matchesMessage,
 }: {
   error: unknown;
   message: string | undefined;
   frameFilenames: string[];
-  matchesSyntaxMessage: (syntaxMessage: string) => boolean;
+  matchesMessage: (errorMessage: string) => boolean;
 }): boolean => {
-  const matchesMessage =
+  const hasMatchingMessage =
     someErrorInCauseChain(error, (current) =>
-      matchesSyntaxMessage(current.message),
+      matchesMessage(current.message),
     ) ||
-    (message !== undefined && matchesSyntaxMessage(message));
+    (message !== undefined && matchesMessage(message));
 
-  if (!matchesMessage) {
+  if (!hasMatchingMessage) {
     return false;
   }
 
@@ -113,11 +113,11 @@ export const isUnattributedExponentParseError = ({
   message: string | undefined;
   frameFilenames: string[];
 }): boolean =>
-  isUnattributedInlineScriptSyntaxError({
+  isUnattributedDocumentError({
     error,
     message,
     frameFilenames,
-    matchesSyntaxMessage: isExponentParseErrorMessage,
+    matchesMessage: isExponentParseErrorMessage,
   });
 
 export const isUnattributedAppendChildScriptSyntaxError = ({
@@ -129,9 +129,35 @@ export const isUnattributedAppendChildScriptSyntaxError = ({
   message: string | undefined;
   frameFilenames: string[];
 }): boolean =>
-  isUnattributedInlineScriptSyntaxError({
+  isUnattributedDocumentError({
     error,
     message,
     frameFilenames,
-    matchesSyntaxMessage: isAppendChildScriptSyntaxErrorMessage,
+    matchesMessage: isAppendChildScriptSyntaxErrorMessage,
+  });
+
+const BROWSER_EXTENSION_INJECT_MARKERS = [
+  "window.ethereum.selectedAddress",
+  "__firefox__",
+] as const;
+
+const isBrowserExtensionInjectMessage = (errorMessage: string): boolean =>
+  BROWSER_EXTENSION_INJECT_MARKERS.some((marker) =>
+    errorMessage.includes(marker),
+  );
+
+export const isUnattributedBrowserExtensionInjectError = ({
+  error,
+  message,
+  frameFilenames,
+}: {
+  error: unknown;
+  message: string | undefined;
+  frameFilenames: string[];
+}): boolean =>
+  isUnattributedDocumentError({
+    error,
+    message,
+    frameFilenames,
+    matchesMessage: isBrowserExtensionInjectMessage,
   });
