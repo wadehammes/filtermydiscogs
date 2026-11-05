@@ -31,16 +31,24 @@
   }
 }
 
+.crateBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+  width: 100%;
+
+  @media (width >= 768px) {
+    gap: var(--space-8);
+  }
+}
+
 .section {
   margin-bottom: var(--space-12);
 
   @media (width >= 768px) {
     margin-bottom: var(--space-16);
   }
-}
-
-.publicShareStack .section:last-of-type {
-  margin-bottom: 0;
 }
 
 .title {
@@ -93,14 +101,10 @@
 
 .meta {
   color: var(--muted-foreground);
-  margin-bottom: var(--space-8);
+  margin: 0;
   text-align: left;
   font-family: var(--font-family-meta);
   font-size: var(--text-meta-xs);
-
-  @media (width >= 768px) {
-    margin-bottom: var(--space-12);
-  }
 }
 
 .inlineLink {

@@ -51,43 +51,43 @@ const PublicCrateLoadedContent = ({
       <div className={styles.container}>
         <div className={styles.content}>
           <div className={styles.publicShareStack}>
-            <div className={styles.section}>
-              <h1 className={styles.title}>{crate.name}</h1>
-              <div className={styles.meta}>
-                {crate.username ? (
-                  <>
-                    By {crate.username}
-                    {" · "}
-                  </>
-                ) : null}
-                {pagination.total} release{pagination.total !== 1 ? "s" : ""}
-                <div className={styles.metaContainer}>
-                  {crate.created_at ? (
-                    <span>Created {formatDate(String(crate.created_at))}</span>
+            <div className={styles.crateBody}>
+              <header>
+                <h1 className={styles.title}>{crate.name}</h1>
+                <div className={styles.meta}>
+                  {crate.username ? (
+                    <>
+                      By {crate.username}
+                      {" · "}
+                    </>
                   ) : null}
-                  {crate.updated_at &&
-                    new Date(crate.updated_at).getTime() !==
-                      new Date(crate.created_at).getTime() && (
-                      <time dateTime={String(crate.updated_at)}>
-                        Updated {formatDate(String(crate.updated_at))}
-                      </time>
-                    )}
+                  {pagination.total} release{pagination.total !== 1 ? "s" : ""}
+                  <div className={styles.metaContainer}>
+                    {crate.created_at ? (
+                      <span>
+                        Created {formatDate(String(crate.created_at))}
+                      </span>
+                    ) : null}
+                    {crate.updated_at &&
+                      new Date(crate.updated_at).getTime() !==
+                        new Date(crate.created_at).getTime() && (
+                        <time dateTime={String(crate.updated_at)}>
+                          Updated {formatDate(String(crate.updated_at))}
+                        </time>
+                      )}
+                  </div>
                 </div>
-              </div>
-            </div>
+              </header>
 
-            {releases.length > 0 ? (
-              <div className={styles.section}>
+              {releases.length > 0 ? (
                 <ReleaseCardGrid
                   releases={releases}
                   onReleaseClick={handleReleaseClick}
                 />
-              </div>
-            ) : (
-              <div className={styles.section}>
+              ) : (
                 <p className={styles.text}>This crate is empty.</p>
-              </div>
-            )}
+              )}
+            </div>
 
             <PublicShareMarketingSection />
           </div>
