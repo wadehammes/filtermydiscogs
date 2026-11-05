@@ -41,11 +41,14 @@ export const hydratePublicPlaylistReleases = async ({
     ...new Set(tracks.map((track) => String(track.instance_id))),
   ];
 
+  const trackByInstanceId = new Map(
+    tracks.map((track) => [String(track.instance_id), track] as const),
+  );
   const releaseIdByInstanceId = new Map<string, number>();
 
   for (const instanceId of instanceIds) {
-    const track =
-      tracks.find((row) => String(row.instance_id) === instanceId) ?? null;
+    const track = trackByInstanceId.get(instanceId);
+
     if (!track) {
       continue;
     }
@@ -63,14 +66,9 @@ export const hydratePublicPlaylistReleases = async ({
   const detailByReleaseId = new Map<number, DiscogsReleaseDetail>();
   const uniqueReleaseIds = [...new Set(releaseIdByInstanceId.values())];
 
-  const fetchedDetails = await Promise.all(
-    uniqueReleaseIds.map(async (releaseId) => ({
-      releaseId,
-      detail: await fetchDiscogsReleaseDetailById(releaseId),
-    })),
-  );
+  for (const releaseId of uniqueReleaseIds) {
+    const detail = await fetchDiscogsReleaseDetailById(releaseId);
 
-  for (const { releaseId, detail } of fetchedDetails) {
     if (detail) {
       detailByReleaseId.set(releaseId, detail);
     }

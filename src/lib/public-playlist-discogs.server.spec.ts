@@ -95,7 +95,7 @@ describe("hydratePublicPlaylistReleases", () => {
     );
   });
 
-  it("when multiple unique release ids are needed, fetches them concurrently", async () => {
+  it("when multiple unique release ids are needed, fetches them sequentially through the Discogs throttle", async () => {
     let inflight = 0;
     let maxInflight = 0;
 
@@ -126,6 +126,6 @@ describe("hydratePublicPlaylistReleases", () => {
     });
 
     expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(2);
-    expect(maxInflight).toBe(2);
+    expect(maxInflight).toBe(1);
   });
 });
