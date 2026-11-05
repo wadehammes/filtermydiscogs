@@ -1,17 +1,17 @@
 "use client";
 
-import { useQueries } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo } from "react";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useTopUserTracksQuery } from "src/hooks/queries/useTopUserTracksQuery";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import dashboardCardStyles from "src/styles/modules/dashboard-card.module.css";
 import type { DiscogsRelease } from "src/types";
 import type { TopUserTrack } from "src/types/dashboard.types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
 import { definedProps } from "src/utils/definedProps";
+import { EMPTY_DISCOGS_RELEASE_DETAIL_MAP } from "src/utils/discogsReleaseBatchCache";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { buildCatalogTitleByTrackKey } from "src/utils/userTrack";
 import { DashboardTrackItem } from "./DashboardTrackItem.component";
@@ -134,11 +134,9 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
     return [...ids];
   }, [leaderboardTracks, releaseIndex]);
 
-  const releaseDetailQueries = useQueries({
-    queries: uniqueReleaseIds.map((releaseId) => ({
-      ...discogsReleaseQueryOptions(releaseId),
-      enabled: !isLoading && uniqueReleaseIds.length > 0,
-    })),
+  const { data: releaseDetailById } = useHydrateDiscogsReleaseDetails({
+    releaseIds: uniqueReleaseIds,
+    enabled: !isLoading && uniqueReleaseIds.length > 0,
   });
 
   const coverUrlByInstanceId = useMemo(() => {
@@ -163,19 +161,12 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
   }, [allReleases]);
 
   const catalogTitleByTrackKey = useMemo(() => {
-    const releaseDetailById = new Map(
-      uniqueReleaseIds.map((releaseId, index) => [
-        releaseId,
-        releaseDetailQueries[index]?.data,
-      ]),
-    );
-
     return buildCatalogTitleByTrackKey(
       leaderboardTracks,
       releaseIndex,
-      releaseDetailById,
+      releaseDetailById ?? EMPTY_DISCOGS_RELEASE_DETAIL_MAP,
     );
-  }, [leaderboardTracks, releaseDetailQueries, releaseIndex, uniqueReleaseIds]);
+  }, [leaderboardTracks, releaseDetailById, releaseIndex]);
 
   if (isLoading) {
     return <p className={styles.status}>Loading playback stats…</p>;

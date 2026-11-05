@@ -1,16 +1,15 @@
 "use client";
 
-import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
+import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import type { DiscogsRelease } from "src/types";
-import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
 import {
   collectUniquePlaylistDiscogsReleaseIds,
   mergePlaylistReleaseWithDiscogsDetail,
   resolveDiscogsReleaseIdForPlaylistTrack,
 } from "src/utils/discogsReleaseArt";
+import { EMPTY_DISCOGS_RELEASE_DETAIL_MAP } from "src/utils/discogsReleaseBatchCache";
 
 export const usePublicPlaylistReleases = ({
   tracks,
@@ -33,26 +32,11 @@ export const usePublicPlaylistReleases = ({
     [apiReleaseByInstanceId, tracks],
   );
 
-  const releaseDetailQueries = useQueries({
-    queries: uniqueDiscogsReleaseIds.map((releaseId) => ({
-      ...discogsReleaseQueryOptions(releaseId),
+  const { data: hydratedReleaseDetails = EMPTY_DISCOGS_RELEASE_DETAIL_MAP } =
+    useHydrateDiscogsReleaseDetails({
+      releaseIds: uniqueDiscogsReleaseIds,
       enabled: uniqueDiscogsReleaseIds.length > 0,
-    })),
-  });
-
-  const discogsDetailByReleaseId = useMemo(() => {
-    const map = new Map<string, DiscogsReleaseDetail>();
-
-    uniqueDiscogsReleaseIds.forEach((releaseId, index) => {
-      const detail = releaseDetailQueries[index]?.data;
-
-      if (detail) {
-        map.set(releaseId, detail);
-      }
     });
-
-    return map;
-  }, [releaseDetailQueries, uniqueDiscogsReleaseIds]);
 
   const releaseByInstanceId = useMemo(() => {
     const map = new Map(apiReleaseByInstanceId);
@@ -69,7 +53,7 @@ export const usePublicPlaylistReleases = ({
         continue;
       }
 
-      const detail = discogsDetailByReleaseId.get(String(discogsId));
+      const detail = hydratedReleaseDetails.get(String(discogsId));
 
       if (!detail) {
         continue;
@@ -82,7 +66,7 @@ export const usePublicPlaylistReleases = ({
     }
 
     return map;
-  }, [apiReleaseByInstanceId, discogsDetailByReleaseId, tracks]);
+  }, [apiReleaseByInstanceId, hydratedReleaseDetails, tracks]);
 
   const releases = useMemo(() => {
     const seen = new Set<string>();

@@ -14,14 +14,13 @@ const mockApi = jest.mocked(api);
 describe("usePublicPlaylistReleases", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    if (!jest.isMockFunction(mockApi.discogsRelease)) {
-      Object.assign(mockApi, {
-        discogsRelease: jest.fn(),
-      });
-    }
+    Object.assign(mockApi, {
+      discogsRelease: jest.fn(),
+      discogsReleaseBatch: jest.fn(),
+    });
   });
 
-  it("loads each unique Discogs release via React Query and merges cover art onto playlist rows", async () => {
+  it("loads unique Discogs releases via batch and merges cover art onto playlist rows", async () => {
     const trackA = playlistTrackRowFactory.opening({
       discogs_release_id: 249504,
       track_key: "9001:A",
@@ -66,7 +65,8 @@ describe("usePublicPlaylistReleases", () => {
       ).toBe("https://i.discogs.com/cover.jpg");
     });
 
-    expect(mockApi.discogsRelease).toHaveBeenCalledTimes(1);
-    expect(mockApi.discogsRelease).toHaveBeenCalledWith("249504");
+    expect(mockApi.discogsReleaseBatch).toHaveBeenCalledTimes(1);
+    expect(mockApi.discogsReleaseBatch).toHaveBeenCalledWith(["249504"]);
+    expect(mockApi.discogsRelease).not.toHaveBeenCalled();
   });
 });
