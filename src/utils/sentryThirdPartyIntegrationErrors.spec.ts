@@ -5,6 +5,7 @@ import {
   isGoogleTagManagerYoutubeIntegrationError,
   isSentryDomErrorEventRejectionMessage,
   isUnattributedAppendChildScriptSyntaxError,
+  isUnattributedBrowserExtensionInjectError,
   isUnattributedExponentParseError,
 } from "src/utils/sentryThirdPartyIntegrationErrors";
 
@@ -165,6 +166,79 @@ describe("isUnattributedAppendChildScriptSyntaxError", () => {
         error: new SyntaxError("Unexpected token"),
         message: "Failed to execute 'appendChild' on 'Node': Unexpected token",
         frameFilenames: [],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("isUnattributedBrowserExtensionInjectError", () => {
+  it("when Brave iOS reports window.ethereum.selectedAddress on the document, matches", () => {
+    const message =
+      "undefined is not an object (evaluating 'window.ethereum.selectedAddress = undefined')";
+    const error = new TypeError(message);
+
+    expect(
+      isUnattributedBrowserExtensionInjectError({
+        error,
+        message: `TypeError: ${message}`,
+        frameFilenames: ["https://www.filtermydisco.gs/mosaic"],
+      }),
+    ).toBe(true);
+  });
+
+  it("when Brave iOS reports a missing __firefox__ global on the document, matches", () => {
+    const message = "Can't find variable: __firefox__";
+    const error = new ReferenceError(message);
+
+    expect(
+      isUnattributedBrowserExtensionInjectError({
+        error,
+        message: `ReferenceError: ${message}`,
+        frameFilenames: ["https://www.filtermydisco.gs/"],
+      }),
+    ).toBe(true);
+  });
+
+  it("when Brave iOS reports window.__firefox__.reader on the document, matches", () => {
+    const message =
+      "undefined is not an object (evaluating 'window.__firefox__.reader')";
+    const error = new TypeError(message);
+
+    expect(
+      isUnattributedBrowserExtensionInjectError({
+        error,
+        message: `TypeError: ${message}`,
+        frameFilenames: ["https://www.filtermydisco.gs/"],
+      }),
+    ).toBe(true);
+  });
+
+  it("when the same ethereum message includes an app script frame, ignores", () => {
+    const message =
+      "undefined is not an object (evaluating 'window.ethereum.selectedAddress = undefined')";
+    const error = new TypeError(message);
+    error.stack = [
+      `TypeError: ${message}`,
+      "    at readWallet (https://www.filtermydisco.gs/_next/static/chunks/app.js:1:1)",
+    ].join("\n");
+
+    expect(
+      isUnattributedBrowserExtensionInjectError({
+        error,
+        message,
+        frameFilenames: [
+          "https://www.filtermydisco.gs/_next/static/chunks/app.js",
+        ],
+      }),
+    ).toBe(false);
+  });
+
+  it("when the message is unrelated, ignores", () => {
+    expect(
+      isUnattributedBrowserExtensionInjectError({
+        error: new TypeError("undefined is not an object"),
+        message: "undefined is not an object",
+        frameFilenames: ["https://www.filtermydisco.gs/"],
       }),
     ).toBe(false);
   });
