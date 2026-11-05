@@ -56,26 +56,42 @@ const isExponentParseErrorMessage = (message: string): boolean =>
   message === EXPONENT_PARSE_MESSAGE ||
   message === `SyntaxError: ${EXPONENT_PARSE_MESSAGE}`;
 
-const errorMessageIsExponentParse = (error: unknown): boolean =>
-  someErrorInCauseChain(error, (current) =>
-    isExponentParseErrorMessage(current.message),
-  );
+const APPEND_CHILD_UNEXPECTED_IDENTIFIER_AS =
+  "Failed to execute 'appendChild' on 'Node': Unexpected identifier 'as'";
+
+const isAppendChildScriptSyntaxErrorMessage = (message: string): boolean => {
+  if (message === APPEND_CHILD_UNEXPECTED_IDENTIFIER_AS) {
+    return true;
+  }
+
+  if (message.startsWith("SyntaxError: ")) {
+    return isAppendChildScriptSyntaxErrorMessage(
+      message.slice("SyntaxError: ".length),
+    );
+  }
+
+  return false;
+};
 
 const filenamesIncludeScript = (filenames: string[]): boolean =>
   filenames.some((filename) => SCRIPT_FILENAME.test(filename));
 
-export const isUnattributedExponentParseError = ({
+const isUnattributedInlineScriptSyntaxError = ({
   error,
   message,
   frameFilenames,
+  matchesSyntaxMessage,
 }: {
   error: unknown;
   message: string | undefined;
   frameFilenames: string[];
+  matchesSyntaxMessage: (syntaxMessage: string) => boolean;
 }): boolean => {
   const matchesMessage =
-    errorMessageIsExponentParse(error) ||
-    (message !== undefined && isExponentParseErrorMessage(message));
+    someErrorInCauseChain(error, (current) =>
+      matchesSyntaxMessage(current.message),
+    ) ||
+    (message !== undefined && matchesSyntaxMessage(message));
 
   if (!matchesMessage) {
     return false;
@@ -87,3 +103,35 @@ export const isUnattributedExponentParseError = ({
 
   return !filenamesIncludeScript(frameFilenames);
 };
+
+export const isUnattributedExponentParseError = ({
+  error,
+  message,
+  frameFilenames,
+}: {
+  error: unknown;
+  message: string | undefined;
+  frameFilenames: string[];
+}): boolean =>
+  isUnattributedInlineScriptSyntaxError({
+    error,
+    message,
+    frameFilenames,
+    matchesSyntaxMessage: isExponentParseErrorMessage,
+  });
+
+export const isUnattributedAppendChildScriptSyntaxError = ({
+  error,
+  message,
+  frameFilenames,
+}: {
+  error: unknown;
+  message: string | undefined;
+  frameFilenames: string[];
+}): boolean =>
+  isUnattributedInlineScriptSyntaxError({
+    error,
+    message,
+    frameFilenames,
+    matchesSyntaxMessage: isAppendChildScriptSyntaxErrorMessage,
+  });

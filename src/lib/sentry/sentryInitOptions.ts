@@ -5,6 +5,7 @@ import {
   isDomErrorEventPromiseRejection,
   isGoogleTagManagerYoutubeIntegrationError,
   isSentryDomErrorEventRejectionMessage,
+  isUnattributedAppendChildScriptSyntaxError,
   isUnattributedExponentParseError,
 } from "src/utils/sentryThirdPartyIntegrationErrors";
 import { isViewTransitionInterruptionError } from "src/utils/viewTransitionInterruptions";
@@ -140,14 +141,18 @@ export const sentryBeforeSend = (
       ),
     ) ?? [];
 
-  if (
-    isUnattributedExponentParseError({
-      error: hint.originalException,
-      message:
-        typeof event.message === "string" ? event.message : exceptionValue,
-      frameFilenames,
-    })
-  ) {
+  const unattributedSyntaxContext = {
+    error: hint.originalException,
+    message: typeof event.message === "string" ? event.message : exceptionValue,
+    frameFilenames,
+  };
+
+  const shouldDropUnattributedSyntaxError = [
+    isUnattributedExponentParseError,
+    isUnattributedAppendChildScriptSyntaxError,
+  ].some((predicate) => predicate(unattributedSyntaxContext));
+
+  if (shouldDropUnattributedSyntaxError) {
     return null;
   }
 

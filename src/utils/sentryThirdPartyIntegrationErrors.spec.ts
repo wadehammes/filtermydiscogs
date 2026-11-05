@@ -4,6 +4,7 @@ import {
   isDomErrorEventPromiseRejection,
   isGoogleTagManagerYoutubeIntegrationError,
   isSentryDomErrorEventRejectionMessage,
+  isUnattributedAppendChildScriptSyntaxError,
   isUnattributedExponentParseError,
 } from "src/utils/sentryThirdPartyIntegrationErrors";
 
@@ -119,6 +120,51 @@ describe("isUnattributedExponentParseError", () => {
         error: new SyntaxError("Unexpected token"),
         message: "Unexpected token",
         frameFilenames: ["https://www.filtermydisco.gs/"],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("isUnattributedAppendChildScriptSyntaxError", () => {
+  const appendChildMessage =
+    "Failed to execute 'appendChild' on 'Node': Unexpected identifier 'as'";
+
+  it("when inline script parse fails with appendChild wording and no script frame, matches", () => {
+    const error = new SyntaxError(appendChildMessage);
+
+    expect(
+      isUnattributedAppendChildScriptSyntaxError({
+        error,
+        message: appendChildMessage,
+        frameFilenames: [],
+      }),
+    ).toBe(true);
+  });
+
+  it("when the same error includes an app chunk frame, ignores", () => {
+    const error = new SyntaxError(appendChildMessage);
+    error.stack = [
+      `SyntaxError: ${appendChildMessage}`,
+      "    at inject (https://www.filtermydisco.gs/_next/static/chunks/app.js:1:1)",
+    ].join("\n");
+
+    expect(
+      isUnattributedAppendChildScriptSyntaxError({
+        error,
+        message: appendChildMessage,
+        frameFilenames: [
+          "https://www.filtermydisco.gs/_next/static/chunks/app.js",
+        ],
+      }),
+    ).toBe(false);
+  });
+
+  it("when appendChild message differs, ignores", () => {
+    expect(
+      isUnattributedAppendChildScriptSyntaxError({
+        error: new SyntaxError("Unexpected token"),
+        message: "Failed to execute 'appendChild' on 'Node': Unexpected token",
+        frameFilenames: [],
       }),
     ).toBe(false);
   });
