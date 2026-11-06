@@ -7,8 +7,10 @@
   cursor: pointer;
   isolation: isolate;
   opacity: 0;
+  overscroll-behavior: none;
   padding: 0;
   position: fixed;
+  touch-action: none;
   transition: opacity var(--transition-normal);
   z-index: calc(var(--z-10-bottom-drawer) - 1);
 
