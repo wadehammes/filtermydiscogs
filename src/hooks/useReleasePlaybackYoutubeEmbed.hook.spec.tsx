@@ -12,6 +12,7 @@ import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYout
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { definedProps } from "src/utils/definedProps";
+import { PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS } from "src/utils/playbackEmbedSession";
 import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 import { HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS } from "src/utils/youtubeIframeEvents";
 import { act, renderHook } from "test-utils";
@@ -23,6 +24,12 @@ jest.mock("src/utils/postYoutubePlayerCommand", () => ({
   refreshYoutubeEmbedPlayerLayout: jest.fn(),
   requestYoutubeEmbedPlaybackSync: jest.fn(),
 }));
+
+const mockRequestYoutubeEmbedPlaybackSync = jest.mocked(
+  jest.requireMock<typeof import("src/utils/postYoutubePlayerCommand")>(
+    "src/utils/postYoutubePlayerCommand",
+  ).requestYoutubeEmbedPlaybackSync,
+);
 
 const setDocumentVisibilityState = (state: DocumentVisibilityState) => {
   Object.defineProperty(document, "visibilityState", {
@@ -47,6 +54,7 @@ const dispatchYoutubeEmbedReady = ({
 };
 
 const buildHarness = ({
+  embedPlaybackConfirmed = false,
   isPaused = false,
   isPlaying = true,
   isPlaybackEmbedMounted = false,
@@ -55,6 +63,7 @@ const buildHarness = ({
   onEmbedPlaybackConfirmed,
   onYoutubeEmbedPlayerReady,
 }: {
+  embedPlaybackConfirmed?: boolean;
   isPaused?: boolean;
   isPlaying?: boolean;
   isPlaybackEmbedMounted?: boolean;
@@ -84,7 +93,7 @@ const buildHarness = ({
     current: null as number | null,
   };
   const embedWatchdogVideoIdRef = { current: null as string | null };
-  const embedPlaybackConfirmedRef = { current: false };
+  const embedPlaybackConfirmedRef = { current: embedPlaybackConfirmed };
   const similarQueueFetchInFlightRef = { current: false };
   const pendingPlayFromGestureRef = { current: false };
   const playFromGestureRetryTimeoutsRef = { current: [] as number[] };
@@ -168,6 +177,7 @@ const buildHarness = ({
     clearPlaybackVideoUiLoading,
     embedVideoIdRef,
     embedWatchdogVideoIdRef,
+    isPausedRef,
     isPlayingRef,
     isPlaybackVideoUiLoadingRef,
     pendingPlayFromGestureRef,
@@ -827,6 +837,89 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     );
 
     setIntervalSpy.mockRestore();
+  });
+
+  it("schedules visible-tab audible sync poll when embed is unconfirmed and video UI loading is false", () => {
+    setDocumentVisibilityState("visible");
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    try {
+      buildHarness({
+        isPaused: false,
+        isPlaybackVideoUiLoading: false,
+        isPlaying: true,
+      });
+
+      expect(setIntervalSpy).toHaveBeenCalledWith(
+        expect.any(Function),
+        PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+      );
+    } finally {
+      setIntervalSpy.mockRestore();
+    }
+  });
+
+  it("does not schedule visible-tab audible sync poll when embed playback is already confirmed", () => {
+    setDocumentVisibilityState("visible");
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    try {
+      buildHarness({
+        embedPlaybackConfirmed: true,
+        isPaused: false,
+        isPlaybackVideoUiLoading: false,
+        isPlaying: true,
+      });
+
+      expect(setIntervalSpy).not.toHaveBeenCalledWith(
+        expect.any(Function),
+        PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+      );
+    } finally {
+      setIntervalSpy.mockRestore();
+    }
+  });
+
+  it("visible-tab audible sync poll callback does not request playback sync when transport is paused", () => {
+    setDocumentVisibilityState("visible");
+
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    try {
+      const { isPausedRef, isPlayingRef } = buildHarness({
+        isPaused: false,
+        isPlaybackVideoUiLoading: false,
+        isPlaying: true,
+      });
+
+      expect(setIntervalSpy).toHaveBeenCalledWith(
+        expect.any(Function),
+        PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+      );
+
+      const audiblePollCall = setIntervalSpy.mock.calls.find(
+        ([, intervalMs]) => intervalMs === PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+      );
+      if (!audiblePollCall) {
+        throw new Error(
+          "expected PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS interval",
+        );
+      }
+
+      const pollCallback = audiblePollCall[0] as () => void;
+
+      mockRequestYoutubeEmbedPlaybackSync.mockClear();
+      isPausedRef.current = true;
+      isPlayingRef.current = true;
+
+      act(() => {
+        pollCallback();
+      });
+
+      expect(mockRequestYoutubeEmbedPlaybackSync).not.toHaveBeenCalled();
+    } finally {
+      setIntervalSpy.mockRestore();
+    }
   });
 
   it("re-subscribes hidden-tab polling when isPaused changes during an active session", () => {

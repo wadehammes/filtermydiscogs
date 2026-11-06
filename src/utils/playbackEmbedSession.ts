@@ -282,7 +282,6 @@ export const selectShouldRunVisibleTabAudibleSyncPoll = (
 ): boolean =>
   context.transportSessionActive &&
   !context.transportPaused &&
-  context.videoUiLoading &&
   !context.embedConfirmed &&
   !context.documentHidden;
 

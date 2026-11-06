@@ -87,12 +87,22 @@ describe("playbackEmbedSession", () => {
     ).toBe(false);
   });
 
-  it("polls audible embed sync on a visible tab while video UI loading and transport is playing", () => {
+  it("polls audible embed sync on a visible tab while transport is playing and embed is unconfirmed", () => {
     expect(
       selectShouldRunVisibleTabAudibleSyncPoll({
         transportSessionActive: true,
         transportPaused: false,
         videoUiLoading: true,
+        embedConfirmed: false,
+        documentHidden: false,
+      }),
+    ).toBe(true);
+
+    expect(
+      selectShouldRunVisibleTabAudibleSyncPoll({
+        transportSessionActive: true,
+        transportPaused: false,
+        videoUiLoading: false,
         embedConfirmed: false,
         documentHidden: false,
       }),
@@ -113,7 +123,7 @@ describe("playbackEmbedSession", () => {
         transportSessionActive: true,
         transportPaused: false,
         videoUiLoading: false,
-        embedConfirmed: false,
+        embedConfirmed: true,
         documentHidden: false,
       }),
     ).toBe(false);

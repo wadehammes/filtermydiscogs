@@ -68,6 +68,7 @@ import {
   createPlaybackEmbedUnavailableSkipHandler,
   PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
 } from "src/utils/playbackEmbedUnavailableSkip";
+import { logPlaybackEmbedWatchdogDebug } from "src/utils/playbackEmbedWatchdogDebug";
 import { buildCurrentQueueItem } from "src/utils/playbackQueue";
 import {
   isQueueItemTrackTitlePlaceholder,
@@ -305,6 +306,7 @@ export const useReleasePlaybackProvider = (): {
   const embedWatchdogAfterTabVisibleTimeoutRef = useRef<number | null>(null);
   const embedTabVisibleSyncConfirmTimeoutRef = useRef<number | null>(null);
   const embedWatchdogSyncProbeTimeoutRef = useRef<number | null>(null);
+  const embedLoadingCapConfirmRetryTimeoutRef = useRef<number | null>(null);
   const clearEmbedWatchdogSyncProbeTimeoutRef = useRef<() => void>(
     () => undefined,
   );
@@ -313,6 +315,9 @@ export const useReleasePlaybackProvider = (): {
   );
   const confirmEmbedPlaybackIfAudibleRef = useRef<() => boolean>(() => false);
   const clearEmbedTabVisibleSyncConfirmTimeoutRef = useRef<() => void>(
+    () => undefined,
+  );
+  const clearEmbedLoadingCapConfirmRetryTimeoutRef = useRef<() => void>(
     () => undefined,
   );
   const resolveSkipContextRef = useRef<() => PlaybackSkipSentryDetails>(
@@ -335,6 +340,7 @@ export const useReleasePlaybackProvider = (): {
         clearEmbedWatchdogSyncProbeTimeoutRef.current();
         clearEmbedWatchdogAfterTabVisibleTimeoutRef.current();
         clearEmbedTabVisibleSyncConfirmTimeoutRef.current();
+        clearEmbedLoadingCapConfirmRetryTimeoutRef.current();
         lastInfoDeliveryCurrentTimeRef.current = undefined;
         dispatchEmbedSessionRef.current({ type: "embed/confirm/reset" });
         dispatchEmbedSessionRef.current({ type: "embed/ui-loading/cleared" });
@@ -750,6 +756,15 @@ export const useReleasePlaybackProvider = (): {
     embedWatchdogSyncProbeTimeoutRef.current = null;
   }, []);
 
+  const clearEmbedLoadingCapConfirmRetryTimeout = useCallback(() => {
+    if (embedLoadingCapConfirmRetryTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(embedLoadingCapConfirmRetryTimeoutRef.current);
+    embedLoadingCapConfirmRetryTimeoutRef.current = null;
+  }, []);
+
   const clearEmbedWatchdogAfterTabVisibleTimeout = useCallback(() => {
     if (embedWatchdogAfterTabVisibleTimeoutRef.current === null) {
       return;
@@ -775,6 +790,9 @@ export const useReleasePlaybackProvider = (): {
   clearEmbedTabVisibleSyncConfirmTimeoutRef.current =
     clearEmbedTabVisibleSyncConfirmTimeout;
 
+  clearEmbedLoadingCapConfirmRetryTimeoutRef.current =
+    clearEmbedLoadingCapConfirmRetryTimeout;
+
   const confirmEmbedPlayback = useCallback(() => {
     embedInitialWatchdogGracePendingRef.current = false;
     embedWatchdogLoadingRearmCountRef.current = 0;
@@ -783,11 +801,13 @@ export const useReleasePlaybackProvider = (): {
     clearEmbedWatchdogSyncProbeTimeout();
     clearEmbedWatchdogAfterTabVisibleTimeout();
     clearEmbedTabVisibleSyncConfirmTimeout();
+    clearEmbedLoadingCapConfirmRetryTimeout();
     embedStartWatchdogRef.current.disarm();
     dispatchEmbedSession({ type: "embed/playback/confirmed" });
     clearPlaybackVideoUiLoading();
   }, [
     clearEmbedTabVisibleSyncConfirmTimeout,
+    clearEmbedLoadingCapConfirmRetryTimeout,
     clearEmbedWatchdogAfterTabVisibleTimeout,
     clearEmbedWatchdogSyncProbeTimeout,
     clearPlaybackVideoUiLoading,
@@ -967,12 +987,20 @@ export const useReleasePlaybackProvider = (): {
       }
 
       clearPlaybackVideoUiLoadingSpinnerOnly();
+
+      clearEmbedLoadingCapConfirmRetryTimeout();
+      embedLoadingCapConfirmRetryTimeoutRef.current = window.setTimeout(() => {
+        embedLoadingCapConfirmRetryTimeoutRef.current = null;
+        confirmEmbedPlaybackIfAudible();
+      }, EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
     }, resolvePlaybackVideoUiLoadingTimeoutMs());
 
     return () => {
       window.clearTimeout(timeoutId);
+      clearEmbedLoadingCapConfirmRetryTimeout();
     };
   }, [
+    clearEmbedLoadingCapConfirmRetryTimeout,
     clearPlaybackVideoUiLoadingSpinnerOnly,
     confirmEmbedPlaybackIfAudible,
     isPlaybackVideoUiLoading,
@@ -981,16 +1009,23 @@ export const useReleasePlaybackProvider = (): {
   const finishEmbedUnavailableSkipIfStillUnconfirmed = useCallback(() => {
     if (embedPlaybackConfirmedRef.current) {
       embedWatchdogSyncProbeAttemptedRef.current = false;
+      logPlaybackEmbedWatchdogDebug("watchdog finish: confirmed");
       return;
     }
 
     if (confirmEmbedPlaybackIfAudible()) {
       embedWatchdogSyncProbeAttemptedRef.current = false;
+      logPlaybackEmbedWatchdogDebug("watchdog finish: audible confirm");
       return;
     }
 
     embedWatchdogSyncProbeAttemptedRef.current = false;
     embedWatchdogLoadingRearmCountRef.current = 0;
+    logPlaybackEmbedWatchdogDebug("watchdog finish: unavailable fallback", {
+      watchdogVideoId: embedWatchdogVideoIdRef.current,
+      embedVideoId: embedVideoIdRef.current,
+      visibilityState: document.visibilityState,
+    });
     embedUnavailableSkipHandlerRef.current.handleFailure(
       PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
       advanceQueueAfterSkip,
@@ -999,6 +1034,7 @@ export const useReleasePlaybackProvider = (): {
 
   const runEmbedUnavailableSkipIfUnconfirmed = useCallback(() => {
     if (confirmEmbedPlaybackIfAudible()) {
+      logPlaybackEmbedWatchdogDebug("watchdog tick: audible confirm");
       return;
     }
 
@@ -1012,11 +1048,20 @@ export const useReleasePlaybackProvider = (): {
     });
 
     if (outcome === "defer") {
+      logPlaybackEmbedWatchdogDebug("watchdog tick: defer", {
+        watchdogVideoId: embedWatchdogVideoIdRef.current,
+        embedVideoId: embedVideoIdRef.current,
+        embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
+      });
       return;
     }
 
     if (outcome === "rearm") {
       embedWatchdogLoadingRearmCountRef.current += 1;
+      logPlaybackEmbedWatchdogDebug("watchdog tick: rearm", {
+        loadingRearmCount: embedWatchdogLoadingRearmCountRef.current,
+        isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
+      });
       armEmbedStartWatchdogRef.current();
       return;
     }
@@ -1033,6 +1078,9 @@ export const useReleasePlaybackProvider = (): {
       })
     ) {
       embedWatchdogSyncProbeAttemptedRef.current = true;
+      logPlaybackEmbedWatchdogDebug("watchdog tick: sync probe", {
+        recheckMs: EMBED_WATCHDOG_SYNC_PROBE_RECHECK_MS,
+      });
       requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
       clearEmbedWatchdogSyncProbeTimeout();
       embedWatchdogSyncProbeTimeoutRef.current = window.setTimeout(() => {
@@ -1042,6 +1090,7 @@ export const useReleasePlaybackProvider = (): {
       return;
     }
 
+    logPlaybackEmbedWatchdogDebug("watchdog tick: finish path");
     finishEmbedUnavailableSkipIfStillUnconfirmed();
   }, [
     clearEmbedWatchdogSyncProbeTimeout,
@@ -1052,11 +1101,27 @@ export const useReleasePlaybackProvider = (): {
 
   const armEmbedStartWatchdog = useCallback(() => {
     if (!shouldArmPlaybackEmbedStartWatchdog(document.visibilityState)) {
+      logPlaybackEmbedWatchdogDebug("watchdog arm skipped", {
+        visibilityState: document.visibilityState,
+      });
       return;
     }
 
     embedWatchdogArmedDelayMsRef.current =
       resolveEmbedWatchdogDelayMsRef.current();
+    const networkQuality = classifyNetworkConnectionQuality(
+      getNavigatorNetworkInformation(),
+    );
+    const delayMs = embedWatchdogArmedDelayMsRef.current;
+    logPlaybackEmbedWatchdogDebug("watchdog armed", {
+      delayMs,
+      networkQuality,
+      coarsePointer: window.matchMedia("(pointer: coarse)").matches,
+      watchdogVideoId: embedWatchdogVideoIdRef.current,
+      embedVideoId: embedVideoIdRef.current,
+      embedPlaybackConfirmed: embedPlaybackConfirmedRef.current,
+      visibilityState: document.visibilityState,
+    });
     embedStartWatchdogRef.current.disarm();
     embedStartWatchdogRef.current.arm(runEmbedUnavailableSkipIfUnconfirmed);
   }, [runEmbedUnavailableSkipIfUnconfirmed]);
@@ -1165,6 +1230,10 @@ export const useReleasePlaybackProvider = (): {
       return;
     }
 
+    logPlaybackEmbedWatchdogDebug("youtube onError skip", {
+      errorCode,
+      embedVideoId: activeEmbedVideoId,
+    });
     embedUnavailableSkipHandlerRef.current.handleFailure(
       errorCode,
       advanceQueueAfterSkip,

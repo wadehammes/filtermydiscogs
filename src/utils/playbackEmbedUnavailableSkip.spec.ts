@@ -1,4 +1,4 @@
-import { describe, expect, it, jest } from "@jest/globals";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
 import {
   createPlaybackEmbedUnavailableSkipHandler,
@@ -6,6 +6,10 @@ import {
 } from "src/utils/playbackEmbedUnavailableSkip";
 
 describe("createPlaybackEmbedUnavailableSkipHandler", () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
   it("appends skip toast once per track while failures are in flight", () => {
     const appendSkip = jest.fn();
     const playNext = jest.fn();
@@ -122,5 +126,59 @@ describe("createPlaybackEmbedUnavailableSkipHandler", () => {
         userReportSent: undefined,
       }),
     );
+  });
+
+  it("logs unavailable skip append when localStorage fmd_debug_playback_embed is 1", () => {
+    localStorage.setItem("fmd_debug_playback_embed", "1");
+    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => {});
+    const appendSkip = jest.fn();
+    const playNext = jest.fn();
+    const resolveSkipDisplay = jest.fn(() => ({
+      trackLabel: "A1 Track",
+    }));
+
+    const handler = createPlaybackEmbedUnavailableSkipHandler({
+      appendSkip,
+      resolveSkipDisplay,
+      isSkipAllowed: () => true,
+    });
+
+    handler.handleFailure(100, playNext);
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      "[fmd playback embed] unavailable skip append",
+      expect.objectContaining({
+        errorCode: 100,
+        reason: "Private or removed on YouTube",
+        trackLabel: "A1 Track",
+      }),
+    );
+    infoSpy.mockRestore();
+  });
+
+  it("logs unavailable skip blocked when localStorage fmd_debug_playback_embed is 1", () => {
+    localStorage.setItem("fmd_debug_playback_embed", "1");
+    const infoSpy = jest.spyOn(console, "info").mockImplementation(() => {});
+    const appendSkip = jest.fn();
+    const playNext = jest.fn();
+
+    const handler = createPlaybackEmbedUnavailableSkipHandler({
+      appendSkip,
+      resolveSkipDisplay: () => ({ trackLabel: "A1 Track" }),
+      isSkipAllowed: () => false,
+    });
+
+    handler.handleFailure(100, playNext);
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      "[fmd playback embed] unavailable skip blocked",
+      expect.objectContaining({
+        errorCode: 100,
+        isSkipAllowed: false,
+      }),
+    );
+    expect(appendSkip).not.toHaveBeenCalled();
+    expect(playNext).not.toHaveBeenCalled();
+    infoSpy.mockRestore();
   });
 });
