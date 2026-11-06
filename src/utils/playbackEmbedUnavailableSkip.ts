@@ -2,6 +2,7 @@ import type { PlaybackSkipCapturePayload } from "src/lib/sentry/buildPlaybackSki
 import type { PlaybackSkipSentryDetails } from "src/lib/sentry/buildPlaybackSkipSentryEvent";
 import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import { definedProps } from "src/utils/definedProps";
+import { logPlaybackEmbedWatchdogDebug } from "src/utils/playbackEmbedWatchdogDebug";
 import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
 import {
   playbackSkipLogDedupeKey,
@@ -40,6 +41,10 @@ export const createPlaybackEmbedUnavailableSkipHandler = ({
   return {
     handleFailure: (errorCode: number, playNext: () => void) => {
       if (!isSkipAllowed()) {
+        logPlaybackEmbedWatchdogDebug("unavailable skip blocked", {
+          errorCode,
+          isSkipAllowed: false,
+        });
         return;
       }
 
@@ -48,6 +53,10 @@ export const createPlaybackEmbedUnavailableSkipHandler = ({
       const dedupeKey = playbackSkipLogDedupeKey(display);
 
       if (lastDedupeKey === dedupeKey) {
+        logPlaybackEmbedWatchdogDebug("unavailable skip deduped", {
+          errorCode,
+          dedupeKey,
+        });
         return;
       }
 
@@ -64,6 +73,12 @@ export const createPlaybackEmbedUnavailableSkipHandler = ({
           context: skipContext,
         }),
       );
+
+      logPlaybackEmbedWatchdogDebug("unavailable skip append", {
+        errorCode,
+        reason,
+        trackLabel: display.trackLabel,
+      });
 
       appendSkip(
         definedProps({

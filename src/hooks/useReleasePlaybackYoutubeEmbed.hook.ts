@@ -627,10 +627,11 @@ export const useReleasePlaybackYoutubeEmbed = ({
     }
 
     const pollAudibleEmbedState = () => {
-      if (
-        !isPlaybackVideoUiLoadingRef.current ||
-        embedPlaybackConfirmedRef.current
-      ) {
+      if (embedPlaybackConfirmedRef.current) {
+        return;
+      }
+
+      if (!isPlayingRef.current || isPausedRef.current) {
         return;
       }
 
@@ -651,8 +652,9 @@ export const useReleasePlaybackYoutubeEmbed = ({
     embedPlaybackConfirmedRef,
     isPaused,
     isPlaybackVideoUiLoading,
-    isPlaybackVideoUiLoadingRef,
+    isPausedRef,
     isPlaying,
+    isPlayingRef,
     syncEmbedPlaybackState,
   ]);
 
