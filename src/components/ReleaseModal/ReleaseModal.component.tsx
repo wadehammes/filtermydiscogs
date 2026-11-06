@@ -47,7 +47,11 @@ export const ReleaseModal = ({
       testId="fmdReleaseModal"
       escapeStackingContext
       panelClassName={showSimilarSection ? styles.modalWide : undefined}
-      contentClassName={showAsideSimilar ? styles.modalMain : undefined}
+      contentClassName={
+        showAsideSimilar
+          ? classNames(styles.modalScrollContent, styles.modalMain)
+          : styles.modalScrollContent
+      }
       aside={
         showAsideSimilar ? (
           <ReleaseSimilarSidebar variant="aside" {...similarSidebarProps} />

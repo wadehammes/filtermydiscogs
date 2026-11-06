@@ -13,7 +13,12 @@
 
 .notesModal {
   gap: 0;
-  padding: var(--space-3);
+  padding-block: var(--space-3) var(--space-4);
+  padding-inline: 0;
+
+  @media (width >= 768px) {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
 }
 
 .notesModalEditor {
