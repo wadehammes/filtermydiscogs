@@ -203,32 +203,29 @@ export const PublicPlaylistClient = ({
 
               <div className={styles.playlistMain}>
                 {orderedTracks.length > 0 ? (
-                  <>
-                    <h2 className={styles.trackListHeading}>Tracks</h2>
-                    <ul
-                      className={classNames(
-                        tracklistStyles.tracklist,
-                        styles.tracklistPanel,
-                      )}
-                    >
-                      {orderedTracks.map((track, trackIndex) => (
-                        <PublicPlaylistTrackItem
-                          key={track.track_key}
-                          playlistId={playlist.id}
-                          index={trackIndex + 1}
-                          track={track}
-                          showTrackVoteControls={showTrackVoteControls}
-                          release={
-                            releaseByInstanceId.get(
-                              String(track.instance_id),
-                            ) ?? null
-                          }
-                          onReleaseClick={handleReleaseClick}
-                          onPlayTrack={handlePlayTrack}
-                        />
-                      ))}
-                    </ul>
-                  </>
+                  <ul
+                    className={classNames(
+                      tracklistStyles.tracklist,
+                      styles.tracklistPanel,
+                    )}
+                    aria-label={`${playlist.name} tracklist`}
+                  >
+                    {orderedTracks.map((track, trackIndex) => (
+                      <PublicPlaylistTrackItem
+                        key={track.track_key}
+                        playlistId={playlist.id}
+                        index={trackIndex + 1}
+                        track={track}
+                        showTrackVoteControls={showTrackVoteControls}
+                        release={
+                          releaseByInstanceId.get(String(track.instance_id)) ??
+                          null
+                        }
+                        onReleaseClick={handleReleaseClick}
+                        onPlayTrack={handlePlayTrack}
+                      />
+                    ))}
+                  </ul>
                 ) : (
                   <p className={styles.text}>This playlist is empty.</p>
                 )}

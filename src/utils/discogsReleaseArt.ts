@@ -7,23 +7,22 @@ export const resolveDiscogsReleaseDetailCoverUri = (
   detail: Pick<DiscogsReleaseDetail, "images" | "thumb">,
 ): string => {
   const images = detail.images ?? [];
+  const readFullUri = (uri: unknown): string =>
+    typeof uri === "string" ? uri.trim() : "";
+
   const primary = images.find(
-    (image) => image.type === "primary" && typeof image.uri === "string",
+    (image) => image.type === "primary" && readFullUri(image.uri),
   );
 
-  if (primary?.uri.trim()) {
-    return primary.uri.trim();
+  if (primary) {
+    return readFullUri(primary.uri);
   }
 
   for (const image of images) {
-    for (const candidate of [
-      image.uri,
-      (image as { uri150?: string }).uri150,
-      (image as { resource_url?: string }).resource_url,
-    ]) {
-      if (typeof candidate === "string" && candidate.trim()) {
-        return candidate.trim();
-      }
+    const uri = readFullUri(image.uri);
+
+    if (uri) {
+      return uri;
     }
   }
 

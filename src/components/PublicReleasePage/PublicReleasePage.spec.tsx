@@ -35,7 +35,9 @@ describe("PublicReleasePage", () => {
     expect(
       await screen.findByRole("heading", { name: "Never Gonna Give You Up" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Tracks" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("list", { name: /Never Gonna Give You Up tracklist/i }),
+    ).toBeInTheDocument();
     expect(
       screen.getByTestId("fmdPublicSharePlaybackShell"),
     ).toBeInTheDocument();

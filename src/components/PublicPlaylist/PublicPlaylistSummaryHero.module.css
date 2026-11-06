@@ -12,11 +12,17 @@
 }
 
 .heroPrimary {
-  align-items: flex-start;
+  align-items: center;
   display: flex;
-  flex-direction: row;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-4);
   min-width: 0;
+
+  @media (width >= 768px) {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: var(--space-3);
+  }
 
   @media (width >= 768px) and (width < 1024px) {
     align-items: flex-end;
@@ -24,26 +30,69 @@
   }
 
   @media (width >= 1024px) {
+    align-items: stretch;
     flex-direction: column;
     gap: var(--space-5);
   }
 }
 
 .coverFrame {
-  aspect-ratio: 1;
+  align-self: stretch;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-md);
+  box-sizing: border-box;
+  display: grid;
   flex-shrink: 0;
+  height: 6rem;
   overflow: hidden;
-  width: 5.5rem;
+  place-items: center;
+  width: 100%;
+
+  & > * {
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    height: min(6rem, 100%);
+    max-height: 100%;
+    max-width: 100%;
+    width: min(6rem, 100%);
+  }
 
   @media (width >= 768px) {
+    align-self: auto;
+    aspect-ratio: 1;
+    display: block;
+    height: auto;
+    place-items: initial;
     width: min(100%, 16rem);
+
+    & > * {
+      height: 100%;
+      max-height: none;
+      max-width: none;
+      width: 100%;
+    }
   }
 
   @media (width >= 1024px) {
     width: 100%;
   }
+}
+
+.singleCoverWrap {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.singleCoverImage {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  width: 100%;
 }
 
 .coverPlaceholder {
@@ -53,11 +102,16 @@
 }
 
 .copyDetails {
+  align-self: stretch;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-width: 0;
+
+  @media (width >= 768px) {
+    gap: var(--space-2);
+  }
 }
 
 .title {
@@ -97,6 +151,28 @@
 
 .secondaryMetaLine {
   margin: 0;
+}
+
+.releaseSecondaryMetaAfterTracklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.releaseHeroActionRow {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3);
+  width: 100%;
+
+  & > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  @media (width >= 768px) {
+    flex-direction: column;
+  }
 }
 
 .engagementMetaLine {

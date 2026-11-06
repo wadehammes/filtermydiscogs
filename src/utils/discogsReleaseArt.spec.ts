@@ -6,6 +6,7 @@ import {
   applyDiscogsDetailImagesToRelease,
   buildPlaylistReleaseFromDiscogsDetail,
   collectUniquePlaylistDiscogsReleaseIds,
+  resolveDiscogsReleaseDetailCoverUri,
 } from "src/utils/discogsReleaseArt";
 
 describe("collectUniquePlaylistDiscogsReleaseIds", () => {
@@ -42,6 +43,44 @@ describe("collectUniquePlaylistDiscogsReleaseIds", () => {
         new Map([["9001", release]]),
       ),
     ).toEqual(["249504"]);
+  });
+});
+
+describe("resolveDiscogsReleaseDetailCoverUri", () => {
+  it("prefers the primary image full uri over uri150 and release thumb", () => {
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      thumb: "https://i.discogs.com/thumb-only.jpg",
+      images: [
+        {
+          type: "primary",
+          uri: "https://i.discogs.com/full-cover.jpg",
+          uri150: "https://i.discogs.com/cover-150.jpg",
+        },
+      ],
+    });
+
+    expect(resolveDiscogsReleaseDetailCoverUri(detail)).toBe(
+      "https://i.discogs.com/full-cover.jpg",
+    );
+  });
+
+  it("uses another image full uri when primary type is missing but never uri150 alone", () => {
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      images: [
+        {
+          type: "secondary",
+          uri: "",
+          uri150: "https://i.discogs.com/only-150.jpg",
+        },
+        {
+          uri: "https://i.discogs.com/full-from-secondary.jpg",
+        },
+      ],
+    });
+
+    expect(resolveDiscogsReleaseDetailCoverUri(detail)).toBe(
+      "https://i.discogs.com/full-from-secondary.jpg",
+    );
   });
 });
 

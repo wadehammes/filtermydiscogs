@@ -4,19 +4,21 @@ import classNames from "classnames";
 import Link from "next/link";
 import { useMemo } from "react";
 import Button from "src/components/Button/Button.component";
-import buttonStyles from "src/components/Button/Button.module.css";
 import { PlaybackScrollSpacer } from "src/components/PlaybackScrollSpacer/PlaybackScrollSpacer.component";
 import playlistStyles from "src/components/PublicPlaylist/PublicPlaylist.module.css";
 import { PublicPlaylistSummaryHero } from "src/components/PublicPlaylist/PublicPlaylistSummaryHero.component";
 import heroStyles from "src/components/PublicPlaylist/PublicPlaylistSummaryHero.module.css";
+import { PublicPlaylistSummarySecondaryMetaLines } from "src/components/PublicPlaylist/PublicPlaylistSummarySecondaryMetaLines.component";
 import { PublicPlaylistTrackItem } from "src/components/PublicPlaylistTrackItem/PublicPlaylistTrackItem.component";
 import { PublicReleaseModal } from "src/components/PublicReleaseModal/PublicReleaseModal.component";
+import { PublicReleaseHeroActions } from "src/components/PublicReleasePage/PublicReleaseHeroActions.component";
 import { usePublicReleaseListenPageState } from "src/components/PublicReleasePage/usePublicReleaseListenPageState.hook";
 import { PublicShareMarketingSection } from "src/components/PublicShareMarketingSection/PublicShareMarketingSection.component";
 import { PublicSharePlaybackShell } from "src/components/PublicSharePlaybackShell/PublicSharePlaybackShell.component";
 import tracklistStyles from "src/components/ReleaseTracklist/ReleaseTracklist.module.css";
 import { PUBLIC_RELEASE_LISTEN_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
-import PlayIcon from "src/styles/icons/play-thin.svg";
+import { TABLET_UP_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import { definedProps } from "src/utils/definedProps";
@@ -62,7 +64,7 @@ export const PublicReleasePageSkeleton = () => (
                 />
               </div>
             </div>
-            <div className={styles.skeletonActionStack}>
+            <div className={heroStyles.releaseHeroActionRow}>
               <div
                 className={classNames(pulseSurface, styles.skeletonButton)}
                 aria-hidden
@@ -114,7 +116,7 @@ export const PublicReleaseClient = ({
 }: PublicReleasePageProps) => {
   const {
     collectionRelease,
-    coverThumbUrls,
+    coverHeroUrl,
     detail,
     discogsUri,
     error,
@@ -123,7 +125,6 @@ export const PublicReleaseClient = ({
     handlePlayTrack,
     handleReleaseClick,
     heroMetaLine,
-    heroPrimaryThumbCap,
     is404Error,
     isError,
     isFetching,
@@ -137,9 +138,21 @@ export const PublicReleaseClient = ({
     ...definedProps({ initialDiscogsReleaseDetail }),
   });
 
-  const heroThumbUrls = useMemo(
-    () => coverThumbUrls.slice(0, heroPrimaryThumbCap),
-    [coverThumbUrls, heroPrimaryThumbCap],
+  const trackCount = orderedTracks.length;
+  const isTabletUp = useMediaQuery(TABLET_UP_MEDIA_QUERY);
+  const heroSecondaryMetaLines = isTabletUp ? secondaryMetaLines : undefined;
+  const showSecondaryMetaBelowTracklist =
+    !isTabletUp && secondaryMetaLines.length > 0;
+
+  const heroActions = useMemo(
+    () => (
+      <PublicReleaseHeroActions
+        discogsUri={discogsUri}
+        onPlayAll={handlePlayAll}
+        trackCount={trackCount}
+      />
+    ),
+    [discogsUri, handlePlayAll, trackCount],
   );
 
   if (isPendingSkeleton) {
@@ -192,7 +205,6 @@ export const PublicReleaseClient = ({
     );
   }
 
-  const trackCount = orderedTracks.length;
   const coverLabel = `${detail.title} cover art`;
 
   return (
@@ -204,55 +216,25 @@ export const PublicReleaseClient = ({
               <PublicPlaylistSummaryHero
                 className={playlistStyles.playlistAside}
                 title={detail.title}
-                coverThumbUrls={heroThumbUrls}
+                coverThumbUrls={coverHeroUrl ? [coverHeroUrl] : []}
+                coverLayout="single"
                 coverLabel={coverLabel}
                 metaLine={heroMetaLine}
-                secondaryMetaLines={secondaryMetaLines}
-                actions={
-                  <div className={styles.actionStack}>
-                    <Button
-                      variant="primary"
-                      size="md"
-                      className={playlistStyles.playButton}
-                      onPress={handlePlayAll}
-                      disabled={trackCount === 0}
-                    >
-                      <span
-                        className={playlistStyles.playButtonIcon}
-                        aria-hidden
-                      >
-                        <PlayIcon />
-                      </span>
-                      Play All
-                    </Button>
-                    {discogsUri ? (
-                      <Link
-                        href={discogsUri}
-                        className={classNames(
-                          buttonStyles.button,
-                          buttonStyles.secondary,
-                          buttonStyles.md,
-                          playlistStyles.playButton,
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View on Discogs
-                      </Link>
-                    ) : null}
-                  </div>
-                }
+                actions={heroActions}
+                {...definedProps({
+                  secondaryMetaLines: heroSecondaryMetaLines,
+                })}
               />
 
               <div className={playlistStyles.playlistMain}>
                 {trackCount > 0 ? (
                   <>
-                    <h2 className={playlistStyles.trackListHeading}>Tracks</h2>
                     <ul
                       className={classNames(
                         tracklistStyles.tracklist,
                         playlistStyles.tracklistPanel,
                       )}
+                      aria-label={`${detail.title} tracklist`}
                     >
                       {orderedTracks.map((track, trackIndex) => (
                         <PublicPlaylistTrackItem
@@ -267,6 +249,14 @@ export const PublicReleaseClient = ({
                         />
                       ))}
                     </ul>
+                    {showSecondaryMetaBelowTracklist ? (
+                      <PublicPlaylistSummarySecondaryMetaLines
+                        lines={secondaryMetaLines}
+                        className={
+                          heroStyles.releaseSecondaryMetaAfterTracklist
+                        }
+                      />
+                    ) : null}
                   </>
                 ) : (
                   <p className={playlistStyles.text}>
