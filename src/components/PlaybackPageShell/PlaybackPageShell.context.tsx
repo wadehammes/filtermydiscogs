@@ -12,6 +12,11 @@ import {
   useState,
 } from "react";
 import {
+  type DocumentScrollLockSnapshot,
+  lockDocumentForOverlayScroll,
+  restoreDocumentOverlayScroll,
+} from "./documentScrollLock";
+import {
   applyPlaybackPageScrollLock,
   lockPlaybackPageScrollElement,
   restorePlaybackPageScrollElement,
@@ -63,6 +68,9 @@ export const PlaybackPageShellProvider = ({
   const snapshotRef = useRef<ReturnType<
     typeof lockPlaybackPageScrollElement
   > | null>(null);
+  const documentLockSnapshotRef = useRef<DocumentScrollLockSnapshot | null>(
+    null,
+  );
   const [overlayPortalElement, setOverlayPortalElementState] =
     useState<HTMLElement | null>(null);
   const scrollToTopHandlerRef = useRef<(() => void) | null>(null);
@@ -99,28 +107,47 @@ export const PlaybackPageShellProvider = ({
     });
   }, []);
 
-  const applyLock = useCallback(() => {
-    const element = scrollElementRef.current;
-
-    if (!element || snapshotRef.current) {
+  const applyDocumentLock = useCallback(() => {
+    if (documentLockSnapshotRef.current) {
       return;
     }
 
-    snapshotRef.current = lockPlaybackPageScrollElement(element);
-    applyPlaybackPageScrollLock(element);
+    documentLockSnapshotRef.current = lockDocumentForOverlayScroll();
   }, []);
+
+  const releaseDocumentLock = useCallback(() => {
+    const snapshot = documentLockSnapshotRef.current;
+
+    if (!snapshot) {
+      return;
+    }
+
+    restoreDocumentOverlayScroll(snapshot);
+    documentLockSnapshotRef.current = null;
+  }, []);
+
+  const applyLock = useCallback(() => {
+    const element = scrollElementRef.current;
+
+    if (element && !snapshotRef.current) {
+      snapshotRef.current = lockPlaybackPageScrollElement(element);
+      applyPlaybackPageScrollLock(element);
+    }
+
+    applyDocumentLock();
+  }, [applyDocumentLock]);
 
   const releaseLock = useCallback(() => {
     const element = scrollElementRef.current;
     const snapshot = snapshotRef.current;
 
-    if (!(element && snapshot)) {
-      return;
+    if (element && snapshot) {
+      restorePlaybackPageScrollElement(element, snapshot);
+      snapshotRef.current = null;
     }
 
-    restorePlaybackPageScrollElement(element, snapshot);
-    snapshotRef.current = null;
-  }, []);
+    releaseDocumentLock();
+  }, [releaseDocumentLock]);
 
   const lockScroll = useCallback(() => {
     lockCountRef.current += 1;
