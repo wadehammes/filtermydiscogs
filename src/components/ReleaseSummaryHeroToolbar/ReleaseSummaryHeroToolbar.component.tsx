@@ -5,6 +5,7 @@ import { DiscogsReleaseExternalLink } from "src/components/DiscogsExternalLink/D
 import { ModalToolbar } from "src/components/ModalToolbar/ModalToolbar.component";
 import modalToolbarStyles from "src/components/ModalToolbar/ModalToolbar.module.css";
 import { ReleaseCrateMenu } from "src/components/ReleaseCard/ReleaseCrateMenu.component";
+import { ReleaseSummaryHeroCopyListenLinkButton } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroCopyListenLinkButton.component";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 
@@ -28,6 +29,7 @@ export const ReleaseSummaryHeroToolbar = ({
           })
         }
       />
+      <ReleaseSummaryHeroCopyListenLinkButton release={release} />
       <DiscogsReleaseExternalLink release={release} variant="toolbar" />
     </ModalToolbar>
   );

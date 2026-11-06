@@ -18,5 +18,10 @@ export const isPublicCrateRoute = (pathname: string): boolean =>
 export const isPublicPlaylistRoute = (pathname: string): boolean =>
   pathname.startsWith("/playlist/") && pathname.length > "/playlist/".length;
 
+export const isPublicReleaseRoute = (pathname: string): boolean =>
+  pathname.startsWith("/release/") && pathname.length > "/release/".length;
+
 export const isPublicShareRoute = (pathname: string): boolean =>
-  isPublicCrateRoute(pathname) || isPublicPlaylistRoute(pathname);
+  isPublicCrateRoute(pathname) ||
+  isPublicPlaylistRoute(pathname) ||
+  isPublicReleaseRoute(pathname);

@@ -4,7 +4,7 @@ OAuth 1.0a authentication, API access, username validation, and cookie conventio
 
 ## OAuth flow
 
-Implemented in [`src/services/discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) using **`oauth-1.0a`** and Node **`crypto`** for HMAC-SHA1 signing.
+Implemented in [`src/services/discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts) using **`oauth-1.0a`** and Node **`crypto`** for HMAC-SHA1 signing. The service overrides the library’s default **`oauth_nonce`** (which used **`Math.random()`**) with **`crypto.randomInt`** over the alphanumeric charset per character (uniform, no modulo bias) so consumer-signed requests stay compatible with Next.js prerender (e.g. **`generateMetadata`** on public pages).
 
 | Step | Route / method                | Purpose                                                                                                                                   |
 | ---- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |

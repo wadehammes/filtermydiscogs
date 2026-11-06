@@ -1,0 +1,72 @@
+.skeletonCover {
+  aspect-ratio: 1;
+  border-radius: var(--radius-card);
+  flex-shrink: 0;
+  width: 5.5rem;
+
+  @media (width >= 768px) {
+    width: min(100%, 16rem);
+  }
+
+  @media (width >= 1024px) {
+    width: 100%;
+  }
+}
+
+.skeletonTitle {
+  border-radius: var(--radius-sm);
+  height: 2rem;
+  max-width: 18rem;
+  width: 100%;
+
+  @media (width >= 768px) {
+    height: 2.25rem;
+  }
+}
+
+.skeletonMeta {
+  border-radius: var(--radius-sm);
+  height: 0.875rem;
+  max-width: 14rem;
+  width: 100%;
+}
+
+.skeletonButton {
+  border-radius: var(--radius-md);
+  height: 2.75rem;
+  width: 100%;
+}
+
+.skeletonTrackPanel {
+  border-radius: var(--radius-card);
+  min-height: 12rem;
+  width: 100%;
+}
+
+.skeletonTrackRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  width: 100%;
+}
+
+.skeletonTrackRow {
+  border-radius: var(--radius-sm);
+  height: 3.5rem;
+  width: 100%;
+}
+
+.skeletonActionStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.actionStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}

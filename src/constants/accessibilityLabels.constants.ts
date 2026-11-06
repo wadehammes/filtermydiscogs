@@ -4,11 +4,18 @@ export const PUBLIC_SHARED_CRATE_MAIN_LABEL = "Public shared crate";
 
 export const PUBLIC_SHARED_PLAYLIST_MAIN_LABEL = "Public shared playlist";
 
+export const PUBLIC_RELEASE_LISTEN_MAIN_LABEL = "Public release listen page";
+
 export const NOW_PLAYING_REGION_LABEL = "Now playing";
 
 export const PLAYBACK_QUEUE_LIST_LABEL = "Playback queue";
 
 export const RELEASE_TRACKLIST_LABEL = "Tracklist";
+
+export const REPORT_WRONG_PUBLIC_PLAYBACK_VIDEO_BUTTON_LABEL = "Report";
+
+export const REPORT_WRONG_PUBLIC_PLAYBACK_VIDEO_ARIA_LABEL =
+  "Report wrong video for this track";
 
 export const ABOUT_PAGE_MAIN_LABEL = "About Filter My Discogs";
 

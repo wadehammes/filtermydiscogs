@@ -12,7 +12,8 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Sorting & views**: Primary sort (label, artist, title, date added, year, rating, …) plus optional **Then by** tie-breaker; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
 - **In-app playback**: Mini player and queue while you browse; per-track **YouTube** links when Discogs has no embed; optional similar-release queue tail in Settings; listen counts on tracklists and play/listen stats on the dashboard
-- **Playlists** (progressive rollout): Cross-release track lists from the Releases side panel; reorder, play, share a public link (listeners can play without signing in); **Add all to…** from tracklists
+- **Playlists** (progressive rollout): Cross-release track lists from the Releases side panel; reorder, play, share a public link (listeners can play without signing in); **Add all to…** from tracklists; on public playlist and public release listen pages, listeners can **Report** a wrong YouTube embed (same Sentry flow as unavailable-embed skips)
+- **Public release listen**: Open **`/release/{discogsReleaseId}`** to hear a release without signing in (shareable link, like public crates and playlists)
 - **Crates**: Stage picks from Releases in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
 - **Collection insights**: Dashboard milestones, style evolution, growth and artist/label charts, most-crated releases, on-this-day adds, weekly recap, and On repeat
 - **Mosaic generator**: Cover grids from your collection, crates, or playlists; export JPEG or PNG
@@ -144,6 +145,7 @@ The app will be available at `http://localhost:6767`.
 | `/crates/[id]`   | Owner crate workspace                                                    |
 | `/crate/[id]`    | Public shared crate (no login)                                           |
 | `/playlist/[id]` | Public shared playlist (no login)                                        |
+| `/release/[id]`  | Public release listen by Discogs release id (no login)                   |
 | `/dashboard`     | Collection analytics                                                     |
 | `/mosaic`        | Cover-art mosaic grid (click tiles for release details; export download) |
 | `/settings`      | Theme, sync, data preferences                                            |

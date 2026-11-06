@@ -18,7 +18,8 @@ export interface PublicPlaylistSummaryHeroProps {
   title: string;
   coverThumbUrls: string[];
   coverLabel: string;
-  metaLine: string;
+  metaLine: ReactNode;
+  secondaryMetaLines?: readonly string[];
   shareStats?: PublicPlaylistShareStats;
   publicDescription?: string | null;
   actions?: ReactNode;
@@ -30,6 +31,7 @@ export const PublicPlaylistSummaryHero = ({
   coverThumbUrls,
   coverLabel,
   metaLine,
+  secondaryMetaLines,
   shareStats,
   publicDescription,
   actions,
@@ -78,14 +80,33 @@ export const PublicPlaylistSummaryHero = ({
         </div>
         <div className={styles.copyDetails}>
           <h1 className={styles.title}>{title}</h1>
-          <p
+          <div
             className={classNames(
               typographyStyles.metaCaption,
               styles.metaLine,
             )}
           >
             {metaLine}
-          </p>
+          </div>
+          {secondaryMetaLines?.map((line, lineIndex) => {
+            const trimmed = line.trim();
+
+            if (!trimmed) {
+              return null;
+            }
+
+            return (
+              <p
+                key={`secondary-meta-${lineIndex}`}
+                className={classNames(
+                  typographyStyles.metaCaption,
+                  styles.secondaryMetaLine,
+                )}
+              >
+                {trimmed}
+              </p>
+            );
+          })}
           {showShareStats ? (
             <div
               className={classNames(

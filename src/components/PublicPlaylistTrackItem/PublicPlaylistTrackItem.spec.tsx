@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { PublicPlaylistTrackItemPageObject } from "src/components/PublicPlaylistTrackItem/PublicPlaylistTrackItem.po";
+import { PUBLIC_PLAYBACK_VIDEO_REPORT_ERROR_CODE } from "src/lib/sentry/playbackSkipSentrySource";
+import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { buildPublicPlaybackVideoReportEntry } from "src/utils/buildPublicPlaybackVideoReportEntry";
 import { screen } from "test-utils";
+
+const defaultPublicPlaylistId = "11111111-2222-3333-4444-555555555555";
 
 let po: PublicPlaylistTrackItemPageObject;
 
@@ -80,5 +85,55 @@ describe("PublicPlaylistTrackItem", () => {
     );
 
     expect(po.togglePlayback).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a report control when the row has a YouTube id after hovering the row", async () => {
+    const user = userEvent.setup();
+    po.renderPublicPlaylistTrackItem();
+
+    await user.hover(screen.getByTestId(po.testId));
+
+    expect(
+      screen.getByTestId("fmdPublicPlaylistTrackReportWrongVideo"),
+    ).toHaveAccessibleName("Report wrong video for this track");
+  });
+
+  it("omits the report control when the row has no YouTube id", () => {
+    po.renderPublicPlaylistTrackItem({
+      track: playlistTrackRowFactory.opening({ youtube_id: null }),
+    });
+
+    expect(
+      screen.queryByTestId("fmdPublicPlaylistTrackReportWrongVideo"),
+    ).toBeNull();
+  });
+
+  it("opens the skip report dialog with public playback context when Report is pressed", async () => {
+    const user = userEvent.setup();
+    const track = playlistTrackRowFactory.opening({
+      track_key: "rpt-key",
+      youtube_id: "ytid1234567",
+    });
+    const release = releaseFactory.withDisplayDefaults({
+      instance_id: track.instance_id,
+    });
+    po.renderPublicPlaylistTrackItem({ track, release });
+
+    await user.hover(screen.getByTestId(po.testId));
+    await user.click(
+      screen.getByTestId("fmdPublicPlaylistTrackReportWrongVideo"),
+    );
+
+    expect(po.openPlaybackSkipReportDialog).toHaveBeenCalledTimes(1);
+    expect(po.openPlaybackSkipReportDialog).toHaveBeenCalledWith(
+      buildPublicPlaybackVideoReportEntry(
+        defaultPublicPlaylistId,
+        track,
+        release,
+      ),
+    );
+    expect(po.openPlaybackSkipReportDialog.mock.calls[0]?.[0]?.errorCode).toBe(
+      PUBLIC_PLAYBACK_VIDEO_REPORT_ERROR_CODE,
+    );
   });
 });

@@ -43,6 +43,7 @@ export interface DiscogsReleaseDetail {
   id: number;
   uri: string;
   title: string;
+  country?: string;
   artists?: Array<{ name: string; [key: string]: unknown }>;
   labels?: Array<{ name: string; catno?: string; [key: string]: unknown }>;
   year?: number;
