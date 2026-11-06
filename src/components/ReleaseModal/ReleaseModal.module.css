@@ -21,32 +21,66 @@
   }
 }
 
+.modalScrollContent {
+  --scroll-modal-content-padding: 0;
+  --scroll-modal-content-padding-md: 0;
+
+  padding: 0;
+}
+
+.modalMain {
+  min-height: 0;
+}
+
 .body {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-}
-
-.modalCard {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-}
-
-.modalContent {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-1);
+  padding: 0 0 var(--space-2);
 
   @media (width >= 768px) {
-    gap: var(--space-4);
     padding: var(--space-4) var(--space-3);
   }
 }
 
+.bodyCards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  @media (width >= 768px) {
+    gap: var(--space-4);
+  }
+}
+
+.modalCard {
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+
+  @media (width >= 768px) {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+}
+
 .notesSection {
-  background: var(--card);
+  background: transparent;
+  padding-inline: var(--space-3);
+
+  @media (width >= 768px) {
+    background: var(--card);
+    padding-inline: 0;
+  }
+}
+
+.body > [data-testid="fmdReleaseModalDetailLoadError"] {
+  padding-inline: var(--space-3);
+
+  @media (width >= 768px) {
+    padding-inline: 0;
+  }
 }
 
 .playbackSection {

@@ -29,6 +29,7 @@ export const PublicReleaseModal = ({
       onClose={onClose}
       testId="fmdPublicReleaseModal"
       escapeStackingContext
+      contentClassName={styles.modalScrollContent}
       header={
         <div className={classNames(styles.heroSection)}>
           <PublicReleaseSummaryHero

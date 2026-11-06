@@ -80,6 +80,10 @@ export async function getPublicPlaylistForOg(playlistId: string): Promise<{
     return null;
   }
 
+  if (!readRuntimeDatabaseUrlFromEnv()) {
+    return null;
+  }
+
   const payload = await loadPublicPlaylist(playlistId);
   if (!payload) {
     return null;
@@ -113,6 +117,10 @@ export async function getPublicPlaylistMetadataForPage(
 
   try {
     if (!isValidCrateId(playlistId)) {
+      return null;
+    }
+
+    if (!readRuntimeDatabaseUrlFromEnv()) {
       return null;
     }
 
@@ -151,6 +159,10 @@ export async function getPublicPlaylistForPage(
 
   try {
     if (!isValidCrateId(playlistId)) {
+      return null;
+    }
+
+    if (!readRuntimeDatabaseUrlFromEnv()) {
       return null;
     }
 

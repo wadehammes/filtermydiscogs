@@ -8,13 +8,13 @@
   align-items: stretch;
   border-top: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
-  gap: 0;
+  flex-direction: row;
+  gap: var(--space-3);
   width: 100%;
 
   @media (width >= 768px) {
     align-items: center;
-    flex-direction: row;
+    gap: 0;
   }
 }
 
@@ -23,13 +23,18 @@
 }
 
 .coverWrapper {
+  align-self: stretch;
   flex-shrink: 0;
-  height: 5rem;
+  max-width: 5rem;
+  min-height: 5rem;
   overflow: hidden;
-  width: 100%;
+  width: 5rem;
 
   @media (width >= 768px) {
+    align-self: auto;
     height: 9rem;
+    max-width: none;
+    min-height: 0;
     width: 9rem;
   }
 }

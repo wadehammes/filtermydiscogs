@@ -122,6 +122,8 @@ describe("getPublicCrateIdsForStaticGeneration", () => {
 describe("getPublicCrateForOg", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
+    process.env.DATABASE_URL =
+      "postgres://user:pass@pooled.db.prisma.io:5432/postgres?sslmode=require";
 
     const [serverModule, queryModule, previewModule, usernameModule, db] =
       await Promise.all([
@@ -142,6 +144,13 @@ describe("getPublicCrateForOg", () => {
     mockResolvePublicShareUsername = jest.mocked(
       usernameModule.resolvePublicShareUsername,
     );
+  });
+
+  afterEach(() => {
+    delete process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL_POOLED;
+    delete process.env.DIRECT_URL;
+    delete process.env.POSTGRES_URL;
   });
 
   it("returns crate name, resolved username, and cover thumb urls", async () => {
@@ -180,5 +189,55 @@ describe("getPublicCrateForOg", () => {
     await expect(
       getPublicCrateForOg("11111111-2222-3333-4444-555555555555"),
     ).resolves.toBeNull();
+  });
+
+  it("when no runtime database URL is configured, returns null without querying", async () => {
+    delete process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL_POOLED;
+    delete process.env.DIRECT_URL;
+    delete process.env.POSTGRES_URL;
+
+    await expect(
+      getPublicCrateForOg("11111111-2222-3333-4444-555555555555"),
+    ).resolves.toBeNull();
+
+    expect(mockFindPublicCrateById).not.toHaveBeenCalled();
+  });
+});
+
+describe("getPublicCrateMetadataForPage", () => {
+  let getPublicCrateMetadataForPage: typeof import("src/lib/public-crate.server")["getPublicCrateMetadataForPage"];
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    process.env.DATABASE_URL =
+      "postgres://user:pass@pooled.db.prisma.io:5432/postgres?sslmode=require";
+
+    const [serverModule, queryModule] = await Promise.all([
+      import("src/lib/public-crate.server"),
+      import("src/lib/public-crate-query.server"),
+    ]);
+    getPublicCrateMetadataForPage = serverModule.getPublicCrateMetadataForPage;
+    mockFindPublicCrateById = jest.mocked(queryModule.findPublicCrateById);
+  });
+
+  afterEach(() => {
+    delete process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL_POOLED;
+    delete process.env.DIRECT_URL;
+    delete process.env.POSTGRES_URL;
+  });
+
+  it("when no runtime database URL is configured, returns null without querying", async () => {
+    delete process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL_POOLED;
+    delete process.env.DIRECT_URL;
+    delete process.env.POSTGRES_URL;
+
+    await expect(
+      getPublicCrateMetadataForPage("11111111-2222-3333-4444-555555555555"),
+    ).resolves.toBeNull();
+
+    expect(mockFindPublicCrateById).not.toHaveBeenCalled();
   });
 });

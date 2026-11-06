@@ -64,6 +64,10 @@ export async function getPublicCrateForOg(crateId: string): Promise<{
     return null;
   }
 
+  if (!readRuntimeDatabaseUrlFromEnv()) {
+    return null;
+  }
+
   const crate = await findPublicCrateById(crateId);
   if (!crate) {
     return null;
@@ -103,6 +107,10 @@ export async function getPublicCrateMetadataForPage(crateId: string): Promise<{
 
   try {
     if (!isValidCrateId(crateId)) {
+      return null;
+    }
+
+    if (!readRuntimeDatabaseUrlFromEnv()) {
       return null;
     }
 

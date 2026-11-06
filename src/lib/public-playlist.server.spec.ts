@@ -168,6 +168,8 @@ describe("getPublicPlaylistIdsForStaticGeneration", () => {
 describe("getPublicPlaylistForPage", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
+    process.env.DATABASE_URL =
+      "postgres://user:pass@pooled.db.prisma.io:5432/postgres?sslmode=require";
 
     const [serverModule, loadModule] = await Promise.all([
       import("src/lib/public-playlist.server"),
@@ -176,6 +178,12 @@ describe("getPublicPlaylistForPage", () => {
     getPublicPlaylistForPage = serverModule.getPublicPlaylistForPage;
     mockLoadPublicPlaylist = jest.mocked(loadModule.loadPublicPlaylist);
     mockLoadPublicPlaylist.mockReset();
+  });
+
+  afterEach(() => {
+    delete process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL_POOLED;
+    delete process.env.DIRECT_URL;
   });
 
   it("when the playlist id is invalid, returns null without loading tracks", async () => {
@@ -197,6 +205,8 @@ describe("getPublicPlaylistForPage", () => {
 describe("getPublicPlaylistForOg", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
+    process.env.DATABASE_URL =
+      "postgres://user:pass@pooled.db.prisma.io:5432/postgres?sslmode=require";
 
     const [serverModule, loadModule] = await Promise.all([
       import("src/lib/public-playlist.server"),
@@ -205,6 +215,12 @@ describe("getPublicPlaylistForOg", () => {
     getPublicPlaylistForOg = serverModule.getPublicPlaylistForOg;
     mockLoadPublicPlaylist = jest.mocked(loadModule.loadPublicPlaylist);
     mockLoadPublicPlaylist.mockReset();
+  });
+
+  afterEach(() => {
+    delete process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL_POOLED;
+    delete process.env.DIRECT_URL;
   });
 
   it("when loadPublicPlaylist succeeds, returns name, username, and up to four cover urls", async () => {
@@ -234,5 +250,54 @@ describe("getPublicPlaylistForOg", () => {
     await expect(
       getPublicPlaylistForOg("11111111-2222-3333-4444-555555555555"),
     ).resolves.toBeNull();
+  });
+});
+
+describe("when no runtime database URL is configured", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    delete process.env.DATABASE_URL;
+    delete process.env.DATABASE_URL_POOLED;
+    delete process.env.DIRECT_URL;
+  });
+
+  it("getPublicPlaylistMetadataForPage returns null without querying Prisma", async () => {
+    const { getPublicPlaylistMetadataForPage } = await import(
+      "src/lib/public-playlist.server"
+    );
+
+    await expect(
+      getPublicPlaylistMetadataForPage("11111111-2222-3333-4444-555555555555"),
+    ).resolves.toBeNull();
+  });
+
+  it("getPublicPlaylistForPage returns null without calling loadPublicPlaylist", async () => {
+    const loadModule = await import("src/lib/public-playlist-load.server");
+    const loadSpy = jest.mocked(loadModule.loadPublicPlaylist);
+    loadSpy.mockReset();
+    const { getPublicPlaylistForPage } = await import(
+      "src/lib/public-playlist.server"
+    );
+
+    await expect(
+      getPublicPlaylistForPage("11111111-2222-3333-4444-555555555555"),
+    ).resolves.toBeNull();
+
+    expect(loadSpy).not.toHaveBeenCalled();
+  });
+
+  it("getPublicPlaylistForOg returns null without calling loadPublicPlaylist", async () => {
+    const loadModule = await import("src/lib/public-playlist-load.server");
+    const loadSpy = jest.mocked(loadModule.loadPublicPlaylist);
+    loadSpy.mockReset();
+    const { getPublicPlaylistForOg } = await import(
+      "src/lib/public-playlist.server"
+    );
+
+    await expect(
+      getPublicPlaylistForOg("11111111-2222-3333-4444-555555555555"),
+    ).resolves.toBeNull();
+
+    expect(loadSpy).not.toHaveBeenCalled();
   });
 });

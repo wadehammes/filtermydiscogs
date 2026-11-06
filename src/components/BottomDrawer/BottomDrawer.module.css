@@ -50,7 +50,7 @@
   isolation: isolate;
   left: 0;
   max-height: min(
-    80dvh,
+    84dvh,
     calc(
       100dvh -
       var(--bottom-drawer-top-inset) -
@@ -67,9 +67,20 @@
   width: 100%;
   z-index: var(--z-10-bottom-drawer);
 
-  &.drawerShellWithFloatingClose {
+  @media (width >= 768px) {
     max-height: min(
       80dvh,
+      calc(
+        100dvh -
+        var(--bottom-drawer-top-inset) -
+        var(--bottom-drawer-bottom-inset)
+      )
+    );
+  }
+
+  &.drawerShellWithFloatingClose {
+    max-height: min(
+      84dvh,
       calc(
         100dvh -
         var(--bottom-drawer-top-inset) -
@@ -78,6 +89,18 @@
       )
     );
     padding-top: var(--bottom-drawer-floating-close-offset);
+
+    @media (width >= 768px) {
+      max-height: min(
+        80dvh,
+        calc(
+          100dvh -
+          var(--bottom-drawer-top-inset) -
+          var(--bottom-drawer-bottom-inset) -
+          var(--bottom-drawer-floating-close-offset)
+        )
+      );
+    }
   }
 
   &.aboveMiniPlayer {
@@ -106,7 +129,7 @@
 
   &.behindMiniPlayer {
     bottom: 0;
-    max-height: 80svh;
+    max-height: 84svh;
     padding-bottom: var(--release-mini-player-stack-offset, 0);
     z-index: var(--z-2-sticky);
 

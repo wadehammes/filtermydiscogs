@@ -97,7 +97,7 @@ export const PublicReleaseSummaryHero = ({
               width={96}
               height={96}
               className={styles.cover}
-              sizes="96px"
+              sizes="(max-width: 767px) 5rem, 96px"
             />
           ) : null}
         </div>

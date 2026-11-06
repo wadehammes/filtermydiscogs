@@ -43,7 +43,7 @@ export const ReleaseModalBody = ({
           />
         ) : null}
 
-        <div className={styles.modalContent}>
+        <div className={styles.bodyCards}>
           {isLoading ? (
             <section
               className={classNames(styles.modalCard, styles.playbackSection)}
