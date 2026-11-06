@@ -6,6 +6,7 @@ import { formatArtistNames } from "src/utils/releaseDisplay";
 import {
   findTrackIndexByPosition,
   flattenTracklist,
+  isPreviewTrackPosition,
   parseYoutubeVideoId,
 } from "src/utils/releasePlayback";
 import { isValidYoutubeVideoId } from "src/utils/youtubeVideoId";
@@ -123,7 +124,11 @@ export const formatTrackPositionTitle = (
   trackPosition: string,
   trackTitle: string,
 ): string => {
-  const position = trackPosition.trim();
+  const trimmedPosition = trackPosition.trim();
+  const position =
+    trimmedPosition && isPreviewTrackPosition(trimmedPosition)
+      ? ""
+      : trimmedPosition;
   const title = trackTitle.trim();
 
   if (!position) {

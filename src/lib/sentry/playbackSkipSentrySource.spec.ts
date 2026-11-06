@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import {
+  PUBLIC_PLAYBACK_VIDEO_REPORT_ERROR_CODE,
   resolvePlaybackSkipSentryLevel,
   resolvePlaybackSkipSource,
 } from "src/lib/sentry/playbackSkipSentrySource";
@@ -11,7 +12,11 @@ describe("playbackSkipSentrySource", () => {
       "watchdog",
     );
     expect(resolvePlaybackSkipSource(101)).toBe("youtube");
+    expect(
+      resolvePlaybackSkipSource(PUBLIC_PLAYBACK_VIDEO_REPORT_ERROR_CODE),
+    ).toBe("public_report");
     expect(resolvePlaybackSkipSentryLevel("watchdog")).toBe("warning");
     expect(resolvePlaybackSkipSentryLevel("youtube")).toBe("info");
+    expect(resolvePlaybackSkipSentryLevel("public_report")).toBe("info");
   });
 });

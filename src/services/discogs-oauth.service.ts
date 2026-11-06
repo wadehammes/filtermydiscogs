@@ -20,6 +20,9 @@ function discogsApiUserAgent(): string {
 
 const MAX_PLAIN_TEXT_ERROR_MESSAGE_LENGTH = 200;
 
+const OAUTH_NONCE_CHARSET =
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
 const isShortPlainTextErrorBody = (text: string): boolean =>
   text.length > 0 &&
   text.length <= MAX_PLAIN_TEXT_ERROR_MESSAGE_LENGTH &&
@@ -93,6 +96,18 @@ class DiscogsOAuthService {
           .digest("base64");
       },
     });
+
+    this.oauth.getNonce = () => {
+      const charsetLen = OAUTH_NONCE_CHARSET.length;
+      let result = "";
+
+      for (let i = 0; i < this.oauth.nonce_length; i += 1) {
+        const index = crypto.randomInt(0, charsetLen);
+        result += OAUTH_NONCE_CHARSET[index];
+      }
+
+      return result;
+    };
   }
 
   private getOAuthHeaders(

@@ -65,6 +65,7 @@ export const PAGE_DESCRIPTIONS = {
   admin: "Admin statistics and analytics dashboard.",
   crateFallback: `A shared crate on ${SITE_NAME}.`,
   playlistFallback: `A shared playlist on ${SITE_NAME}.`,
+  releaseListenFallback: `This Discogs release could not be found. It may have been removed or the link may be wrong.`,
 } as const;
 
 export const homeStructuredData = () => {

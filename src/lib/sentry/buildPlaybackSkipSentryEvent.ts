@@ -7,6 +7,7 @@ export type PlaybackSkipSentryDetails = {
   instanceId?: string;
   isPreviewVideo?: boolean;
   previewVideoTitle?: string;
+  publicPlaylistId?: string;
   releaseId?: number;
   releaseTitle?: string;
   trackKey?: string;
@@ -27,6 +28,10 @@ export const resolvePlaybackSkipHeadline = (
     }
 
     return "Embed Load Watchdog";
+  }
+
+  if (source === "public_report") {
+    return "Public playback video report";
   }
 
   return "YouTube Embed Error";
@@ -136,6 +141,9 @@ export const buildPlaybackSkipSentryTags = ({
   }
   if (details?.trackKey) {
     tags["playback.track_key"] = details.trackKey;
+  }
+  if (details?.publicPlaylistId) {
+    tags["playback.public_playlist_id"] = details.publicPlaylistId;
   }
   const youtubeId = resolvePlaybackSkipYoutubeId(details);
   if (youtubeId) {

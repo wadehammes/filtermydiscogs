@@ -35,6 +35,24 @@ describe("discogsOAuthService", () => {
     });
   });
 
+  it("does not call Math.random when signing OAuth consumer requests", async () => {
+    mockDiscogsFetch.mockResolvedValue(
+      new Response("{}", {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const mathRandom = jest.spyOn(Math, "random");
+
+    await discogsOAuthService.makeConsumerRequest(
+      "https://api.discogs.com/releases/1",
+      "GET",
+    );
+
+    expect(mathRandom).not.toHaveBeenCalled();
+    mathRandom.mockRestore();
+  });
+
   it("uses the Discogs JSON message when the error body is JSON", async () => {
     mockDiscogsFetch.mockResolvedValue(
       new Response(JSON.stringify({ message: "You must authenticate." }), {

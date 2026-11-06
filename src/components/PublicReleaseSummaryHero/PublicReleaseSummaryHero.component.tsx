@@ -16,6 +16,7 @@ import {
 } from "src/components/ReleaseCard/ReleaseHeaderLinks.component";
 import { ReleaseHeroRatingsRow } from "src/components/ReleaseHeroRatingsRow/ReleaseHeroRatingsRow.component";
 import styles from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.module.css";
+import { ReleaseSummaryHeroCopyListenLinkButton } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroCopyListenLinkButton.component";
 import { useDiscogsReleaseQuery } from "src/hooks/queries/useDiscogsReleaseQuery";
 import typographyStyles from "src/styles/modules/typography.module.css";
 import type { DiscogsLabel, DiscogsRelease } from "src/types";
@@ -86,6 +87,7 @@ export const PublicReleaseSummaryHero = ({
   return (
     <div className={styles.hero} data-testid="fmdPublicReleaseSummaryHero">
       <ModalToolbar {...definedProps({ onClose })}>
+        <ReleaseSummaryHeroCopyListenLinkButton release={release} />
         <DiscogsReleaseExternalLink release={release} variant="toolbar" />
       </ModalToolbar>
       <div className={styles.heroMain}>

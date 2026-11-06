@@ -6,15 +6,22 @@ import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicat
 import { PublicPlaylistTrackVoteControls } from "src/components/PublicPlaylistTrackVoteControls/PublicPlaylistTrackVoteControls.component";
 import tracklistStyles from "src/components/ReleaseTracklist/ReleaseTracklist.module.css";
 import {
+  REPORT_WRONG_PUBLIC_PLAYBACK_VIDEO_ARIA_LABEL,
+  REPORT_WRONG_PUBLIC_PLAYBACK_VIDEO_BUTTON_LABEL,
+} from "src/constants/accessibilityLabels.constants";
+import {
   useReleasePlaybackActions,
   useReleasePlaybackState,
 } from "src/context/releasePlayback.context";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
+import { buildPublicPlaybackVideoReportEntry } from "src/utils/buildPublicPlaybackVideoReportEntry";
 import { definedProps } from "src/utils/definedProps";
+import { openPlaybackSkipReportDialog } from "src/utils/playbackSkipUserReportDialogBridge";
 import { isPlaylistTrackActiveInPlayback } from "src/utils/playlistPlayback";
 import { resolvePlaylistTrackReleaseMetaLine } from "src/utils/playlistTrackDisplay";
 import { resolveReleaseDisplayImageUrl } from "src/utils/releaseAlbumCover";
@@ -75,6 +82,12 @@ export const PublicPlaylistTrackItem = ({
     }
 
     onPlayTrack(track);
+  };
+
+  const handleReportWrongVideo = () => {
+    openPlaybackSkipReportDialog(
+      buildPublicPlaybackVideoReportEntry(playlistId, track, release),
+    );
   };
 
   let playbackControlLabel = `Play ${trackLabel}`;
@@ -175,30 +188,46 @@ export const PublicPlaylistTrackItem = ({
           </span>
         </button>
         <div className={tracklistStyles.trackTrailing}>
-          {showTrackVoteControls ? (
-            <PublicPlaylistTrackVoteControls
-              playlistId={playlistId}
-              track={track}
-              {...definedProps({ ownerUserId })}
-            />
-          ) : null}
-          <button
-            type="button"
-            className={styles.playbackControlButton}
-            onClick={handlePlaybackControl}
-            aria-label={playbackControlLabel}
-            data-testid="fmdPublicPlaylistTrackPlaybackControl"
-          >
-            {isActiveInPlayback ? (
-              isPlaybackPaused ? (
-                <PauseIcon aria-hidden />
+          <div className={styles.trailingActions}>
+            {showTrackVoteControls ? (
+              <PublicPlaylistTrackVoteControls
+                playlistId={playlistId}
+                track={track}
+                {...definedProps({ ownerUserId })}
+              />
+            ) : null}
+            {track.youtube_id ? (
+              <button
+                type="button"
+                className={classNames(
+                  textActionStyles.muted,
+                  styles.reportWrongVideoButton,
+                )}
+                onClick={handleReportWrongVideo}
+                aria-label={REPORT_WRONG_PUBLIC_PLAYBACK_VIDEO_ARIA_LABEL}
+                data-testid="fmdPublicPlaylistTrackReportWrongVideo"
+              >
+                {REPORT_WRONG_PUBLIC_PLAYBACK_VIDEO_BUTTON_LABEL}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className={styles.playbackControlButton}
+              onClick={handlePlaybackControl}
+              aria-label={playbackControlLabel}
+              data-testid="fmdPublicPlaylistTrackPlaybackControl"
+            >
+              {isActiveInPlayback ? (
+                isPlaybackPaused ? (
+                  <PauseIcon aria-hidden />
+                ) : (
+                  <PlayingIndicator isPaused={false} />
+                )
               ) : (
-                <PlayingIndicator isPaused={false} />
-              )
-            ) : (
-              <PlayIcon aria-hidden />
-            )}
-          </button>
+                <PlayIcon aria-hidden />
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </li>

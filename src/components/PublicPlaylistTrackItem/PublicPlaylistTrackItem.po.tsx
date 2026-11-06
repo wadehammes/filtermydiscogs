@@ -17,7 +17,12 @@ import type {
   ReleasePlaybackActions,
   ReleasePlaybackState,
 } from "src/types/releasePlaybackContext.types";
+import { openPlaybackSkipReportDialog } from "src/utils/playbackSkipUserReportDialogBridge";
 import { render } from "test-utils";
+
+jest.mock("src/utils/playbackSkipUserReportDialogBridge", () => ({
+  openPlaybackSkipReportDialog: jest.fn(),
+}));
 
 jest.mock("src/context/releasePlayback.context", () => ({
   useReleasePlaybackState: jest.fn(),
@@ -58,6 +63,10 @@ const defaultProps: PublicPlaylistTrackItemProps = {
 
 export class PublicPlaylistTrackItemPageObject extends BasePageObject {
   public testId = "fmdPublicPlaylistTrackItem";
+
+  public openPlaybackSkipReportDialog = jest.mocked(
+    openPlaybackSkipReportDialog,
+  );
 
   public togglePlayback = jest.fn();
 

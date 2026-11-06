@@ -20,7 +20,7 @@ if (!username) {
 - **If blocks always use `{}`.** Same for `else`, `for`, `while`, and `do`—never omit braces for single-line bodies.
 - **Never use `any`.** Use proper types for props, state, and function signatures.
 - **Components**: Use arrow functions where you control the export (e.g. `export const MyComponent = (props: Props) => { ... }`). Do not use `React.FC` / `FC` in new code; prefer typed props on arrow components. When editing older context files that still use `FC`, match the surrounding file unless you are refactoring that module.
-- **Never use non-null assertion (`!`).** Use optional chaining, nullish coalescing (`??`), or explicit checks instead.
+- **Never use non-null assertion (`!`).** Use optional chaining, nullish coalescing (`??`), or explicit checks instead. For **`Buffer`**, index access **`buf[i]`** is typed as possibly **`undefined`** even inside bounds — prefer **`buf.readUInt8(i)`** (or similar) when you need a definite byte without `!`. For uniform random indices into a fixed alphabet, prefer **`crypto.randomInt`** (avoids modulo bias from raw bytes) — see OAuth nonce in [`discogs-oauth.service.ts`](../../src/services/discogs-oauth.service.ts).
 - **Ref bags:** Type shared **`useRef`** handles as **`RefObject<T>`** in hook params and utils — **`MutableRefObject`** is deprecated in React 19 **`@types/react`**.
 - **Omit redundant return types** when the compiler can infer them. Add return types only for public API clarity or when inference would be wrong or unclear.
 - **No nested ternaries.** Use `if`/`else` or extract to a variable or helper. A single ternary is fine; nesting is not.

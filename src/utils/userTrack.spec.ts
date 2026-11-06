@@ -49,6 +49,15 @@ describe("userTrack utils", () => {
     expect(formatTrackPositionTitle("A1", "A1")).toBe("A1");
   });
 
+  it("formatTrackPositionTitle omits synthetic preview video position in the label", () => {
+    expect(
+      formatTrackPositionTitle(
+        "preview:https://www.youtube.com/watch?v=K9dGxyfJ1U",
+        "Walker. Membrane [Teluric Remix] (Ci.03)",
+      ),
+    ).toBe("Walker. Membrane [Teluric Remix] (Ci.03)");
+  });
+
   it("formatTopUserTrackHeadLabel combines position and catalog title", () => {
     expect(
       formatTopUserTrackHeadLabel({
