@@ -1,23 +1,30 @@
 import type { RenderResult } from "@testing-library/react";
-import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
-import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
 import { render } from "test-utils";
-import { PlaybackSkipReportDialog } from "./PlaybackSkipReportDialog.component";
+import {
+  PlaybackSkipReportDialog,
+  type PlaybackSkipReportDialogProps,
+} from "./PlaybackSkipReportDialog.component";
 
-export type PlaybackSkipReportDialogRenderProps = {
-  open?: boolean;
-  entry?: PlaybackSkipLogEntry | null;
-  onClose?: () => void;
-  onSubmitUserReport?: (
-    entry: PlaybackSkipLogEntry,
-    report: PlaybackSkipUserReportFormValues,
-  ) => void;
-};
+export type PlaybackSkipUserReportSubmitHandler =
+  PlaybackSkipReportDialogProps["onSubmitUserReport"];
+
+export const mockPlaybackSkipUserReportSubmit = (delivered = false) =>
+  jest.fn<
+    ReturnType<PlaybackSkipUserReportSubmitHandler>,
+    Parameters<PlaybackSkipUserReportSubmitHandler>
+  >(async (_entry, _report) => delivered);
+
+export type PlaybackSkipReportDialogRenderProps = Partial<
+  Pick<
+    PlaybackSkipReportDialogProps,
+    "open" | "entry" | "onClose" | "onSubmitUserReport"
+  >
+>;
 
 export class PlaybackSkipReportDialogPageObject extends BasePageObject {
   public testId = "fmdPlaybackSkipReportDialog";
@@ -45,7 +52,9 @@ export class PlaybackSkipReportDialogPageObject extends BasePageObject {
         entry={entryOverride ?? entry}
         open={open ?? true}
         onClose={onClose ?? jest.fn()}
-        onSubmitUserReport={onSubmitUserReport ?? jest.fn()}
+        onSubmitUserReport={
+          onSubmitUserReport ?? mockPlaybackSkipUserReportSubmit()
+        }
       />
     );
   }

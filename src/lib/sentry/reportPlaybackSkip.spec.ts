@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import type { deliverSentryClientCapture } from "src/lib/sentry/deliverSentryClientCapture.client";
 import {
   getPlaybackSkipSentryReportCountForTests,
   reportPlaybackSkipToSentry,
@@ -6,10 +7,30 @@ import {
   resetPlaybackSkipSentryReportCountForTests,
 } from "src/lib/sentry/reportPlaybackSkip";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
+import { getMockedExport } from "src/tests/mocks/getMockedExport";
 import { YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE } from "src/utils/playbackSkippedTrackLog";
+
+jest.mock("src/lib/sentry/deliverSentryClientCapture.client", () => ({
+  deliverSentryClientCapture: jest.fn(async (capture: () => void) => {
+    capture();
+    return true;
+  }),
+}));
+
+const mockDeliverSentryClientCapture = getMockedExport<
+  typeof deliverSentryClientCapture
+>(
+  "src/lib/sentry/deliverSentryClientCapture.client",
+  "deliverSentryClientCapture",
+);
 
 describe("reportPlaybackSkipToSentry", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+    mockDeliverSentryClientCapture.mockImplementation(async (capture) => {
+      capture();
+      return true;
+    });
     resetPlaybackSkipSentryReportCountForTests();
   });
 
@@ -48,7 +69,7 @@ describe("reportPlaybackSkipToSentry", () => {
       );
     }
 
-    reportUserPlaybackSkipToSentry(
+    void reportUserPlaybackSkipToSentry(
       playbackSkipLogEntryFactory.embedDisabledReport({
         trackLabel: "A1 False skip",
         context: { trackKey: "inst-a1", youtubeVideoId: "abc123" },

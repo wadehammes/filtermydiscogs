@@ -17,12 +17,31 @@ describe("shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace", () => {
     ).toBe(true);
   });
 
-  it("forwards terminal skip onError during grace even while video UI loading", () => {
+  it("ignores terminal onError during grace while video UI loading or transition", () => {
+    expect(
+      shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
+        errorCode: 101,
+        isWithinTrackSwitchGrace: true,
+        isPlaybackVideoUiLoading: true,
+        hasPlaybackVideoTransitionTarget: false,
+      }),
+    ).toBe(true);
     expect(
       shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
         errorCode: 100,
         isWithinTrackSwitchGrace: true,
-        isPlaybackVideoUiLoading: true,
+        isPlaybackVideoUiLoading: false,
+        hasPlaybackVideoTransitionTarget: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("forwards terminal onError during grace when upload switch has settled", () => {
+    expect(
+      shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
+        errorCode: 101,
+        isWithinTrackSwitchGrace: true,
+        isPlaybackVideoUiLoading: false,
         hasPlaybackVideoTransitionTarget: false,
       }),
     ).toBe(false);

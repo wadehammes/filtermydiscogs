@@ -27,11 +27,15 @@ export const shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace = ({
     return false;
   }
 
+  if (isPlaybackVideoUiLoading || hasPlaybackVideoTransitionTarget) {
+    return true;
+  }
+
   if (isTerminalYoutubeEmbedSkipErrorCode(errorCode)) {
     return false;
   }
 
-  return isPlaybackVideoUiLoading || hasPlaybackVideoTransitionTarget;
+  return false;
 };
 
 export const shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden = ({

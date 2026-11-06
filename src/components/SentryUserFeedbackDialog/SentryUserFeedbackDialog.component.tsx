@@ -131,7 +131,7 @@ export type SentryUserFeedbackDialogProps = {
   onSubmitFeedback?: (
     values: SentryUserFeedbackFormValues,
     screenshot?: Attachment,
-  ) => void;
+  ) => Promise<boolean>;
   onCaptureScreenshot?: () => Promise<Attachment | undefined>;
   screenshotCaptureSupported?: boolean;
 };
@@ -160,6 +160,7 @@ export const SentryUserFeedbackDialog = ({
     undefined,
   );
   const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   const { register, handleSubmit, reset, formState } =
     useForm<SentryUserFeedbackFormValues>({
@@ -273,6 +274,7 @@ export const SentryUserFeedbackDialog = ({
             Cancel
           </Button>
           <Button
+            disabled={isSubmittingReport}
             form={SENTRY_USER_FEEDBACK_FORM_ID}
             type="submit"
             variant="primary"
@@ -285,9 +287,21 @@ export const SentryUserFeedbackDialog = ({
       <form
         id={SENTRY_USER_FEEDBACK_FORM_ID}
         className={styles.form}
-        onSubmit={handleSubmit((values) => {
-          onSubmitFeedback(values, screenshotAttachment);
-          onClose();
+        onSubmit={handleSubmit(async (values) => {
+          setIsSubmittingReport(true);
+
+          try {
+            const delivered = await onSubmitFeedback(
+              values,
+              screenshotAttachment,
+            );
+
+            if (delivered) {
+              onClose();
+            }
+          } finally {
+            setIsSubmittingReport(false);
+          }
         })}
       >
         <FormDialog.Field label="What went wrong?" htmlFor={messageFieldId}>

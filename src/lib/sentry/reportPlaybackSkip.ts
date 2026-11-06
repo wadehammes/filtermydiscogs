@@ -1,9 +1,11 @@
 import {
-  type BuildPlaybackSkipCaptureOptionsParams,
   buildPlaybackSkipCaptureOptions,
   type PlaybackSkipCapturePayload,
 } from "src/lib/sentry/buildPlaybackSkipCaptureOptions";
 import { captureAppMessage } from "src/lib/sentry/captureAppMessage.client";
+import { capturePlaybackSkipUserFeedback } from "src/lib/sentry/capturePlaybackSkipUserFeedback.client";
+import { capturePlaybackSkipUserReportIssue } from "src/lib/sentry/capturePlaybackSkipUserReportIssue.client";
+import { deliverSentryClientCapture } from "src/lib/sentry/deliverSentryClientCapture.client";
 import { resolvePlaybackSkipSource } from "src/lib/sentry/playbackSkipSentrySource";
 import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 
@@ -17,11 +19,8 @@ export const resetPlaybackSkipSentryReportCountForTests = () => {
 export const getPlaybackSkipSentryReportCountForTests = () =>
   playbackSkipSentryReportCount;
 
-const capturePlaybackSkipReport = (
-  payload: PlaybackSkipCapturePayload,
-  captureParams: BuildPlaybackSkipCaptureOptionsParams,
-) => {
-  const options = buildPlaybackSkipCaptureOptions(payload, captureParams);
+const capturePlaybackSkipReport = (payload: PlaybackSkipCapturePayload) => {
+  const options = buildPlaybackSkipCaptureOptions(payload);
   captureAppMessage(options.message, {
     level: options.level,
     fingerprint: options.fingerprint,
@@ -42,15 +41,14 @@ export const reportPlaybackSkipToSentry = (
   }
 
   playbackSkipSentryReportCount += 1;
-  capturePlaybackSkipReport(payload, { userReported: false });
+  capturePlaybackSkipReport(payload);
 };
 
 export const reportUserPlaybackSkipToSentry = (
   payload: PlaybackSkipCapturePayload,
   userReport: PlaybackSkipUserReportFormValues,
-) => {
-  capturePlaybackSkipReport(payload, {
-    userReported: true,
-    userReport,
+): Promise<boolean> =>
+  deliverSentryClientCapture(() => {
+    capturePlaybackSkipUserFeedback(payload, userReport);
+    capturePlaybackSkipUserReportIssue(payload, userReport);
   });
-};

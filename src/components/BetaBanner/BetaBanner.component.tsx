@@ -19,7 +19,7 @@ export const BetaBanner = ({
   onSubmitBugReport,
   testId,
 }: BetaBannerProps) => {
-  const showBanner = resolveBetaBannerVisible(onSubmitBugReport);
+  const showBanner = resolveBetaBannerVisible();
 
   if (!showBanner) {
     return null;

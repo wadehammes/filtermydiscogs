@@ -58,6 +58,7 @@ export interface ReleasePlaybackState {
   isMiniPlayerVisible: boolean;
   shouldAutoplayEmbed: boolean;
   isPlaybackEmbedMounted: boolean;
+  playbackEmbedRemountNonce: number;
   isPlaybackReady: boolean;
   canPlayPrevious: boolean;
   canPlayNext: boolean;

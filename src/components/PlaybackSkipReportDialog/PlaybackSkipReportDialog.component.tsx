@@ -36,7 +36,7 @@ export type PlaybackSkipReportDialogProps = {
   onSubmitUserReport: (
     entry: PlaybackSkipLogEntry,
     report: PlaybackSkipUserReportFormValues,
-  ) => void;
+  ) => Promise<boolean>;
 };
 
 export const PlaybackSkipReportDialog = ({
@@ -47,6 +47,7 @@ export const PlaybackSkipReportDialog = ({
 }: PlaybackSkipReportDialogProps) => {
   const categoryGroupId = useId();
   const noteFieldId = useId();
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   const { register, handleSubmit, reset, formState } =
     useForm<PlaybackSkipUserReportFormInput>({
@@ -88,6 +89,7 @@ export const PlaybackSkipReportDialog = ({
             Cancel
           </Button>
           <Button
+            disabled={isSubmittingReport}
             form={PLAYBACK_SKIP_REPORT_FORM_ID}
             type="submit"
             variant="primary"
@@ -100,13 +102,25 @@ export const PlaybackSkipReportDialog = ({
       <form
         id={PLAYBACK_SKIP_REPORT_FORM_ID}
         className={styles.form}
-        onSubmit={handleSubmit((values) => {
+        onSubmit={handleSubmit(async (values) => {
           if (!entry) {
             return;
           }
 
-          onSubmitUserReport(entry, parsePlaybackSkipUserReportForm(values));
-          onClose();
+          setIsSubmittingReport(true);
+
+          try {
+            const delivered = await onSubmitUserReport(
+              entry,
+              parsePlaybackSkipUserReportForm(values),
+            );
+
+            if (delivered) {
+              onClose();
+            }
+          } finally {
+            setIsSubmittingReport(false);
+          }
         })}
       >
         <fieldset className={styles.categoryFieldset} id={categoryGroupId}>

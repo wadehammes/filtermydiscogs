@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
+import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
 import {
   completePlaybackSkipUserReport,
   openPlaybackSkipReportDialog,
@@ -33,8 +35,13 @@ describe("playbackSkipUserReportDialogBridge", () => {
     expect(onOpen).toHaveBeenCalledWith(entry);
   });
 
-  it("when complete handler is registered, forwards entry and form values", () => {
-    const onComplete = jest.fn();
+  it("when complete handler is registered, forwards entry and form values", async () => {
+    const onComplete = jest.fn<
+      (
+        entry: PlaybackSkipLogEntry,
+        report: PlaybackSkipUserReportFormValues,
+      ) => Promise<boolean>
+    >(async () => true);
     unregisterComplete = registerPlaybackSkipUserReportComplete(onComplete);
 
     const entry = playbackSkipLogEntryFactory.embedDisabledReport({
@@ -43,13 +50,15 @@ describe("playbackSkipUserReportDialogBridge", () => {
     });
     const report = { category: "wrong_video" as const, note: "Bad match" };
 
-    completePlaybackSkipUserReport(entry, report);
+    await expect(completePlaybackSkipUserReport(entry, report)).resolves.toBe(
+      true,
+    );
 
     expect(onComplete).toHaveBeenCalledTimes(1);
     expect(onComplete).toHaveBeenCalledWith(entry, report);
   });
 
-  it("when handlers are not registered, open and complete are no-ops", () => {
+  it("when handlers are not registered, open is a no-op and complete resolves false", async () => {
     expect(() => {
       openPlaybackSkipReportDialog(
         playbackSkipLogEntryFactory.build({
@@ -59,6 +68,9 @@ describe("playbackSkipUserReportDialogBridge", () => {
           context: undefined,
         }),
       );
+    }).not.toThrow();
+
+    await expect(
       completePlaybackSkipUserReport(
         playbackSkipLogEntryFactory.build({
           errorCode: 100,
@@ -67,7 +79,7 @@ describe("playbackSkipUserReportDialogBridge", () => {
           context: undefined,
         }),
         { category: "other" },
-      );
-    }).not.toThrow();
+      ),
+    ).resolves.toBe(false);
   });
 });

@@ -28,6 +28,7 @@ const idlePlaybackState: ReleasePlaybackState = {
   isMiniPlayerVisible: false,
   shouldAutoplayEmbed: false,
   isPlaybackEmbedMounted: false,
+  playbackEmbedRemountNonce: 0,
   isPlaybackReady: false,
   canPlayPrevious: false,
   canPlayNext: false,

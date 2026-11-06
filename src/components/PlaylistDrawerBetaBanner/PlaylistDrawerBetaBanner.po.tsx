@@ -1,9 +1,16 @@
 import type { RenderResult } from "@testing-library/react";
+import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { render } from "test-utils";
+
+jest.mock("src/lib/sentry/sentryInitOptions", () => ({
+  ...jest.requireActual("src/lib/sentry/sentryInitOptions"),
+  resolveSentryEnabled: jest.fn(),
+}));
+
 import {
   PlaylistDrawerBetaBanner,
   type PlaylistDrawerBetaBannerProps,
@@ -18,6 +25,7 @@ export class PlaylistDrawerBetaBannerPageObject extends BasePageObject {
   constructor(props: BasePageObjectProps = {}) {
     super(props);
     jest.resetAllMocks();
+    jest.mocked(resolveSentryEnabled).mockReturnValue(true);
   }
 
   private playlistDrawerBetaBannerElement(
