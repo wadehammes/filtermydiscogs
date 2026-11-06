@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
-import { PlaybackSkipReportDialogPageObject } from "src/components/PlaybackSkipReportDialog/PlaybackSkipReportDialog.po";
+import {
+  mockPlaybackSkipUserReportSubmit,
+  PlaybackSkipReportDialogPageObject,
+} from "src/components/PlaybackSkipReportDialog/PlaybackSkipReportDialog.po";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
-import { screen } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
 let po: PlaybackSkipReportDialogPageObject;
 
@@ -14,7 +17,7 @@ describe("PlaybackSkipReportDialog", () => {
 
   it("when Send report is submitted with a category, completes the user report", async () => {
     const user = userEvent.setup();
-    const onSubmitUserReport = jest.fn();
+    const onSubmitUserReport = mockPlaybackSkipUserReportSubmit(true);
     const entry = playbackSkipLogEntryFactory.embedDisabledReport();
     const onClose = jest.fn();
 
@@ -28,7 +31,9 @@ describe("PlaybackSkipReportDialog", () => {
     expect(onSubmitUserReport).toHaveBeenCalledWith(entry, {
       category: "plays_on_youtube_not_here",
     });
-    expect(onClose).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("when Send report is clicked without a category, shows validation message", async () => {
@@ -36,7 +41,7 @@ describe("PlaybackSkipReportDialog", () => {
 
     po.renderPlaybackSkipReportDialog({
       onClose: jest.fn(),
-      onSubmitUserReport: jest.fn(),
+      onSubmitUserReport: mockPlaybackSkipUserReportSubmit(),
     });
 
     await user.click(screen.getByRole("button", { name: "Send report" }));
@@ -49,7 +54,7 @@ describe("PlaybackSkipReportDialog", () => {
     const { rerender } = po.renderPlaybackSkipReportDialog({
       open: true,
       onClose: jest.fn(),
-      onSubmitUserReport: jest.fn(),
+      onSubmitUserReport: mockPlaybackSkipUserReportSubmit(),
     });
 
     await user.click(screen.getByRole("radio", { name: "Wrong video" }));

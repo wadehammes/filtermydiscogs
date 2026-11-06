@@ -20,15 +20,12 @@ export type PlaybackSkipCapturePayload = {
   context?: PlaybackSkipSentryDetails;
 };
 
-export type BuildPlaybackSkipCaptureOptionsParams = {
-  userReported: boolean;
-  userReport?: PlaybackSkipUserReportFormValues;
-};
-
-export const buildPlaybackSkipCaptureOptions = (
-  { errorCode, trackLabel, reason, context }: PlaybackSkipCapturePayload,
-  { userReported, userReport }: BuildPlaybackSkipCaptureOptionsParams,
-): {
+export const buildPlaybackSkipCaptureOptions = ({
+  errorCode,
+  trackLabel,
+  reason,
+  context,
+}: PlaybackSkipCapturePayload): {
   extra: Record<string, unknown>;
   fingerprint: string[];
   level: SeverityLevel;
@@ -36,9 +33,7 @@ export const buildPlaybackSkipCaptureOptions = (
   tags: Record<string, string>;
 } => {
   const source = resolvePlaybackSkipSource(errorCode);
-  const level = userReported
-    ? "warning"
-    : resolvePlaybackSkipSentryLevel(source);
+  const level = resolvePlaybackSkipSentryLevel(source);
 
   const eventInput = definedProps({
     source,
@@ -47,22 +42,9 @@ export const buildPlaybackSkipCaptureOptions = (
     details: context,
   });
 
-  let message = buildPlaybackSkipSentryMessage(eventInput);
-  if (userReported) {
-    message = `${message} (user report)`;
-  }
-
+  const message = buildPlaybackSkipSentryMessage(eventInput);
   const detailLine = buildPlaybackSkipSentryDetailLine(eventInput);
-  const fingerprint = userReported
-    ? [
-        "playback-skip",
-        "user-report",
-        userReport?.category ?? "unknown",
-        source,
-        reason,
-        context?.trackKey?.trim() || trackLabel,
-      ]
-    : ["playback-skip", source, reason];
+  const fingerprint = ["playback-skip", source, reason];
 
   const tags = {
     ...buildPlaybackSkipSentryTags(
@@ -70,12 +52,6 @@ export const buildPlaybackSkipCaptureOptions = (
     ),
     ...sentryUserVisibleTag(true),
   };
-  if (userReported) {
-    tags["playback.user_report"] = "true";
-    if (userReport?.category) {
-      tags["playback.user_report_category"] = userReport.category;
-    }
-  }
 
   return {
     level,
@@ -87,10 +63,38 @@ export const buildPlaybackSkipCaptureOptions = (
       trackLabel,
       reason,
       skipSource: source,
-      userReported,
-      userReportCategory: userReport?.category,
-      userNote: userReport?.note,
+      userReported: false,
       ...context,
+    }),
+  };
+};
+
+export const buildPlaybackSkipUserReportCaptureOptions = (
+  payload: PlaybackSkipCapturePayload,
+  userReport: PlaybackSkipUserReportFormValues,
+): {
+  extra: Record<string, unknown>;
+  fingerprint: string[];
+  level: SeverityLevel;
+  message: string;
+  tags: Record<string, string>;
+} => {
+  const base = buildPlaybackSkipCaptureOptions(payload);
+
+  return {
+    level: "warning",
+    message: `${base.message} (user report)`,
+    fingerprint: base.fingerprint,
+    tags: {
+      ...base.tags,
+      "playback.user_report": "true",
+      "playback.user_report_category": userReport.category,
+    },
+    extra: definedProps({
+      ...base.extra,
+      userReported: true,
+      userReportCategory: userReport.category,
+      userNote: userReport.note?.trim(),
     }),
   };
 };

@@ -50,6 +50,7 @@ export const ReleaseMiniPlayer = ({
     isPlaybackReady,
     shouldAutoplayEmbed,
     isPlaybackEmbedMounted,
+    playbackEmbedRemountNonce,
     canPlayPrevious,
     canPlayNext,
     isLoading,
@@ -226,7 +227,7 @@ export const ReleaseMiniPlayer = ({
                   </div>
                 ) : null}
                 <PersistentYoutubeIframe
-                  key={String(release.instance_id)}
+                  key={`${String(release.instance_id)}-${playbackEmbedRemountNonce}`}
                   videoId={playbackVideoId}
                   videoTitle={activePlaybackTitle ?? "Release preview"}
                   autoplay={shouldAutoplayIframe}

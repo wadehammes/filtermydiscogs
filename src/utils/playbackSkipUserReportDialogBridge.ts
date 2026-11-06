@@ -6,7 +6,7 @@ type OpenPlaybackSkipReportDialog = (entry: PlaybackSkipLogEntry) => void;
 type CompletePlaybackSkipUserReport = (
   entry: PlaybackSkipLogEntry,
   report: PlaybackSkipUserReportFormValues,
-) => void;
+) => Promise<boolean>;
 
 let openPlaybackSkipReportDialogImpl: OpenPlaybackSkipReportDialog | null =
   null;
@@ -43,6 +43,5 @@ export const openPlaybackSkipReportDialog = (
 export const completePlaybackSkipUserReport = (
   entry: PlaybackSkipLogEntry,
   report: PlaybackSkipUserReportFormValues,
-): void => {
-  completePlaybackSkipUserReportImpl?.(entry, report);
-};
+): Promise<boolean> =>
+  completePlaybackSkipUserReportImpl?.(entry, report) ?? Promise.resolve(false);

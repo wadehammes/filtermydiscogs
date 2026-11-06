@@ -357,7 +357,7 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(onYoutubeEmbedPlaybackError).not.toHaveBeenCalled();
   });
 
-  it("forwards terminal onError during track-switch grace while video UI loading", () => {
+  it("ignores terminal onError during track-switch grace while video UI loading", () => {
     const onYoutubeEmbedPlaybackError = jest.fn();
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;
@@ -369,9 +369,9 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     isPlaybackVideoUiLoadingRef.current = true;
 
     result.current.notifyImperativeEmbedLoadStarted();
-    dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
+    dispatchYoutubePlayerError({ contentWindow, errorCode: 101 });
 
-    expect(onYoutubeEmbedPlaybackError).toHaveBeenCalledWith(100);
+    expect(onYoutubeEmbedPlaybackError).not.toHaveBeenCalled();
   });
 
   it("forwards onError during track-switch grace when upload switch UI is not active", () => {

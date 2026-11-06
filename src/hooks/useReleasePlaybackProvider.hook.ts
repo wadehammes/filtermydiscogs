@@ -48,6 +48,7 @@ import {
 import { applyPlaybackEmbedSessionEvent } from "src/utils/applyPlaybackEmbedSessionEvent";
 import { definedProps } from "src/utils/definedProps";
 import { resolveEmbedUnavailableWatchdogOutcome } from "src/utils/embedUnavailableWatchdogOutcome";
+import { shouldRemountYoutubeEmbedAfterEmbedDisabledError } from "src/utils/playbackEmbedDisabledRecovery";
 import {
   initialPlaybackEmbedSessionState,
   type PlaybackEmbedSessionEvent,
@@ -168,6 +169,8 @@ export const useReleasePlaybackProvider = (): {
   const isPaused = selectIsPaused(session);
   const [shouldAutoplayEmbed, setShouldAutoplayEmbed] = useState(false);
   const [isPlaybackEmbedMounted, setIsPlaybackEmbedMounted] = useState(false);
+  const [playbackEmbedRemountNonce, setPlaybackEmbedRemountNonce] = useState(0);
+  const embedSrcRecoveryAttemptedVideoIdsRef = useRef<Set<string>>(new Set());
   const [embedVideoId, setEmbedVideoId] = useState<string | null>(null);
   const [playbackVideoTransitionTargetId, setPlaybackVideoTransitionTargetId] =
     useState<string | null>(null);
@@ -1138,6 +1141,30 @@ export const useReleasePlaybackProvider = (): {
   ]);
 
   onYoutubeEmbedPlaybackErrorRef.current = (errorCode) => {
+    const activeEmbedVideoId = embedVideoIdRef.current;
+
+    if (
+      shouldRemountYoutubeEmbedAfterEmbedDisabledError({
+        errorCode,
+        videoId: activeEmbedVideoId,
+        attemptedVideoIds: embedSrcRecoveryAttemptedVideoIdsRef.current,
+      })
+    ) {
+      const trimmedVideoId = activeEmbedVideoId?.trim();
+
+      if (trimmedVideoId) {
+        embedSrcRecoveryAttemptedVideoIdsRef.current.add(trimmedVideoId);
+      }
+
+      embedUnavailableSkipHandlerRef.current.resetDedupe();
+      embedStartWatchdogRef.current.disarm();
+      clearEmbedWatchdogSyncProbeTimeoutRef.current();
+      dispatchEmbedSessionRef.current({ type: "embed/confirm/reset" });
+      markEmbedTrackSwitchGraceRef.current();
+      setPlaybackEmbedRemountNonce((previous) => previous + 1);
+      return;
+    }
+
     embedUnavailableSkipHandlerRef.current.handleFailure(
       errorCode,
       advanceQueueAfterSkip,
@@ -1467,6 +1494,7 @@ export const useReleasePlaybackProvider = (): {
       isMiniPlayerVisible,
       shouldAutoplayEmbed,
       isPlaybackEmbedMounted,
+      playbackEmbedRemountNonce,
       isPlaybackReady,
       canPlayPrevious,
       canPlayNext,
@@ -1496,6 +1524,7 @@ export const useReleasePlaybackProvider = (): {
       isMiniPlayerVisible,
       shouldAutoplayEmbed,
       isPlaybackEmbedMounted,
+      playbackEmbedRemountNonce,
       isPlaybackReady,
       canPlayPrevious,
       canPlayNext,

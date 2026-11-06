@@ -7,8 +7,11 @@ import {
   jest,
 } from "@jest/globals";
 import type { captureFeedback } from "@sentry/react";
-import { SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE } from "src/constants/sentryUserFeedbackForm.constants";
-import type { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
+import {
+  SENTRY_CLIENT_DELIVERY_FAILED_TOAST_MESSAGE,
+  SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE,
+} from "src/constants/sentryUserFeedbackForm.constants";
+import type { deliverSentryClientCapture } from "src/lib/sentry/deliverSentryClientCapture.client";
 import {
   getMockedExport,
   getMockedModule,
@@ -19,13 +22,14 @@ jest.mock("@sentry/react", () => ({
   captureFeedback: jest.fn(),
 }));
 
-jest.mock("src/lib/sentry/sentryInitOptions", () => ({
-  resolveSentryEnabled: jest.fn(),
+jest.mock("src/lib/sentry/deliverSentryClientCapture.client", () => ({
+  deliverSentryClientCapture: jest.fn(),
 }));
 
 jest.mock("src/utils/toast", () => ({
   toast: {
     success: jest.fn(),
+    error: jest.fn(),
   },
 }));
 
@@ -34,14 +38,20 @@ const mockCaptureFeedback = getMockedExport<typeof captureFeedback>(
   "captureFeedback",
 );
 
-const mockResolveSentryEnabled = getMockedExport<typeof resolveSentryEnabled>(
-  "src/lib/sentry/sentryInitOptions",
-  "resolveSentryEnabled",
+const mockDeliverSentryClientCapture = getMockedExport<
+  typeof deliverSentryClientCapture
+>(
+  "src/lib/sentry/deliverSentryClientCapture.client",
+  "deliverSentryClientCapture",
 );
 
 const mockToastSuccess = getMockedModule<{ toast: typeof toast }>(
   "src/utils/toast",
 ).toast.success;
+
+const mockToastError = getMockedModule<{ toast: typeof toast }>(
+  "src/utils/toast",
+).toast.error;
 
 describe("submitSentryUserFeedback", () => {
   let submitSentryUserFeedback: typeof import("src/lib/sentry/submitSentryUserFeedback.client").submitSentryUserFeedback;
@@ -54,37 +64,50 @@ describe("submitSentryUserFeedback", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockResolveSentryEnabled.mockReturnValue(true);
+    mockDeliverSentryClientCapture.mockImplementation(async (capture) => {
+      capture();
+      return true;
+    });
   });
 
-  it("when Sentry is disabled, does not send feedback", () => {
-    mockResolveSentryEnabled.mockReturnValue(false);
-
-    submitSentryUserFeedback({
-      message: "Something broke",
-      name: "",
-      email: "",
+  it("when delivery fails, shows an error toast and returns false", async () => {
+    mockDeliverSentryClientCapture.mockImplementation(async (capture) => {
+      capture();
+      return false;
     });
 
-    expect(mockCaptureFeedback).not.toHaveBeenCalled();
+    await expect(
+      submitSentryUserFeedback({
+        message: "Something broke",
+        name: "",
+        email: "",
+      }),
+    ).resolves.toBe(false);
+
+    expect(mockCaptureFeedback).toHaveBeenCalledTimes(1);
     expect(mockToastSuccess).not.toHaveBeenCalled();
+    expect(mockToastError).toHaveBeenCalledWith(
+      SENTRY_CLIENT_DELIVERY_FAILED_TOAST_MESSAGE,
+    );
   });
 
-  it("when a screenshot attachment is provided, includes it in the hint", () => {
+  it("when a screenshot attachment is provided, includes it in the hint", async () => {
     const screenshot = {
       data: new Uint8Array([1, 2, 3]),
       filename: "screenshot.png",
       contentType: "image/png",
     };
 
-    submitSentryUserFeedback(
-      {
-        message: "Broken layout",
-        name: "",
-        email: "",
-      },
-      screenshot,
-    );
+    await expect(
+      submitSentryUserFeedback(
+        {
+          message: "Broken layout",
+          name: "",
+          email: "",
+        },
+        screenshot,
+      ),
+    ).resolves.toBe(true);
 
     expect(mockCaptureFeedback).toHaveBeenCalledWith(
       expect.objectContaining({ message: "Broken layout" }),
@@ -95,12 +118,14 @@ describe("submitSentryUserFeedback", () => {
     );
   });
 
-  it("sends feedback with replay and user_menu tag", () => {
-    submitSentryUserFeedback({
-      message: " Playback failed ",
-      name: " Wade ",
-      email: " wade@example.com ",
-    });
+  it("sends feedback with replay and user_menu tag", async () => {
+    await expect(
+      submitSentryUserFeedback({
+        message: " Playback failed ",
+        name: " Wade ",
+        email: " wade@example.com ",
+      }),
+    ).resolves.toBe(true);
 
     expect(mockCaptureFeedback).toHaveBeenCalledWith(
       {

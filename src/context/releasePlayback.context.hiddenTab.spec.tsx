@@ -447,6 +447,19 @@ describe("ReleasePlaybackProvider — hidden tab", () => {
     mockAppendPlaybackSkipAndSchedule.mockClear();
 
     act(() => {
+      result.current.notifyPlaybackVideoLoadStarted();
+      jest.advanceTimersByTime(EMBED_TRACK_SWITCH_PAUSE_GRACE_MS + 1);
+      dispatchYoutubeInfoDelivery({
+        contentWindow,
+        info: { playerState: 1, currentTime: 1 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackVideoLoading).toBe(false);
+    });
+
+    act(() => {
       dispatchYoutubePlayerError({ contentWindow, errorCode: 100 });
     });
 

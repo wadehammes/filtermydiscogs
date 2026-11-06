@@ -2,6 +2,9 @@ export const SENTRY_USER_FEEDBACK_MESSAGE_MAX_LENGTH = 5000;
 
 export const SENTRY_USER_FEEDBACK_SOURCE_TAG = "user_menu" as const;
 
+export const SENTRY_PLAYBACK_SKIP_FEEDBACK_SOURCE_TAG =
+  "playback_skip_report" as const;
+
 export const SENTRY_USER_FEEDBACK_SCREENSHOT_MAX_BYTES = 5 * 1024 * 1024;
 
 export const SENTRY_USER_FEEDBACK_ADD_SCREENSHOT_LABEL = "Add a screenshot";
@@ -19,3 +22,6 @@ export const SENTRY_USER_FEEDBACK_SCREENSHOT_FILENAME = "screenshot.png";
 
 export const SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE =
   "Thanks — your bug report was sent.";
+
+export const SENTRY_CLIENT_DELIVERY_FAILED_TOAST_MESSAGE =
+  "Could not send your report. Check your connection or try again.";

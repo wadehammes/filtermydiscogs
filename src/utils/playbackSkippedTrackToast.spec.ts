@@ -7,6 +7,7 @@ import {
   jest,
 } from "@jest/globals";
 import { createElement, Fragment, type ReactNode } from "react";
+import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
 import type { PlaybackSkipLogEntry } from "src/utils/playbackSkippedTrackLog";
 import {
@@ -206,13 +207,20 @@ describe("createPlaybackSkipLogToast", () => {
     expect(requestSkipUserReport).toHaveBeenCalledWith(entry);
   });
 
-  it("when one of multiple skips is reported, other rows still request user report", () => {
+  it("when one of multiple skips is reported, other rows still request user report", async () => {
     const requestSkipUserReport = jest.fn();
+    const submitSkipUserReport = jest.fn<
+      (
+        entry: PlaybackSkipLogEntry,
+        userReport: PlaybackSkipUserReportFormValues,
+      ) => Promise<boolean>
+    >(async () => true);
     const onSkip = jest.fn();
     const toast = createPlaybackSkipLogToast({
       showToast,
       dismissToast,
       requestSkipUserReport,
+      submitSkipUserReport,
     });
 
     const firstEntry = playbackSkipLogEntryFactory.build({
@@ -230,7 +238,7 @@ describe("createPlaybackSkipLogToast", () => {
 
     toast.appendAndScheduleSkip(firstEntry, onSkip);
     toast.appendAndScheduleSkip(secondEntry, onSkip);
-    toast.completeUserReport(firstEntry, { category: "wrong_video" });
+    await toast.completeUserReport(firstEntry, { category: "wrong_video" });
 
     const updatedDescription = showToast.mock.calls[2]?.[0]?.description;
     render(createElement(Fragment, null, updatedDescription));
@@ -241,8 +249,13 @@ describe("createPlaybackSkipLogToast", () => {
     expect(requestSkipUserReport).toHaveBeenCalledWith(secondEntry);
   });
 
-  it("when user report completes, sends to Sentry and shows Sent", () => {
-    const submitSkipUserReport = jest.fn();
+  it("when user report completes, sends to Sentry and shows Sent", async () => {
+    const submitSkipUserReport = jest.fn<
+      (
+        entry: PlaybackSkipLogEntry,
+        userReport: PlaybackSkipUserReportFormValues,
+      ) => Promise<boolean>
+    >(async () => true);
     const onSkip = jest.fn();
     const toast = createPlaybackSkipLogToast({
       showToast,
@@ -254,7 +267,7 @@ describe("createPlaybackSkipLogToast", () => {
 
     toast.appendAndScheduleSkip(entry, onSkip);
 
-    toast.completeUserReport(entry, { category: "stuck_loading" });
+    await toast.completeUserReport(entry, { category: "stuck_loading" });
 
     expect(submitSkipUserReport).toHaveBeenCalledTimes(1);
     expect(submitSkipUserReport).toHaveBeenCalledWith(entry, {

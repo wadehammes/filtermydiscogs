@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 import { PlaybackSkipHelpToastTrigger } from "src/components/PlaybackSkipHelpDialog/PlaybackSkipHelpDialog.component";
+import { SENTRY_CLIENT_DELIVERY_FAILED_TOAST_MESSAGE } from "src/constants/sentryUserFeedbackForm.constants";
 import { reportUserPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import type { PlaybackSkipUserReportFormValues } from "src/lib/validation/playbackSkipUserReport.schemas";
 import textActionStyles from "src/styles/modules/text-action.module.css";
@@ -129,7 +130,7 @@ type ShowToastParams = {
 const defaultSubmitSkipUserReport = (
   entry: PlaybackSkipLogEntry,
   userReport: PlaybackSkipUserReportFormValues,
-) => {
+) =>
   reportUserPlaybackSkipToSentry(
     definedProps({
       errorCode: entry.errorCode,
@@ -139,7 +140,6 @@ const defaultSubmitSkipUserReport = (
     }),
     userReport,
   );
-};
 
 const defaultRequestSkipUserReport = (entry: PlaybackSkipLogEntry) => {
   openPlaybackSkipReportDialog(entry);
@@ -156,7 +156,7 @@ export const createPlaybackSkipLogToast = ({
   submitSkipUserReport?: (
     entry: PlaybackSkipLogEntry,
     userReport: PlaybackSkipUserReportFormValues,
-  ) => void;
+  ) => Promise<boolean>;
   requestSkipUserReport?: (entry: PlaybackSkipLogEntry) => void;
 }) => {
   let entries: PlaybackSkipLogEntry[] = [];
@@ -171,11 +171,17 @@ export const createPlaybackSkipLogToast = ({
     });
   };
 
-  const completeUserReport = (
+  const completeUserReport = async (
     reportedEntry: PlaybackSkipLogEntry,
     userReport: PlaybackSkipUserReportFormValues,
-  ) => {
-    submitSkipUserReport(reportedEntry, userReport);
+  ): Promise<boolean> => {
+    const delivered = await submitSkipUserReport(reportedEntry, userReport);
+
+    if (!delivered) {
+      toast.error(SENTRY_CLIENT_DELIVERY_FAILED_TOAST_MESSAGE);
+      return false;
+    }
+
     const reportedKey = playbackSkipLogEntryKey(reportedEntry);
     entries = entries.map((entry) =>
       playbackSkipLogEntryKey(entry) === reportedKey
@@ -183,6 +189,7 @@ export const createPlaybackSkipLogToast = ({
         : entry,
     );
     refreshToast(lastOnClose);
+    return true;
   };
 
   return {
@@ -223,9 +230,9 @@ const playbackSkipLogToast = createPlaybackSkipLogToast({
   },
 });
 
-registerPlaybackSkipUserReportComplete((entry, userReport) => {
-  playbackSkipLogToast.completeUserReport(entry, userReport);
-});
+registerPlaybackSkipUserReportComplete((entry, userReport) =>
+  playbackSkipLogToast.completeUserReport(entry, userReport),
+);
 
 export const appendPlaybackSkipAndSchedule = (
   entry: PlaybackSkipLogEntry,

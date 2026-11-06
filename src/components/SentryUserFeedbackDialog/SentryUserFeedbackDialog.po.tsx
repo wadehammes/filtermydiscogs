@@ -35,7 +35,7 @@ export type SentryUserFeedbackDialogRenderProps = {
   onSubmitFeedback?: (
     values: SentryUserFeedbackFormValues,
     screenshot?: Attachment,
-  ) => void;
+  ) => Promise<boolean>;
   onCaptureScreenshot?: () => Promise<Attachment | undefined>;
   screenshotCaptureSupported?: boolean;
 };
@@ -65,7 +65,7 @@ export class SentryUserFeedbackDialogPageObject extends BasePageObject {
         defaultName={defaultName ?? ""}
         open={open ?? true}
         onClose={onClose ?? jest.fn()}
-        onSubmitFeedback={onSubmitFeedback ?? jest.fn()}
+        onSubmitFeedback={onSubmitFeedback ?? jest.fn(async () => false)}
         {...(onCaptureScreenshot ? { onCaptureScreenshot } : {})}
         {...(screenshotCaptureSupported !== undefined
           ? { screenshotCaptureSupported }

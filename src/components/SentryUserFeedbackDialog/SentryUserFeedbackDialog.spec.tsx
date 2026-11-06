@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import type { Attachment } from "@sentry/core";
 import userEvent from "@testing-library/user-event";
 import dialogStyles from "src/components/AppDialog/AppDialog.module.css";
 import { SentryUserFeedbackDialogPageObject } from "src/components/SentryUserFeedbackDialog/SentryUserFeedbackDialog.po";
@@ -6,10 +7,19 @@ import {
   SENTRY_USER_FEEDBACK_ADD_SCREENSHOT_LABEL,
   SENTRY_USER_FEEDBACK_CHOOSE_IMAGE_LABEL,
 } from "src/constants/sentryUserFeedbackForm.constants";
+import type { SentryUserFeedbackFormValues } from "src/lib/validation/sentryUserFeedback.schemas";
 import portalStyles from "src/styles/modules/base-ui-portal.module.css";
 import { screen, waitFor } from "test-utils";
 
 let po: SentryUserFeedbackDialogPageObject;
+
+const mockSubmitFeedback = () =>
+  jest.fn<
+    (
+      values: SentryUserFeedbackFormValues,
+      screenshot?: Attachment,
+    ) => Promise<boolean>
+  >(async () => false);
 
 describe("SentryUserFeedbackDialog", () => {
   beforeEach(() => {
@@ -19,7 +29,12 @@ describe("SentryUserFeedbackDialog", () => {
 
   it("when Send bug report is submitted with a message, forwards feedback and closes", async () => {
     const user = userEvent.setup();
-    const onSubmitFeedback = jest.fn();
+    const onSubmitFeedback = jest.fn<
+      (
+        values: SentryUserFeedbackFormValues,
+        screenshot?: Attachment,
+      ) => Promise<boolean>
+    >(async () => true);
     const onClose = jest.fn();
 
     po.renderSentryUserFeedbackDialog({ onClose, onSubmitFeedback });
@@ -38,7 +53,9 @@ describe("SentryUserFeedbackDialog", () => {
       },
       undefined,
     );
-    expect(onClose).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("when Send bug report is clicked without a message, shows validation", async () => {
@@ -46,7 +63,7 @@ describe("SentryUserFeedbackDialog", () => {
 
     po.renderSentryUserFeedbackDialog({
       onClose: jest.fn(),
-      onSubmitFeedback: jest.fn(),
+      onSubmitFeedback: mockSubmitFeedback(),
     });
 
     await user.click(screen.getByRole("button", { name: "Send bug report" }));
@@ -73,7 +90,7 @@ describe("SentryUserFeedbackDialog", () => {
 
   it("when a screenshot is attached and submitted, forwards the attachment", async () => {
     const user = userEvent.setup();
-    const onSubmitFeedback = jest.fn();
+    const onSubmitFeedback = mockSubmitFeedback();
     const screenshot = {
       data: new Uint8Array([1, 2, 3]),
       filename: "screenshot.png",
@@ -133,7 +150,7 @@ describe("SentryUserFeedbackDialog", () => {
     const { rerender } = po.renderSentryUserFeedbackDialog({
       open: true,
       onClose: jest.fn(),
-      onSubmitFeedback: jest.fn(),
+      onSubmitFeedback: mockSubmitFeedback(),
     });
 
     await user.type(screen.getByLabelText("What went wrong?"), "Stale state");
