@@ -80,6 +80,32 @@ describe("usePublicReleaseListenPageState", () => {
     expect(mockDiscogsReleaseApi).not.toHaveBeenCalled();
   });
 
+  it("when detail includes a primary images entry, coverHeroUrl uses that URI instead of thumb", async () => {
+    const initial = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: Number(releaseId),
+      thumb: "https://i.discogs.com/thumb-fallback.jpg",
+      images: [
+        { type: "primary", uri: "https://i.discogs.com/primary-cover.jpg" },
+      ],
+    });
+    mockApiResponse(
+      true,
+      mockDiscogsReleaseApi,
+      initial,
+      new Error("Discogs release request failed"),
+    );
+
+    const { result } = renderListenHook(initial);
+
+    await waitFor(() => {
+      expect(result.current.detail).not.toBeNull();
+    });
+
+    expect(result.current.coverHeroUrl).toBe(
+      "https://i.discogs.com/primary-cover.jpg",
+    );
+  });
+
   it("when no initial detail, calls api.discogsRelease and resolves detail after fetch", async () => {
     mockApiResponse(
       true,

@@ -55,13 +55,6 @@
   min-width: 0;
 }
 
-.trackListHeading {
-  color: var(--foreground);
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  margin: 0;
-}
-
 .tracklistPanel {
   background: var(--card);
   border: 1px solid var(--border);

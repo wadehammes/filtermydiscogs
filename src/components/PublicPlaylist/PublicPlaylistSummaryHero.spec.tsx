@@ -26,6 +26,21 @@ describe("PublicPlaylistSummaryHero", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("with coverLayout single, renders a single hero image instead of the mosaic", () => {
+    render(
+      <PublicPlaylistSummaryHero
+        {...defaultProps}
+        coverThumbUrls={["https://i.discogs.com/single-cover.jpg"]}
+        coverLayout="single"
+      />,
+    );
+
+    expect(
+      screen.getByTestId("fmdPublicShareHeroSingleCover"),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("fmdCoverArtMosaic")).not.toBeInTheDocument();
+  });
+
   it("renders icon and numeric view count without a views label", () => {
     render(
       <PublicPlaylistSummaryHero

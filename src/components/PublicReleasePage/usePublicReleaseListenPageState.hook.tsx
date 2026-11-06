@@ -19,7 +19,6 @@ import {
   resolveDiscogsReleaseDetailCoverUri,
 } from "src/utils/discogsReleaseArt";
 import { getResourceUrl } from "src/utils/helpers";
-import { PLAYLIST_HERO_MOSAIC_MAX_TILES } from "src/utils/playlistMosaic";
 import {
   buildPlaylistRowsFromDiscogsReleaseDetail,
   formatPublicReleaseCommunityMetaParts,
@@ -105,24 +104,20 @@ export const usePublicReleaseListenPageState = ({
     releases,
   });
 
-  const coverThumbUrls = useMemo(() => {
+  const coverHeroUrl = useMemo((): string | null => {
     if (!detail) {
-      return [];
+      return null;
     }
 
     const primary = resolveDiscogsReleaseDetailCoverUri(detail).trim();
 
     if (primary) {
-      return [primary];
+      return primary;
     }
 
     const thumb = detail.thumb?.trim();
 
-    if (thumb) {
-      return [thumb];
-    }
-
-    return [];
+    return thumb || null;
   }, [detail]);
 
   const heroMetaLine = useMemo((): ReactNode => {
@@ -259,7 +254,7 @@ export const usePublicReleaseListenPageState = ({
 
   return {
     collectionRelease,
-    coverThumbUrls,
+    coverHeroUrl,
     detail,
     discogsUri,
     error,
@@ -268,7 +263,6 @@ export const usePublicReleaseListenPageState = ({
     handlePlayTrack,
     handleReleaseClick,
     heroMetaLine,
-    heroPrimaryThumbCap: PLAYLIST_HERO_MOSAIC_MAX_TILES,
     is404Error,
     isError,
     isFetching,

@@ -1,4 +1,5 @@
 import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
+import { LOGIN_DEMO_PUBLIC_PLAYLIST_TITLE } from "src/constants/publicPlaylist.constants";
 import { E2E_RELEASE_TRACK_POSITION } from "src/tests/msw/e2eReleaseDetailData";
 import { E2E_TRACK_ONE } from "src/tests/msw/e2eSession.constants";
 import { formatTrackPositionTitle } from "src/utils/userTrack";
@@ -13,7 +14,11 @@ test.describe("public shared playlist (MSW)", () => {
     await expect(page.getByTestId("fmdPublicSharedViewBanner")).toHaveText(
       /Public playlist · Shared by testuser/i,
     );
-    await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
+    await expect(
+      page.getByRole("list", {
+        name: `${LOGIN_DEMO_PUBLIC_PLAYLIST_TITLE} tracklist`,
+      }),
+    ).toBeVisible();
     await expect(
       page.getByText(
         formatTrackPositionTitle(E2E_RELEASE_TRACK_POSITION, E2E_TRACK_ONE),

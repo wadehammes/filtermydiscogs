@@ -10,36 +10,58 @@ export const formatPublicPlaylistShareStatCountLabel = (
 ): string =>
   `${formatPublicPlaylistShareStatCount(count)} ${count === 1 ? singular : plural}`;
 
-export const formatPublicPlaylistShareStatsLine = (
+export type PublicPlaylistShareEngagementKind = "view" | "play";
+
+export type PublicPlaylistShareEngagementItem = {
+  kind: PublicPlaylistShareEngagementKind;
+  count: number;
+  ariaLabel: string;
+};
+
+export const listPublicPlaylistShareEngagementItems = (
   stats: PublicPlaylistShareStats,
-): string | null => {
-  const parts: string[] = [];
+): PublicPlaylistShareEngagementItem[] => {
+  const items: PublicPlaylistShareEngagementItem[] = [];
 
   if (stats.publicViewCount > 0) {
-    parts.push(
-      formatPublicPlaylistShareStatCountLabel(
+    items.push({
+      kind: "view",
+      count: stats.publicViewCount,
+      ariaLabel: formatPublicPlaylistShareStatCountLabel(
         stats.publicViewCount,
         "view",
         "views",
       ),
-    );
+    });
   }
 
   if (stats.publicPlayCount > 0) {
-    parts.push(
-      formatPublicPlaylistShareStatCountLabel(
+    items.push({
+      kind: "play",
+      count: stats.publicPlayCount,
+      ariaLabel: formatPublicPlaylistShareStatCountLabel(
         stats.publicPlayCount,
         "play",
         "plays",
       ),
-    );
+    });
   }
 
-  if (parts.length === 0) {
+  return items;
+};
+
+export const formatPublicPlaylistShareStatsLine = (
+  stats: PublicPlaylistShareStats,
+): string | null => {
+  const labels = listPublicPlaylistShareEngagementItems(stats).map(
+    (item) => item.ariaLabel,
+  );
+
+  if (labels.length === 0) {
     return null;
   }
 
-  return parts.join(" · ");
+  return labels.join(" · ");
 };
 
 export const publicPlaylistShareStatsHasVisibleCounts = (
