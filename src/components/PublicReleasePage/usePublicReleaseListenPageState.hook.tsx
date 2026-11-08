@@ -21,11 +21,15 @@ import {
 import { getResourceUrl } from "src/utils/helpers";
 import {
   buildPlaylistRowsFromDiscogsReleaseDetail,
+  countPlaylistTracksWithYoutubeId,
   formatPublicReleaseCommunityMetaParts,
   resolvePublicReleaseCatalogNumbers,
   resolvePublicReleaseHeroDateMetaParts,
 } from "src/utils/publicReleaseTracks";
-import { formatDiscogsCreditNames } from "src/utils/releaseDisplay";
+import {
+  formatDiscogsCreditNames,
+  getCommunityRatingFromReleaseDetail,
+} from "src/utils/releaseDisplay";
 import { mergeReleaseHeaderLabel } from "src/utils/releaseHeaderMetadata";
 
 export type UsePublicReleaseListenPageStateParams = {
@@ -231,16 +235,26 @@ export const usePublicReleaseListenPageState = ({
     return buildSecondaryMetaLines(detail);
   }, [detail]);
 
+  const communityRating = useMemo(
+    () => getCommunityRatingFromReleaseDetail(detail ?? undefined),
+    [detail],
+  );
+
+  const playableTrackCount = useMemo(
+    () => countPlaylistTracksWithYoutubeId(orderedTracks),
+    [orderedTracks],
+  );
+
   const discogsUri =
     detail && typeof detail.uri === "string" ? detail.uri.trim() : "";
 
   const handlePlayAll = useCallback(() => {
-    if (orderedTracks.length === 0) {
+    if (playableTrackCount === 0) {
       return;
     }
 
     playPlaylistTracks(orderedTracks);
-  }, [orderedTracks, playPlaylistTracks]);
+  }, [orderedTracks, playableTrackCount, playPlaylistTracks]);
 
   const handlePlayTrack = useCallback(
     (track: PlaylistTrackRow) => {
@@ -268,7 +282,9 @@ export const usePublicReleaseListenPageState = ({
     isFetching,
     isPending,
     isPendingSkeleton: isPending && !detail,
+    communityRating,
     orderedTracks,
+    playableTrackCount,
     refetch,
     secondaryMetaLines,
     selectedRelease,

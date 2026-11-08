@@ -31,6 +31,18 @@ describe("PublicPlaylistTrackItem", () => {
     expect(screen.queryByTestId("fmdPlayingIndicator")).toBeNull();
   });
 
+  it("omits playback controls when requireYoutubeForPlayback is set and the row has no YouTube id", () => {
+    const track = playlistTrackRowFactory.opening({ youtube_id: null });
+    po.renderPublicPlaylistTrackItem({
+      track,
+      requireYoutubeForPlayback: true,
+    });
+
+    expect(
+      screen.queryByTestId("fmdPublicPlaylistTrackPlaybackControl"),
+    ).toBeNull();
+  });
+
   it("shows a playing indicator on the active row while playback is running", () => {
     const release = releaseFactory.withDisplayDefaults({ instance_id: 9001 });
     po.mockPlaybackState({

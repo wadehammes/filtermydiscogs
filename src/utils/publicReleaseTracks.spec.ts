@@ -3,14 +3,27 @@ import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJso
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
+import type { PlaylistTrackRow } from "src/types/playlist.types";
 import {
   buildPlaylistRowsFromDiscogsReleaseDetail,
+  countPlaylistTracksWithYoutubeId,
   formatPublicReleaseCommunityMetaParts,
   resolvePublicReleaseCatalogNumbers,
   resolvePublicReleaseHeroDateMetaParts,
 } from "src/utils/publicReleaseTracks";
 
 describe("publicReleaseTracks", () => {
+  it("countPlaylistTracksWithYoutubeId counts rows with a non-empty youtube_id", () => {
+    expect(
+      countPlaylistTracksWithYoutubeId([
+        { youtube_id: "abc" } as PlaylistTrackRow,
+        { youtube_id: null } as PlaylistTrackRow,
+        { youtube_id: "  " } as PlaylistTrackRow,
+        { youtube_id: "def" } as PlaylistTrackRow,
+      ]),
+    ).toBe(2);
+  });
+
   it("when the release has labels with catnos, resolvePublicReleaseCatalogNumbers joins distinct values", () => {
     expect(
       resolvePublicReleaseCatalogNumbers({
@@ -55,7 +68,7 @@ describe("publicReleaseTracks", () => {
     ).toEqual(["2026", "1989-03-01"]);
   });
 
-  it("when community rating is present, formatPublicReleaseCommunityMetaParts includes average and count", () => {
+  it("when community rating is present, formatPublicReleaseCommunityMetaParts still only returns have/want lines", () => {
     const parts = formatPublicReleaseCommunityMetaParts({
       community: {
         have: 10,
@@ -64,8 +77,7 @@ describe("publicReleaseTracks", () => {
       },
     });
 
-    expect(parts).toContain("Rated 4.3 / 5 (8)");
-    expect(parts).toContain("10 have · 5 want");
+    expect(parts).toEqual(["10 have · 5 want"]);
   });
 
   it("when community has have/want only, formatPublicReleaseCommunityMetaParts omits rating", () => {

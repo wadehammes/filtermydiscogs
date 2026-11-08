@@ -35,6 +35,7 @@ export interface PublicPlaylistTrackItemProps {
   index: number;
   ownerUserId?: number | null;
   showTrackVoteControls?: boolean;
+  requireYoutubeForPlayback?: boolean;
   onReleaseClick?: (instanceId: string) => void;
   onPlayTrack: (track: PlaylistTrackRow) => void;
 }
@@ -46,6 +47,7 @@ export const PublicPlaylistTrackItem = ({
   index,
   ownerUserId,
   showTrackVoteControls = true,
+  requireYoutubeForPlayback = false,
   onReleaseClick,
   onPlayTrack,
 }: PublicPlaylistTrackItemProps) => {
@@ -70,12 +72,22 @@ export const PublicPlaylistTrackItem = ({
     track.track_title,
   );
   const metaLine = resolvePlaylistTrackReleaseMetaLine(track, release);
+  const hasYoutubePlayback = Boolean(track.youtube_id?.trim());
+  const canTriggerPlayback = !requireYoutubeForPlayback || hasYoutubePlayback;
 
   const handlePlay = () => {
+    if (!canTriggerPlayback) {
+      return;
+    }
+
     onPlayTrack(track);
   };
 
   const handlePlaybackControl = () => {
+    if (!canTriggerPlayback) {
+      return;
+    }
+
     if (isActiveInPlayback) {
       togglePlayback();
       return;
@@ -143,50 +155,90 @@ export const PublicPlaylistTrackItem = ({
             <span className={styles.artworkPlaceholder} aria-hidden />
           )}
         </button>
-        <button
-          type="button"
-          className={classNames(
-            tracklistStyles.trackMainButton,
-            styles.trackPlayButton,
-          )}
-          onClick={handlePlay}
-          aria-label={
-            isActiveInPlayback
-              ? `Now playing ${trackLabel}`
-              : `Play ${trackLabel}`
-          }
-          aria-current={isActiveInPlayback ? "true" : undefined}
-        >
-          <span
+        {canTriggerPlayback ? (
+          <button
+            type="button"
             className={classNames(
-              tracklistStyles.trackTitleStack,
-              styles.trackTitleLayout,
+              tracklistStyles.trackMainButton,
+              styles.trackPlayButton,
+            )}
+            onClick={handlePlay}
+            aria-label={
+              isActiveInPlayback
+                ? `Now playing ${trackLabel}`
+                : `Play ${trackLabel}`
+            }
+            aria-current={isActiveInPlayback ? "true" : undefined}
+          >
+            <span
+              className={classNames(
+                tracklistStyles.trackTitleStack,
+                styles.trackTitleLayout,
+              )}
+            >
+              <span
+                className={classNames(
+                  tracklistStyles.trackTitleText,
+                  styles.trackTitlePrimary,
+                )}
+              >
+                {trackLabel}
+              </span>
+              {track.artist || metaLine ? (
+                <span className={styles.trackMetaGroup}>
+                  {track.artist ? (
+                    <span className={tracklistStyles.trackCredits}>
+                      {track.artist}
+                    </span>
+                  ) : null}
+                  {metaLine ? (
+                    <span className={tracklistStyles.trackCredits}>
+                      {metaLine}
+                    </span>
+                  ) : null}
+                </span>
+              ) : null}
+            </span>
+          </button>
+        ) : (
+          <div
+            className={classNames(
+              tracklistStyles.trackMainButton,
+              styles.trackPlayButton,
+              styles.trackMainStatic,
             )}
           >
             <span
               className={classNames(
-                tracklistStyles.trackTitleText,
-                styles.trackTitlePrimary,
+                tracklistStyles.trackTitleStack,
+                styles.trackTitleLayout,
               )}
             >
-              {trackLabel}
-            </span>
-            {track.artist || metaLine ? (
-              <span className={styles.trackMetaGroup}>
-                {track.artist ? (
-                  <span className={tracklistStyles.trackCredits}>
-                    {track.artist}
-                  </span>
-                ) : null}
-                {metaLine ? (
-                  <span className={tracklistStyles.trackCredits}>
-                    {metaLine}
-                  </span>
-                ) : null}
+              <span
+                className={classNames(
+                  tracklistStyles.trackTitleText,
+                  styles.trackTitlePrimary,
+                )}
+              >
+                {trackLabel}
               </span>
-            ) : null}
-          </span>
-        </button>
+              {track.artist || metaLine ? (
+                <span className={styles.trackMetaGroup}>
+                  {track.artist ? (
+                    <span className={tracklistStyles.trackCredits}>
+                      {track.artist}
+                    </span>
+                  ) : null}
+                  {metaLine ? (
+                    <span className={tracklistStyles.trackCredits}>
+                      {metaLine}
+                    </span>
+                  ) : null}
+                </span>
+              ) : null}
+            </span>
+          </div>
+        )}
         <div className={tracklistStyles.trackTrailing}>
           <div className={styles.trailingActions}>
             {showTrackVoteControls ? (
@@ -210,23 +262,25 @@ export const PublicPlaylistTrackItem = ({
                 {REPORT_WRONG_PUBLIC_PLAYBACK_VIDEO_BUTTON_LABEL}
               </button>
             ) : null}
-            <button
-              type="button"
-              className={styles.playbackControlButton}
-              onClick={handlePlaybackControl}
-              aria-label={playbackControlLabel}
-              data-testid="fmdPublicPlaylistTrackPlaybackControl"
-            >
-              {isActiveInPlayback ? (
-                isPlaybackPaused ? (
-                  <PauseIcon aria-hidden />
+            {canTriggerPlayback ? (
+              <button
+                type="button"
+                className={styles.playbackControlButton}
+                onClick={handlePlaybackControl}
+                aria-label={playbackControlLabel}
+                data-testid="fmdPublicPlaylistTrackPlaybackControl"
+              >
+                {isActiveInPlayback ? (
+                  isPlaybackPaused ? (
+                    <PauseIcon aria-hidden />
+                  ) : (
+                    <PlayingIndicator isPaused={false} />
+                  )
                 ) : (
-                  <PlayingIndicator isPaused={false} />
-                )
-              ) : (
-                <PlayIcon aria-hidden />
-              )}
-            </button>
+                  <PlayIcon aria-hidden />
+                )}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

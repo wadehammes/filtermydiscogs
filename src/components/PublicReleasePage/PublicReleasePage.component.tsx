@@ -12,6 +12,7 @@ import { PublicPlaylistSummarySecondaryMetaLines } from "src/components/PublicPl
 import { PublicPlaylistTrackItem } from "src/components/PublicPlaylistTrackItem/PublicPlaylistTrackItem.component";
 import { PublicReleaseModal } from "src/components/PublicReleaseModal/PublicReleaseModal.component";
 import { PublicReleaseHeroActions } from "src/components/PublicReleasePage/PublicReleaseHeroActions.component";
+import { PublicReleaseNoPlayableTracksNote } from "src/components/PublicReleasePage/PublicReleaseNoPlayableTracksNote.component";
 import { usePublicReleaseListenPageState } from "src/components/PublicReleasePage/usePublicReleaseListenPageState.hook";
 import { PublicShareMarketingSection } from "src/components/PublicShareMarketingSection/PublicShareMarketingSection.component";
 import { PublicSharePlaybackShell } from "src/components/PublicSharePlaybackShell/PublicSharePlaybackShell.component";
@@ -129,7 +130,9 @@ export const PublicReleaseClient = ({
     isError,
     isFetching,
     isPendingSkeleton,
+    communityRating,
     orderedTracks,
+    playableTrackCount,
     refetch,
     secondaryMetaLines,
     selectedRelease,
@@ -141,18 +144,20 @@ export const PublicReleaseClient = ({
   const trackCount = orderedTracks.length;
   const isTabletUp = useMediaQuery(TABLET_UP_MEDIA_QUERY);
   const heroSecondaryMetaLines = isTabletUp ? secondaryMetaLines : undefined;
+  const heroCommunityRating = isTabletUp ? communityRating : undefined;
   const showSecondaryMetaBelowTracklist =
-    !isTabletUp && secondaryMetaLines.length > 0;
+    !isTabletUp && (secondaryMetaLines.length > 0 || communityRating !== null);
+  const showNoPlayableTracksNote = trackCount > 0 && playableTrackCount === 0;
 
   const heroActions = useMemo(
     () => (
       <PublicReleaseHeroActions
         discogsUri={discogsUri}
         onPlayAll={handlePlayAll}
-        trackCount={trackCount}
+        trackCount={playableTrackCount}
       />
     ),
-    [discogsUri, handlePlayAll, trackCount],
+    [discogsUri, handlePlayAll, playableTrackCount],
   );
 
   if (isPendingSkeleton) {
@@ -223,12 +228,16 @@ export const PublicReleaseClient = ({
                 actions={heroActions}
                 {...definedProps({
                   secondaryMetaLines: heroSecondaryMetaLines,
+                  communityRating: heroCommunityRating,
                 })}
               />
 
               <div className={playlistStyles.playlistMain}>
                 {trackCount > 0 ? (
                   <>
+                    {showNoPlayableTracksNote ? (
+                      <PublicReleaseNoPlayableTracksNote />
+                    ) : null}
                     <ul
                       className={classNames(
                         tracklistStyles.tracklist,
@@ -246,12 +255,14 @@ export const PublicReleaseClient = ({
                           release={collectionRelease}
                           onReleaseClick={handleReleaseClick}
                           onPlayTrack={handlePlayTrack}
+                          requireYoutubeForPlayback
                         />
                       ))}
                     </ul>
                     {showSecondaryMetaBelowTracklist ? (
                       <PublicPlaylistSummarySecondaryMetaLines
                         lines={secondaryMetaLines}
+                        communityRating={communityRating}
                         className={
                           heroStyles.releaseSecondaryMetaAfterTracklist
                         }

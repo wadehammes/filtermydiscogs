@@ -58,22 +58,6 @@ export const formatPublicReleaseCommunityMetaParts = (
     return parts;
   }
 
-  const rating = community.rating;
-
-  if (
-    rating &&
-    typeof rating.average === "number" &&
-    Number.isFinite(rating.average) &&
-    typeof rating.count === "number" &&
-    rating.count > 0
-  ) {
-    const rounded = Math.round(rating.average * 10) / 10;
-    const averageLabel =
-      rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
-
-    parts.push(`Rated ${averageLabel} / 5 (${rating.count})`);
-  }
-
   const have = community.have;
   const want = community.want;
 
@@ -144,3 +128,11 @@ export const buildPlaylistRowsFromDiscogsReleaseDetail = ({
 
   return rows;
 };
+
+export const countPlaylistTracksWithYoutubeId = (
+  tracks: readonly PlaylistTrackRow[],
+): number =>
+  tracks.reduce(
+    (count, track) => (track.youtube_id?.trim() ? count + 1 : count),
+    0,
+  );
