@@ -41,6 +41,19 @@ describe("PublicPlaylistSummaryHero", () => {
     expect(screen.queryByTestId("fmdCoverArtMosaic")).not.toBeInTheDocument();
   });
 
+  it("renders community rating with a star and two-decimal average", () => {
+    render(
+      <PublicPlaylistSummaryHero
+        {...defaultProps}
+        communityRating={{ average: 4.257, count: 12 }}
+      />,
+    );
+
+    expect(screen.getByTitle("Discogs community average")).toHaveTextContent(
+      "4.26 (12)",
+    );
+  });
+
   it("renders icon and numeric view count without a views label", () => {
     render(
       <PublicPlaylistSummaryHero

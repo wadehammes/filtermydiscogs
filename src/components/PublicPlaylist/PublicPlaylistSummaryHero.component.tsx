@@ -4,7 +4,10 @@ import classNames from "classnames";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { CoverArtMosaic } from "src/components/CoverArtMosaic/CoverArtMosaic.component";
-import { PublicPlaylistSummarySecondaryMetaLines } from "src/components/PublicPlaylist/PublicPlaylistSummarySecondaryMetaLines.component";
+import {
+  type PublicPlaylistSummaryCommunityRating,
+  PublicPlaylistSummarySecondaryMetaLines,
+} from "src/components/PublicPlaylist/PublicPlaylistSummarySecondaryMetaLines.component";
 import {
   PUBLIC_SHARE_HERO_COVER_IMAGE_QUALITY,
   PUBLIC_SHARE_HERO_SINGLE_COVER_IMAGE_SIZES,
@@ -29,6 +32,7 @@ export interface PublicPlaylistSummaryHeroProps {
   coverLabel: string;
   metaLine: ReactNode;
   secondaryMetaLines?: readonly string[];
+  communityRating?: PublicPlaylistSummaryCommunityRating | null;
   shareStats?: PublicPlaylistShareStats;
   publicDescription?: string | null;
   actions?: ReactNode;
@@ -42,6 +46,7 @@ export const PublicPlaylistSummaryHero = ({
   coverLabel,
   metaLine,
   secondaryMetaLines,
+  communityRating,
   shareStats,
   publicDescription,
   actions,
@@ -106,9 +111,10 @@ export const PublicPlaylistSummaryHero = ({
           >
             {metaLine}
           </div>
-          {secondaryMetaLines && secondaryMetaLines.length > 0 ? (
+          {(secondaryMetaLines?.length ?? 0) > 0 || communityRating != null ? (
             <PublicPlaylistSummarySecondaryMetaLines
-              lines={secondaryMetaLines}
+              lines={secondaryMetaLines ?? []}
+              communityRating={communityRating ?? null}
             />
           ) : null}
           {showShareStats ? (
