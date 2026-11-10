@@ -2,6 +2,9 @@ import { SITE_GITHUB_URL } from "src/constants/siteMetadata";
 
 export const ABOUT_SUPPORT_EMAIL = "noise@filtermydisco.gs";
 
+export const ABOUT_DONATION_BODY =
+  "The app is free. One-time donations cover hosting and ongoing development.";
+
 export const ABOUT_GITHUB_LINKS = {
   repo: SITE_GITHUB_URL,
   discussions: `${SITE_GITHUB_URL}/discussions`,

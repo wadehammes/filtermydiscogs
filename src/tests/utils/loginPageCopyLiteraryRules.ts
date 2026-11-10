@@ -35,6 +35,7 @@ export const LOGIN_PAGE_COPY_EMBELLISHMENT_TERMS = [
   "gorgeous",
   "transformative",
   "revolutionary",
+  "hidden gems",
 ] as const;
 
 const emDashPattern = /\u2014/;
@@ -57,7 +58,7 @@ export const findEmDashViolation = (
   return {
     entryId: "",
     rule: "em-dash",
-    message: "Em dashes are not allowed in login page copy.",
+    message: "Em dashes are not allowed in user-facing copy.",
   };
 };
 

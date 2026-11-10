@@ -20,8 +20,11 @@ export const SENTRY_USER_FEEDBACK_UPLOAD_IMAGE_HINT =
 
 export const SENTRY_USER_FEEDBACK_SCREENSHOT_FILENAME = "screenshot.png";
 
+export const SENTRY_USER_FEEDBACK_DIALOG_DESCRIPTION =
+  "What went wrong, plus an optional screenshot. Session replay may be included when enabled.";
+
 export const SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE =
-  "Thanks — your bug report was sent.";
+  "Thanks. Your bug report was sent.";
 
 export const SENTRY_CLIENT_DELIVERY_FAILED_TOAST_MESSAGE =
   "Could not send your report. Check your connection or try again.";

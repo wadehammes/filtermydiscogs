@@ -14,6 +14,7 @@ jest.mock("youtube-video-element/react", () => {
 });
 
 import { LoginPageObject } from "src/components/Login/Login.po";
+import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 import { LOGIN_PAGE_UI_COPY } from "src/constants/loginPageCopy.registry";
 import { LOGIN_PREVIEW_VIDEO_URL } from "src/constants/loginPreviewMedia";
 import { LOGIN_DEMO_PUBLIC_CRATE_PATH } from "src/constants/publicCrate.constants";
@@ -66,7 +67,7 @@ describe("Login", () => {
     po.renderLogin();
     expect(
       screen.getByRole("heading", {
-        name: "Ready to connect your collection?",
+        name: LOGIN_PAGE_UI_COPY.bottomCtaHeading,
       }),
     ).toBeInTheDocument();
   });
@@ -102,36 +103,15 @@ describe("Login", () => {
   it("renders feature rows and footer links", () => {
     po.renderLogin();
 
-    expect(
-      screen.getByRole("heading", { name: "Collection insights dashboard" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Insights")).toBeInTheDocument();
-    expect(screen.getByText("Mosaics")).toBeInTheDocument();
-    expect(
-      screen.getByRole("img", {
-        name: "Collection insights dashboard with stats, charts, on-repeat leaders, and milestones",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("img", {
-        name: "Releases page with search, flexible filters, random view, tracklist, in-app player, and release cards",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("img", {
-        name: "Crate page with drag reorder, section groups, set notes, and gig packing checklist",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("img", {
-        name: "Cover-art mosaic grid generated from a collection of release artwork",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Find hidden gems in your collection"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Build and share playlists")).toBeInTheDocument();
-    expect(screen.getByText("Organize and share crates")).toBeInTheDocument();
+    for (const feature of LOGIN_FEATURES) {
+      expect(screen.getByText(feature.eyebrow)).toBeInTheDocument();
+      expect(screen.getByText(feature.title)).toBeInTheDocument();
+      if (feature.imageAlt) {
+        expect(
+          screen.getByRole("img", { name: feature.imageAlt }),
+        ).toBeInTheDocument();
+      }
+    }
     expect(
       screen.getAllByRole("link", { name: "About" }).length,
     ).toBeGreaterThanOrEqual(1);

@@ -1,5 +1,5 @@
 export const MARKETING_FILTER_BULLET = {
-  label: "Find hidden gems in your collection",
+  label: "Search and filter your collection",
   text: "Require-all and exclude on genres, formats, and years; dropdowns follow your grid. Search and save views.",
 } as const;
 

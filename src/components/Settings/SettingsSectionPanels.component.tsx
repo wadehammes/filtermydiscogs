@@ -6,6 +6,7 @@ import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFi
 import Select from "src/components/Select/Select.component";
 import { SettingsBooleanPreferenceToggle } from "src/components/Settings/SettingsBooleanPreferenceToggle.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
+import { SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION } from "src/constants/settingsCopy.constants";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
 import { useFilterViews } from "src/hooks/useFilterViews.hook";
@@ -34,9 +35,7 @@ export function SettingsAccountPanel({
       <div className={styles.panelBlock}>
         <h3 className={styles.panelBlockTitle}>Complete logout</h3>
         <p className={styles.sectionDescription}>
-          Sign out and revoke stored OAuth tokens on this browser. Your crates,
-          playlists, and preferences stay saved—you can sign in again with
-          Discogs when you are ready.
+          {SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION}
         </p>
         <div className={styles.actions}>
           <Button

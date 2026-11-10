@@ -1,3 +1,4 @@
+import { formatPlaylistSkippedNotInCollectionToast } from "src/constants/playlistPlaybackCopy.constants";
 import { getPlaybackQueueToastPosition } from "src/utils/playbackQueueToast";
 import { toast } from "src/utils/toast";
 
@@ -11,6 +12,15 @@ export const showPlaylistTrackAddedToast = (playlistName: string): void => {
 
 export const showPlaylistTrackRemovedToast = (playlistName: string): void => {
   toast.success(`Removed from ${playlistName}`, playlistToastOptions());
+};
+
+export const showPlaylistSkippedNotInCollectionToast = (
+  skippedCount: number,
+): void => {
+  toast.error(
+    formatPlaylistSkippedNotInCollectionToast(skippedCount),
+    playlistToastOptions(),
+  );
 };
 
 export const showPlaylistTracksAddedToast = (

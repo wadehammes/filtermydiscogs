@@ -11,6 +11,7 @@ import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.co
 import {
   SENTRY_USER_FEEDBACK_ADD_SCREENSHOT_LABEL,
   SENTRY_USER_FEEDBACK_CHOOSE_IMAGE_LABEL,
+  SENTRY_USER_FEEDBACK_DIALOG_DESCRIPTION,
   SENTRY_USER_FEEDBACK_MESSAGE_MAX_LENGTH,
   SENTRY_USER_FEEDBACK_REMOVE_SCREENSHOT_LABEL,
   SENTRY_USER_FEEDBACK_UPLOAD_IMAGE_HINT,
@@ -267,7 +268,7 @@ export const SentryUserFeedbackDialog = ({
       onClose={onClose}
       testId="fmdSentryUserFeedbackDialog"
       title={SUBMIT_BUG_REPORT_NAV_LABEL}
-      description="Tell us what happened. You can attach a screenshot; session replay may also be included."
+      description={SENTRY_USER_FEEDBACK_DIALOG_DESCRIPTION}
       footer={
         <>
           <Button type="button" variant="secondary" onPress={onClose}>

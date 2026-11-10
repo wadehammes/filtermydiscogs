@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import Button from "src/components/Button/Button.component";
+import {
+  COOKIE_CONSENT_DESCRIPTION,
+  COOKIE_CONSENT_TITLE,
+} from "src/constants/cookieConsentCopy.constants";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import styles from "./CookieConsentBanner.module.css";
 
@@ -22,11 +26,9 @@ export const CookieConsentBanner = () => {
     >
       <div className={styles.inner}>
         <div className={styles.copy}>
-          <p className={styles.title}>Analytics cookies</p>
+          <p className={styles.title}>{COOKIE_CONSENT_TITLE}</p>
           <p className={styles.description}>
-            We use optional analytics cookies through Google Tag Manager to
-            understand how the app is used. Essential cookies for Discogs login
-            always apply. See our{" "}
+            {COOKIE_CONSENT_DESCRIPTION} See our{" "}
             <Link href="/legal#cookies" className={styles.link}>
               cookie notice
             </Link>{" "}
