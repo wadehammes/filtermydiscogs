@@ -22,7 +22,7 @@ export const DONATION_SUCCESS_QUERY_VALUE = "1";
 
 export const DONATION_PRODUCT = {
   name: `Support ${SITE_NAME}`,
-  description: `Thank you for helping keep ${SITE_NAME} free and the roadmap moving.`,
+  description: `Thank you for helping keep ${SITE_NAME} free.`,
 };
 
 export const getDonateCheckoutUrls = (siteUrl: string) => ({

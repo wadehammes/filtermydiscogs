@@ -7,3 +7,9 @@ export const SUPPORT_PROJECT_ABOUT_PATH = "/about#support";
 export const SUPPORT_SECTION_ID = "support";
 
 export const SUPPORT_PROJECT_NAV_LABEL = "Donate";
+
+export const buildSupportProjectToastTitle = (siteName: string): string =>
+  `Keep ${siteName} running`;
+
+export const SUPPORT_PROJECT_TOAST_DESCRIPTION =
+  "Donations cover hosting and development.";

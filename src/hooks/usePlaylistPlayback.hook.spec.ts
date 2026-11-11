@@ -45,6 +45,27 @@ jest.mock("src/utils/playbackQueueToast", () => ({
   showPlaybackQueueSuccessToast: jest.fn(),
 }));
 
+const mockShowPlaylistSkippedNotInCollectionToast = jest.fn();
+
+jest.mock("src/utils/playlistToast", () => ({
+  showPlaylistSkippedNotInCollectionToast: (...args: unknown[]) =>
+    mockShowPlaylistSkippedNotInCollectionToast(...args),
+  showPlaylistTrackAddedToast: jest.fn(),
+  showPlaylistTrackRemovedToast: jest.fn(),
+  showPlaylistTracksAddedToast: jest.fn(),
+}));
+
+const mockToastError = jest.fn();
+
+jest.mock("src/utils/toast", () => ({
+  toast: {
+    error: (...args: unknown[]) => mockToastError(...args),
+    success: jest.fn(),
+    loading: jest.fn(),
+    dismiss: jest.fn(),
+  },
+}));
+
 jest.mock("src/api/urls", () => ({
   api: {
     recordPublicPlaylistPlay: jest.fn(),
@@ -235,6 +256,26 @@ describe("usePlaylistPlayback", () => {
       2,
       expect.objectContaining({ trackPosition: "A2", trackTitle: "Second" }),
     );
+  });
+
+  it("when some playlist rows are not in the collection, shows the skipped-track toast copy", () => {
+    const tracks = [
+      playlistTrackRowFactory.opening(),
+      playlistTrackRowFactory.opening({
+        track_key: "8888:A1",
+        track_position: "A1",
+        instance_id: "8888",
+        sort_order: 2,
+        track_title: "Off shelf",
+        youtube_id: null,
+      }),
+    ];
+
+    const { result } = renderPlaylistPlaybackHook();
+
+    result.current.addPlaylistToQueue(tracks);
+
+    expect(mockShowPlaylistSkippedNotInCollectionToast).toHaveBeenCalledWith(1);
   });
 
   it("addPlaylistToQueue starts the first row when nothing is playing yet", () => {

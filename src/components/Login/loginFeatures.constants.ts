@@ -10,7 +10,7 @@ export type LoginFeature = {
 export const LOGIN_FEATURES: LoginFeature[] = [
   {
     eyebrow: "Filter",
-    title: "Find hidden gems in your collection",
+    title: "Search and filter your collection",
     description:
       "Combine filters on genres, styles, formats, and years to narrow your collection. Search, saved views, random shuffle, in-app preview, queues, playlists, and notes synced with Discogs.",
     imageBase: "releases",

@@ -5,6 +5,10 @@ import {
 } from "src/constants/loginPageCopy.registry";
 import { SITE_NAME } from "src/constants/siteMetadata";
 import {
+  getUserFacingCopyEntries,
+  USER_FACING_COPY_SOURCE_FILES,
+} from "src/constants/userFacingCopy.registry";
+import {
   formatLoginPageCopyViolations,
   validateLoginPageCopyEntries,
   validateLoginPageCopyText,
@@ -43,11 +47,25 @@ describe("loginPageCopyLiteraryRules", () => {
     expect(violations).toEqual([]);
   });
 
+  it("keeps governed user-facing copy free of literary violations", () => {
+    const violations = validateLoginPageCopyEntries(
+      getUserFacingCopyEntries(SITE_NAME),
+    );
+
+    expect(violations).toEqual([]);
+  });
+
   it("documents the files covered by login page copy drift checks", () => {
     expect(LOGIN_PAGE_COPY_SOURCE_FILES).toEqual(
       expect.arrayContaining([
         "src/constants/loginPageCopy.registry.ts",
         "src/components/Login/loginFeatures.constants.ts",
+      ]),
+    );
+    expect(USER_FACING_COPY_SOURCE_FILES).toEqual(
+      expect.arrayContaining([
+        "src/constants/userFacingCopy.registry.ts",
+        "src/constants/marketingPublicCopy.ts",
       ]),
     );
   });
@@ -57,7 +75,7 @@ describe("loginPageCopyLiteraryRules", () => {
       {
         entryId: "site.lead",
         rule: "em-dash",
-        message: "site.lead: Em dashes are not allowed in login page copy.",
+        message: "site.lead: Em dashes are not allowed in user-facing copy.",
       },
     ]);
 

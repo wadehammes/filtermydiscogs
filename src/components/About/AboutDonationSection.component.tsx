@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import Button from "src/components/Button/Button.component";
+import { ABOUT_DONATION_BODY } from "src/constants/about.constants";
 import {
   DONATION_MAX_DOLLARS,
   DONATION_MIN_DOLLARS,
@@ -52,11 +53,7 @@ export const AboutDonationSection = () => {
         >
           Help keep {SITE_NAME} free
         </h2>
-        <p className={styles.tileBody}>
-          If this app has made your collection easier to actually use, consider
-          a one-time donation. Every contribution helps cover hosting and keeps
-          the roadmap moving.
-        </p>
+        <p className={styles.tileBody}>{ABOUT_DONATION_BODY}</p>
       </div>
 
       <div className={styles.donationPanel}>

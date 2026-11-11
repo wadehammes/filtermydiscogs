@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "@jest/globals";
+import { DASHBOARD_PLAYBACK_SECTION_LEDE } from "src/constants/dashboardCopy.constants";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { CollectionAnalytics } from "src/types/dashboard.types";
 import { buildDashboardStory } from "src/utils/dashboardStory";
@@ -89,6 +90,7 @@ describe("buildDashboardStory", () => {
     expect(story.sections.names.title).toBe("Who repeats");
     expect(story.sections.sound.title).toBe("What you collect");
     expect(story.sections.styleEvolution.title).toBe("Taste over time");
+    expect(story.sections.playback.lede).toBe(DASHBOARD_PLAYBACK_SECTION_LEDE);
   });
 
   it("uses a fallback message for empty collections", () => {

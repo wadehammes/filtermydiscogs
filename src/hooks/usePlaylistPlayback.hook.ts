@@ -20,6 +20,7 @@ import {
   resolvePlaylistTrackYoutubeOverride,
   shouldSyncUpcomingQueueToPlaylistOrder,
 } from "src/utils/playlistPlayback";
+import { showPlaylistSkippedNotInCollectionToast } from "src/utils/playlistToast";
 import { toast } from "src/utils/toast";
 
 export const usePlaylistPlayback = (options?: {
@@ -146,9 +147,7 @@ export const usePlaylistPlayback = (options?: {
       const skippedCount = orderedTracks.length - playableEntries.length;
 
       if (skippedCount > 0) {
-        toast.error(
-          `${skippedCount} track${skippedCount === 1 ? "" : "s"} skipped — not in your collection.`,
-        );
+        showPlaylistSkippedNotInCollectionToast(skippedCount);
       }
 
       showPlaybackQueueSuccessToast(playableEntries.length);
@@ -187,9 +186,7 @@ export const usePlaylistPlayback = (options?: {
       const skippedCount = orderedTracks.length - queueItems.length;
 
       if (skippedCount > 0) {
-        toast.error(
-          `${skippedCount} track${skippedCount === 1 ? "" : "s"} skipped — not in your collection.`,
-        );
+        showPlaylistSkippedNotInCollectionToast(skippedCount);
       }
 
       recordPublicPlaylistPlayIfNeeded();

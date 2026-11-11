@@ -7,7 +7,28 @@ hook_input
 file="$(tool_file_path)"
 
 case "$file" in
-  */loginPageCopy.registry.ts | */loginFeatures.constants.ts | */Login/Login.component.tsx | */LoginBottomCta/LoginBottomCta.component.tsx) ;;
+  */loginPageCopy.registry.ts \
+    | */userFacingCopy.registry.ts \
+    | */marketingPublicCopy.ts \
+    | */supportProjectToast.constants.ts \
+    | */about.constants.ts \
+    | */donate.constants.ts \
+    | */settingsCopy.constants.ts \
+    | */dashboardCopy.constants.ts \
+    | */cookieConsentCopy.constants.ts \
+    | */sentryUserFeedbackForm.constants.ts \
+    | */publicReleaseListen.constants.ts \
+    | */playlistPlaybackCopy.constants.ts \
+    | */loginFeatures.constants.ts \
+    | */Login/Login.component.tsx \
+    | */LoginBottomCta/LoginBottomCta.component.tsx \
+    | */SupportProjectToast/supportProjectToast.tsx \
+    | */About/AboutDonationSection.component.tsx \
+    | */CookieConsentBanner/CookieConsentBanner.component.tsx \
+    | */Settings/SettingsClient.component.tsx \
+    | */Settings/SettingsSectionPanels.component.tsx \
+    | */Dashboard/DuplicatesList.component.tsx \
+    | */dashboardStory.ts) ;;
   *) exit 0 ;;
 esac
 
@@ -20,7 +41,7 @@ fi
 violations=""
 
 if printf '%s' "$added" | grep -q $'—'; then
-  violations="${violations}Em dashes are not allowed in login page copy.\n"
+  violations="${violations}Em dashes are not allowed in user-facing copy.\n"
 fi
 
 banned_phrases=(
@@ -55,6 +76,7 @@ embellishment_terms=(
   "gorgeous"
   "transformative"
   "revolutionary"
+  "hidden gems"
 )
 
 for term in "${embellishment_terms[@]}"; do
@@ -64,7 +86,7 @@ for term in "${embellishment_terms[@]}"; do
 done
 
 if [ -n "$violations" ]; then
-  reason="$(printf 'Blocked login page copy violation in %s. Rules live in src/tests/utils/loginPageCopyLiteraryRules.ts and src/constants/loginPageCopy.registry.ts. Fix the added text and retry.\n\n%s' "$file" "$violations")"
+  reason="$(printf 'Blocked user-facing copy violation in %s. Rules: src/tests/utils/loginPageCopyLiteraryRules.ts. Registry: src/constants/userFacingCopy.registry.ts.\n\n%s' "$file" "$violations")"
   deny_tool "$reason"
 fi
 

@@ -2,18 +2,18 @@ import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 
 export const LOGIN_PAGE_SITE_COPY = {
   tagline: "Discover and play your collection",
-  lead: "Discogs catalogs your physical media. FilterMyDisco.gs is a free companion app to search and filter it, discover hidden gems, queue tracks for in-app playback, and build playlists and crates.",
+  lead: "Discogs catalogs your physical media. FilterMyDisco.gs is a free companion app to search and filter it, queue tracks for in-app playback, build playlists and crates, and more.",
   description:
-    "Discogs catalogs your physical media. FilterMyDisco.gs is a free companion app to search and filter it, discover hidden gems, queue tracks for in-app playback, and build playlists and crates.",
+    "Discogs catalogs your physical media. FilterMyDisco.gs is a free companion app to search and filter it, queue tracks for in-app playback, build playlists and crates, and more.",
   previewAltSuffix:
     "app preview with advanced collection filters, release cards, in-app playback, playlists, crates, collection insights, and on-repeat stats",
 } as const;
 
 export const LOGIN_PAGE_UI_COPY = {
-  bottomCtaHeading: "Ready to connect your collection?",
-  featuresSectionHeading: "What you can do",
+  bottomCtaHeading: "Connect your collection",
+  featuresSectionHeading: "Features",
   featuresSectionLede:
-    "Find physical media faster, then play it, pack it, and share it.",
+    "Filter releases, play through the queue, and share crates or playlists.",
   publicShareTeaserLead: "Listen to a ",
   publicShareTeaserPlaylistLinkLabel: "shared playlist",
   publicShareTeaserJoiner: " or browse a ",
@@ -21,7 +21,7 @@ export const LOGIN_PAGE_UI_COPY = {
   publicShareTeaserSuffix: " (no sign-in required).",
   termsPrivacyLink: "Terms & Privacy",
   finePrintFreePrefix: "Free to use (",
-  finePrintSupportLink: "support is greatly appreciated",
+  finePrintSupportLink: "support helps",
   finePrintFreeSuffix: ")",
 } as const;
 

@@ -14,6 +14,7 @@ import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.compon
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
+import { SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE } from "src/constants/settingsCopy.constants";
 import { useAuth } from "src/context/auth.context";
 import { useFeatureFlag } from "src/context/featureFlags.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
@@ -49,9 +50,6 @@ import {
 
 const isSettingsSectionId = (value: string): value is SettingsSectionId =>
   SETTINGS_SECTIONS.some((section) => section.id === value);
-
-const COMPLETE_LOGOUT_MESSAGE =
-  "This signs you out and revokes stored OAuth tokens on this browser. Your crates, playlists, and local preferences stay saved—you can sign in again with Discogs when you are ready.";
 
 const PREFERENCES_SAVED_MESSAGE = "Preferences saved";
 const PREFERENCES_SAVE_ERROR_MESSAGE = "Failed to save preferences";
@@ -343,7 +341,7 @@ export default function SettingsClient() {
       <ConfirmDialog
         isOpen={showCompleteLogoutDialog}
         title="Complete logout"
-        message={COMPLETE_LOGOUT_MESSAGE}
+        message={SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE}
         confirmLabel={authState.isLoggingOut ? "Logging out..." : "Log out"}
         cancelLabel="Cancel"
         variant="danger"

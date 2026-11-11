@@ -1,3 +1,4 @@
+import { DASHBOARD_PLAYBACK_SECTION_LEDE } from "src/constants/dashboardCopy.constants";
 import type { DiscogsRelease } from "src/types";
 import type {
   CollectionAnalytics,
@@ -297,7 +298,7 @@ export const buildDashboardStory = ({
       },
       playback: {
         title: "On repeat",
-        lede: "Two sides of the same habit: how often you start tracks vs how often you stay for a real listen.",
+        lede: DASHBOARD_PLAYBACK_SECTION_LEDE,
       },
     },
   };

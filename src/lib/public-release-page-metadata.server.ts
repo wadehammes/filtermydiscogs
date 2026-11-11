@@ -34,10 +34,10 @@ const buildReleaseDescription = (detail: {
   const catPart = catnos.length > 0 ? ` · ${catnos.join(", ")}` : "";
 
   if (artist) {
-    return `${detail.title} by ${artist}${yearPart}${catPart} — listen on ${SITE_NAME}`;
+    return `${detail.title} by ${artist}${yearPart}${catPart} · Listen on ${SITE_NAME}`;
   }
 
-  return `${detail.title}${yearPart}${catPart} — listen on ${SITE_NAME}`;
+  return `${detail.title}${yearPart}${catPart} · Listen on ${SITE_NAME}`;
 };
 
 export const buildPublicReleasePageMetadata = ({

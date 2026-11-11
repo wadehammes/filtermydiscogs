@@ -15,14 +15,14 @@ root="$(printf '%s' "$input" | jq -r '.cwd // empty')"
 
 changed="$( { git diff --name-only HEAD; git ls-files --others --exclude-standard; } 2>/dev/null || true)"
 
-copy_changed="$(printf '%s\n' "$changed" | grep -E '^src/constants/loginPageCopy\.registry\.ts$|^src/components/Login/loginFeatures\.constants\.ts$|^src/components/Login/Login\.component\.tsx$|^src/components/LoginBottomCta/LoginBottomCta\.component\.tsx$' || true)"
+copy_changed="$(printf '%s\n' "$changed" | grep -E '^src/constants/(loginPageCopy|userFacingCopy|marketingPublicCopy|supportProjectToast|about|donate|settingsCopy|dashboardCopy|cookieConsentCopy|sentryUserFeedbackForm|publicReleaseListen|playlistPlaybackCopy)\.ts$|^src/components/Login/loginFeatures\.constants\.ts$|^src/components/(Login/Login|LoginBottomCta/LoginBottomCta|SupportProjectToast/supportProjectToast|About/AboutDonationSection|CookieConsentBanner/CookieConsentBanner|Settings/SettingsClient|Settings/SettingsSectionPanels|Dashboard/DuplicatesList)\.component\.tsx$|^src/utils/dashboardStory\.ts$' || true)"
 
 if [ -z "$copy_changed" ]; then
   exit 0
 fi
 
 if ! run_pnpm --version >/dev/null 2>&1; then
-  reason="$(printf 'Login page copy drift check: copy source files changed but pnpm is unavailable (install mise tools with `mise install`, then re-run). Manual check: mise exec -- pnpm jest src/tests/utils/loginPageCopyLiteraryRules.spec.ts\n\nChanged copy files:\n%s' "$copy_changed")"
+  reason="$(printf 'User-facing copy drift check: copy source files changed but pnpm is unavailable (install mise tools with `mise install`, then re-run). Manual check: mise exec -- pnpm jest src/tests/utils/loginPageCopyLiteraryRules.spec.ts\n\nChanged copy files:\n%s' "$copy_changed")"
   jq -n --arg r "$reason" '{ followup_message: $r }'
   exit 0
 fi
@@ -32,7 +32,7 @@ jest_status=0
 jest_output="$(run_pnpm jest src/tests/utils/loginPageCopyLiteraryRules.spec.ts --runInBand --no-cache 2>&1)" || jest_status=$?
 
 if [ "$jest_status" -ne 0 ]; then
-  reason="$(printf 'Login page copy drift check failed literary rules. Update copy to remove em dashes, embellishment, and inaccurate claims. Registry: src/constants/loginPageCopy.registry.ts. Rules: src/tests/utils/loginPageCopyLiteraryRules.ts\n\nChanged copy files:\n%s\n\nTest output:\n%s' "$copy_changed" "$jest_output")"
+  reason="$(printf 'User-facing copy drift check failed literary rules. Update copy to remove em dashes, embellishment, and inaccurate claims. Registry: src/constants/userFacingCopy.registry.ts. Rules: src/tests/utils/loginPageCopyLiteraryRules.ts\n\nChanged copy files:\n%s\n\nTest output:\n%s' "$copy_changed" "$jest_output")"
   jq -n --arg r "$reason" '{ followup_message: $r }'
   exit 0
 fi
