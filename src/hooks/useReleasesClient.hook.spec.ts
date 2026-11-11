@@ -17,17 +17,7 @@ import {
 } from "src/tests/mocks/mockIntersectionObserver.mock";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
-import { prefetchReleaseModalChunk } from "src/utils/prefetchReleaseModalChunk";
-import { scheduleIdleWork } from "src/utils/scheduleIdleWork";
 import { act, renderFeatureHook, waitFor } from "test-utils";
-
-jest.mock("src/utils/prefetchReleaseModalChunk", () => ({
-  prefetchReleaseModalChunk: jest.fn(),
-}));
-
-jest.mock("src/utils/scheduleIdleWork", () => ({
-  scheduleIdleWork: jest.fn(),
-}));
 
 jest.mock("src/api/urls", () => ({
   api: {
@@ -38,8 +28,6 @@ jest.mock("src/api/urls", () => ({
 
 const mockFetchDiscogsCollection = jest.mocked(api.discogsCollection);
 const mockUpdateUserPreferences = jest.mocked(api.updateUserPreferences);
-const mockPrefetchReleaseModalChunk = jest.mocked(prefetchReleaseModalChunk);
-const mockScheduleIdleWork = jest.mocked(scheduleIdleWork);
 const mockUseRouter = jest.mocked(useRouter);
 const mockUsePathname = jest.mocked(usePathname);
 const mockUseSearchParams = jest.mocked(useSearchParams);
@@ -113,28 +101,6 @@ describe("useReleasesClient", () => {
         }),
       }),
     );
-  });
-
-  it("when the releases client mounts, schedules release modal chunk prefetch for idle time", async () => {
-    mockApiResponse(
-      true,
-      mockFetchDiscogsCollection,
-      buildSinglePageCollection(releaseFactory.buildList(1)),
-      new Error("fail"),
-    );
-
-    renderFeatureHook(() => useReleasesClient(), {
-      authInitialState: testAuthenticatedAuthState,
-    });
-
-    await waitFor(() => {
-      expect(mockScheduleIdleWork).toHaveBeenCalledTimes(1);
-      expect(mockScheduleIdleWork).toHaveBeenCalledWith(
-        prefetchReleaseModalChunk,
-      );
-    });
-
-    expect(mockPrefetchReleaseModalChunk).not.toHaveBeenCalled();
   });
 
   it("loads releases and tracks selected release modal state", async () => {

@@ -9,9 +9,6 @@ import { prefetchReleaseOpenData } from "src/utils/prefetchReleaseOpenData";
 import { parseReleaseId } from "src/utils/releaseNotes";
 
 jest.mock("src/api/urls");
-jest.mock("src/utils/prefetchReleaseModalChunk", () => ({
-  prefetchReleaseModalChunk: jest.fn(),
-}));
 
 const mockApi = jest.mocked(api);
 

@@ -1,4 +1,5 @@
 import { beforeEach, describe, it } from "@jest/globals";
+import userEvent from "@testing-library/user-event";
 import { api } from "src/api/urls";
 import { useReleaseOpenHandler } from "src/hooks/useReleaseOpenHandler.hook";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
@@ -17,7 +18,8 @@ import {
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
 import { definedProps } from "src/utils/definedProps";
-import { render, screen } from "test-utils";
+import { parseReleaseId } from "src/utils/releaseNotes";
+import { render, screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
 
@@ -83,6 +85,33 @@ describe("useReleaseOpenHandler", () => {
     } finally {
       teardownReleaseOpenPrefetchHoverTimers();
     }
+  });
+
+  it("prefetches release detail on pointer down without waiting for hover", async () => {
+    const release = releaseFactory.withTitle("Pointer Down Album", 249504);
+    const releaseId = parseReleaseId(release);
+    const onReleaseClick = jest.fn();
+    const user = userEvent.setup();
+
+    render(<ReleaseOpenPrefetchProbe onReleaseClick={onReleaseClick} />, {
+      wrapper: ({ children }) => (
+        <TestProviders
+          authInitialState={testAuthenticatedAuthState}
+          includeCollectionSync={false}
+        >
+          {children}
+        </TestProviders>
+      ),
+    });
+
+    await user.pointer({
+      keys: "[MouseLeft>]",
+      target: screen.getByTestId("fmdReleaseOpenPrefetchProbe"),
+    });
+
+    await waitFor(() => {
+      expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(releaseId));
+    });
   });
 
   it("does not prefetch release detail when onReleaseClick is omitted", async () => {

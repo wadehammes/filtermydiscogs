@@ -59,7 +59,8 @@ jobs:
 
   e2e-smoke:
     name: E2E smoke
-    runs-on: ubuntu-latest
+    # ubuntu-24.04: stable apt mirrors for Playwright; ubuntu-latest (26.04 resolute) can fail DNS on install-deps.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ./

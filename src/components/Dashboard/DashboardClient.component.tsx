@@ -15,7 +15,7 @@ import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
-import { useSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
+import { useLocalSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
 import { getErrorHttpStatus } from "src/lib/sentry/getErrorHttpStatus";
 import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
 import { shouldReportHttpFailure } from "src/lib/sentry/shouldReportHttpFailure";
@@ -54,7 +54,7 @@ function DashboardClientContent() {
   const allReleases = useAllReleases();
   const showLoading = isCheckingAuth || needsCollectionLoad;
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
-    useSelectedReleaseModal({
+    useLocalSelectedReleaseModal({
       collectionUsername: authState.username,
       fallbackReleases: allReleases,
     });

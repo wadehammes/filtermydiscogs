@@ -61,7 +61,15 @@ export const isPlaywrightBrowserInstallDirReady = (dir, label) => {
     }
 
     if (process.platform === "linux") {
-      return fs.existsSync(path.join(dir, "chrome-linux", "chrome"));
+      const chromeDir = fs
+        .readdirSync(dir)
+        .find((name) => name === "chrome-linux" || name === "chrome-linux64");
+
+      if (!chromeDir) {
+        return false;
+      }
+
+      return fs.existsSync(path.join(dir, chromeDir, "chrome"));
     }
 
     if (process.platform === "win32") {
