@@ -192,6 +192,48 @@ describe("ReleaseCard", () => {
     });
   });
 
+  it("when create crate fails, keeps the dialog open and does not add the release", async () => {
+    const release = releaseFactory.withEmptyNotes();
+    const user = userEvent.setup();
+    const duplicateNameError = new Error(
+      "A crate with this name already exists",
+    );
+
+    po.mockApiHelpers.createCrate.mockRejectedValueOnce(duplicateNameError);
+
+    po.renderReleaseCard({ release });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenuTrigger")).toBeEnabled();
+    });
+
+    await user.click(screen.getByTestId("fmdReleaseCrateMenuTrigger"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
+    });
+
+    await user.click(
+      screen.getByRole("menuitem", { name: "Add to new crate" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdCreateCrateDialog")).toBeInTheDocument();
+    });
+
+    await user.type(screen.getByLabelText("Crate name"), "Weekend favorites");
+    await user.click(screen.getByRole("button", { name: "Create crate" }));
+
+    await waitFor(() => {
+      expect(po.mockApiHelpers.createCrate).toHaveBeenCalledWith(
+        "Weekend favorites",
+      );
+    });
+
+    expect(screen.getByTestId("fmdCreateCrateDialog")).toBeInTheDocument();
+    expect(po.mockApiHelpers.addReleaseToCrate).not.toHaveBeenCalled();
+  });
+
   it("calls setReleaseCrateMembership when Add to all is clicked", async () => {
     const release = releaseFactory.withEmptyNotes();
     const user = userEvent.setup();

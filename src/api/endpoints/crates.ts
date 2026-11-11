@@ -258,7 +258,7 @@ export const createCrate = async (
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      await throwCrateApiError(response);
     }
 
     return response.json();
