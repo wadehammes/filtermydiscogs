@@ -113,14 +113,16 @@ export const useReleaseCrateMenuController = (
 
   const handleCreateCrate = useCallback(
     async ({ name, setAsDefault }: CreateCrateFormValues) => {
-      const crateId = await createCrate(name, { setAsDefault });
+      try {
+        const crateId = await createCrate(name, { setAsDefault });
 
-      if (!crateId) {
-        return;
-      }
+        if (!crateId) {
+          return;
+        }
 
-      addReleaseToCrate(crateId, release, { openDrawer: true });
-      setShowCreateDialog(false);
+        addReleaseToCrate(crateId, release, { openDrawer: true });
+        setShowCreateDialog(false);
+      } catch {}
     },
     [addReleaseToCrate, createCrate, release],
   );

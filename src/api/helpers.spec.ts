@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
+import { ApiFetchError } from "src/api/apiFetchError";
 import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { crateFactory } from "src/tests/factories/Crate.factory";
@@ -294,9 +295,27 @@ describe("createCrate", () => {
   it("throws error when response is not ok", async () => {
     mockFetchErrorOnce("post", "/api/crates", 400);
 
-    await expect(createCrate("Test")).rejects.toThrow(
-      "HTTP error! status: 400",
-    );
+    try {
+      await createCrate("Test");
+      throw new Error("Expected createCrate to reject");
+    } catch (error) {
+      expect(error).toBeInstanceOf(ApiFetchError);
+      expect(error).toMatchObject({
+        status: 400,
+        message: "HTTP error! status: 400",
+      });
+    }
+  });
+
+  it("throws API error message when a duplicate crate name returns 409", async () => {
+    mockFetchErrorOnce("post", "/api/crates", 409, {
+      error: "A crate with this name already exists",
+    });
+
+    await expect(createCrate("Weekend favorites")).rejects.toMatchObject({
+      status: 409,
+      message: "A crate with this name already exists",
+    });
   });
 });
 
