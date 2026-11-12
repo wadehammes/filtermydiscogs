@@ -16,6 +16,14 @@ const isFlatDescribeSpec = (relativePath: string): boolean =>
   /^src\/utils\/.*\.spec\.ts$/.test(relativePath) ||
   /^src\/context\/releasePlayback\.context\..*\.spec\.tsx$/.test(relativePath);
 
+const INDENTED_NESTED_DESCRIBE_CALL = /^[ \t]+describe\s*\(\s*(?:["'`]|$)/;
+
+const startsMultilineImportBlock = (line: string): boolean =>
+  /^\s*import\s+(?:type\s+)?\{/.test(line) && !/\}\s+from\s+["']/.test(line);
+
+const endsMultilineImportBlock = (line: string): boolean =>
+  /\}\s+from\s+["']/.test(line);
+
 const isProductionSource = (relativePath: string): boolean =>
   relativePath.startsWith("src/") &&
   !relativePath.includes(".spec.") &&
@@ -69,9 +77,21 @@ const validateFlatDescribe = (
 
   const violations: HandbookEditViolation[] = [];
   const lines = source.split("\n");
+  let inMultilineImport = false;
 
   for (const [index, line] of lines.entries()) {
-    if (/^[ \t]+describe\s*\(/.test(line)) {
+    if (startsMultilineImportBlock(line)) {
+      inMultilineImport = true;
+    }
+
+    if (inMultilineImport) {
+      if (endsMultilineImportBlock(line)) {
+        inMultilineImport = false;
+      }
+      continue;
+    }
+
+    if (INDENTED_NESTED_DESCRIBE_CALL.test(line)) {
       violations.push({
         filePath: relativePath,
         line: index + 1,
@@ -167,6 +187,89 @@ const validateProductionSource = (
   }
 
   return violations;
+};
+
+export const findHandbookViolations = (
+  relativePath: string,
+  source: string,
+): HandbookEditViolation[] => {
+  const normalized = relativePath.replace(/\\/g, "/");
+
+  if (!isHandbookGuardScope(normalized)) {
+    return [];
+  }
+
+  return [
+    ...validateFeatureTestSource(normalized, source),
+    ...validateFlatDescribe(normalized, source),
+    ...validateProductionSource(normalized, source),
+  ];
+};
+
+const handbookViolationKey = (violation: HandbookEditViolation) =>
+  `${violation.rule}\u0000${violation.excerpt}`;
+
+const violationCountByRule = (violations: HandbookEditViolation[]) => {
+  const counts = new Map<string, number>();
+
+  for (const { rule } of violations) {
+    counts.set(rule, (counts.get(rule) ?? 0) + 1);
+  }
+
+  return counts;
+};
+
+const withoutUnchangedViolations = ({
+  afterViolations,
+  beforeViolations,
+}: {
+  afterViolations: HandbookEditViolation[];
+  beforeViolations: HandbookEditViolation[];
+}) => {
+  const existingCounts = new Map<string, number>();
+
+  for (const violation of beforeViolations) {
+    const key = handbookViolationKey(violation);
+    existingCounts.set(key, (existingCounts.get(key) ?? 0) + 1);
+  }
+
+  return afterViolations.filter((violation) => {
+    const key = handbookViolationKey(violation);
+    const remaining = existingCounts.get(key) ?? 0;
+
+    if (remaining > 0) {
+      existingCounts.set(key, remaining - 1);
+      return false;
+    }
+
+    return true;
+  });
+};
+
+export const newHandbookViolations = ({
+  after,
+  before,
+  relativePath,
+}: {
+  after: string;
+  before: string;
+  relativePath: string;
+}): HandbookEditViolation[] => {
+  const normalized = relativePath.replace(/\\/g, "/");
+  const beforeViolations = findHandbookViolations(normalized, before);
+  const afterViolations = findHandbookViolations(normalized, after);
+  const beforeCounts = violationCountByRule(beforeViolations);
+  const afterCounts = violationCountByRule(afterViolations);
+  const rulesThatGrew = new Set(
+    [...afterCounts].flatMap(([rule, count]) =>
+      count > (beforeCounts.get(rule) ?? 0) ? [rule] : [],
+    ),
+  );
+
+  return withoutUnchangedViolations({
+    afterViolations,
+    beforeViolations,
+  }).filter(({ rule }) => rulesThatGrew.has(rule));
 };
 
 export const lineNumbersTouchedByReplace = (

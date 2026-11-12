@@ -4,7 +4,7 @@ import { describe, it } from "@jest/globals";
 import {
   applyToolEditToSource,
   formatHandbookEditViolations,
-  validateHandbookEdit,
+  newHandbookViolations,
 } from "src/tests/utils/handbookEditGuard";
 
 type HookInput = {
@@ -58,11 +58,10 @@ const runCursorHandbookGuard = (hookJson: string): string => {
     return "";
   }
 
-  const violations = validateHandbookEdit(relativePath, resulting, {
-    toolName,
-    existingSource: existing,
-    oldString: toolInput.old_string,
-    newString: toolInput.new_string,
+  const violations = newHandbookViolations({
+    after: resulting,
+    before: existing,
+    relativePath,
   });
 
   if (violations.length === 0) {
