@@ -71,6 +71,12 @@
         "command": ".cursor/hooks/block-query-hook-mocks.sh",
         "matcher": "Write|StrReplace",
         "timeout": 10
+      },
+      {
+        "command": ".cursor/hooks/enforce-handbook-edit.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 45,
+        "failClosed": false
       }
     ],
     "postToolUse": [

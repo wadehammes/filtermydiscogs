@@ -1,6 +1,6 @@
 # Agent instructions
 
-**Before any work in this repo**, read **`docs/handbook/README.md`** and the handbook **chapter** that matches the task. Use **`docs/handbook/llms.md`** for a compact task→chapter map (helpful for routing or for pasting into other tools).
+**Before any work in this repo**, read **`docs/handbook/README.md`** and the handbook **chapter** that matches the task. Use **`docs/handbook/llms.md`** for a compact task→chapter map (helpful for routing or for pasting into other tools). When unsure which pattern to use, read **`docs/handbook/decisions.md`** first.
 
 Follow documented patterns.
 
