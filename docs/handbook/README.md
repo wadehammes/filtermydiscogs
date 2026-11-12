@@ -4,7 +4,7 @@ This is the **FilterMyDisco.gs handbook**: how the app is structured, how we wri
 
 Skim the index, bookmark what you need, and come back when you touch that area. **Keep these docs aligned with the repo**—when behavior changes, update the matching page here (or in the same PR) so the next person is not misled.
 
-**For tools and LLMs:** **[llms.md](llms.md)** has a compact **task → chapter** map and a short copy-paste instruction blurb. **[AGENTS.md](../../AGENTS.md)** requires reading this handbook before any work in the repo.
+**For tools and LLMs:** **[llms.md](llms.md)** has a compact **task → chapter** map and a short copy-paste instruction blurb. Start with **[decisions.md](decisions.md)** (X vs Y) when unsure which pattern to use. **[AGENTS.md](../../AGENTS.md)** requires reading this handbook before any work in the repo.
 
 ## How to read this handbook
 
@@ -22,7 +22,12 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 
 | File                                                                 | What it covers                                                                                              |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| [architecture.md](architecture.md)                                   | Tech stack, directory map, data flow, key config. Start here.                                               |
+| [glossary.md](glossary.md)                                           | Domain terms: instance vs release, `track_key`, crates vs playlists, auth/session vocabulary.                    |
+| [decisions.md](decisions.md)                                         | **X vs Y** plus **feature playbooks** (filter, API, hook, component, analytics, playback, storage).            |
+| [agent-workflow.md](agent-workflow.md)                               | Agent finish checklist, `pr-prep`, stop hooks, handbook sync.                                               |
+| [architecture.md](architecture.md)                                   | Tech stack, directory map, data flow, key config. Orientation after decisions.                             |
+| [api-routes.md](api-routes.md)                                       | Auth tiers, `api.*` → route map, validation/errors; deep route tables in [database.md](database.md).         |
+| [data-storage.md](data-storage.md)                                   | localStorage, IndexedDB, Postgres, clear-data, About/Legal alignment.                                     |
 | [conventions.md](conventions.md)                                     | TypeScript, Biome, Stylelint/CSS, Modules, testing, accessibility.                                          |
 | [discogs.md](discogs.md)                                             | OAuth 1.0a, `discogs-oauth.service`, username validation, cookies, API errors.                              |
 | [database.md](database.md)                                           | Prisma models, crate CRUD, migrations, admin stats.                                                         |

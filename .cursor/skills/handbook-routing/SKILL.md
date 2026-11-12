@@ -24,7 +24,7 @@ When the session changed **`src/`**, **`.jest/`**, **`jest.config.ts`**, **`e2e/
 1. Open **`llms.md`** and the chapter(s) it maps for this area.
 2. **Edit handbook** in the same turn if anything documented is now wrong or missing.
 3. If you truly changed nothing doc-worthy, **name the section headings you checked** — not a bare “handbook still accurate.”
-4. Cursor **`stop`** runs [`.cursor/hooks/handbook-drift-check.sh`](../../.cursor/hooks/handbook-drift-check.sh) once when git shows `src/` changes without `docs/handbook/*.md` — treat that follow-up as mandatory completion, not optional.
+4. Cursor **`stop`** runs [`.cursor/hooks/session-stop-checks.sh`](../../.cursor/hooks/session-stop-checks.sh) when git shows `src/` changes without `docs/handbook/*.md` (among other gates) — treat that follow-up as mandatory completion, not optional.
 
 ## Substantive vs skip
 
