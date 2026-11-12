@@ -96,6 +96,24 @@ files_fingerprint() {
   printf '%s' "$1" | shasum -a 256 | awk '{print $1}'
 }
 
+# Changed paths plus content hash (fixes inside an already-changed file re-run stop checks).
+changed_files_content_fingerprint() {
+  local root="${STOP_ROOT:-$(hook_cwd)}"
+  [ -z "$root" ] && root="$(pwd)"
+  local file hash
+  {
+    while IFS= read -r file; do
+      [ -z "$file" ] && continue
+      if [ -f "$root/$file" ]; then
+        hash="$(shasum -a 256 "$root/$file" | awk '{print $1}')"
+        printf '%s:%s\n' "$file" "$hash"
+      else
+        printf '%s:deleted\n' "$file"
+      fi
+    done
+  } | LC_ALL=C sort | shasum -a 256 | awk '{print $1}'
+}
+
 # True when this check already emitted a follow-up for the same worktree fingerprint.
 stop_notified_for_fingerprint() {
   local key="$1" fp="$2"

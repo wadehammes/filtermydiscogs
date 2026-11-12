@@ -19,7 +19,7 @@ root="$(hook_cwd)"
 STOP_ROOT="${root:-$(pwd)}"
 
 changed="$(changed_files_worktree)"
-fp="$(files_fingerprint "$changed")"
+fp="$(printf '%s\n' "$changed" | changed_files_content_fingerprint)"
 
 sections=()
 

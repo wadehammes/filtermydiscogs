@@ -39,7 +39,9 @@ Checklist for **tools and LLMs** working in this repo—complements [AGENTS.md](
 - Run **`handbookTestRules.spec.ts`** when feature test files changed
 - Nudge README, terms/privacy, Prisma generate, login-copy Jest, or **`test:changed`** (FMD-specific sections)
 
-Dedupe state: **`.cursor/hooks-state/`** (gitignored). Legacy standalone stop scripts are **not** wired in `hooks.json`; see [`.cursor/hooks/README.md`](../../.cursor/hooks/README.md).
+Dedupe state: **`.cursor/hooks-state/`** (gitignored); fingerprint hashes **changed file contents**, not only paths (fixes inside an already-edited file re-run lint/Jest nags). Legacy standalone stop scripts are **not** wired in `hooks.json`; see [`.cursor/hooks/README.md`](../../.cursor/hooks/README.md).
+
+**`enforce-handbook-edit`:** Denies only **new** violations introduced by the edit (`newHandbookViolations` in [`handbookEditGuard.ts`](../../src/tests/utils/handbookEditGuard.ts)) — editing near legacy violations does not block. **`nested-describe`** ignores multiline **`import { … }`** lines (`describe,`); if blocked incorrectly, fix the guard in [`handbookEditGuard.spec.ts`](../../src/tests/utils/handbookEditGuard.spec.ts) — do not strip **`afterAll`** / **`jest`** imports.
 
 ## Analysis tools (optional)
 
