@@ -82,38 +82,8 @@
     ],
     "stop": [
       {
-        "command": ".cursor/hooks/handbook-drift-check.sh",
-        "timeout": 15,
-        "loop_limit": 1
-      },
-      {
-        "command": ".cursor/hooks/terms-and-privacy-drift-check.sh",
-        "timeout": 15,
-        "loop_limit": 1
-      },
-      {
-        "command": ".cursor/hooks/login-page-copy-drift-check.sh",
-        "timeout": 30,
-        "loop_limit": 1
-      },
-      {
-        "command": ".cursor/hooks/handbook-test-drift-check.sh",
-        "timeout": 30,
-        "loop_limit": 1
-      },
-      {
-        "command": ".cursor/hooks/prisma-generate-nudge.sh",
-        "timeout": 10,
-        "loop_limit": 1
-      },
-      {
-        "command": ".cursor/hooks/lint-all-check.sh",
-        "timeout": 180,
-        "loop_limit": 1
-      },
-      {
-        "command": ".cursor/hooks/jest-changed-check.sh",
-        "timeout": 300,
+        "command": ".cursor/hooks/session-stop-checks.sh",
+        "timeout": 360,
         "loop_limit": 1
       }
     ]
