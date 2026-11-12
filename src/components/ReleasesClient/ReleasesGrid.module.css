@@ -44,8 +44,18 @@
   flex-direction: column;
   justify-content: center;
   padding: var(--space-4);
+  padding-bottom: calc(
+    var(--workspace-fab-bottom) +
+    3rem +
+    var(--space-6) +
+    env(safe-area-inset-bottom, 0px)
+  );
   width: 100%;
   gap: var(--space-8);
+
+  @media (width >= 1024px) {
+    padding-bottom: var(--space-4);
+  }
 
   & > div {
     max-width: 37.5rem;

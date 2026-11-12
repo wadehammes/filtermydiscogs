@@ -20,6 +20,7 @@ import type { CollectionSidePanelMode } from "src/hooks/useCrateDrawer.hook";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
+import { useReleasesLoadingViewMode } from "src/hooks/useReleasesLoadingViewMode.hook";
 import type { PlaylistSummary } from "src/types/playlist.types";
 import { definedProps } from "src/utils/definedProps";
 import { readLastPlayedPlaylistId } from "src/utils/lastPlayedPlaylistStorage";
@@ -143,6 +144,8 @@ const ReleasesClientContent = () => {
   const setMainContentNode = useCallback((node: HTMLElement | null) => {
     setScrollRoot(node);
   }, []);
+
+  const loadingView = useReleasesLoadingViewMode();
 
   const {
     isLoading,
@@ -305,7 +308,7 @@ const ReleasesClientContent = () => {
                   />
                 </div>
               ) : !allReleasesLoaded ? (
-                <ReleasesSkeleton isMobile={isMobile} />
+                <ReleasesSkeleton isMobile={isMobile} view={loadingView} />
               ) : (
                 <EmptyState
                   title="No releases found"

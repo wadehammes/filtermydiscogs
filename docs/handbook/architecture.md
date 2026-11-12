@@ -45,7 +45,7 @@ Feature UI: one folder per area (e.g. `Dashboard`, `ReleaseCard`, `StickyHeaderB
 
 **Jotai** client UI state:
 - [`filters.atoms.ts`](../../src/atoms/filters.atoms.ts) — `allReleasesAtom`, filter inputs (`atomWithStorage` → **`filtermydiscogs_filters`**), derived `filteredReleasesAtom`, `filtersDispatchAtom`.
-- [`view.atoms.ts`](../../src/atoms/view.atoms.ts) — card / list / random view preference (`atomWithStorage`); list mode renders [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) on desktop.
+- [`view.atoms.ts`](../../src/atoms/view.atoms.ts) — card / list / random view preference (`atomWithStorage` with **`getOnInit: true`**); client helpers in [`collectionViewModeStorage.ts`](../../src/utils/collectionViewModeStorage.ts) (`readInitialCollectionViewMode`, **`syncCollectionViewCookie`**) and server **`readSsrCollectionView`** ([`readSsrCollectionView.server.ts`](../../src/utils/readSsrCollectionView.server.ts)); **`filtermydiscogs_view`** cookie + generated **`/theme-init.js`** **`data-collection-view`** so **[`releases/loading.tsx`](../../src/app/releases/loading.tsx)** and **`releases/page.tsx`** Suspense SSR the correct **[`ReleasesPageLoading`](../../src/components/ReleasesClient/ReleasesPageLoading.component.tsx)** skeleton; list mode renders [`ReleasesTable`](../../src/components/ReleasesTable/ReleasesTable.component.tsx) on desktop.
 - [`JotaiProvider.tsx`](../../src/atoms/JotaiProvider.tsx) — shared store for the app tree.
 
 Prefer **`useFilterAtoms`** / **`useViewAtoms`** in app code. Biome restricts **`useFilters()`** / **`useView()`** outside context modules and tests (see [conventions.md](conventions.md)).

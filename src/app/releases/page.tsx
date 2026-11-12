@@ -10,6 +10,7 @@ import {
   SITE_NAME,
   sitePageTitle,
 } from "src/constants/siteMetadata";
+import { readSsrCollectionView } from "src/utils/readSsrCollectionView.server";
 
 const baseUrl = getMetadataSiteUrl();
 const title = sitePageTitle("Releases");
@@ -36,9 +37,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ReleasesPage() {
+export default async function ReleasesPage() {
+  const ssrView = await readSsrCollectionView();
+
+  const loadingFallback =
+    ssrView !== undefined ? (
+      <ReleasesPageLoading ssrView={ssrView} />
+    ) : (
+      <ReleasesPageLoading />
+    );
+
   return (
-    <Suspense fallback={<ReleasesPageLoading />}>
+    <Suspense fallback={loadingFallback}>
       <ReleasesClient />
     </Suspense>
   );

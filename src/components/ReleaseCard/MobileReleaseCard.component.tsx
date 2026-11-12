@@ -17,7 +17,7 @@ import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./MobileReleaseCard.module.css";
 import {
-  ReleaseCardCatalog,
+  ReleaseCardDateAdded,
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
 import metaStyles from "./ReleaseCardMeta.module.css";
@@ -196,7 +196,10 @@ const MobileReleaseCardComponent = ({
       </div>
       <div className={styles.contentContainer}>
         <div className={styles.mainContent}>
-          <ReleaseCardCatalog catno={catno} className={metaStyles.catalogRow} />
+          <ReleaseCardDateAdded
+            dateAdded={release.date_added}
+            className={metaStyles.catalogRow}
+          />
           <div className={styles.releaseInfo}>
             <ReleaseCardTitle
               artists={artists}
@@ -208,6 +211,7 @@ const MobileReleaseCardComponent = ({
               labelName={labels[0]?.name}
               labelUrl={labelUrl}
               year={year}
+              catno={catno}
               className={metaStyles.metaLineMobile}
             />
           </div>

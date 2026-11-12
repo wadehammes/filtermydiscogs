@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import accessibilityStyles from "src/styles/modules/accessibility.module.css";
 import { formatDate } from "src/utils/dateHelpers";
 import styles from "./ReleaseCardMeta.module.css";
 
@@ -24,12 +25,47 @@ export function ReleaseCardCatalog({
   );
 }
 
+interface ReleaseCardDateAddedProps {
+  dateAdded?: string | null | undefined;
+  className?: string | undefined;
+}
+
+export function ReleaseCardDateAdded({
+  dateAdded,
+  className,
+}: ReleaseCardDateAddedProps) {
+  const formattedDateAdded = dateAdded ? formatDate(dateAdded) : "";
+
+  if (!(formattedDateAdded && dateAdded)) {
+    return null;
+  }
+
+  return (
+    <div className={classNames(styles.catalogRow, className)}>
+      <fieldset className={styles.dateAddedSegmented}>
+        <legend className={accessibilityStyles.visuallyHidden}>
+          Added {formattedDateAdded}
+        </legend>
+        <span className={styles.dateAddedLabel} aria-hidden>
+          Added
+        </span>
+        <time
+          className={styles.dateAddedValue}
+          dateTime={dateAdded}
+          title={`Added to collection ${formattedDateAdded}`}
+        >
+          {formattedDateAdded}
+        </time>
+      </fieldset>
+    </div>
+  );
+}
+
 interface ReleaseCardMetaProps {
   labelName?: string | undefined;
   labelUrl?: string | null | undefined;
   year?: number | undefined;
   catno?: string | null | undefined;
-  dateAdded?: string | null | undefined;
   className?: string | undefined;
   metaClassName?: string | undefined;
 }
@@ -47,17 +83,14 @@ export function ReleaseCardMeta({
   labelUrl,
   year,
   catno,
-  dateAdded,
   className,
   metaClassName,
 }: ReleaseCardMetaProps) {
   const showYear = year !== undefined && year !== 0;
   const catnoStr = catno ? String(catno) : "";
   const showCatno = Boolean(catnoStr);
-  const formattedDateAdded = dateAdded ? formatDate(dateAdded) : null;
   const showLabel = Boolean(labelName);
-  const hasContent =
-    showLabel || showYear || showCatno || Boolean(formattedDateAdded);
+  const hasContent = showLabel || showYear || showCatno;
 
   if (!hasContent) {
     return null;
@@ -86,14 +119,6 @@ export function ReleaseCardMeta({
       {showYear && <span>{year}</span>}
       {(showLabel || showYear) && showCatno && <MetaSeparator />}
       {showCatno && <span>{catnoStr}</span>}
-      {(showLabel || showYear || showCatno) && formattedDateAdded && (
-        <MetaSeparator />
-      )}
-      {formattedDateAdded && dateAdded && (
-        <>
-          Added <time dateTime={dateAdded}>{formattedDateAdded}</time>
-        </>
-      )}
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleaseCard.module.css";
 import {
-  ReleaseCardCatalog,
+  ReleaseCardDateAdded,
   ReleaseCardMeta,
 } from "./ReleaseCardMeta.component";
 import { ReleaseCardTitle } from "./ReleaseCardTitle.component";
@@ -48,7 +48,7 @@ export function ReleaseCardContent({
   return (
     <div className={styles.contentContainer}>
       <div className={styles.mainContent}>
-        <ReleaseCardCatalog catno={catno} />
+        <ReleaseCardDateAdded dateAdded={release.date_added} />
         <div className={styles.headerTextStack}>
           <ReleaseCardTitle
             artists={artists}
@@ -59,6 +59,7 @@ export function ReleaseCardContent({
             labelName={labels[0]?.name}
             labelUrl={labelUrl}
             year={year}
+            catno={catno}
           />
         </div>
       </div>

@@ -1,9 +1,15 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  VIEW_STATE_COOKIE_NAME,
+  VIEW_STATE_STORAGE_KEY,
+} from "../src/constants/storageKeys.ts";
+import {
   PALETTE_THEMES,
   SYSTEM_DARK_PALETTE,
 } from "../src/utils/themeAppearance.ts";
+
+const VIEW_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 const paletteThemesLiteral = PALETTE_THEMES.map(
   (theme) => `      "${theme}",`,
@@ -36,6 +42,28 @@ ${paletteThemesLiteral}
     }
 
     document.documentElement.setAttribute("data-theme", resolvedTheme);
+
+    if (hasSession) {
+      const viewStorageKey = "${VIEW_STATE_STORAGE_KEY}";
+      const viewRaw = localStorage.getItem(viewStorageKey);
+      if (viewRaw) {
+        try {
+          const parsed = JSON.parse(viewRaw);
+          const currentView = parsed?.currentView;
+          if (
+            currentView === "card" ||
+            currentView === "list" ||
+            currentView === "random"
+          ) {
+            document.documentElement.setAttribute(
+              "data-collection-view",
+              currentView,
+            );
+            document.cookie = "${VIEW_STATE_COOKIE_NAME}=" + currentView + "; path=/; max-age=${VIEW_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax";
+          }
+        } catch (_viewError) {}
+      }
+    }
   } catch (_e) {}
 })();
 `;

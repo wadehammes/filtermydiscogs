@@ -17,6 +17,51 @@
   text-transform: uppercase;
 }
 
+.dateAddedSegmented {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: inline-flex;
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+
+  & legend {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.dateAddedLabel,
+.dateAddedValue {
+  align-items: center;
+  display: flex;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-xxs);
+  line-height: 1;
+  padding: var(--space-1) var(--space-2);
+  text-transform: uppercase;
+}
+
+.dateAddedLabel {
+  background: color-mix(in srgb, var(--muted) 85%, transparent);
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.06em;
+}
+
+.dateAddedValue {
+  background: var(--card);
+  border-inline-start: 1px solid var(--border);
+  color: var(--foreground);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.04em;
+  min-width: 0;
+}
+
 .metaLine {
   color: var(--muted-foreground);
   font-family: var(--font-family-meta);

@@ -1,28 +1,23 @@
-import type { Virtualizer } from "@tanstack/react-virtual";
 import { useEffect } from "react";
 import { usePlaybackPageScrollToTopRegistration } from "src/components/PlaybackPageShell/PlaybackPageShell.context";
 
-export const useRegisterPlaybackPageScrollToTop = (
-  rowVirtualizer: Virtualizer<HTMLElement, Element>,
-  enabled: boolean,
+export const useRegisterPlaybackPageNativeScrollToTop = (
+  scrollElement: HTMLElement | null,
 ): void => {
   const registerScrollToTop = usePlaybackPageScrollToTopRegistration();
 
   useEffect(() => {
-    if (!enabled) {
+    if (!scrollElement) {
       registerScrollToTop(null);
       return undefined;
     }
 
     registerScrollToTop(() => {
-      rowVirtualizer.scrollToIndex(0, {
-        align: "start",
-        behavior: "auto",
-      });
+      scrollElement.scrollTo({ top: 0, behavior: "auto" });
     });
 
     return () => {
       registerScrollToTop(null);
     };
-  }, [enabled, registerScrollToTop, rowVirtualizer]);
+  }, [registerScrollToTop, scrollElement]);
 };

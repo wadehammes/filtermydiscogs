@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useEffect, useSyncExternalStore } from "react";
+import { Suspense, useEffect } from "react";
 import { isProtectedAppRoute } from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
 import { useAuthenticatedGatePathname } from "src/hooks/useAuthenticatedGatePathname.hook";
+import { useIsClient } from "src/hooks/useIsClient.hook";
 
 const AuthenticatedProvidersLazy = dynamic(
   () =>
@@ -13,15 +14,6 @@ const AuthenticatedProvidersLazy = dynamic(
     ),
   { ssr: false },
 );
-
-const clientSnapshot = (): boolean => true;
-
-const serverSnapshot = (): boolean => false;
-
-const subscribeNoop = (): (() => void) => () => {};
-
-const useIsClient = (): boolean =>
-  useSyncExternalStore(subscribeNoop, clientSnapshot, serverSnapshot);
 
 interface AuthenticatedProvidersGateProps {
   children: React.ReactNode;

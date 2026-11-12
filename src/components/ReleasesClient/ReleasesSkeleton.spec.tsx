@@ -21,4 +21,20 @@ describe("ReleasesSkeleton", () => {
     );
     expect(screen.queryByTestId("fmdDesktopReleaseCardSkeleton")).toBeNull();
   });
+
+  it("renders the table skeleton when view is list on desktop", () => {
+    render(<ReleasesSkeleton view="list" />);
+
+    expect(screen.getByTestId("fmdReleasesTableSkeleton")).toBeInTheDocument();
+    expect(screen.queryByTestId("fmdDesktopReleaseCardSkeleton")).toBeNull();
+  });
+
+  it("renders card skeletons when view is list on mobile", () => {
+    render(<ReleasesSkeleton view="list" isMobile />);
+
+    expect(screen.getAllByTestId("fmdMobileReleaseCardSkeleton")).toHaveLength(
+      15,
+    );
+    expect(screen.queryByTestId("fmdReleasesTableSkeleton")).toBeNull();
+  });
 });

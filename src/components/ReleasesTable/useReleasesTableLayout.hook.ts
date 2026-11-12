@@ -10,7 +10,7 @@ const DEFAULT_LAYOUT: ReleasesTableLayoutState = {
   columnSizing: {},
 };
 
-const readLayout = (): ReleasesTableLayoutState => {
+export const readReleasesTableLayout = (): ReleasesTableLayoutState => {
   if (typeof window === "undefined") {
     return DEFAULT_LAYOUT;
   }
@@ -45,7 +45,9 @@ const writeLayout = (layout: ReleasesTableLayoutState) => {
 };
 
 export const useReleasesTableLayout = () => {
-  const [layout, setLayout] = useState<ReleasesTableLayoutState>(readLayout);
+  const [layout, setLayout] = useState<ReleasesTableLayoutState>(
+    readReleasesTableLayout,
+  );
 
   const onColumnSizingChange = useCallback<OnChangeFn<ColumnSizingState>>(
     (updater) => {
