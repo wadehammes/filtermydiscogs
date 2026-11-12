@@ -58,12 +58,30 @@ describe("isPlaywrightBrowserInstallDirReady", () => {
         { recursive: true },
       );
     } else if (process.platform === "linux") {
-      fs.mkdirSync(path.join(root, "chrome-linux"), { recursive: true });
-      fs.writeFileSync(path.join(root, "chrome-linux", "chrome"), "");
+      fs.mkdirSync(path.join(root, "chrome-linux64"), { recursive: true });
+      fs.writeFileSync(path.join(root, "chrome-linux64", "chrome"), "");
     } else if (process.platform === "win32") {
       fs.mkdirSync(path.join(root, "chrome-win"), { recursive: true });
       fs.writeFileSync(path.join(root, "chrome-win", "chrome.exe"), "");
     }
+
+    assert.equal(
+      isPlaywrightBrowserInstallDirReady(
+        root,
+        "Chrome for Testing 156.0.8078.4",
+      ),
+      true,
+    );
+  });
+
+  it("when Chromium for Testing uses the legacy chrome-linux folder on linux, returns true", () => {
+    if (process.platform !== "linux") {
+      return;
+    }
+
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "pw-chromium-legacy-"));
+    fs.mkdirSync(path.join(root, "chrome-linux"), { recursive: true });
+    fs.writeFileSync(path.join(root, "chrome-linux", "chrome"), "");
 
     assert.equal(
       isPlaywrightBrowserInstallDirReady(

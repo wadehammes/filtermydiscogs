@@ -12,7 +12,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { prefetchReleaseModal } from "src/components/ReleaseModal/prefetchReleaseModal";
 import { useCollectionReleaseByInstanceId } from "src/hooks/queries/useCollectionReleaseByInstanceId.hook";
 import type { DiscogsRelease } from "src/types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
@@ -31,20 +30,11 @@ const prefetchReleaseForOpen = (
   queryClient: QueryClient,
   fallbackReleaseIndex: Map<string, DiscogsRelease>,
   instanceId: string,
-  options: { prefetchAuthenticatedModalChunk?: boolean } = {},
 ): void => {
-  const { prefetchAuthenticatedModalChunk = true } = options;
   const clickedRelease = fallbackReleaseIndex.get(instanceId);
 
   if (clickedRelease) {
-    prefetchReleaseOpenData(queryClient, clickedRelease, {
-      prefetchModalChunk: prefetchAuthenticatedModalChunk,
-    });
-    return;
-  }
-
-  if (prefetchAuthenticatedModalChunk) {
-    prefetchReleaseModal();
+    prefetchReleaseOpenData(queryClient, clickedRelease);
   }
 };
 
@@ -145,10 +135,8 @@ const modalSyncReducer = (
 
 const useUrlSyncedReleaseModal = ({
   fallbackReleaseIndex,
-  prefetchAuthenticatedModalChunk,
 }: {
   fallbackReleaseIndex: Map<string, DiscogsRelease>;
-  prefetchAuthenticatedModalChunk: boolean;
 }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -193,9 +181,7 @@ const useUrlSyncedReleaseModal = ({
 
   const handleReleaseClick = useCallback(
     (instanceId: string) => {
-      prefetchReleaseForOpen(queryClient, fallbackReleaseIndex, instanceId, {
-        prefetchAuthenticatedModalChunk,
-      });
+      prefetchReleaseForOpen(queryClient, fallbackReleaseIndex, instanceId);
 
       dispatchModalSync({ type: "open", instanceId });
 
@@ -209,14 +195,7 @@ const useUrlSyncedReleaseModal = ({
         router.push(url, { scroll: false });
       });
     },
-    [
-      buildUrl,
-      fallbackReleaseIndex,
-      prefetchAuthenticatedModalChunk,
-      queryClient,
-      router,
-      selectedReleaseId,
-    ],
+    [buildUrl, fallbackReleaseIndex, queryClient, router, selectedReleaseId],
   );
 
   const handleCloseModal = useCallback(() => {
@@ -255,7 +234,6 @@ export const useSelectedReleaseModal = ({
 
   const urlModal = useUrlSyncedReleaseModal({
     fallbackReleaseIndex,
-    prefetchAuthenticatedModalChunk: true,
   });
 
   const { selectedRelease } = useCollectionBackedSelectedRelease({
@@ -279,7 +257,6 @@ export const usePublicSelectedReleaseModal = ({
 
   const urlModal = useUrlSyncedReleaseModal({
     fallbackReleaseIndex,
-    prefetchAuthenticatedModalChunk: false,
   });
 
   const { selectedRelease } = useFallbackOnlySelectedRelease(

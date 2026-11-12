@@ -441,6 +441,24 @@ describe("useSelectedReleaseModal", () => {
     expect(mockApi.discogsCollection).not.toHaveBeenCalled();
   });
 
+  it("does not prefetch release detail on click when the instance id is missing from fallbackReleases", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockPush = jest.fn();
+    const mockRouter = createMockAppRouter({ push: mockPush });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick("not-in-fallback-index");
+    });
+
+    expect(mockApi.discogsRelease).not.toHaveBeenCalled();
+  });
+
   it("fetches release detail on click when the cache is empty", async () => {
     const releases = releaseFactory.buildList(1);
     const release = releases[0];
@@ -584,6 +602,30 @@ describe("useLocalSelectedReleaseModal", () => {
       mockApi,
       discogsReleaseJsonFactory.withTracklistAndVideos(),
     );
+  });
+
+  it("prefetches release detail on click when the release is in fallbackReleases", async () => {
+    const releases = releaseFactory.buildList(1);
+    const release = releases[0];
+    const releaseId = release ? parseReleaseId(release) : null;
+
+    expect(releaseId).not.toBeNull();
+
+    const mockPush = jest.fn();
+    mockUseRouter.mockReturnValue(createMockAppRouter({ push: mockPush }));
+
+    const { result } = renderHookWithTestProviders(() =>
+      useLocalSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(release?.instance_id));
+    });
+
+    await waitFor(() => {
+      expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(releaseId));
+    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("opens and closes without updating the router", () => {

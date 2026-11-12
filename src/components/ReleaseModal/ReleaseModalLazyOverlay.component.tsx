@@ -1,8 +1,8 @@
 "use client";
 
+import { ReleaseModal } from "src/components/ReleaseModal/ReleaseModal.component";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
-import { ReleaseModalLazy } from "./ReleaseModalLazy.component";
 
 interface ReleaseModalLazyOverlayProps {
   release: DiscogsRelease | null;
@@ -20,7 +20,7 @@ export const ReleaseModalLazyOverlay = ({
   }
 
   return (
-    <ReleaseModalLazy
+    <ReleaseModal
       key={String(release.instance_id)}
       isOpen={true}
       release={release}

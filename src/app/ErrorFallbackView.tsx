@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
 import styles from "src/styles/modules/error-boundary.module.css";
-import { isLocalDevHost } from "src/utils/isLocalDevHost";
 
 export interface ErrorFallbackViewProps {
   title: string;
@@ -14,6 +12,15 @@ export interface ErrorFallbackViewProps {
   titleVariant?: "page" | "section";
 }
 
+const isLocalDevHostname = (): boolean => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const { hostname } = window.location;
+  return hostname === "localhost" || hostname === "127.0.0.1";
+};
+
 export const ErrorFallbackView = ({
   title,
   message,
@@ -22,7 +29,7 @@ export const ErrorFallbackView = ({
   logLabel,
   titleVariant = "page",
 }: ErrorFallbackViewProps) => {
-  const showErrorDetails = isLocalDevHost();
+  const showErrorDetails = isLocalDevHostname();
   const TitleTag = titleVariant === "page" ? "h1" : "h2";
 
   useEffect(() => {
@@ -30,7 +37,11 @@ export const ErrorFallbackView = ({
       console.error(logLabel, error);
     }
 
-    reportClientFailure("error_boundary", error, { logLabel });
+    void import("src/lib/sentry/reportClientFailure").then(
+      ({ reportClientFailure }) => {
+        reportClientFailure("error_boundary", error, { logLabel });
+      },
+    );
   }, [error, logLabel, showErrorDetails]);
 
   return (

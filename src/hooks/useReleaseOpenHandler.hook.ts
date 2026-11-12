@@ -8,13 +8,11 @@ export const RELEASE_OPEN_PREFETCH_HOVER_MS = 50;
 interface UseReleaseOpenHandlerParams {
   release: DiscogsRelease | null | undefined;
   onReleaseClick?: ((instanceId: string) => void) | undefined;
-  onPrefetch?: () => void;
 }
 
 export const useReleaseOpenHandler = ({
   release,
   onReleaseClick,
-  onPrefetch,
 }: UseReleaseOpenHandlerParams) => {
   const queryClient = useQueryClient();
   const hoverPrefetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -33,9 +31,8 @@ export const useReleaseOpenHandler = ({
       return;
     }
 
-    onPrefetch?.();
     prefetchDiscogsReleaseQuery(queryClient, release);
-  }, [onReleaseClick, onPrefetch, queryClient, release]);
+  }, [onReleaseClick, queryClient, release]);
 
   const schedulePrefetchReleaseOpen = useCallback(() => {
     if (!(onReleaseClick && release)) {
@@ -45,10 +42,9 @@ export const useReleaseOpenHandler = ({
     clearHoverPrefetch();
     hoverPrefetchTimeoutRef.current = setTimeout(() => {
       hoverPrefetchTimeoutRef.current = null;
-      onPrefetch?.();
       prefetchDiscogsReleaseQuery(queryClient, release);
     }, RELEASE_OPEN_PREFETCH_HOVER_MS);
-  }, [clearHoverPrefetch, onReleaseClick, onPrefetch, queryClient, release]);
+  }, [clearHoverPrefetch, onReleaseClick, queryClient, release]);
 
   useEffect(() => clearHoverPrefetch, [clearHoverPrefetch]);
 

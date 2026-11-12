@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useSyncExternalStore } from "react";
 import { isProtectedAppRoute } from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
 import { useAuthenticatedGatePathname } from "src/hooks/useAuthenticatedGatePathname.hook";
@@ -14,6 +14,15 @@ const AuthenticatedProvidersLazy = dynamic(
   { ssr: false },
 );
 
+const clientSnapshot = (): boolean => true;
+
+const serverSnapshot = (): boolean => false;
+
+const subscribeNoop = (): (() => void) => () => {};
+
+const useIsClient = (): boolean =>
+  useSyncExternalStore(subscribeNoop, clientSnapshot, serverSnapshot);
+
 interface AuthenticatedProvidersGateProps {
   children: React.ReactNode;
 }
@@ -23,6 +32,7 @@ const AuthenticatedProvidersGateInner = ({
 }: AuthenticatedProvidersGateProps) => {
   const pathname = useAuthenticatedGatePathname();
   const { state: authState } = useAuth();
+  const isClient = useIsClient();
   const onProtectedRoute = isProtectedAppRoute(pathname);
   const shouldWrapAuthenticatedProviders =
     authState.isAuthenticated || (authState.isCheckingAuth && onProtectedRoute);
@@ -33,7 +43,7 @@ const AuthenticatedProvidersGateInner = ({
     }
   }, [shouldWrapAuthenticatedProviders]);
 
-  if (shouldWrapAuthenticatedProviders) {
+  if (shouldWrapAuthenticatedProviders && isClient) {
     return <AuthenticatedProvidersLazy>{children}</AuthenticatedProvidersLazy>;
   }
 
