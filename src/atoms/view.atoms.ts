@@ -37,6 +37,7 @@ export const viewStateAtom = atomWithStorage<ViewState>(
       return parseViewStateJson(stored);
     },
   },
+  { getOnInit: true },
 );
 
 export const currentViewAtom = atom((get) => get(viewStateAtom).currentView);

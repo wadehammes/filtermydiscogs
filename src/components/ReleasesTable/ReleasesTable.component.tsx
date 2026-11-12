@@ -5,7 +5,6 @@ import {
   flexRender,
   useTable,
 } from "@tanstack/react-table";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import classNames from "classnames";
 import { memo, useCallback, useMemo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
@@ -17,17 +16,23 @@ import {
   useSelectedStyles,
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
-import { useRegisterPlaybackPageScrollToTop } from "src/hooks/useRegisterPlaybackPageScrollToTop.hook";
+import { useRegisterPlaybackPageNativeScrollToTop } from "src/hooks/useRegisterPlaybackPageScrollToTop.hook";
 import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
+import { formatDate } from "src/utils/dateHelpers";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getResourceUrl } from "src/utils/helpers";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./ReleasesTable.module.css";
 import { ReleasesTableArtistTitleCell } from "./ReleasesTableArtistTitleCell.component";
 import { ReleasesTableRowActions } from "./ReleasesTableRowActions.component";
+import { RELEASES_TABLE_DEFAULT_COLUMN_SIZES } from "./releasesTableColumnDefaults";
 import { releasesTableFeatures } from "./releasesTableFeatures";
 import { useReleasesTableLayout } from "./useReleasesTableLayout.hook";
+
+const columnSize = (id: keyof typeof RELEASES_TABLE_DEFAULT_COLUMN_SIZES) => ({
+  size: RELEASES_TABLE_DEFAULT_COLUMN_SIZES[id],
+});
 
 const releasesTableMountKey = [
   styles.table,
@@ -37,9 +42,6 @@ const releasesTableMountKey = [
   styles.dataRow,
   styles.dataCell,
 ].join("-");
-
-const TABLE_ROW_ESTIMATE_PX = 80;
-const TABLE_ROW_OVERSCAN = 10;
 
 interface ReleasesTableProps {
   releases: DiscogsRelease[];
@@ -94,7 +96,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 </div>
               );
             },
-            size: 40,
+            ...columnSize("crate"),
             minSize: 40,
             maxSize: 40,
             enableResizing: false,
@@ -109,7 +111,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 onReleaseClick={onReleaseClick}
               />
             ),
-            size: 260,
+            ...columnSize("artistTitle"),
             minSize: 180,
             maxSize: 440,
           }),
@@ -153,7 +155,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 </div>
               );
             },
-            size: 120,
+            ...columnSize("label"),
             minSize: 80,
             maxSize: 280,
           }),
@@ -169,22 +171,48 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 </div>
               );
             },
-            size: 88,
+            ...columnSize("catno"),
             minSize: 64,
             maxSize: 160,
           }),
           columnHelper.accessor("basic_information.year", {
             id: "year",
-            header: "Release Year",
+            header: "Year",
             cell: ({ getValue }) => {
               const year = getValue();
               return (
                 <div className={styles.yearCell}>{year !== 0 ? year : "—"}</div>
               );
             },
-            size: 60,
+            ...columnSize("year"),
             minSize: 56,
             maxSize: 120,
+          }),
+          columnHelper.accessor("date_added", {
+            id: "dateAdded",
+            header: "Added",
+            cell: ({ getValue }) => {
+              const dateAdded = getValue();
+              const formatted = dateAdded ? formatDate(dateAdded) : "";
+
+              return (
+                <div className={styles.dateAddedCell}>
+                  {formatted ? (
+                    <time
+                      dateTime={dateAdded}
+                      title={`Added to collection ${formatted}`}
+                    >
+                      {formatted}
+                    </time>
+                  ) : (
+                    "—"
+                  )}
+                </div>
+              );
+            },
+            ...columnSize("dateAdded"),
+            minSize: 72,
+            maxSize: 140,
           }),
           columnHelper.display({
             id: "formatStyles",
@@ -249,7 +277,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 </div>
               );
             },
-            size: 260,
+            ...columnSize("formatStyles"),
             minSize: 180,
             maxSize: 480,
           }),
@@ -262,7 +290,7 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                 onReleaseClick={handleReleaseOpen}
               />
             ),
-            size: 120,
+            ...columnSize("actions"),
             minSize: 120,
             maxSize: 120,
             enableResizing: false,
@@ -291,32 +319,8 @@ export const ReleasesTable = memo<ReleasesTableProps>(
 
     const scrollElement = usePlaybackPageScrollElement();
     const tableRows = table.getRowModel().rows;
-    const columnCount = table.getAllLeafColumns().length;
 
-    const rowVirtualizer = useVirtualizer({
-      count: scrollElement ? tableRows.length : 0,
-      getScrollElement: () => scrollElement,
-      estimateSize: () => TABLE_ROW_ESTIMATE_PX,
-      overscan: TABLE_ROW_OVERSCAN,
-    });
-
-    const virtualRows = rowVirtualizer.getVirtualItems();
-    const useVirtualRows = scrollElement !== null && tableRows.length > 0;
-
-    useRegisterPlaybackPageScrollToTop(rowVirtualizer, useVirtualRows);
-
-    const paddingTop = useVirtualRows ? (virtualRows[0]?.start ?? 0) : 0;
-    const paddingBottom = useVirtualRows
-      ? rowVirtualizer.getTotalSize() -
-        (virtualRows[virtualRows.length - 1]?.end ?? 0)
-      : 0;
-
-    const rowsToRender = useVirtualRows
-      ? virtualRows.flatMap((virtualRow) => {
-          const row = tableRows[virtualRow.index];
-          return row ? [{ row, key: virtualRow.key }] : [];
-        })
-      : tableRows.map((row) => ({ row, key: row.id }));
+    useRegisterPlaybackPageNativeScrollToTop(scrollElement);
 
     return (
       <div className={styles.tableWrapper} data-testid="fmdReleasesTable">
@@ -371,17 +375,9 @@ export const ReleasesTable = memo<ReleasesTableProps>(
               ))}
             </thead>
             <tbody className={styles.tbody}>
-              {paddingTop > 0 ? (
-                <tr>
-                  <td
-                    colSpan={columnCount}
-                    style={{ height: paddingTop, padding: 0, border: "none" }}
-                  />
-                </tr>
-              ) : null}
-              {rowsToRender.map(({ row, key }) => (
+              {tableRows.map((row) => (
                 <tr
-                  key={key}
+                  key={String(row.original.instance_id)}
                   className={classNames(styles.dataRow, {
                     [styles.inCrate]: activeCrateInstanceIds.has(
                       String(row.original.instance_id),
@@ -406,18 +402,6 @@ export const ReleasesTable = memo<ReleasesTableProps>(
                   ))}
                 </tr>
               ))}
-              {paddingBottom > 0 ? (
-                <tr>
-                  <td
-                    colSpan={columnCount}
-                    style={{
-                      height: paddingBottom,
-                      padding: 0,
-                      border: "none",
-                    }}
-                  />
-                </tr>
-              ) : null}
             </tbody>
           </table>
         </div>

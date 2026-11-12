@@ -37,5 +37,30 @@
     }
 
     document.documentElement.setAttribute("data-theme", resolvedTheme);
+
+    if (hasSession) {
+      const viewStorageKey = "filtermydiscogs_view_state";
+      const viewRaw = localStorage.getItem(viewStorageKey);
+      if (viewRaw) {
+        try {
+          const parsed = JSON.parse(viewRaw);
+          const currentView = parsed?.currentView;
+          if (
+            currentView === "card" ||
+            currentView === "list" ||
+            currentView === "random"
+          ) {
+            document.documentElement.setAttribute(
+              "data-collection-view",
+              currentView,
+            );
+            document.cookie =
+              "filtermydiscogs_view=" +
+              currentView +
+              "; path=/; max-age=31536000; SameSite=Lax";
+          }
+        } catch (_viewError) {}
+      }
+    }
   } catch (_e) {}
 })();

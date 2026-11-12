@@ -1,0 +1,78 @@
+.root {
+  padding-bottom: var(--space-4);
+}
+
+.headerBar {
+  border-radius: var(--radius-ui);
+  height: 0.5rem;
+  width: 3.5rem;
+}
+
+.headerBarWide {
+  width: 5.5rem;
+}
+
+.cratePulse {
+  border-radius: var(--radius-ui);
+  height: var(--button-height-md);
+  margin-inline: auto;
+  width: var(--button-height-md);
+}
+
+.thumbPulse {
+  border-radius: var(--radius-ui);
+  flex-shrink: 0;
+  height: var(--button-height-md);
+  width: var(--button-height-md);
+}
+
+.textBar {
+  border-radius: var(--radius-ui);
+  height: 0.65rem;
+  max-width: 100%;
+  width: 70%;
+}
+
+.textBarArtist {
+  width: 55%;
+}
+
+.textBarTitle {
+  width: 72%;
+}
+
+.textBarMedium {
+  width: 65%;
+}
+
+.textBarNarrow {
+  width: 45%;
+}
+
+.tagsPulse {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.pillPulse {
+  border-radius: var(--radius-card);
+  flex-shrink: 0;
+  height: 1.625rem;
+  width: 3.25rem;
+}
+
+.pillPulseWide {
+  border-radius: var(--radius-card);
+  flex-shrink: 0;
+  height: 1.625rem;
+  width: 4.25rem;
+}
+
+.actionsPulse {
+  border-radius: var(--radius-ui);
+  height: 2rem;
+  margin-inline: auto;
+  width: 5.5rem;
+}

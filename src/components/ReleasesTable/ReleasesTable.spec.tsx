@@ -31,9 +31,27 @@ describe("ReleasesTable", () => {
       screen.getByRole("columnheader", { name: "Cat#" }),
     ).toBeInTheDocument();
     expect(
+      screen.getByRole("columnheader", { name: "Added" }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole("columnheader", { name: "Format/Styles" }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole("row")).toHaveLength(3);
+  });
+
+  it("displays date added in the Added column", () => {
+    po.renderReleasesTable({
+      releases: [
+        {
+          ...releaseFactory.withDisplayDefaults(),
+          date_added: "2024-03-01T12:00:00.000Z",
+        },
+      ],
+    });
+
+    const time = screen.getByRole("time");
+    expect(time).toHaveAttribute("datetime", "2024-03-01T12:00:00.000Z");
+    expect(time).toHaveTextContent("Mar 1, 2024");
   });
 
   it("displays catalog numbers in the Cat# column", () => {

@@ -11,6 +11,7 @@ import {
 } from "src/atoms/view.atoms";
 import { useViewScope } from "src/context/view.context";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
+import { syncCollectionViewCookie } from "src/utils/collectionViewModeStorage";
 
 export const useViewDispatch = () => {
   useViewScope();
@@ -21,7 +22,16 @@ export const useViewDispatch = () => {
   return useCallback(
     (action: ViewActions) => {
       baseDispatch(action);
-      persistPreferences({ view: store.get(viewStateAtom) });
+      const nextView = store.get(viewStateAtom);
+      persistPreferences({ view: nextView });
+
+      if (typeof document !== "undefined") {
+        document.documentElement.setAttribute(
+          "data-collection-view",
+          nextView.currentView,
+        );
+        syncCollectionViewCookie(nextView.currentView);
+      }
     },
     [baseDispatch, persistPreferences, store],
   );

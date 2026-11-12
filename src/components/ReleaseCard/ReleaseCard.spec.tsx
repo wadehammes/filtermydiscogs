@@ -44,13 +44,27 @@ describe("ReleaseCard", () => {
     expect(screen.getByText("2020")).toBeInTheDocument();
   });
 
-  it("does not display date added on the card", () => {
+  it("displays date added in a chip above the title", () => {
     po.renderReleaseCard({
-      release: releaseFactory.withDateAdded("2023-01-15T00:00:00Z"),
+      release: releaseFactory.withDateAdded("2023-06-15T12:00:00.000Z"),
     });
 
-    expect(screen.queryByText(/Added/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("time")).not.toBeInTheDocument();
+    const time = screen.getByRole("time");
+    expect(time).toHaveAttribute("datetime", "2023-06-15T12:00:00.000Z");
+    expect(time).toHaveTextContent("Jun 15, 2023");
+  });
+
+  it("displays catalog number on the label and year meta line", () => {
+    po.renderReleaseCard({
+      release: releaseFactory.withDisplayDefaults({
+        basic_information: {
+          labels: [{ id: 1, name: "Test Label", catno: "ABC-123" }],
+        },
+      }),
+    });
+
+    expect(screen.getByText("ABC-123")).toBeInTheDocument();
+    expect(screen.getByRole("time")).toBeInTheDocument();
   });
 
   it("displays style pills", () => {
