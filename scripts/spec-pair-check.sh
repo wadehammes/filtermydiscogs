@@ -77,9 +77,29 @@ is_export_shape_diff_line() {
   fi
 
   if [[ "$line" =~ ^[[:space:]]*\) ]]; then
-    if [[ "$line" =~ \{|=\> ]]; then
+    if [[ "$line" =~ (\{|=) ]]; then
       return 0
     fi
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*\([[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*\{[[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*(\{|:)[[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*:[^=] ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*\}[[:space:]]*:[^=]+(\{|=>) ]]; then
+    return 0
   fi
 
   return 1
