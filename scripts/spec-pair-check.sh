@@ -70,7 +70,9 @@ is_export_shape_diff_line() {
     return 0
   fi
 
-  if [[ "$line" =~ ^[[:space:]]*\}[[:space:]]*$ ]] || [[ "$line" =~ ^[[:space:]]*\};[[:space:]]*$ ]]; then
+  local trimmed="${line#"${line%%[![:space:]]*}"}"
+  trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+  if [ "$trimmed" = "}" ] || [ "$trimmed" = "};" ]; then
     return 0
   fi
 
