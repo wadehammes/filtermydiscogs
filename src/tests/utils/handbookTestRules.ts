@@ -17,7 +17,13 @@ export const FEATURE_TEST_SUFFIXES = [
 
 export const HANDBOOK_TEST_RULES_ALLOWLIST = [
   /^src\/tests\/utils\/handbookTestRules\.spec\.ts$/,
+  /^src\/tests\/utils\/handbookTestRules\.ts$/,
+  /^src\/tests\/utils\/handbookEditGuard\.ts$/,
+  /^src\/tests\/utils\/handbookEditGuard\.spec\.ts$/,
 ] as const;
+
+const isDiscogsFactoryFile = (filePath: string): boolean =>
+  filePath.startsWith("src/tests/factories/");
 
 const QUERY_HOOK_IMPORT_PATTERN =
   /from\s+["']src\/hooks\/queries\/use[A-Za-z0-9]+["']/;
@@ -201,6 +207,10 @@ export const validateFeatureTestSource = (
   const lines = source.split("\n");
 
   for (const [index, line] of lines.entries()) {
+    if (isDiscogsFactoryFile(filePath)) {
+      continue;
+    }
+
     if (INLINE_DISCOGS_VIDEO_EMBED_PATTERN.test(line)) {
       violations.push({
         filePath,

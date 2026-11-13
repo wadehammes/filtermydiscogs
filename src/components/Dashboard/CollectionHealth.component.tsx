@@ -15,11 +15,11 @@ interface CollectionHealthComponentProps {
   onReleaseClick?: (instanceId: string) => void;
 }
 
-export function CollectionHealth({
+export const CollectionHealth = ({
   health,
   hideHeading = false,
   onReleaseClick,
-}: CollectionHealthComponentProps) {
+}: CollectionHealthComponentProps) => {
   const [detailModal, setDetailModal] = useState<DuplicateDetailModal | null>(
     null,
   );
@@ -129,4 +129,4 @@ export function CollectionHealth({
       />
     </div>
   );
-}
+};

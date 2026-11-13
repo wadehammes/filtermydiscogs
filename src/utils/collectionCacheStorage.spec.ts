@@ -36,65 +36,59 @@ describe("collectionCacheStorage", () => {
     void clearPersistedCollectionCaches();
   });
 
-  describe("parsePersistedCollectionCache", () => {
-    it("rejects invalid payloads", () => {
-      expect(parsePersistedCollectionCache(null)).toBeNull();
-      expect(parsePersistedCollectionCache({ pages: [] })).toBeNull();
-      expect(
-        parsePersistedCollectionCache({
-          pages: [collectionFactory.build()],
-          pageParams: [],
-          totalItems: 10,
-          fetchedAt: Date.now(),
-        }),
-      ).toBeNull();
-    });
+  it("parsePersistedCollectionCache rejects invalid payloads", () => {
+    expect(parsePersistedCollectionCache(null)).toBeNull();
+    expect(parsePersistedCollectionCache({ pages: [] })).toBeNull();
+    expect(
+      parsePersistedCollectionCache({
+        pages: [collectionFactory.build()],
+        pageParams: [],
+        totalItems: 10,
+        fetchedAt: Date.now(),
+      }),
+    ).toBeNull();
   });
 
-  describe("read and write", () => {
-    it("writes and reads a cache entry by normalized username", async () => {
-      const cache = buildPersistedCache({ totalItems: 1800 });
+  it("writes and reads a cache entry by normalized username", async () => {
+    const cache = buildPersistedCache({ totalItems: 1800 });
 
-      await writePersistedCollectionCache("  TestUser ", cache);
+    await writePersistedCollectionCache("  TestUser ", cache);
 
-      const stored = await readPersistedCollectionCache("testuser");
+    const stored = await readPersistedCollectionCache("testuser");
 
-      expect(stored?.totalItems).toBe(1800);
-      expect(stored?.pages).toHaveLength(1);
-      expect(readMockIndexedDbEntry("testuser")).toEqual(cache);
+    expect(stored?.totalItems).toBe(1800);
+    expect(stored?.pages).toHaveLength(1);
+    expect(readMockIndexedDbEntry("testuser")).toEqual(cache);
+  });
+
+  it("reads entries regardless of age until cleared or invalidated", async () => {
+    const oldCache = buildPersistedCache({
+      fetchedAt: Date.now() - COLLECTION_CACHE_STALE_MS - 1,
     });
 
-    it("reads entries regardless of age until cleared or invalidated", async () => {
-      const oldCache = buildPersistedCache({
-        fetchedAt: Date.now() - COLLECTION_CACHE_STALE_MS - 1,
-      });
+    await writePersistedCollectionCache("testuser", oldCache);
 
-      await writePersistedCollectionCache("testuser", oldCache);
+    await expect(readPersistedCollectionCache("testuser")).resolves.toEqual(
+      oldCache,
+    );
+    expect(readMockIndexedDbEntry("testuser")).toEqual(oldCache);
+  });
 
-      await expect(readPersistedCollectionCache("testuser")).resolves.toEqual(
-        oldCache,
-      );
-      expect(readMockIndexedDbEntry("testuser")).toEqual(oldCache);
-    });
+  it("clears a single user's cache entry", async () => {
+    await writePersistedCollectionCache("testuser", buildPersistedCache());
 
-    it("clears a single user's cache entry", async () => {
-      await writePersistedCollectionCache("testuser", buildPersistedCache());
+    await clearPersistedCollectionCache("TestUser");
 
-      await clearPersistedCollectionCache("TestUser");
+    await expect(readPersistedCollectionCache("testuser")).resolves.toBeNull();
+  });
 
-      await expect(
-        readPersistedCollectionCache("testuser"),
-      ).resolves.toBeNull();
-    });
+  it("clears all cache entries", async () => {
+    await writePersistedCollectionCache("user-a", buildPersistedCache());
+    await writePersistedCollectionCache("user-b", buildPersistedCache());
 
-    it("clears all cache entries", async () => {
-      await writePersistedCollectionCache("user-a", buildPersistedCache());
-      await writePersistedCollectionCache("user-b", buildPersistedCache());
+    await clearPersistedCollectionCaches();
 
-      await clearPersistedCollectionCaches();
-
-      await expect(readPersistedCollectionCache("user-a")).resolves.toBeNull();
-      await expect(readPersistedCollectionCache("user-b")).resolves.toBeNull();
-    });
+    await expect(readPersistedCollectionCache("user-a")).resolves.toBeNull();
+    await expect(readPersistedCollectionCache("user-b")).resolves.toBeNull();
   });
 });

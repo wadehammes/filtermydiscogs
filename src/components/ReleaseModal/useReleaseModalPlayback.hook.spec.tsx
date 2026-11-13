@@ -343,110 +343,108 @@ describe("useReleaseModalPlayback", () => {
     expect(mockApi.discogsRelease).not.toHaveBeenCalled();
   });
 
-  describe("tracklist loading lifecycle", () => {
-    it("does not treat idle pending state as loading when the query is disabled", () => {
-      const { result } = renderHook(
-        () =>
-          useReleaseModalPlayback({
-            release: collectionRelease,
-            isOpen: false,
-          }),
-        { wrapper: createWrapper() },
-      );
+  it("tracklist loading lifecycle does not treat idle pending state as loading when the query is disabled", () => {
+    const { result } = renderHook(
+      () =>
+        useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: false,
+        }),
+      { wrapper: createWrapper() },
+    );
 
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.tracks).toEqual([]);
+    expect(mockApi.discogsRelease).not.toHaveBeenCalled();
+  });
+
+  it("tracklist loading lifecycle shows loading only while the first fetch is in flight", async () => {
+    let resolveFetch!: (value: typeof releaseDetail) => void;
+
+    mockApi.discogsRelease.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    );
+
+    const { result } = renderHook(
+      () =>
+        useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen: true,
+        }),
+      { wrapper: createWrapper() },
+    );
+
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.tracks).toEqual([]);
+
+    await act(async () => {
+      resolveFetch(releaseDetail);
+    });
+
+    await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
-      expect(result.current.tracks).toEqual([]);
-      expect(mockApi.discogsRelease).not.toHaveBeenCalled();
+      expect(result.current.tracks.length).toBeGreaterThan(0);
     });
+  });
 
-    it("shows loading only while the first fetch is in flight", async () => {
-      let resolveFetch!: (value: typeof releaseDetail) => void;
+  it("tracklist loading lifecycle fetches release detail when the modal opens with an empty cache", async () => {
+    const { result, rerender } = renderHook(
+      ({ isOpen }: { isOpen: boolean }) =>
+        useReleaseModalPlayback({
+          release: collectionRelease,
+          isOpen,
+        }),
+      {
+        initialProps: { isOpen: false },
+        wrapper: createWrapper(),
+      },
+    );
 
-      mockApi.discogsRelease.mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            resolveFetch = resolve;
-          }),
-      );
+    expect(mockApi.discogsRelease).not.toHaveBeenCalled();
 
-      const { result } = renderHook(
-        () =>
-          useReleaseModalPlayback({
-            release: collectionRelease,
-            isOpen: true,
-          }),
-        { wrapper: createWrapper() },
-      );
+    rerender({ isOpen: true });
 
-      expect(result.current.isLoading).toBe(true);
-      expect(result.current.tracks).toEqual([]);
+    expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(RELEASE_ID));
 
-      await act(async () => {
-        resolveFetch(releaseDetail);
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-        expect(result.current.tracks.length).toBeGreaterThan(0);
-      });
-    });
-
-    it("fetches release detail when the modal opens with an empty cache", async () => {
-      const { result, rerender } = renderHook(
-        ({ isOpen }: { isOpen: boolean }) =>
-          useReleaseModalPlayback({
-            release: collectionRelease,
-            isOpen,
-          }),
-        {
-          initialProps: { isOpen: false },
-          wrapper: createWrapper(),
-        },
-      );
-
-      expect(mockApi.discogsRelease).not.toHaveBeenCalled();
-
-      rerender({ isOpen: true });
-
-      expect(mockApi.discogsRelease).toHaveBeenCalledWith(String(RELEASE_ID));
-
-      await waitFor(() => {
-        expect(result.current.tracks.length).toBeGreaterThan(0);
-        expect(result.current.isLoading).toBe(false);
-      });
-    });
-
-    it("loads tracklist data when switching to a different release in the modal", async () => {
-      setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
-        [String(OTHER_RELEASE_ID)]: otherReleaseDetail,
-      });
-
-      const { result, rerender } = renderHook(
-        ({ release }: { release: typeof collectionRelease }) =>
-          useReleaseModalPlayback({
-            release,
-            isOpen: true,
-          }),
-        {
-          initialProps: { release: collectionRelease },
-          wrapper: createWrapper(),
-        },
-      );
-
-      await waitFor(() => {
-        expect(result.current.tracks.length).toBeGreaterThan(0);
-      });
-
-      rerender({ release: otherCollectionRelease });
-
-      await waitFor(() => {
-        expect(result.current.tracks.map((track) => track.title)).toContain(
-          "Modal Track One",
-        );
-      });
-
+    await waitFor(() => {
+      expect(result.current.tracks.length).toBeGreaterThan(0);
       expect(result.current.isLoading).toBe(false);
     });
+  });
+
+  it("tracklist loading lifecycle loads tracklist data when switching to a different release in the modal", async () => {
+    setupFetchDiscogsReleaseMock(mockApi, releaseDetail, {
+      [String(OTHER_RELEASE_ID)]: otherReleaseDetail,
+    });
+
+    const { result, rerender } = renderHook(
+      ({ release }: { release: typeof collectionRelease }) =>
+        useReleaseModalPlayback({
+          release,
+          isOpen: true,
+        }),
+      {
+        initialProps: { release: collectionRelease },
+        wrapper: createWrapper(),
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.tracks.length).toBeGreaterThan(0);
+    });
+
+    rerender({ release: otherCollectionRelease });
+
+    await waitFor(() => {
+      expect(result.current.tracks.map((track) => track.title)).toContain(
+        "Modal Track One",
+      );
+    });
+
+    expect(result.current.isLoading).toBe(false);
   });
 
   it("does not stay loading on reopen while the same release plays in the dock", async () => {

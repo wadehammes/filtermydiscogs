@@ -15,7 +15,7 @@ interface MobileMenuHeaderProps {
   onRandomModeToggle: () => void;
 }
 
-export function MobileMenuHeader({
+export const MobileMenuHeader = ({
   isOpen,
   isRandomMode,
   shouldShowFilters,
@@ -23,7 +23,7 @@ export function MobileMenuHeader({
   onToggleMenu,
   onFiltersClick,
   onRandomModeToggle,
-}: MobileMenuHeaderProps) {
+}: MobileMenuHeaderProps) => {
   const filterButtonLabel =
     appliedFilterCount > 0
       ? `Open filters (${appliedFilterCount} applied)`
@@ -87,4 +87,4 @@ export function MobileMenuHeader({
       </button>
     </div>
   );
-}
+};

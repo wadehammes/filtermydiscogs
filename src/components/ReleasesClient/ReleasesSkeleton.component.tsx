@@ -12,10 +12,10 @@ interface ReleasesSkeletonProps {
   view?: ViewMode;
 }
 
-export function ReleasesSkeleton({
+export const ReleasesSkeleton = ({
   isMobile = false,
   view = "card",
-}: ReleasesSkeletonProps) {
+}: ReleasesSkeletonProps) => {
   if (view === "list" && !isMobile) {
     return (
       <div className={styles.root} data-testid="fmdReleasesSkeleton">
@@ -39,4 +39,4 @@ export function ReleasesSkeleton({
       </div>
     </div>
   );
-}
+};

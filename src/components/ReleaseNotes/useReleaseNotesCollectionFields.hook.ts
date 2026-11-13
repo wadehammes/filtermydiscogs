@@ -7,7 +7,7 @@ import { buildCollectionFieldsMap } from "src/utils/releaseNotes";
 import {
   ReleaseNotesCollectionFieldsContext,
   type ReleaseNotesCollectionFieldsState,
-} from "./ReleaseNotesCollectionFields.context";
+} from "./ReleaseNotesCollectionFieldsContext";
 
 export const useReleaseNotesCollectionFieldsSource = ({
   enabled = true,

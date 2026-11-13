@@ -22,11 +22,11 @@ interface HorizontalScrollRowProps {
   "data-testid"?: string;
 }
 
-export function HorizontalScrollRow({
+export const HorizontalScrollRow = ({
   children,
   className,
   "data-testid": dataTestId,
-}: HorizontalScrollRowProps) {
+}: HorizontalScrollRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScroll, setCanScroll] = useState(false);
   const [atEnd, setAtEnd] = useState(true);
@@ -97,4 +97,4 @@ export function HorizontalScrollRow({
       </div>
     </div>
   );
-}
+};

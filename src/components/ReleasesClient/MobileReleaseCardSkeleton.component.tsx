@@ -4,7 +4,7 @@ import styles from "./MobileReleaseCardSkeleton.module.css";
 
 const pulseSurface = skeletonPulseStyles.pulsesurface;
 
-export function MobileReleaseCardSkeleton() {
+export const MobileReleaseCardSkeleton = () => {
   return (
     <div
       className={styles.card}
@@ -32,4 +32,4 @@ export function MobileReleaseCardSkeleton() {
       </div>
     </div>
   );
-}
+};

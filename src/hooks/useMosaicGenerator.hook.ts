@@ -57,12 +57,12 @@ interface MosaicGenerationStats {
   memoryUsage: number;
 }
 
-export function useMosaicGenerator({
+export const useMosaicGenerator = ({
   releases,
   imageFormat,
   imageQuality,
   aspectRatio = "SQUARE",
-}: UseMosaicGeneratorOptions) {
+}: UseMosaicGeneratorOptions) => {
   const [state, setState] = useState<MosaicGenerationState>({
     isGenerating: false,
     generationProgress: 0,
@@ -396,7 +396,7 @@ export function useMosaicGenerator({
     cancelGeneration,
     stats: statsRef.current,
   };
-}
+};
 
 // Watermark function
 function addWatermarkFooter(

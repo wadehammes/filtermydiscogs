@@ -1,5 +1,5 @@
 import type { SeverityLevel } from "@sentry/core";
-import { PLAYBACK_EMBED_UNAVAILABLE_FALLBACK } from "src/utils/playbackEmbedUnavailableSkip";
+import { PLAYBACK_EMBED_UNAVAILABLE_FALLBACK } from "src/constants/playbackEmbedErrorCodes";
 
 export const PUBLIC_PLAYBACK_VIDEO_REPORT_ERROR_CODE = -2;
 

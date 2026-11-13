@@ -22,12 +22,12 @@ interface ReleaseCardContentProps {
   onExitRandomMode?: () => void;
 }
 
-export function ReleaseCardContent({
+export const ReleaseCardContent = ({
   release,
   releaseUrl,
   labelUrl,
   onExitRandomMode,
-}: ReleaseCardContentProps) {
+}: ReleaseCardContentProps) => {
   const selectedStyles = useSelectedStyles();
   const selectedFormats = useSelectedFormats();
   const handlePillClick = usePillClickHandler({
@@ -112,4 +112,4 @@ export function ReleaseCardContent({
       </div>
     </div>
   );
-}
+};

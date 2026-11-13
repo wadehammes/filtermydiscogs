@@ -10,13 +10,13 @@ interface DashboardSectionProps {
   id?: string;
 }
 
-export function DashboardSection({
+export const DashboardSection = ({
   title,
   lede,
   children,
   className,
   id,
-}: DashboardSectionProps) {
+}: DashboardSectionProps) => {
   const sectionId = id ?? title.toLowerCase().replace(/\s+/g, "-");
 
   return (
@@ -34,4 +34,4 @@ export function DashboardSection({
       <div className={styles.content}>{children}</div>
     </section>
   );
-}
+};

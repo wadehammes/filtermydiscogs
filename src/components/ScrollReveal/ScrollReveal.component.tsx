@@ -48,7 +48,7 @@ interface ScrollRevealProps
   ref?: Ref<HTMLElement>;
 }
 
-export function ScrollReveal({
+export const ScrollReveal = ({
   children,
   className,
   as: Component = "div",
@@ -60,7 +60,7 @@ export function ScrollReveal({
   "data-testid": dataTestId,
   ref: externalRef,
   ...rest
-}: ScrollRevealProps) {
+}: ScrollRevealProps) => {
   const { ref: inViewRef, inView } = useScrollRevealInView({
     skip: !animateOnView,
   });
@@ -111,7 +111,7 @@ export function ScrollReveal({
       </Component>
     </ScrollRevealActiveContext.Provider>
   );
-}
+};
 
 interface ScrollRevealItemProps
   extends Omit<HTMLAttributes<HTMLElement>, "children"> {
@@ -122,14 +122,14 @@ interface ScrollRevealItemProps
   style?: CSSProperties;
 }
 
-export function ScrollRevealItem({
+export const ScrollRevealItem = ({
   children,
   index = 0,
   className,
   as: Component = "div",
   style,
   ...rest
-}: ScrollRevealItemProps) {
+}: ScrollRevealItemProps) => {
   return (
     <Component
       className={classNames(scrollRevealStyles.item, className)}
@@ -144,7 +144,7 @@ export function ScrollRevealItem({
       {children}
     </Component>
   );
-}
+};
 
 interface ScrollRevealOnceProps
   extends Omit<HTMLAttributes<HTMLElement>, "children"> {
@@ -156,7 +156,7 @@ interface ScrollRevealOnceProps
   threshold?: number;
 }
 
-export function ScrollRevealOnce({
+export const ScrollRevealOnce = ({
   children,
   className,
   as: Component = "div",
@@ -164,7 +164,7 @@ export function ScrollRevealOnce({
   rootMargin = SCROLL_REVEAL_ONCE_ROOT_MARGIN,
   threshold = SCROLL_REVEAL_ONCE_THRESHOLD,
   ...rest
-}: ScrollRevealOnceProps) {
+}: ScrollRevealOnceProps) => {
   const { ref, inView } = useScrollRevealInView({ rootMargin, threshold });
 
   return (
@@ -181,7 +181,7 @@ export function ScrollRevealOnce({
       {children}
     </Component>
   );
-}
+};
 
 interface ScrollRevealBarProps {
   className?: string;
@@ -190,12 +190,12 @@ interface ScrollRevealBarProps {
   style?: CSSProperties;
 }
 
-export function ScrollRevealBar({
+export const ScrollRevealBar = ({
   className,
   width,
   delayMs = 0,
   style,
-}: ScrollRevealBarProps) {
+}: ScrollRevealBarProps) => {
   return (
     <div
       aria-hidden="true"
@@ -209,7 +209,7 @@ export function ScrollRevealBar({
       }
     />
   );
-}
+};
 
 interface TickerNumberProps
   extends Omit<HTMLAttributes<HTMLSpanElement>, "children"> {
@@ -221,7 +221,7 @@ interface TickerNumberProps
   digitStaggerMs?: number;
 }
 
-export function TickerNumber({
+export const TickerNumber = ({
   value,
   from,
   active,
@@ -230,7 +230,7 @@ export function TickerNumber({
   durationMs = 2400,
   digitStaggerMs = 50,
   ...rest
-}: TickerNumberProps) {
+}: TickerNumberProps) => {
   const parentActive = useContext(ScrollRevealActiveContext);
   const isActive = active ?? parentActive ?? true;
   const startValue = from ?? tickerStartValue(value);
@@ -279,7 +279,7 @@ export function TickerNumber({
       </span>
     </span>
   );
-}
+};
 
 function renderTickerSegment(
   segment: TickerSegment,

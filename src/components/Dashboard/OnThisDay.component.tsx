@@ -24,10 +24,10 @@ const formatYearsAgo = (yearAdded: number, currentYear: number): string => {
   return yearsAgo === 1 ? "1 yr ago" : `${yearsAgo} yrs ago`;
 };
 
-export function OnThisDay({
+export const OnThisDay = ({
   hideHeading = false,
   onReleaseClick,
-}: OnThisDayProps) {
+}: OnThisDayProps) => {
   const releases = useAllReleases();
 
   const onThisDayReleases = useMemo(() => {
@@ -99,4 +99,4 @@ export function OnThisDay({
       ) : null}
     </div>
   );
-}
+};

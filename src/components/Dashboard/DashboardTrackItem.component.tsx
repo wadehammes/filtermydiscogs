@@ -42,14 +42,14 @@ interface DashboardTrackItemProps {
   onReleaseClick?: (instanceId: string) => void;
 }
 
-export function DashboardTrackItem({
+export const DashboardTrackItem = ({
   track,
   metric,
   release,
   coverUrl,
   catalogTrackTitle,
   onReleaseClick,
-}: DashboardTrackItemProps) {
+}: DashboardTrackItemProps) => {
   const count = metric === "play" ? track.play_count : track.listen_count;
   const countLabel = metric === "play" ? "plays" : "listens";
   const trackHead = formatTopUserTrackHeadLabel({
@@ -206,4 +206,4 @@ export function DashboardTrackItem({
       </div>
     </div>
   );
-}
+};

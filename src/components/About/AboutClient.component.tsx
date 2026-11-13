@@ -18,7 +18,7 @@ import styles from "./About.module.css";
 import { AboutClearDataSection } from "./AboutClearDataSection.component";
 import { AboutDonationSection } from "./AboutDonationSection.component";
 
-export function AboutClient() {
+export const AboutClient = () => {
   useHashScrollOnMount(SUPPORT_SECTION_ID);
 
   return (
@@ -137,4 +137,4 @@ export function AboutClient() {
       </div>
     </main>
   );
-}
+};

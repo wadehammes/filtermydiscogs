@@ -25,7 +25,7 @@ function SkeletonSection({ children }: { children: ReactNode }) {
   );
 }
 
-export function DashboardSkeleton() {
+export const DashboardSkeleton = () => {
   return (
     <div className={dashboardStyles.content}>
       <div className={statsStyles.hero}>
@@ -106,4 +106,4 @@ export function DashboardSkeleton() {
       </div>
     </div>
   );
-}
+};

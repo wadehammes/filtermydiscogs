@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuth } from "src/context/auth.context";
-import { useReleasePlaybackState } from "src/context/releasePlayback.context";
+import { useReleasePlaybackState } from "src/context/useReleasePlaybackState.hook";
 import { buildCurrentQueueItem } from "src/utils/playbackQueue";
 import { PREVIEW_TRACK_POSITION_PREFIX } from "src/utils/releasePlayback";
 import {

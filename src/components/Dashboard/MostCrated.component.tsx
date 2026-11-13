@@ -13,10 +13,10 @@ interface MostCratedProps {
   onReleaseClick?: (instanceId: string) => void;
 }
 
-export function MostCrated({
+export const MostCrated = ({
   hideHeading = false,
   onReleaseClick,
-}: MostCratedProps) {
+}: MostCratedProps) => {
   const {
     data: mostCratedReleases,
     isLoading,
@@ -97,4 +97,4 @@ export function MostCrated({
       </div>
     </div>
   );
-}
+};

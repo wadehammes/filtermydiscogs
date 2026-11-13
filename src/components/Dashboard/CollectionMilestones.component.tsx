@@ -23,10 +23,10 @@ const getMilestoneMarker = (value: string): string => {
   return firstPart?.trim() ?? value;
 };
 
-export function CollectionMilestones({
+export const CollectionMilestones = ({
   hideHeading = false,
   onReleaseClick,
-}: CollectionMilestonesProps) {
+}: CollectionMilestonesProps) => {
   const releases = useAllReleases();
   const { ref, inView } = useScrollRevealInView();
 
@@ -126,4 +126,4 @@ export function CollectionMilestones({
       </div>
     </div>
   );
-}
+};

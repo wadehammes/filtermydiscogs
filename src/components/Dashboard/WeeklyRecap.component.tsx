@@ -34,10 +34,10 @@ const formatAddedDate = (dateAdded: string): string => {
   });
 };
 
-export function WeeklyRecap({
+export const WeeklyRecap = ({
   hideHeading = false,
   onReleaseClick,
-}: WeeklyRecapProps) {
+}: WeeklyRecapProps) => {
   const releases = useAllReleases();
   const referenceDate = useMemo(() => new Date(), []);
 
@@ -124,4 +124,4 @@ export function WeeklyRecap({
       ) : null}
     </div>
   );
-}
+};

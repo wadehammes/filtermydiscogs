@@ -12,13 +12,13 @@ interface MobileMenuDrawerFooterProps {
   onSettingsClick: () => void;
 }
 
-export function MobileMenuDrawerFooter({
+export const MobileMenuDrawerFooter = ({
   username,
   onLogout,
   onAboutClick,
   onSupportClick,
   onSettingsClick,
-}: MobileMenuDrawerFooterProps) {
+}: MobileMenuDrawerFooterProps) => {
   return (
     <section className={styles.menuAccountSection} aria-label="Account">
       {username ? <p className={styles.menuAccountLabel}>{username}</p> : null}
@@ -49,4 +49,4 @@ export function MobileMenuDrawerFooter({
       </nav>
     </section>
   );
-}
+};

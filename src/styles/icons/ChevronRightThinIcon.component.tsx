@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-export function ChevronRightThinIcon(props: SVGProps<SVGSVGElement>) {
+export const ChevronRightThinIcon = (props: SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -16,4 +16,4 @@ export function ChevronRightThinIcon(props: SVGProps<SVGSVGElement>) {
       <path d="M6 4l4 4-4 4" />
     </svg>
   );
-}
+};

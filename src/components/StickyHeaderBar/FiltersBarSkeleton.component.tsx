@@ -10,7 +10,7 @@ import styles from "./FiltersBarSkeleton.module.css";
 
 const pulseSurface = skeletonPulseStyles.pulsesurface;
 
-export function FiltersBarSkeleton() {
+export const FiltersBarSkeleton = () => {
   return (
     <div
       className={filtersBarStyles.filtersBar}
@@ -188,4 +188,4 @@ export function FiltersBarSkeleton() {
       </div>
     </div>
   );
-}
+};

@@ -21,13 +21,13 @@ interface AdminPreferenceBreakdownPanelProps {
   emptyMessage?: string;
 }
 
-export function AdminPreferenceBreakdownPanel({
+export const AdminPreferenceBreakdownPanel = ({
   title,
   rows,
   totalUsers,
   labelForKey,
   emptyMessage = "No data yet",
-}: AdminPreferenceBreakdownPanelProps) {
+}: AdminPreferenceBreakdownPanelProps) => {
   const colors = useChartColors();
 
   const { tableRows, pieData, pieDefinition, hasData } = useMemo(() => {
@@ -102,4 +102,4 @@ export function AdminPreferenceBreakdownPanel({
       </div>
     </article>
   );
-}
+};

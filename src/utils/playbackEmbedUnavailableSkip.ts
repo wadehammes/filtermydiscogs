@@ -1,3 +1,4 @@
+import { PLAYBACK_EMBED_UNAVAILABLE_FALLBACK } from "src/constants/playbackEmbedErrorCodes";
 import type { PlaybackSkipCapturePayload } from "src/lib/sentry/buildPlaybackSkipCaptureOptions";
 import type { PlaybackSkipSentryDetails } from "src/lib/sentry/buildPlaybackSkipSentryEvent";
 import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
@@ -9,7 +10,7 @@ import {
   resolveYoutubeEmbedErrorReason,
 } from "src/utils/playbackSkippedTrackLog";
 
-export const PLAYBACK_EMBED_UNAVAILABLE_FALLBACK = -1;
+export { PLAYBACK_EMBED_UNAVAILABLE_FALLBACK } from "src/constants/playbackEmbedErrorCodes";
 
 export const resolvePlaybackEmbedUnavailableReason = (
   errorCode: number,

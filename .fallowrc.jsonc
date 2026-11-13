@@ -46,7 +46,22 @@
     "src/tests/mocks/mockCanvas.mock.ts",
     "src/tests/mocks/mockNextRouter.mock.ts",
     "src/lib/__mocks__/api-helpers.ts",
-    "src/styles/modules/dashboard-stack.module.css"
+    "src/styles/stylelint-custom-properties.css",
+    "src/styles/modules/action-icon-hover.module.css",
+    "src/styles/modules/action-indicator-dot.module.css",
+    "src/styles/modules/badge.module.css",
+    "src/styles/modules/bottom-drawer-chrome.module.css",
+    "src/styles/modules/chevron-expand.module.css",
+    "src/styles/modules/dashboard-chart.module.css",
+    "src/styles/modules/dashboard-stack.module.css",
+    "src/styles/modules/field-label.module.css",
+    "src/styles/modules/inline-popover-menu.module.css",
+    "src/styles/modules/menu-item-interaction.module.css",
+    "src/styles/modules/modal-dialog.module.css",
+    "src/styles/modules/patterns.module.css",
+    "src/styles/modules/portal-enter-exit.module.css",
+    "src/styles/modules/scratchpad-textarea.module.css",
+    "src/styles/modules/workspace-fab-chrome.module.css"
   ],
   "overrides": [
     {

@@ -15,7 +15,8 @@
     "noEmit": true,
     "paths": {
       "src/*": ["./src/*"],
-      "test-utils": ["./src/tests/utils/test-utils.tsx"]
+      "test-utils": ["./src/tests/utils/test-utils.tsx"],
+      "filtermydiscogs-flags": ["./flags.ts"]
     },
     "resolveJsonModule": true,
     "rootDir": ".",
