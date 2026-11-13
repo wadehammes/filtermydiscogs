@@ -4,7 +4,6 @@ import {
   getFormatSubtypeTags,
   getFormatTagsFromFormat,
   getReleaseFormatTags,
-  normalizeFormatTag,
   sortFormatTags,
 } from "./formatFilterTags";
 
