@@ -109,7 +109,4 @@ describe("copyToClipboard", () => {
 
     consoleError.mockRestore();
   });
-  it("when module exports are bound, copyToClipboard remains a function", () => {
-    expect(typeof copyToClipboard).toBe("function");
-  });
 });

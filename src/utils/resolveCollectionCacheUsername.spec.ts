@@ -34,7 +34,4 @@ describe("resolveCollectionCacheUsername", () => {
       }),
     ).toBeNull();
   });
-  it("when module exports are bound, resolveCollectionCacheUsername remains a function", () => {
-    expect(typeof resolveCollectionCacheUsername).toBe("function");
-  });
 });

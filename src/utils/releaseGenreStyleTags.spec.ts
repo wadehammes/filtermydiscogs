@@ -24,7 +24,4 @@ describe("getReleaseGenreStyleTags", () => {
 
     expect(tags).toEqual(["Blues", "Jazz"]);
   });
-  it("when module exports are bound, getReleaseGenreStyleTags remains a function", () => {
-    expect(typeof getReleaseGenreStyleTags).toBe("function");
-  });
 });

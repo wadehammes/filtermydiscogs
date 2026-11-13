@@ -4,7 +4,6 @@ import {
   getFormatSubtypeTags,
   getFormatTagsFromFormat,
   getReleaseFormatTags,
-  normalizeFormatTag,
   sortFormatTags,
 } from "./formatFilterTags";
 
@@ -108,8 +107,5 @@ describe("formatFilterTags", () => {
       "CD",
       "Vinyl",
     ]);
-  });
-  it("when module exports are bound, normalizeFormatTag remains a function", () => {
-    expect(typeof normalizeFormatTag).toBe("function");
   });
 });

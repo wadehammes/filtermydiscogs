@@ -24,7 +24,4 @@ describe("collectionItemCountStorage", () => {
     expect(localStorage.getItem(COLLECTION_ITEM_COUNTS_STORAGE_KEY)).toBeNull();
     expect(readStoredCollectionItemCount("crate-digger")).toBeNull();
   });
-  it("when module exports are bound, readStoredCollectionItemCount remains a function", () => {
-    expect(typeof readStoredCollectionItemCount).toBe("function");
-  });
 });
