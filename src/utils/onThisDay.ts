@@ -1,8 +1,8 @@
 import type { DiscogsRelease } from "src/types";
 
-export function getOnThisDayReleases(
+export const getOnThisDayReleases = (
   releases: DiscogsRelease[],
-): DiscogsRelease[] {
+): DiscogsRelease[] => {
   if (!releases || releases.length === 0) {
     return [];
   }
@@ -36,4 +36,4 @@ export function getOnThisDayReleases(
     const dateB = new Date(b.date_added);
     return dateA.getTime() - dateB.getTime();
   });
-}
+};

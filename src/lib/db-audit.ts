@@ -17,14 +17,14 @@ const auditLogs: AuditLogEntry[] = [];
 /**
  * Log a database write operation
  */
-export function auditLog(
+export const auditLog = (
   userId: number | null,
   operation: string,
   model: string,
   action: AuditLogEntry["action"],
   recordId?: string,
   metadata?: Record<string, unknown>,
-): void {
+): void => {
   const entry: AuditLogEntry = {
     timestamp: new Date(),
     userId,
@@ -55,12 +55,12 @@ export function auditLog(
   } else if (process.env.NODE_ENV === "development") {
     console.log("[AUDIT]", entry);
   }
-}
+};
 
 /**
  * Get audit statistics
  */
-export function getAuditStats() {
+export const getAuditStats = () => {
   const totalOperations = auditLogs.length;
   const byAction = auditLogs.reduce(
     (acc, log) => {
@@ -84,4 +84,4 @@ export function getAuditStats() {
     byModel,
     recentOperations: auditLogs.slice(-20).reverse(),
   };
-}
+};

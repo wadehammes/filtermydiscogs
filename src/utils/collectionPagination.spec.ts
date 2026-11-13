@@ -130,4 +130,7 @@ describe("getEffectiveCollectionPages", () => {
       second,
     ]);
   });
+  it("when module exports are bound, shouldSkipCollectionBootstrap remains a function", () => {
+    expect(typeof shouldSkipCollectionBootstrap).toBe("function");
+  });
 });

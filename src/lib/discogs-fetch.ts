@@ -12,12 +12,12 @@ const discogsFetchTimeoutMs = (() => {
     : DEFAULT_DISCOGS_FETCH_TIMEOUT_MS;
 })();
 
-export function discogsFetch(
+export const discogsFetch = (
   input: RequestInfo | URL,
   init?: RequestInit,
-): Promise<Response> {
+): Promise<Response> => {
   return fetch(input, {
     ...init,
     signal: AbortSignal.timeout(discogsFetchTimeoutMs),
   });
-}
+};

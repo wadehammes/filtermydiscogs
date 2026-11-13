@@ -91,4 +91,7 @@ describe("collectionCacheStorage", () => {
     await expect(readPersistedCollectionCache("user-a")).resolves.toBeNull();
     await expect(readPersistedCollectionCache("user-b")).resolves.toBeNull();
   });
+  it("when module exports are bound, parsePersistedCollectionCache remains a function", () => {
+    expect(typeof parsePersistedCollectionCache).toBe("function");
+  });
 });

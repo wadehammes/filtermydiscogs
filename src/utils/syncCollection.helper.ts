@@ -7,11 +7,11 @@ export interface SyncCollectionResult {
   instanceIds?: string[];
 }
 
-export function prepareCollectionForSync(
+export const prepareCollectionForSync = (
   collectionData: { pages: DiscogsCollection[] } | undefined,
   hasNextPage: boolean,
   isFetchingNextPage: boolean,
-): SyncCollectionResult {
+): SyncCollectionResult => {
   if (!collectionData?.pages || collectionData.pages.length === 0) {
     return {
       isValid: false,
@@ -47,4 +47,4 @@ export function prepareCollectionForSync(
     isValid: true,
     instanceIds: collectionInstanceIds,
   };
-}
+};

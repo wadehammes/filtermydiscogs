@@ -60,9 +60,9 @@ const FORMAT_CANONICAL_TAGS = [
   "DVD-Video",
 ];
 
-export function normalizeFormatTag(tag: string): string {
+export const normalizeFormatTag = (tag: string): string => {
   return tag.trim().toLowerCase();
-}
+};
 
 function getCanonicalFormatTag(tag: string): string {
   const trimmed = tag.trim();
@@ -77,11 +77,11 @@ function getCanonicalFormatTag(tag: string): string {
   return canonical ?? trimmed;
 }
 
-export function buildNormalizedFormatFilterSet(
+export const buildNormalizedFormatFilterSet = (
   selectedFormats: readonly string[],
-): ReadonlySet<string> {
+): ReadonlySet<string> => {
   return new Set(selectedFormats.map((format) => normalizeFormatTag(format)));
-}
+};
 
 function isFilterableDescription(description: string): boolean {
   const trimmed = description.trim();
@@ -92,7 +92,7 @@ function isFilterableDescription(description: string): boolean {
   return !FORMAT_DESCRIPTION_DENYLIST.has(normalizeFormatTag(trimmed));
 }
 
-export function getFormatSubtypeTags(format: DiscogsFormat): string[] {
+export const getFormatSubtypeTags = (format: DiscogsFormat): string[] => {
   const tags = new Set<string>();
 
   format.descriptions?.forEach((description) => {
@@ -103,9 +103,9 @@ export function getFormatSubtypeTags(format: DiscogsFormat): string[] {
   });
 
   return Array.from(tags);
-}
+};
 
-export function getFormatTagsFromFormat(format: DiscogsFormat): string[] {
+export const getFormatTagsFromFormat = (format: DiscogsFormat): string[] => {
   const tags = new Set<string>();
 
   if (format.name?.trim()) {
@@ -117,9 +117,9 @@ export function getFormatTagsFromFormat(format: DiscogsFormat): string[] {
   });
 
   return Array.from(tags);
-}
+};
 
-export function getReleaseFormatTags(formats: DiscogsFormat[]): string[] {
+export const getReleaseFormatTags = (formats: DiscogsFormat[]): string[] => {
   const tags = new Set<string>();
 
   formats.forEach((format) => {
@@ -129,10 +129,10 @@ export function getReleaseFormatTags(formats: DiscogsFormat[]): string[] {
   });
 
   return sortFormatTags(Array.from(tags));
-}
+};
 
-export function sortFormatTags(tags: string[]): string[] {
+export const sortFormatTags = (tags: string[]): string[] => {
   return [...tags].sort((left, right) =>
     left.localeCompare(right, undefined, { sensitivity: "base" }),
   );
-}
+};

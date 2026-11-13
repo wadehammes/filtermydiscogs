@@ -357,4 +357,7 @@ describe("collectionCacheSync", () => {
 
     expect(stored?.pages[0]?.releases[0]?.rating).toBe(5);
   });
+  it("when module exports are bound, hydrateCollectionQueryFromCache remains a function", () => {
+    expect(typeof hydrateCollectionQueryFromCache).toBe("function");
+  });
 });

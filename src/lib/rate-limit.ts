@@ -25,10 +25,10 @@ const cleanupExpiredEntries = (now: Date) => {
   }
 };
 
-export function checkRateLimit(
+export const checkRateLimit = (
   userId: number,
   isWriteOperation = false,
-): { allowed: boolean; remaining: number; resetAt: Date } {
+): { allowed: boolean; remaining: number; resetAt: Date } => {
   const now = new Date();
   cleanupExpiredEntries(now);
 
@@ -80,4 +80,4 @@ export function checkRateLimit(
     remaining: maxOps - nextCount,
     resetAt: entry.resetAt,
   };
-}
+};

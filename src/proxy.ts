@@ -4,7 +4,7 @@ import {
   isPrivateSessionApiRoute,
 } from "src/lib/private-route-cache";
 
-export function proxy(request: NextRequest) {
+export const proxy = (request: NextRequest) => {
   if (!isPrivateSessionApiRoute(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
@@ -12,7 +12,7 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   applyPrivateRouteCacheHeaders(response.headers);
   return response;
-}
+};
 
 export const config = {
   matcher: ["/api/auth/:path*", "/api/crates/:path*"],

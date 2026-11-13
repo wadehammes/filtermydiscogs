@@ -17,9 +17,9 @@ function parseHeaderInt(headers: Headers, name: string): number | null {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
-export function parseDiscogsRateLimitHeaders(
+export const parseDiscogsRateLimitHeaders = (
   headers: Headers,
-): DiscogsRateLimitSnapshot | null {
+): DiscogsRateLimitSnapshot | null => {
   const limit = parseHeaderInt(headers, "X-Discogs-Ratelimit");
   const used = parseHeaderInt(headers, "X-Discogs-Ratelimit-Used");
   const remaining = parseHeaderInt(headers, "X-Discogs-Ratelimit-Remaining");
@@ -34,20 +34,21 @@ export function parseDiscogsRateLimitHeaders(
     remaining,
     recordedAt: Date.now(),
   };
-}
+};
 
 let lastSnapshot: DiscogsRateLimitSnapshot | null = null;
 
-export function recordDiscogsRateLimitHeaders(headers: Headers): void {
+export const recordDiscogsRateLimitHeaders = (headers: Headers): void => {
   const snapshot = parseDiscogsRateLimitHeaders(headers);
   if (snapshot) {
     lastSnapshot = snapshot;
   }
-}
+};
 
-export function getDiscogsRateLimitSnapshot(): DiscogsRateLimitSnapshot | null {
-  return lastSnapshot;
-}
+export const getDiscogsRateLimitSnapshot =
+  (): DiscogsRateLimitSnapshot | null => {
+    return lastSnapshot;
+  };
 
 export interface ComputeDiscogsRateLimitWaitMsParams {
   snapshot: DiscogsRateLimitSnapshot | null;
@@ -56,12 +57,12 @@ export interface ComputeDiscogsRateLimitWaitMsParams {
   fallbackIntervalMs: number;
 }
 
-export function computeDiscogsRateLimitWaitMs({
+export const computeDiscogsRateLimitWaitMs = ({
   snapshot,
   lastRequestAt,
   now,
   fallbackIntervalMs,
-}: ComputeDiscogsRateLimitWaitMsParams): number {
+}: ComputeDiscogsRateLimitWaitMsParams): number => {
   const elapsedSinceLastRequest = Math.max(0, now - lastRequestAt);
 
   if (!snapshot) {
@@ -86,4 +87,4 @@ export function computeDiscogsRateLimitWaitMs({
   }
 
   return Math.max(0, Math.ceil(sustainableMs * 1.25) - elapsedSinceLastRequest);
-}
+};

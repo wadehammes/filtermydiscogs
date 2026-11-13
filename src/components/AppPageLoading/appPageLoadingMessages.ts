@@ -13,10 +13,10 @@ export const LOADING_MESSAGES: Record<AppPage, string> = {
   crates: "Loading crates...",
 };
 
-export function formatLoadingMessage(
+export const formatLoadingMessage = (
   currentPage: AppPage,
   loadedCount?: number,
-): string {
+): string => {
   const baseMessage = LOADING_MESSAGES[currentPage];
 
   if (loadedCount == null || loadedCount <= 0) {
@@ -27,4 +27,4 @@ export function formatLoadingMessage(
     currentPage === "dashboard" ? "releases loaded" : "loaded";
 
   return `${baseMessage.replace(/\.\.\.$/, "")}… ${loadedCount.toLocaleString()} ${loadedLabel}`;
-}
+};

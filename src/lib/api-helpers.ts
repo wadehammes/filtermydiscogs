@@ -49,11 +49,13 @@ export const createErrorResponse = (
   );
 };
 
-export function sanitizeError(error: unknown): {
+export const sanitizeError = (
+  error: unknown,
+): {
   message: string;
   code?: string;
   status: number;
-} {
+} => {
   const prismaSanitized = sanitizePrismaKnownRequestError(error);
   if (prismaSanitized) {
     return prismaSanitized;
@@ -101,18 +103,18 @@ export function sanitizeError(error: unknown): {
     message: isProduction ? "An unexpected error occurred" : sanitized,
     status: 500,
   };
-}
+};
 
 /**
  * Resolve the authenticated user from verified OAuth tokens.
  */
-export async function getVerifiedUserFromRequestWithRateLimit(
+export const getVerifiedUserFromRequestWithRateLimit = async (
   request: NextRequest,
   isWriteOperation = false,
 ): Promise<
   | { user: VerifiedDiscogsUser; error?: never }
   | { user?: never; error: NextResponse }
-> {
+> => {
   const verified = await getVerifiedUserFromRequest(request);
   if ("error" in verified) {
     return verified;
@@ -127,15 +129,15 @@ export async function getVerifiedUserFromRequestWithRateLimit(
   }
 
   return verified;
-}
+};
 
 /**
  * Check rate limit and return error response if exceeded
  */
-export function checkRateLimitWithResponse(
+export const checkRateLimitWithResponse = (
   userId: number,
   isWriteOperation = false,
-): NextResponse | null {
+): NextResponse | null => {
   const rateLimit = checkRateLimit(userId, isWriteOperation);
 
   if (!rateLimit.allowed) {
@@ -166,16 +168,16 @@ export function checkRateLimitWithResponse(
   }
 
   return null;
-}
+};
 
 /**
  * Parse pagination parameters from request
  */
-export function wantsAllResults(request: NextRequest): boolean {
+export const wantsAllResults = (request: NextRequest): boolean => {
   return request.nextUrl.searchParams.get("all") === "true";
-}
+};
 
-export function getPaginationParams(
+export const getPaginationParams = (
   request: NextRequest,
   options?: { allMaxTake?: number },
 ): {
@@ -184,7 +186,7 @@ export function getPaginationParams(
   page: number;
   pageSize: number;
   all: boolean;
-} {
+} => {
   if (wantsAllResults(request)) {
     const take = options?.allMaxTake ?? 500;
 
@@ -211,17 +213,17 @@ export function getPaginationParams(
     pageSize,
     all: false,
   };
-}
+};
 
 /**
  * Create paginated response
  */
-export function createPaginatedResponse<T>(
+export const createPaginatedResponse = <T>(
   data: T[],
   total: number,
   page: number,
   pageSize: number,
-) {
+) => {
   const totalPages = Math.ceil(total / pageSize);
 
   return privateRouteJson({
@@ -235,18 +237,18 @@ export function createPaginatedResponse<T>(
       hasPreviousPage: page > 1,
     },
   });
-}
+};
 
 /**
  * Audit log wrapper for database operations
  */
-export function auditDatabaseOperation(
+export const auditDatabaseOperation = (
   userId: number | null,
   model: string,
   action: "create" | "update" | "delete" | "bulk_delete",
   recordId?: string,
   metadata?: Record<string, unknown>,
-): void {
+): void => {
   auditLog(
     userId,
     `${action.toUpperCase()} ${model}`,
@@ -255,15 +257,17 @@ export function auditDatabaseOperation(
     recordId,
     metadata,
   );
-}
+};
 
 /**
  * Fetch public crate data for server-side use (e.g., in generateMetadata)
  * Uses internal API route
  */
-export async function fetchPublicCrateMetadata(crateId: string): Promise<{
+export const fetchPublicCrateMetadata = async (
+  crateId: string,
+): Promise<{
   crate: { name: string; username: string | null };
   pagination: { total: number };
-} | null> {
+} | null> => {
   return getPublicCrateMetadataForPage(crateId);
-}
+};

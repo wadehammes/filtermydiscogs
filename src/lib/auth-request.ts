@@ -42,11 +42,11 @@ function getSecureCookieFlag(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
-export function hasActiveDiscogsSession(request: NextRequest): boolean {
+export const hasActiveDiscogsSession = (request: NextRequest): boolean => {
   return request.cookies.get(DISCOGS_SESSION_COOKIE)?.value === "1";
-}
+};
 
-export function setDiscogsSessionCookie(response: NextResponse): void {
+export const setDiscogsSessionCookie = (response: NextResponse): void => {
   const secureFlag = getSecureCookieFlag();
 
   response.cookies.set(DISCOGS_SESSION_COOKIE, "1", {
@@ -56,9 +56,9 @@ export function setDiscogsSessionCookie(response: NextResponse): void {
     path: "/",
     maxAge: SESSION_COOKIE_MAX_AGE,
   });
-}
+};
 
-export function clearDiscogsSessionCookie(response: NextResponse): void {
+export const clearDiscogsSessionCookie = (response: NextResponse): void => {
   const secureFlag = getSecureCookieFlag();
 
   response.cookies.set(DISCOGS_SESSION_COOKIE, "", {
@@ -68,7 +68,7 @@ export function clearDiscogsSessionCookie(response: NextResponse): void {
     path: "/",
     maxAge: 0,
   });
-}
+};
 
 function getDiscogsRateLimitResponse(): NextResponse {
   return privateRouteJson(
@@ -96,9 +96,9 @@ export const isDiscogsVerificationUnavailable = (error: {
 export const isDiscogsOutageAuthCheckStatus = (status: number): boolean =>
   status === 502;
 
-export function getDisplayIdentityFromCookies(
+export const getDisplayIdentityFromCookies = (
   request: NextRequest,
-): VerifiedDiscogsUser | null {
+): VerifiedDiscogsUser | null => {
   if (!hasActiveDiscogsSession(request)) {
     return null;
   }
@@ -119,12 +119,12 @@ export function getDisplayIdentityFromCookies(
     userId,
     username: usernameCookie,
   };
-}
+};
 
-export function syncIdentityCookies(
+export const syncIdentityCookies = (
   response: NextResponse,
   identity: VerifiedDiscogsUser,
-): void {
+): void => {
   const secureFlag = getSecureCookieFlag();
 
   response.cookies.set("discogs_username", identity.username, {
@@ -145,12 +145,12 @@ export function syncIdentityCookies(
 
   setDiscogsSessionCookie(response);
   setReconnectUsernameCookie(response, identity.username);
-}
+};
 
-export function setReconnectUsernameCookie(
+export const setReconnectUsernameCookie = (
   response: NextResponse,
   username: string,
-): void {
+): void => {
   const secureFlag = getSecureCookieFlag();
 
   response.cookies.set(DISCOGS_RECONNECT_USERNAME_COOKIE, username, {
@@ -160,9 +160,9 @@ export function setReconnectUsernameCookie(
     path: "/",
     maxAge: SESSION_COOKIE_MAX_AGE,
   });
-}
+};
 
-export function clearReconnectUsernameCookie(response: NextResponse): void {
+export const clearReconnectUsernameCookie = (response: NextResponse): void => {
   const secureFlag = getSecureCookieFlag();
 
   response.cookies.set(DISCOGS_RECONNECT_USERNAME_COOKIE, "", {
@@ -172,11 +172,11 @@ export function clearReconnectUsernameCookie(response: NextResponse): void {
     path: "/",
     maxAge: 0,
   });
-}
+};
 
-export function getStoredReconnectUsername(
+export const getStoredReconnectUsername = (
   request: NextRequest,
-): string | null {
+): string | null => {
   const accessToken = request.cookies.get("discogs_access_token")?.value;
   const accessTokenSecret = request.cookies.get(
     "discogs_access_token_secret",
@@ -187,23 +187,23 @@ export function getStoredReconnectUsername(
   }
 
   return request.cookies.get(DISCOGS_RECONNECT_USERNAME_COOKIE)?.value ?? null;
-}
+};
 
-export function primeVerifiedIdentityCache(
+export const primeVerifiedIdentityCache = (
   accessToken: string,
   accessTokenSecret: string,
   identity: VerifiedDiscogsUser,
-): void {
+): void => {
   const cacheKey = getIdentityCacheKey({ accessToken, accessTokenSecret });
   setCachedIdentity({ cacheKey, identity });
-}
+};
 
-export function clearVerifiedIdentityCache(
+export const clearVerifiedIdentityCache = (
   accessToken: string,
   accessTokenSecret: string,
-): void {
+): void => {
   clearCachedIdentity(getIdentityCacheKey({ accessToken, accessTokenSecret }));
-}
+};
 
 async function fetchVerifiedIdentity(
   accessToken: string,
@@ -339,10 +339,10 @@ const attachSentryUserToVerifiedResult = (
   return result;
 };
 
-export async function getVerifiedUserFromRequest(
+export const getVerifiedUserFromRequest = async (
   request: NextRequest,
   options: VerifiedUserOptions = {},
-): Promise<VerifiedUserResult> {
+): Promise<VerifiedUserResult> => {
   if (!hasActiveDiscogsSession(request)) {
     return {
       error: privateRouteJson({ error: "Unauthorized" }, { status: 401 }),
@@ -352,21 +352,21 @@ export async function getVerifiedUserFromRequest(
   return attachSentryUserToVerifiedResult(
     await getVerifiedUserFromOAuthCookies(request, options),
   );
-}
+};
 
-export async function getVerifiedUserFromStoredTokens(
+export const getVerifiedUserFromStoredTokens = async (
   request: NextRequest,
-): Promise<VerifiedUserResult> {
+): Promise<VerifiedUserResult> => {
   return attachSentryUserToVerifiedResult(
     await getVerifiedUserFromOAuthCookies(request, {
       reportVerificationFailures: false,
     }),
   );
-}
+};
 
-export async function getOptionalVerifiedUserFromRequest(
+export const getOptionalVerifiedUserFromRequest = async (
   request: NextRequest,
-): Promise<VerifiedDiscogsUser | null> {
+): Promise<VerifiedDiscogsUser | null> => {
   if (!hasActiveDiscogsSession(request)) {
     return null;
   }
@@ -389,7 +389,7 @@ export async function getOptionalVerifiedUserFromRequest(
   } catch {
     return null;
   }
-}
+};
 
 export type AuthenticatedDiscogsSession =
   | {
@@ -400,11 +400,11 @@ export type AuthenticatedDiscogsSession =
     }
   | { error: NextResponse };
 
-export async function requireAuthenticatedDiscogsUser(
+export const requireAuthenticatedDiscogsUser = async (
   request: NextRequest,
   requestedUsername: string,
   options: VerifiedUserOptions = {},
-): Promise<AuthenticatedDiscogsSession> {
+): Promise<AuthenticatedDiscogsSession> => {
   const accessToken = request.cookies.get("discogs_access_token")?.value;
   const accessTokenSecret = request.cookies.get(
     "discogs_access_token_secret",
@@ -434,19 +434,19 @@ export async function requireAuthenticatedDiscogsUser(
     accessToken,
     accessTokenSecret,
   };
-}
+};
 
-export async function getReadOnlyVerifiedUserFromRequest(
+export const getReadOnlyVerifiedUserFromRequest = async (
   request: NextRequest,
-): Promise<VerifiedUserResult> {
+): Promise<VerifiedUserResult> => {
   return getVerifiedUserFromRequest(request, { allowStale: true });
-}
+};
 
-export async function requireReadOnlyDiscogsUser(
+export const requireReadOnlyDiscogsUser = async (
   request: NextRequest,
   requestedUsername: string,
-): Promise<AuthenticatedDiscogsSession> {
+): Promise<AuthenticatedDiscogsSession> => {
   return requireAuthenticatedDiscogsUser(request, requestedUsername, {
     allowStale: true,
   });
-}
+};

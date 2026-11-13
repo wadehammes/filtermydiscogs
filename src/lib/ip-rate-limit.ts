@@ -86,19 +86,19 @@ export const getIpRateLimitResponse = (
   return result.response;
 };
 
-export function getClientIp(request: NextRequest): string {
+export const getClientIp = (request: NextRequest): string => {
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
     return forwardedFor.split(",")[0]?.trim() || "unknown";
   }
 
   return request.headers.get("x-real-ip") || "unknown";
-}
+};
 
-export function checkIpRateLimit(
+export const checkIpRateLimit = (
   request: NextRequest,
   config: IpRateLimitConfig = DEFAULT_IP_RATE_LIMIT_CONFIG,
-): { allowed: true } | { allowed: false; response: NextResponse } {
+): { allowed: true } | { allowed: false; response: NextResponse } => {
   const ip = getClientIp(request);
   const now = new Date();
   const entry = ipRateLimitStore.get(ip);
@@ -139,4 +139,4 @@ export function checkIpRateLimit(
   entry.count += 1;
   ipRateLimitStore.set(ip, entry);
   return { allowed: true };
-}
+};

@@ -116,7 +116,9 @@ export const releaseHasGenreAndStyle = (
 ): boolean =>
   releaseHasGenre(release, genreLabel) && releaseHasStyle(release, styleKey);
 
-export function collectStyleOptions(releases: DiscogsRelease[]): TagOption[] {
+export const collectStyleOptions = (
+  releases: DiscogsRelease[],
+): TagOption[] => {
   const counts = new Map<string, number>();
 
   for (const release of releases) {
@@ -137,9 +139,11 @@ export function collectStyleOptions(releases: DiscogsRelease[]): TagOption[] {
       count,
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-}
+};
 
-export function collectGenreOptions(releases: DiscogsRelease[]): TagOption[] {
+export const collectGenreOptions = (
+  releases: DiscogsRelease[],
+): TagOption[] => {
   const counts = new Map<string, number>();
 
   for (const release of releases) {
@@ -160,20 +164,22 @@ export function collectGenreOptions(releases: DiscogsRelease[]): TagOption[] {
       count,
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-}
+};
 
-export function collectStyleOptionsForGenre(
+export const collectStyleOptionsForGenre = (
   releases: DiscogsRelease[],
   genreLabel: string,
-): TagOption[] {
+): TagOption[] => {
   const genreReleases = releases.filter((release) =>
     releaseHasGenre(release, genreLabel),
   );
 
   return collectStyleOptions(genreReleases);
-}
+};
 
-export function collectArtistOptions(releases: DiscogsRelease[]): TagOption[] {
+export const collectArtistOptions = (
+  releases: DiscogsRelease[],
+): TagOption[] => {
   const counts = new Map<string, number>();
 
   for (const release of releases) {
@@ -194,11 +200,11 @@ export function collectArtistOptions(releases: DiscogsRelease[]): TagOption[] {
       count,
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-}
+};
 
-export function collectMediaTypeOptions(
+export const collectMediaTypeOptions = (
   releases: DiscogsRelease[],
-): TagOption[] {
+): TagOption[] => {
   const counts = new Map<string, number>();
 
   for (const release of releases) {
@@ -217,16 +223,18 @@ export function collectMediaTypeOptions(
       count,
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-}
+};
 
-export function analyzeTagGrowthFromDates(
+export const analyzeTagGrowthFromDates = (
   releases: DiscogsRelease[],
   matches: (release: DiscogsRelease) => boolean,
-): GrowthDataPoint[] {
+): GrowthDataPoint[] => {
   return analyzeGrowthFromDates(releases.filter(matches));
-}
+};
 
-export function fillGrowthTimeline(data: GrowthDataPoint[]): GrowthDataPoint[] {
+export const fillGrowthTimeline = (
+  data: GrowthDataPoint[],
+): GrowthDataPoint[] => {
   if (data.length === 0) {
     return [];
   }
@@ -255,12 +263,12 @@ export function fillGrowthTimeline(data: GrowthDataPoint[]): GrowthDataPoint[] {
       cumulative,
     };
   });
-}
+};
 
-export function mergeDualCumulativeSeries(
+export const mergeDualCumulativeSeries = (
   primaryData: GrowthDataPoint[],
   secondaryData: GrowthDataPoint[],
-): DualSeriesPoint[] {
+): DualSeriesPoint[] => {
   const primaryPoints = fillGrowthTimeline(primaryData);
   const secondaryPoints = fillGrowthTimeline(secondaryData);
   const startCandidates = [
@@ -308,13 +316,13 @@ export function mergeDualCumulativeSeries(
       secondaryValue,
     };
   });
-}
+};
 
-export function mergeDualMonthlyShareSeries(
+export const mergeDualMonthlyShareSeries = (
   releases: DiscogsRelease[],
   primaryMatches: (release: DiscogsRelease) => boolean,
   secondaryMatches: (release: DiscogsRelease) => boolean,
-): DualSeriesPoint[] {
+): DualSeriesPoint[] => {
   const monthlyTotal = new Map<string, number>();
   const monthlyPrimary = new Map<string, number>();
   const monthlySecondary = new Map<string, number>();
@@ -347,13 +355,13 @@ export function mergeDualMonthlyShareSeries(
       secondaryValue: toSharePercent(secondaryCount, total),
     };
   });
-}
+};
 
-export function mergeStyleWithinGenreShareSeries(
+export const mergeStyleWithinGenreShareSeries = (
   releases: DiscogsRelease[],
   genreLabel: string,
   styleKey: string,
-): DualSeriesPoint[] {
+): DualSeriesPoint[] => {
   const monthlyTotal = new Map<string, number>();
   const monthlyGenre = new Map<string, number>();
   const monthlyGenreStyle = new Map<string, number>();
@@ -391,4 +399,4 @@ export function mergeStyleWithinGenreShareSeries(
       secondaryValue: toSharePercent(genreCount, total),
     };
   });
-}
+};

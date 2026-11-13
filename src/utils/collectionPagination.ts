@@ -21,20 +21,20 @@ export const COLLECTION_FULL_PAGE_PARAM: CollectionPageParam = {
   perPage: COLLECTION_PAGE_SIZE,
 };
 
-export function shouldSkipCollectionBootstrap(totalItems: number): boolean {
+export const shouldSkipCollectionBootstrap = (totalItems: number): boolean => {
   return totalItems >= COLLECTION_BOOTSTRAP_SKIP_MIN_ITEMS;
-}
+};
 
-export function getInitialCollectionPageParam(
+export const getInitialCollectionPageParam = (
   username: string,
-): CollectionPageParam {
+): CollectionPageParam => {
   const knownItems = readStoredCollectionItemCount(username);
   if (knownItems !== null && shouldSkipCollectionBootstrap(knownItems)) {
     return COLLECTION_FULL_PAGE_PARAM;
   }
 
   return COLLECTION_BOOTSTRAP_PAGE_PARAM;
-}
+};
 
 export interface GetNextCollectionPageParamParams {
   lastPage: DiscogsCollection;

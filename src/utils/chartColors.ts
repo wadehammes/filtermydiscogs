@@ -3,9 +3,9 @@ import { useTheme } from "src/context/theme.context";
 
 const DEFAULT_CHART_COLOR = "#5e5365";
 
-export function getChartColor(colors: string[], index: number): string {
+export const getChartColor = (colors: string[], index: number): string => {
   return colors[index % colors.length] ?? colors[0] ?? DEFAULT_CHART_COLOR;
-}
+};
 
 export const useChartColors = () => {
   const { resolvedTheme } = useTheme();

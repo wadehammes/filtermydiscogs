@@ -14,8 +14,8 @@ const PRESERVED_QUERY_ROOTS = new Set<string>([
 const isPreservedQueryKey = (queryKey: readonly unknown[]): boolean =>
   typeof queryKey[0] === "string" && PRESERVED_QUERY_ROOTS.has(queryKey[0]);
 
-export function clearUserScopedQueries(queryClient: QueryClient): void {
+export const clearUserScopedQueries = (queryClient: QueryClient): void => {
   queryClient.removeQueries({
     predicate: (query) => !isPreservedQueryKey(query.queryKey),
   });
-}
+};

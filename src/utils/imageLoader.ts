@@ -201,7 +201,7 @@ function loadSingleImage(
   });
 }
 
-export function createOptimizedImageLoader() {
+export const createOptimizedImageLoader = () => {
   return async ({
     url,
     cellSize,
@@ -255,23 +255,23 @@ export function createOptimizedImageLoader() {
 
     return result;
   };
-}
+};
 
 // Utility to get circuit breaker status
-export function getCircuitBreakerStatus(): {
+export const getCircuitBreakerStatus = (): {
   isOpen: boolean;
   failures: number;
   lastFailureTime: number;
-} {
+} => {
   return {
     isOpen: circuitBreaker.state.isOpen,
     failures: circuitBreaker.state.failures,
     lastFailureTime: circuitBreaker.state.lastFailureTime,
   };
-}
+};
 
 // Utility to estimate cache memory usage (approximate)
-export function getCacheMemoryUsage(): number {
+export const getCacheMemoryUsage = (): number => {
   // Rough estimation: assume each image is ~50KB on average
   return imageCache.size * 50 * 1024;
-}
+};

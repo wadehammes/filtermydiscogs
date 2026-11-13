@@ -14,7 +14,7 @@ const queryMetrics: QueryMetrics[] = [];
 /**
  * Get query performance statistics
  */
-export function getQueryStats() {
+export const getQueryStats = () => {
   if (queryMetrics.length === 0) {
     return {
       totalQueries: 0,
@@ -43,12 +43,12 @@ export function getQueryStats() {
         timestamp: m.timestamp.toISOString(),
       })),
   };
-}
+};
 
 /**
  * Get query patterns (most common queries)
  */
-export function getQueryPatterns() {
+export const getQueryPatterns = () => {
   const patterns = new Map<string, number>();
 
   for (const metric of queryMetrics) {
@@ -60,7 +60,7 @@ export function getQueryPatterns() {
     .map(([pattern, count]) => ({ pattern, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
-}
+};
 
 // Note: Prisma 7+ doesn't support $use middleware
 // Instead, we'll wrap queries manually where needed

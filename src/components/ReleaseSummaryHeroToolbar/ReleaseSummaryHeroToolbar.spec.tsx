@@ -9,6 +9,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import { ReleaseSummaryHeroToolbar } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroToolbar.component";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { setupExecCommandCopyMock } from "src/tests/mocks/setupExecCommandCopyMock.mock";
 import { toast } from "src/utils/toast";
 import { render, screen, waitFor } from "test-utils";
 
@@ -36,49 +37,12 @@ describe("ReleaseSummaryHeroToolbar", () => {
     ).toHaveAttribute("href", "https://www.discogs.com/release/12345");
   });
 
-  describe("copy listen link", () => {
-    const originalClipboard = navigator.clipboard;
-    const originalIsSecureContext = window.isSecureContext;
-    let execCommandMock: jest.Mock<(command: string) => boolean>;
+  it("when copy listen link is activated, copies the public listen link for this release", async () => {
+    const { execCommandMock, restore } = setupExecCommandCopyMock(
+      "https://filtermydisco.gs/release/12345",
+    );
 
-    beforeEach(() => {
-      Object.defineProperty(navigator, "clipboard", {
-        value: undefined,
-        configurable: true,
-      });
-      Object.defineProperty(window, "isSecureContext", {
-        value: false,
-        configurable: true,
-      });
-      execCommandMock = jest.fn((command: string) => {
-        if (command === "copy") {
-          const ta = document.body.querySelector("textarea");
-          expect(ta?.value).toBe("https://filtermydisco.gs/release/12345");
-        }
-        return true;
-      });
-      Object.defineProperty(document, "execCommand", {
-        value: execCommandMock,
-        configurable: true,
-        writable: true,
-      });
-      jest.spyOn(toast, "success");
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-      Object.defineProperty(navigator, "clipboard", {
-        value: originalClipboard,
-        configurable: true,
-      });
-      Object.defineProperty(window, "isSecureContext", {
-        value: originalIsSecureContext,
-        configurable: true,
-      });
-      Reflect.deleteProperty(document, "execCommand");
-    });
-
-    it("copies the public listen link for this release when Copy listen link is activated", async () => {
+    try {
       const user = userEvent.setup();
       const release = releaseFactory.build({
         basic_information: {
@@ -99,6 +63,8 @@ describe("ReleaseSummaryHeroToolbar", () => {
         expect(execCommandMock).toHaveBeenCalledWith("copy");
       });
       expect(toast.success).toHaveBeenCalledWith("Link copied to clipboard");
-    });
+    } finally {
+      restore();
+    }
   });
 });

@@ -24,15 +24,17 @@ function readCollectionItemCounts(): Record<string, number> {
   }
 }
 
-export function readStoredCollectionItemCount(username: string): number | null {
+export const readStoredCollectionItemCount = (
+  username: string,
+): number | null => {
   const items = readCollectionItemCounts()[username.toLowerCase()];
   return items ?? null;
-}
+};
 
-export function persistCollectionItemCount(
+export const persistCollectionItemCount = (
   username: string,
   items: number,
-): void {
+): void => {
   if (typeof window === "undefined" || !Number.isFinite(items)) {
     return;
   }
@@ -47,12 +49,12 @@ export function persistCollectionItemCount(
   } catch {
     return;
   }
-}
+};
 
-export function clearStoredCollectionItemCounts(): void {
+export const clearStoredCollectionItemCounts = (): void => {
   if (typeof window === "undefined") {
     return;
   }
 
   localStorage.removeItem(COLLECTION_ITEM_COUNTS_STORAGE_KEY);
-}
+};

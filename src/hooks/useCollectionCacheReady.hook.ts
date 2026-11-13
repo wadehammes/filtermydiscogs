@@ -103,8 +103,8 @@ export const useCollectionCacheReady = ({
   return state;
 };
 
-export function resetCollectionCacheReady(username: string): void {
+export const resetCollectionCacheReady = (username: string): void => {
   resetCollectionCachePrepareState(username);
   cacheReadyByUsername.delete(normalizeCacheReadyUsername(username));
   notifyCacheReadySubscribers();
-}
+};

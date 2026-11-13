@@ -123,6 +123,19 @@ export const Foo: FC = () => null;
     expect(violations.some((v) => v.rule === "react-fc")).toBe(true);
   });
 
+  it("flags export function helpers in lib", () => {
+    const source = `export function helper(): void {
+  return;
+}
+`;
+
+    expect(
+      validateHandbookEdit("src/lib/example.ts", source).some(
+        (v) => v.rule === "export-function",
+      ),
+    ).toBe(true);
+  });
+
   it("allows export async function GET in route handlers", () => {
     const source = `export async function GET() {
   return new Response();
