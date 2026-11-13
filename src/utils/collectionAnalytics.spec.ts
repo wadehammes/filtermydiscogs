@@ -178,7 +178,4 @@ describe("readonly release inputs", () => {
     expect(calculateCollectionStats(releases).totalReleases).toBe(1);
     expect(detectDuplicates(releases)).toEqual([]);
   });
-  it("when module exports are bound, calculateCollectionStats remains a function", () => {
-    expect(typeof calculateCollectionStats).toBe("function");
-  });
 });

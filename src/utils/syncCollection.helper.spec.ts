@@ -277,7 +277,4 @@ describe("prepareCollectionForSync", () => {
 
     expect(result.instanceIds).toEqual(["full"]);
   });
-  it("when module exports are bound, prepareCollectionForSync remains a function", () => {
-    expect(typeof prepareCollectionForSync).toBe("function");
-  });
 });

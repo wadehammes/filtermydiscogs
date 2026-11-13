@@ -214,7 +214,4 @@ describe("useCollectionCacheReady", () => {
       hydratedFromCache: false,
     });
   });
-  it("when module exports are bound, resetCollectionCacheReady remains a function", () => {
-    expect(typeof resetCollectionCacheReady).toBe("function");
-  });
 });

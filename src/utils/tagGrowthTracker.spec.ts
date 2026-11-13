@@ -139,7 +139,4 @@ describe("tagGrowthTracker", () => {
       { date: "2024-03", primaryValue: 0, secondaryValue: 0 },
     ]);
   });
-  it("when module exports are bound, collectStyleOptions remains a function", () => {
-    expect(typeof collectStyleOptions).toBe("function");
-  });
 });

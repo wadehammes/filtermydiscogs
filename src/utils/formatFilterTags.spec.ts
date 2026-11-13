@@ -109,7 +109,4 @@ describe("formatFilterTags", () => {
       "Vinyl",
     ]);
   });
-  it("when module exports are bound, normalizeFormatTag remains a function", () => {
-    expect(typeof normalizeFormatTag).toBe("function");
-  });
 });
