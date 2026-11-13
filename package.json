@@ -40,7 +40,6 @@
     "test:coverage": "NODE_OPTIONS='--max-old-space-size=4096' jest --coverage --runInBand --detectOpenHandles",
     "test:file": "jest --runInBand --detectOpenHandles --watch --",
     "scaffold": "scripts/scaffold.sh",
-    "convert:export-functions": "node scripts/convert-export-functions.mjs",
     "db:generate": "prisma generate",
     "db:push": "bash scripts/load-env-and-push.sh",
     "db:reset": "dotenv -e .env.local -- prisma migrate reset",
