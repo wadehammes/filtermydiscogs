@@ -2,7 +2,7 @@
  * Copy text to clipboard
  * Uses modern Clipboard API with fallback for older browsers
  */
-export async function copyToClipboard(text: string): Promise<boolean> {
+export const copyToClipboard = async (text: string): Promise<boolean> => {
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
@@ -30,4 +30,4 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     console.error("Failed to copy to clipboard:", error);
     return false;
   }
-}
+};

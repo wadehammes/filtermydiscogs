@@ -11,6 +11,6 @@ export const SIMILAR_RELEASES_LIMIT = 8;
 export const RELEASE_MODAL_SIMILAR_LIMIT = 16;
 export const RELEASE_BATCH_MAX_IDS = 25;
 
-export function isLargeCollection(totalItems: number): boolean {
+export const isLargeCollection = (totalItems: number): boolean => {
   return totalItems > COLLECTION_LARGE_MIN_ITEMS;
-}
+};

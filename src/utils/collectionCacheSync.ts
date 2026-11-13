@@ -52,18 +52,18 @@ function loadPersistedCollectionCache(
   return promise;
 }
 
-export function resetCollectionCacheReady(username: string): void {
+export const resetCollectionCacheReady = (username: string): void => {
   const cacheKey = normalizeCollectionCacheUsername(username);
   cacheLoadPromises.delete(cacheKey);
   preparePromises.delete(cacheKey);
   validatePromises.delete(cacheKey);
-}
+};
 
-export function hydrateCollectionQueryFromCache(
+export const hydrateCollectionQueryFromCache = (
   queryClient: QueryClient,
   username: string,
   cached: PersistedCollectionCache,
-): void {
+): void => {
   const data: InfiniteData<DiscogsCollection, CollectionPageParam> = {
     pages: cached.pages,
     pageParams: cached.pageParams,
@@ -73,7 +73,7 @@ export function hydrateCollectionQueryFromCache(
     DiscogsCollectionQueryKeys.byUsername(username),
     data,
   );
-}
+};
 
 async function withCollectionCacheValidationTimeout<T>(
   promise: Promise<T>,
@@ -96,11 +96,11 @@ async function withCollectionCacheValidationTimeout<T>(
   }
 }
 
-export async function validatePersistedCollectionCache(
+export const validatePersistedCollectionCache = async (
   queryClient: QueryClient,
   username: string,
   cached: PersistedCollectionCache,
-): Promise<boolean> {
+): Promise<boolean> => {
   try {
     const page = await withCollectionCacheValidationTimeout(
       api.discogsCollection({
@@ -136,12 +136,12 @@ export async function validatePersistedCollectionCache(
     queryKey: DiscogsCollectionQueryKeys.byUsername(username),
   });
   return false;
-}
+};
 
-export async function prepareCollectionQueryFromCache(
+export const prepareCollectionQueryFromCache = async (
   queryClient: QueryClient,
   username: string,
-): Promise<CollectionCachePrepareResult> {
+): Promise<CollectionCachePrepareResult> => {
   const cacheKey = normalizeCollectionCacheUsername(username);
   const queryKey = DiscogsCollectionQueryKeys.byUsername(username);
   const existingQueryData = queryClient.getQueryData(queryKey);
@@ -179,12 +179,12 @@ export async function prepareCollectionQueryFromCache(
 
   preparePromises.set(cacheKey, promise);
   return promise;
-}
+};
 
-export async function ensureCollectionCacheHydrated(
+export const ensureCollectionCacheHydrated = async (
   queryClient: QueryClient,
   username: string,
-): Promise<boolean> {
+): Promise<boolean> => {
   const cached = await loadPersistedCollectionCache(username);
   if (!cached) {
     return false;
@@ -192,12 +192,12 @@ export async function ensureCollectionCacheHydrated(
 
   hydrateCollectionQueryFromCache(queryClient, username, cached);
   return true;
-}
+};
 
-export async function ensureCollectionCacheValidated(
+export const ensureCollectionCacheValidated = async (
   queryClient: QueryClient,
   username: string,
-): Promise<boolean> {
+): Promise<boolean> => {
   const cacheKey = normalizeCollectionCacheUsername(username);
   const existing = validatePromises.get(cacheKey);
   if (existing) {
@@ -217,13 +217,13 @@ export async function ensureCollectionCacheValidated(
 
   validatePromises.set(cacheKey, promise);
   return promise;
-}
+};
 
-export async function persistCollectionQueryToCache(
+export const persistCollectionQueryToCache = async (
   username: string,
   pages: DiscogsCollection[],
   pageParams: CollectionPageParam[],
-): Promise<void> {
+): Promise<void> => {
   if (pages.length === 0 || pageParams.length === 0) {
     return;
   }
@@ -240,26 +240,26 @@ export async function persistCollectionQueryToCache(
     totalItems,
     fetchedAt: Date.now(),
   });
-}
+};
 
-export function patchCollectionPagesReleaseRating(
+export const patchCollectionPagesReleaseRating = (
   pages: DiscogsCollection[],
   releaseId: number,
   rating: number,
-): DiscogsCollection[] {
+): DiscogsCollection[] => {
   return pages.map((page) => ({
     ...page,
     releases: page.releases.map((release) =>
       parseReleaseId(release) === releaseId ? { ...release, rating } : release,
     ),
   }));
-}
+};
 
-export function patchCollectionQueryReleaseRating(
+export const patchCollectionQueryReleaseRating = (
   data: InfiniteData<DiscogsCollection, CollectionPageParam> | undefined,
   releaseId: number,
   rating: number,
-): InfiniteData<DiscogsCollection, CollectionPageParam> | undefined {
+): InfiniteData<DiscogsCollection, CollectionPageParam> | undefined => {
   if (!data) {
     return data;
   }
@@ -268,13 +268,13 @@ export function patchCollectionQueryReleaseRating(
     ...data,
     pages: patchCollectionPagesReleaseRating(data.pages, releaseId, rating),
   };
-}
+};
 
-export async function patchPersistedCollectionReleaseRating(
+export const patchPersistedCollectionReleaseRating = async (
   username: string,
   releaseId: number,
   rating: number,
-): Promise<void> {
+): Promise<void> => {
   const cached = await readPersistedCollectionCache(username);
   if (!cached) {
     return;
@@ -285,13 +285,13 @@ export async function patchPersistedCollectionReleaseRating(
     pages: patchCollectionPagesReleaseRating(cached.pages, releaseId, rating),
     fetchedAt: Date.now(),
   });
-}
+};
 
-export function patchCollectionQueryReleaseNotes(
+export const patchCollectionQueryReleaseNotes = (
   data: InfiniteData<DiscogsCollection, CollectionPageParam> | undefined,
   instanceId: string,
   notes: DiscogsRelease["notes"],
-): InfiniteData<DiscogsCollection, CollectionPageParam> | undefined {
+): InfiniteData<DiscogsCollection, CollectionPageParam> | undefined => {
   if (!data) {
     return data;
   }
@@ -302,13 +302,13 @@ export function patchCollectionQueryReleaseNotes(
       notes: notes ?? [],
     }),
   };
-}
+};
 
-export async function patchPersistedCollectionReleaseNotes(
+export const patchPersistedCollectionReleaseNotes = async (
   username: string,
   instanceId: string,
   notes: DiscogsRelease["notes"],
-): Promise<void> {
+): Promise<void> => {
   const cached = await readPersistedCollectionCache(username);
   if (!cached) {
     return;
@@ -321,4 +321,4 @@ export async function patchPersistedCollectionReleaseNotes(
     }),
     fetchedAt: Date.now(),
   });
-}
+};

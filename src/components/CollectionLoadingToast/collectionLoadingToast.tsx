@@ -6,10 +6,10 @@ import { toast } from "src/utils/toast";
 
 export const COLLECTION_LOADING_TOAST_ID = "collection-loading";
 
-export function resolveCollectionTotalItems(
+export const resolveCollectionTotalItems = (
   username: string | null | undefined,
   collection: DiscogsCollection | null,
-): number | null {
+): number | null => {
   const items = collection?.pagination?.items;
   if (typeof items === "number" && Number.isFinite(items) && items >= 0) {
     return items;
@@ -20,18 +20,20 @@ export function resolveCollectionTotalItems(
   }
 
   return null;
-}
+};
 
-export function formatLargeCollectionLoadingTitle(totalItems: number): string {
+export const formatLargeCollectionLoadingTitle = (
+  totalItems: number,
+): string => {
   return `Loading ${totalItems.toLocaleString()} releases from Discogs…`;
-}
+};
 
-export function formatLargeCollectionLoadingProgress(
+export const formatLargeCollectionLoadingProgress = (
   loadedCount: number,
   totalItems: number,
-): string {
+): string => {
   return `${loadedCount.toLocaleString()} of ${totalItems.toLocaleString()} loaded`;
-}
+};
 
 function CollectionLoadingToastDescription({
   loadedCount,

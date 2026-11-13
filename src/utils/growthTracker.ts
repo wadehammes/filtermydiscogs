@@ -1,9 +1,9 @@
 import type { DiscogsRelease } from "src/types";
 import type { GrowthDataPoint } from "src/types/dashboard.types";
 
-export function analyzeGrowthFromDates(
+export const analyzeGrowthFromDates = (
   releases: readonly DiscogsRelease[],
-): GrowthDataPoint[] {
+): GrowthDataPoint[] => {
   if (releases.length === 0) {
     return [];
   }
@@ -43,11 +43,11 @@ export function analyzeGrowthFromDates(
   });
 
   return growthData;
-}
+};
 
-export function analyzeGrowthByYear(
+export const analyzeGrowthByYear = (
   releases: readonly DiscogsRelease[],
-): GrowthDataPoint[] {
+): GrowthDataPoint[] => {
   if (releases.length === 0) {
     return [];
   }
@@ -83,4 +83,4 @@ export function analyzeGrowthByYear(
   });
 
   return growthData;
-}
+};

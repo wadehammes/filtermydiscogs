@@ -8,9 +8,9 @@ const USER_AVATAR_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const avatarCache = new Map<number, CachedUserAvatar>();
 const inFlightAvatarRequests = new Map<number, Promise<string | null>>();
 
-export function getCachedUserAvatarUrl(
+export const getCachedUserAvatarUrl = (
   userId: number,
-): string | null | undefined {
+): string | null | undefined => {
   const entry = avatarCache.get(userId);
   if (!entry) {
     return undefined;
@@ -22,12 +22,12 @@ export function getCachedUserAvatarUrl(
   }
 
   return entry.avatarUrl;
-}
+};
 
-export function setCachedUserAvatarUrl(
+export const setCachedUserAvatarUrl = (
   userId: number,
   avatarUrl: string | null,
-): void {
+): void => {
   avatarCache.set(userId, {
     avatarUrl,
     fetchedAt: Date.now(),
@@ -41,25 +41,25 @@ export function setCachedUserAvatarUrl(
       }
     }
   }
-}
+};
 
-export function getInFlightAvatarRequest(
+export const getInFlightAvatarRequest = (
   userId: number,
-): Promise<string | null> | undefined {
+): Promise<string | null> | undefined => {
   return inFlightAvatarRequests.get(userId);
-}
+};
 
-export function setInFlightAvatarRequest(
+export const setInFlightAvatarRequest = (
   userId: number,
   request: Promise<string | null>,
-): void {
+): void => {
   inFlightAvatarRequests.set(userId, request);
   request.finally(() => {
     inFlightAvatarRequests.delete(userId);
   });
-}
+};
 
-export function clearCachedUserAvatarUrl(userId: number): void {
+export const clearCachedUserAvatarUrl = (userId: number): void => {
   avatarCache.delete(userId);
   inFlightAvatarRequests.delete(userId);
-}
+};

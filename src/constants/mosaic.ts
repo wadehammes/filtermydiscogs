@@ -90,7 +90,7 @@ export const GRID_BREAKPOINTS = {
 } as const;
 
 // Calculate optimal grid dimensions for a given aspect ratio and item count
-export function calculateOptimalGrid(
+export const calculateOptimalGrid = (
   itemCount: number,
   aspectRatio: { width: number; height: number },
 ): {
@@ -99,7 +99,7 @@ export function calculateOptimalGrid(
   cellSize: number;
   canvasWidth: number;
   canvasHeight: number;
-} {
+} => {
   if (itemCount === 0) {
     return { cols: 0, rows: 0, cellSize: 0, canvasWidth: 0, canvasHeight: 0 };
   }
@@ -201,4 +201,4 @@ export function calculateOptimalGrid(
     canvasWidth: actualCanvasWidth,
     canvasHeight: actualCanvasHeight,
   };
-}
+};

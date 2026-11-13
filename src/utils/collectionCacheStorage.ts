@@ -88,9 +88,9 @@ function runCollectionCacheTransaction<T>(
   );
 }
 
-export function parsePersistedCollectionCache(
+export const parsePersistedCollectionCache = (
   value: unknown,
-): PersistedCollectionCache | null {
+): PersistedCollectionCache | null => {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -116,11 +116,11 @@ export function parsePersistedCollectionCache(
     totalItems: record.totalItems,
     fetchedAt: record.fetchedAt,
   };
-}
+};
 
-export async function readPersistedCollectionCache(
+export const readPersistedCollectionCache = async (
   username: string,
-): Promise<PersistedCollectionCache | null> {
+): Promise<PersistedCollectionCache | null> => {
   if (typeof window === "undefined" || !("indexedDB" in window)) {
     return null;
   }
@@ -135,12 +135,12 @@ export async function readPersistedCollectionCache(
   } catch {
     return null;
   }
-}
+};
 
-export async function writePersistedCollectionCache(
+export const writePersistedCollectionCache = async (
   username: string,
   cache: PersistedCollectionCache,
-): Promise<void> {
+): Promise<void> => {
   if (typeof window === "undefined" || !("indexedDB" in window)) {
     return;
   }
@@ -153,11 +153,11 @@ export async function writePersistedCollectionCache(
   } catch {
     return;
   }
-}
+};
 
-export async function clearPersistedCollectionCache(
+export const clearPersistedCollectionCache = async (
   username: string,
-): Promise<void> {
+): Promise<void> => {
   if (typeof window === "undefined" || !("indexedDB" in window)) {
     return;
   }
@@ -170,9 +170,9 @@ export async function clearPersistedCollectionCache(
   } catch {
     return;
   }
-}
+};
 
-export async function clearPersistedCollectionCaches(): Promise<void> {
+export const clearPersistedCollectionCaches = async (): Promise<void> => {
   if (typeof window === "undefined" || !("indexedDB" in window)) {
     return;
   }
@@ -184,4 +184,4 @@ export async function clearPersistedCollectionCaches(): Promise<void> {
   } catch {
     return;
   }
-}
+};

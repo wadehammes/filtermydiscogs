@@ -11,7 +11,7 @@ export class ApiFetchError extends Error {
   }
 }
 
-export function parseRetryAfterMs(response: Response): number | undefined {
+export const parseRetryAfterMs = (response: Response): number | undefined => {
   const header = response.headers?.get("Retry-After");
   if (!header) {
     return undefined;
@@ -23,26 +23,26 @@ export function parseRetryAfterMs(response: Response): number | undefined {
   }
 
   return undefined;
-}
+};
 
-export function isTransientRateLimitError(
+export const isTransientRateLimitError = (
   error: unknown,
-): error is ApiFetchError {
+): error is ApiFetchError => {
   return (
     error instanceof ApiFetchError &&
     (error.status === 502 || error.status === 503 || error.status === 429)
   );
-}
+};
 
 export const isDiscogsUpstreamOutageApiError = (
   error: unknown,
 ): error is ApiFetchError =>
   error instanceof ApiFetchError && error.status === 502;
 
-export function getRateLimitedRetryDelayMs(
+export const getRateLimitedRetryDelayMs = (
   error: unknown,
   attemptIndex: number,
-): number {
+): number => {
   if (error instanceof ApiFetchError && error.retryAfterMs !== undefined) {
     return error.retryAfterMs;
   }
@@ -52,4 +52,4 @@ export function getRateLimitedRetryDelayMs(
   }
 
   return 0;
-}
+};

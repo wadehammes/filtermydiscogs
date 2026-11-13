@@ -23,13 +23,15 @@ export interface DiscogsExternalLinkProps {
 
 const DEFAULT_LABEL = "View on Discogs";
 
-export function getDiscogsReleaseUrl(release: DiscogsRelease): string | null {
+export const getDiscogsReleaseUrl = (
+  release: DiscogsRelease,
+): string | null => {
   return getResourceUrl({
     resourceUrl: release.basic_information.resource_url,
     type: "release",
     id: release.basic_information.id,
   });
-}
+};
 
 export const DiscogsExternalLink = ({
   href,

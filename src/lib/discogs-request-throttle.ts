@@ -42,9 +42,9 @@ const queueWaitTimeoutMs = parseEnvMs(
 let lastRequestAt = 0;
 let chain: Promise<unknown> = Promise.resolve();
 
-export function runThrottledDiscogsRequest<T>(
+export const runThrottledDiscogsRequest = <T>(
   work: () => Promise<T>,
-): Promise<T> {
+): Promise<T> => {
   if (throttleContext.getStore()) {
     return work();
   }
@@ -120,4 +120,4 @@ export function runThrottledDiscogsRequest<T>(
 
     return scheduled as Promise<T>;
   })();
-}
+};

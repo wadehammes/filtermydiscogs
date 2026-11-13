@@ -68,9 +68,9 @@ export const compareDiscogsReleasesByDateAdded = (
   return String(a.instance_id).localeCompare(String(b.instance_id));
 };
 
-export function calculateMilestones(
+export const calculateMilestones = (
   releases: readonly DiscogsRelease[],
-): CollectionMilestone[] {
+): CollectionMilestone[] => {
   if (releases.length === 0) {
     return [];
   }
@@ -155,4 +155,4 @@ export function calculateMilestones(
   }
 
   return milestones;
-}
+};

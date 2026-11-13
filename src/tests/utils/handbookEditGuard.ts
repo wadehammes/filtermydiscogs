@@ -18,6 +18,9 @@ const NEXT_ROUTE_FILE = /\/route\.ts$/;
 const isFlatDescribeSpec = (relativePath: string): boolean =>
   /\.hook\.spec\.tsx?$/.test(relativePath) ||
   /^src\/utils\/.*\.spec\.ts$/.test(relativePath) ||
+  /^src\/lib\/.*\.spec\.ts$/.test(relativePath) ||
+  (/^src\/components\/.*\.spec\.tsx$/.test(relativePath) &&
+    !/\.hook\.spec\.tsx$/.test(relativePath)) ||
   /^src\/context\/releasePlayback\.context\..*\.spec\.tsx$/.test(relativePath);
 
 const INDENTED_NESTED_DESCRIBE_CALL = /^[ \t]+describe\s*\(\s*(?:["'`]|$)/;
@@ -115,6 +118,7 @@ const allowsFunctionDeclaration = (relativePath: string): boolean =>
   NEXT_ROUTE_FILE.test(relativePath) ||
   NEXT_APP_FILE.test(relativePath) ||
   relativePath === "src/middleware.ts" ||
+  relativePath === "src/instrumentation.ts" ||
   relativePath.startsWith("scripts/");
 
 const validateProductionSource = (
@@ -153,28 +157,14 @@ const validateProductionSource = (
 
     if (
       !allowsFunctionDeclaration(relativePath) &&
-      /^\s*export\s+function\s+[A-Z]/.test(line)
+      /^\s*export\s+function\s+/.test(line)
     ) {
       violations.push({
         filePath: relativePath,
         line: index + 1,
-        rule: "export-function-component",
+        rule: "export-function",
         message:
-          "Use arrow functions for app components and helpers — export const Name = () => {}. Exceptions: Next.js route/page/layout exports. See docs/handbook/conventions.md (TypeScript).",
-        excerpt: line.trim(),
-      });
-    }
-
-    if (
-      /^\s*export\s+function\s+use[A-Z]/.test(line) &&
-      !allowsFunctionDeclaration(relativePath)
-    ) {
-      violations.push({
-        filePath: relativePath,
-        line: index + 1,
-        rule: "export-function-hook",
-        message:
-          "Hooks must use arrow functions — export const useFoo = () => {}. See docs/handbook/conventions.md (TypeScript).",
+          "Use arrow functions for app code — export const name = () => {}. Exceptions: Next.js route/page/layout exports and middleware. See docs/handbook/conventions.md (TypeScript).",
         excerpt: line.trim(),
       });
     }

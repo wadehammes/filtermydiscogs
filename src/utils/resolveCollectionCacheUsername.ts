@@ -5,12 +5,12 @@ interface CollectionCacheUsernameSource {
   rateLimited: boolean;
 }
 
-export function resolveCollectionCacheUsername({
+export const resolveCollectionCacheUsername = ({
   isAuthenticated,
   username,
   reconnectUsername,
   rateLimited,
-}: CollectionCacheUsernameSource): string | null {
+}: CollectionCacheUsernameSource): string | null => {
   if (rateLimited) {
     return null;
   }
@@ -20,4 +20,4 @@ export function resolveCollectionCacheUsername({
   }
 
   return reconnectUsername;
-}
+};

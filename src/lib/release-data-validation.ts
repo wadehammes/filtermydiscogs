@@ -27,11 +27,11 @@ function sanitizeBasicInformation(
   };
 }
 
-export function validateReleaseDataForStorage(
+export const validateReleaseDataForStorage = (
   release: unknown,
 ):
   | { release: DiscogsRelease; error?: never }
-  | { release?: never; error: string } {
+  | { release?: never; error: string } => {
   if (!release || typeof release !== "object") {
     return { error: "Invalid release data" };
   }
@@ -52,20 +52,20 @@ export function validateReleaseDataForStorage(
       basic_information: sanitizeBasicInformation(candidate.basic_information),
     },
   };
-}
+};
 
-export function toPublicReleaseSnapshot(
+export const toPublicReleaseSnapshot = (
   release: DiscogsRelease,
-): Pick<DiscogsRelease, "instance_id" | "basic_information"> {
+): Pick<DiscogsRelease, "instance_id" | "basic_information"> => {
   return {
     instance_id: String(release.instance_id),
     basic_information: sanitizeBasicInformation(release.basic_information),
   };
-}
+};
 
-export function toPublicPlaylistReleaseSnapshot(
+export const toPublicPlaylistReleaseSnapshot = (
   release: DiscogsRelease,
-): DiscogsRelease {
+): DiscogsRelease => {
   const {
     notes: _notes,
     rating: _rating,
@@ -79,4 +79,4 @@ export function toPublicPlaylistReleaseSnapshot(
     instance_id: String(release.instance_id),
     basic_information: sanitizeBasicInformation(release.basic_information),
   } as DiscogsRelease;
-}
+};

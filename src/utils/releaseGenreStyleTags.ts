@@ -10,13 +10,13 @@ const addTrimmedTags = (tags: Set<string>, values: string[] | undefined) => {
   });
 };
 
-export function getReleaseGenreStyleTags(
+export const getReleaseGenreStyleTags = (
   basicInformation: DiscogsBasicInformation,
-): string[] {
+): string[] => {
   const tags = new Set<string>();
 
   addTrimmedTags(tags, basicInformation.genres);
   addTrimmedTags(tags, basicInformation.styles);
 
   return sortFormatTags(Array.from(tags));
-}
+};

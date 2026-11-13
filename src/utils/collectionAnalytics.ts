@@ -53,9 +53,9 @@ export const toDistributionData = (
   return limit === undefined ? sorted : sorted.slice(0, limit);
 };
 
-export function calculateCollectionStats(
+export const calculateCollectionStats = (
   releases: readonly DiscogsRelease[],
-): CollectionStats {
+): CollectionStats => {
   if (releases.length === 0) {
     return {
       totalReleases: 0,
@@ -116,11 +116,11 @@ export function calculateCollectionStats(
     totalStyles: styleSet.size,
     totalGenres: genreSet.size,
   };
-}
+};
 
-export function detectDuplicates(
+export const detectDuplicates = (
   releases: readonly DiscogsRelease[],
-): DuplicateGroup[] {
+): DuplicateGroup[] => {
   const masterIdGroups = new Map<number, DiscogsRelease[]>();
   const titleArtistGroups = new Map<string, DiscogsRelease[]>();
   const duplicateGroups: DuplicateGroup[] = [];
@@ -177,11 +177,11 @@ export function detectDuplicates(
   });
 
   return duplicateGroups;
-}
+};
 
-export function calculateStyleDistribution(
+export const calculateStyleDistribution = (
   releases: readonly DiscogsRelease[],
-): DistributionData[] {
+): DistributionData[] => {
   const styleCounts = new Map<string, number>();
 
   releases.forEach((release) => {
@@ -202,11 +202,11 @@ export function calculateStyleDistribution(
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10); // Top 10 styles
-}
+};
 
-export function calculateGenreDistribution(
+export const calculateGenreDistribution = (
   releases: readonly DiscogsRelease[],
-): DistributionData[] {
+): DistributionData[] => {
   const genreCounts = new Map<string, number>();
 
   releases.forEach((release) => {
@@ -221,11 +221,11 @@ export function calculateGenreDistribution(
   });
 
   return toDistributionData(genreCounts);
-}
+};
 
-export function calculateDecadeDistribution(
+export const calculateDecadeDistribution = (
   releases: readonly DiscogsRelease[],
-): DistributionData[] {
+): DistributionData[] => {
   const decadeCounts = new Map<string, number>();
 
   releases.forEach((release) => {
@@ -248,11 +248,11 @@ export function calculateDecadeDistribution(
       const decadeB = parseInt(b.label.replace("s", ""), 10);
       return decadeA - decadeB;
     });
-}
+};
 
-export function calculateMediaTypeDistribution(
+export const calculateMediaTypeDistribution = (
   releases: readonly DiscogsRelease[],
-): DistributionData[] {
+): DistributionData[] => {
   const mediaTypeCounts = new Map<string, number>();
 
   releases.forEach((release) => {
@@ -265,11 +265,11 @@ export function calculateMediaTypeDistribution(
   });
 
   return toDistributionData(mediaTypeCounts);
-}
+};
 
-export function calculateFormatTagDistribution(
+export const calculateFormatTagDistribution = (
   releases: readonly DiscogsRelease[],
-): DistributionData[] {
+): DistributionData[] => {
   const tagCounts = new Map<string, number>();
 
   releases.forEach((release) => {
@@ -291,11 +291,11 @@ export function calculateFormatTagDistribution(
   });
 
   return toDistributionData(tagCounts, 10);
-}
+};
 
-export function calculateFormatMixSummary(
+export const calculateFormatMixSummary = (
   releases: readonly DiscogsRelease[],
-): FormatMixSummary | null {
+): FormatMixSummary | null => {
   if (releases.length === 0) {
     return null;
   }
@@ -319,11 +319,11 @@ export function calculateFormatMixSummary(
       count,
     })),
   };
-}
+};
 
-export function calculateArtistDistribution(
+export const calculateArtistDistribution = (
   releases: readonly DiscogsRelease[],
-): DistributionData[] {
+): DistributionData[] => {
   const artistCounts = new Map<string, number>();
 
   releases.forEach((release) => {
@@ -343,11 +343,11 @@ export function calculateArtistDistribution(
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 15); // Top 15 artists
-}
+};
 
-export function calculateLabelDistribution(
+export const calculateLabelDistribution = (
   releases: readonly DiscogsRelease[],
-): DistributionData[] {
+): DistributionData[] => {
   const labelCounts = new Map<string, number>();
 
   releases.forEach((release) => {
@@ -367,4 +367,4 @@ export function calculateLabelDistribution(
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 15); // Top 15 labels
-}
+};

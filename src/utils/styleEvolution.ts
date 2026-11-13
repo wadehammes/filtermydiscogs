@@ -7,9 +7,9 @@ export interface StyleEvolutionData {
   styles: Array<{ name: string; count: number; percentage: number }>;
 }
 
-export function calculateStyleEvolution(
+export const calculateStyleEvolution = (
   releases: readonly DiscogsRelease[],
-): StyleEvolutionData[] {
+): StyleEvolutionData[] => {
   if (releases.length === 0) {
     return [];
   }
@@ -132,4 +132,4 @@ export function calculateStyleEvolution(
   }
 
   return periods;
-}
+};
