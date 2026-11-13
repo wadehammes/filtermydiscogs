@@ -1,11 +1,12 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   formatHandbookTestViolations,
   type HandbookTestViolation,
   isHandbookScannedTestFile,
   validateFeatureTestSource,
 } from "src/tests/utils/handbookTestRules";
+import { listScannedRepoFiles } from "src/tests/utils/listScannedRepoFiles";
 
 export type HandbookEditViolation = HandbookTestViolation;
 
@@ -17,6 +18,9 @@ const NEXT_ROUTE_FILE = /\/route\.ts$/;
 const isFlatDescribeSpec = (relativePath: string): boolean =>
   /\.hook\.spec\.tsx?$/.test(relativePath) ||
   /^src\/utils\/.*\.spec\.ts$/.test(relativePath) ||
+  /^src\/lib\/.*\.spec\.ts$/.test(relativePath) ||
+  (/^src\/components\/.*\.spec\.tsx$/.test(relativePath) &&
+    !/\.hook\.spec\.tsx$/.test(relativePath)) ||
   /^src\/context\/releasePlayback\.context\..*\.spec\.tsx$/.test(relativePath);
 
 const INDENTED_NESTED_DESCRIBE_CALL = /^[ \t]+describe\s*\(\s*(?:["'`]|$)/;
@@ -114,6 +118,7 @@ const allowsFunctionDeclaration = (relativePath: string): boolean =>
   NEXT_ROUTE_FILE.test(relativePath) ||
   NEXT_APP_FILE.test(relativePath) ||
   relativePath === "src/middleware.ts" ||
+  relativePath === "src/instrumentation.ts" ||
   relativePath.startsWith("scripts/");
 
 const validateProductionSource = (
@@ -152,28 +157,14 @@ const validateProductionSource = (
 
     if (
       !allowsFunctionDeclaration(relativePath) &&
-      /^\s*export\s+function\s+[A-Z]/.test(line)
+      /^\s*export\s+function\s+/.test(line)
     ) {
       violations.push({
         filePath: relativePath,
         line: index + 1,
-        rule: "export-function-component",
+        rule: "export-function",
         message:
-          "Use arrow functions for app components and helpers — export const Name = () => {}. Exceptions: Next.js route/page/layout exports. See docs/handbook/conventions.md (TypeScript).",
-        excerpt: line.trim(),
-      });
-    }
-
-    if (
-      /^\s*export\s+function\s+use[A-Z]/.test(line) &&
-      !allowsFunctionDeclaration(relativePath)
-    ) {
-      violations.push({
-        filePath: relativePath,
-        line: index + 1,
-        rule: "export-function-hook",
-        message:
-          "Hooks must use arrow functions — export const useFoo = () => {}. See docs/handbook/conventions.md (TypeScript).",
+          "Use arrow functions for app code — export const name = () => {}. Exceptions: Next.js route/page/layout exports and middleware. See docs/handbook/conventions.md (TypeScript).",
         excerpt: line.trim(),
       });
     }
@@ -214,34 +205,12 @@ export const findHandbookViolations = (
   ];
 };
 
-const listHandbookGuardScannedFiles = (rootDir: string): string[] => {
-  const files: string[] = [];
-
-  const walk = (directory: string, relativeRoot: string) => {
-    for (const entry of readdirSync(directory)) {
-      const absolutePath = join(directory, entry);
-      const stats = statSync(absolutePath);
-
-      if (stats.isDirectory()) {
-        walk(absolutePath, relativeRoot);
-        continue;
-      }
-
-      const relativePath = relative(relativeRoot, absolutePath).replace(
-        /\\/g,
-        "/",
-      );
-
-      if (isHandbookGuardScope(relativePath)) {
-        files.push(relativePath);
-      }
-    }
-  };
-
-  walk(join(rootDir, "src"), rootDir);
-  walk(join(rootDir, "e2e"), rootDir);
-  return files.sort();
-};
+const listHandbookGuardScannedFiles = (rootDir: string): string[] =>
+  listScannedRepoFiles({
+    rootDir,
+    scanRoots: ["src", "e2e"],
+    matchesPath: isHandbookGuardScope,
+  });
 
 export const collectHandbookRepoViolations = (
   rootDir: string,
