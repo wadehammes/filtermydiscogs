@@ -1,11 +1,12 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   formatHandbookTestViolations,
   type HandbookTestViolation,
   isHandbookScannedTestFile,
   validateFeatureTestSource,
 } from "src/tests/utils/handbookTestRules";
+import { listScannedRepoFiles } from "src/tests/utils/listScannedRepoFiles";
 
 export type HandbookEditViolation = HandbookTestViolation;
 
@@ -214,34 +215,12 @@ export const findHandbookViolations = (
   ];
 };
 
-const listHandbookGuardScannedFiles = (rootDir: string): string[] => {
-  const files: string[] = [];
-
-  const walk = (directory: string, relativeRoot: string) => {
-    for (const entry of readdirSync(directory)) {
-      const absolutePath = join(directory, entry);
-      const stats = statSync(absolutePath);
-
-      if (stats.isDirectory()) {
-        walk(absolutePath, relativeRoot);
-        continue;
-      }
-
-      const relativePath = relative(relativeRoot, absolutePath).replace(
-        /\\/g,
-        "/",
-      );
-
-      if (isHandbookGuardScope(relativePath)) {
-        files.push(relativePath);
-      }
-    }
-  };
-
-  walk(join(rootDir, "src"), rootDir);
-  walk(join(rootDir, "e2e"), rootDir);
-  return files.sort();
-};
+const listHandbookGuardScannedFiles = (rootDir: string): string[] =>
+  listScannedRepoFiles({
+    rootDir,
+    scanRoots: ["src", "e2e"],
+    matchesPath: isHandbookGuardScope,
+  });
 
 export const collectHandbookRepoViolations = (
   rootDir: string,

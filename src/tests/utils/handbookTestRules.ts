@@ -1,5 +1,6 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { listScannedRepoFiles } from "src/tests/utils/listScannedRepoFiles";
 
 export type HandbookTestViolation = {
   filePath: string;
@@ -20,6 +21,8 @@ export const HANDBOOK_TEST_RULES_ALLOWLIST = [
   /^src\/tests\/utils\/handbookTestRules\.ts$/,
   /^src\/tests\/utils\/handbookEditGuard\.ts$/,
   /^src\/tests\/utils\/handbookEditGuard\.spec\.ts$/,
+  /^src\/tests\/utils\/listScannedRepoFiles\.ts$/,
+  /^src\/tests\/utils\/listScannedRepoFiles\.spec\.ts$/,
 ] as const;
 
 const isDiscogsFactoryFile = (filePath: string): boolean =>
@@ -139,34 +142,12 @@ export const isHandbookScannedTestFile = (relativePath: string): boolean =>
 export const isHandbookTestRulesAllowlisted = (relativePath: string): boolean =>
   HANDBOOK_TEST_RULES_ALLOWLIST.some((pattern) => pattern.test(relativePath));
 
-const listHandbookScannedTestFiles = (rootDir: string): string[] => {
-  const files: string[] = [];
-
-  const walk = (directory: string, relativeRoot: string) => {
-    for (const entry of readdirSync(directory)) {
-      const absolutePath = join(directory, entry);
-      const stats = statSync(absolutePath);
-
-      if (stats.isDirectory()) {
-        walk(absolutePath, relativeRoot);
-        continue;
-      }
-
-      const relativePath = relative(relativeRoot, absolutePath).replace(
-        /\\/g,
-        "/",
-      );
-
-      if (isHandbookScannedTestFile(relativePath)) {
-        files.push(relativePath);
-      }
-    }
-  };
-
-  walk(join(rootDir, "src"), rootDir);
-  walk(join(rootDir, "e2e"), rootDir);
-  return files.sort();
-};
+const listHandbookScannedTestFiles = (rootDir: string): string[] =>
+  listScannedRepoFiles({
+    rootDir,
+    scanRoots: ["src", "e2e"],
+    matchesPath: isHandbookScannedTestFile,
+  });
 
 export const validateFeatureTestPath = (
   filePath: string,

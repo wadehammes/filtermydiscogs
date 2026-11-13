@@ -42,6 +42,100 @@ changed_has() {
   printf '%s\n' "$changed" | grep -Fxq "$1"
 }
 
+collect_path_diff() {
+  local path="$1"
+  local diff=""
+
+  diff="$(git diff "${BASE_REF}"...HEAD -- "$path" 2>/dev/null || true)"
+  if [ "$INCLUDE_WORKTREE" = "1" ]; then
+    diff="${diff}$(git diff HEAD -- "$path" 2>/dev/null || true)"
+    diff="${diff}$(git diff --cached HEAD -- "$path" 2>/dev/null || true)"
+  fi
+
+  printf '%s' "$diff"
+}
+
+is_export_shape_diff_line() {
+  local line="$1"
+
+  if [[ "$line" =~ ^[[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*export[[:space:]]+(async[[:space:]]+)?function[[:space:]] ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*export[[:space:]]+const[[:space:]] ]]; then
+    return 0
+  fi
+
+  local trimmed="${line#"${line%%[![:space:]]*}"}"
+  trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+  if [ "$trimmed" = "}" ] || [ "$trimmed" = "};" ]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*\) ]]; then
+    if [[ "$line" =~ (\{|=) ]]; then
+      return 0
+    fi
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*\([[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*\{[[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*(\{|:)[[:space:]]*$ ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*:[^=] ]]; then
+    return 0
+  fi
+
+  if [[ "$line" =~ ^[[:space:]]*\}[[:space:]]*:[^=]+(\{|=>) ]]; then
+    return 0
+  fi
+
+  return 1
+}
+
+production_diff_is_export_shape_only() {
+  local prod="$1"
+  local diff line body bad=0
+
+  diff="$(collect_path_diff "$prod")"
+  if [ -z "$diff" ]; then
+    return 1
+  fi
+
+  while IFS= read -r line; do
+    case "$line" in
+      +++* | ---* | @@*) continue ;;
+      +* | -*) ;;
+      *) continue ;;
+    esac
+
+    body="${line:1}"
+    body="${body%$'\r'}"
+    if is_export_shape_diff_line "$body"; then
+      continue
+    fi
+
+    bad=1
+    break
+  done <<EOF
+$diff
+EOF
+
+  [ "$bad" -eq 0 ]
+}
+
 # Playback-related utils that must gain a colocated spec when touched (even if none exists yet).
 is_playback_gated_util() {
   case "$1" in
@@ -167,6 +261,10 @@ fi
 failures=""
 
 for prod in "${production_touched[@]}"; do
+  if production_diff_is_export_shape_only "$prod"; then
+    continue
+  fi
+
   spec_list="$(collect_satisfying_specs "$prod" | sort -u)"
   if [ -z "$spec_list" ]; then
     continue
