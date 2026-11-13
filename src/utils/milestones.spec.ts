@@ -150,4 +150,7 @@ describe("milestones", () => {
       expect(milestoneReleaseId(after, label)).toBe(expectedId);
     }
   });
+  it("when module exports are bound, calculateMilestones remains a function", () => {
+    expect(typeof calculateMilestones).toBe("function");
+  });
 });

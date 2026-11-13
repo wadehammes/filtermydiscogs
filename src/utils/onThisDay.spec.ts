@@ -36,4 +36,7 @@ describe("getOnThisDayReleases", () => {
       today.getFullYear() - 1,
     );
   });
+  it("when module exports are bound, getOnThisDayReleases remains a function", () => {
+    expect(typeof getOnThisDayReleases).toBe("function");
+  });
 });
