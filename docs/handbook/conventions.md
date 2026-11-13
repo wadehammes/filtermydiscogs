@@ -364,7 +364,9 @@ const track = discogsTrackFactory.build({ title: "Night Drive" });
 
 **When TDD is optional:** narrow mechanical fixes (typos, copy-only tweaks with existing spec coverage), pure styling, or spikes you throw away—even then, add or extend tests before merge if behavior changed. **Playback / queue / track stats** paths above are **not** optional.
 
-**Do not:** write tests that mirror private implementation details, assert on query observer state in feature specs, or weaken assertions to greenwash a red build (see **Behavior first** above).
+**Export shape-only refactors:** When a gated util/hook diff vs base is **only** `export function` / `export async function` → `export const` (same body, closing `};`), **`scripts/spec-pair-check.sh`** does **not** require the colocated spec in the same PR—existing behavioral specs already exercise those exports. Do **not** add pairing smoke tests such as **`it("when module exports are bound, …")`** or **`expect(typeof fn).toBe("function")`** solely to satisfy the pairing gate; they add no signal beyond TypeScript and the suite you already have.
+
+**Do not:** write tests that mirror private implementation details, assert on query observer state in feature specs, weaken assertions to greenwash a red build (see **Behavior first** above), or add gate-only tests with no behavioral assertion.
 
 ### Page object pattern
 
