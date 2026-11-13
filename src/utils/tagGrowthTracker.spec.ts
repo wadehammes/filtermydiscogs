@@ -139,4 +139,15 @@ describe("tagGrowthTracker", () => {
       { date: "2024-03", primaryValue: 0, secondaryValue: 0 },
     ]);
   });
+
+  it("when genre and artist collectors run, return sorted tag options by count", () => {
+    const genres = collectGenreOptions(releases);
+    const artists = collectArtistOptions(releases);
+
+    expect(genres[0]?.value).toBe("Electronic");
+    expect(artists.map((option) => option.value)).toEqual([
+      "Artist A",
+      "Artist B",
+    ]);
+  });
 });

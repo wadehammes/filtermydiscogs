@@ -80,6 +80,18 @@ const getPrimaryMediaTypeLabel = (release: DiscogsRelease): string | null => {
 const toSharePercent = (part: number, total: number): number =>
   total > 0 ? Math.round((part / total) * 1000) / 10 : 0;
 
+const rankedTagOptionsFromCounts = (
+  counts: Map<string, number>,
+  toLabel: (value: string) => string = (value) => value,
+): TagOption[] =>
+  Array.from(counts.entries())
+    .map(([value, count]) => ({
+      value,
+      label: toLabel(value),
+      count,
+    }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+
 export const releaseHasStyle = (
   release: DiscogsRelease,
   styleKey: string,
@@ -132,13 +144,7 @@ export const collectStyleOptions = (
     }
   }
 
-  return Array.from(counts.entries())
-    .map(([value, count]) => ({
-      value,
-      label: formatDistributionLabel(value),
-      count,
-    }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  return rankedTagOptionsFromCounts(counts, formatDistributionLabel);
 };
 
 export const collectGenreOptions = (
@@ -157,13 +163,7 @@ export const collectGenreOptions = (
     }
   }
 
-  return Array.from(counts.entries())
-    .map(([value, count]) => ({
-      value,
-      label: value,
-      count,
-    }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  return rankedTagOptionsFromCounts(counts);
 };
 
 export const collectStyleOptionsForGenre = (
@@ -193,13 +193,7 @@ export const collectArtistOptions = (
     }
   }
 
-  return Array.from(counts.entries())
-    .map(([value, count]) => ({
-      value,
-      label: value,
-      count,
-    }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  return rankedTagOptionsFromCounts(counts);
 };
 
 export const collectMediaTypeOptions = (
@@ -216,13 +210,7 @@ export const collectMediaTypeOptions = (
     counts.set(mediaType, (counts.get(mediaType) ?? 0) + 1);
   }
 
-  return Array.from(counts.entries())
-    .map(([value, count]) => ({
-      value,
-      label: value,
-      count,
-    }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  return rankedTagOptionsFromCounts(counts);
 };
 
 export const analyzeTagGrowthFromDates = (
