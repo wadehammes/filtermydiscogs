@@ -18,9 +18,6 @@ const NEXT_ROUTE_FILE = /\/route\.ts$/;
 const isFlatDescribeSpec = (relativePath: string): boolean =>
   /\.hook\.spec\.tsx?$/.test(relativePath) ||
   /^src\/utils\/.*\.spec\.ts$/.test(relativePath) ||
-  /^src\/lib\/.*\.spec\.ts$/.test(relativePath) ||
-  (/^src\/components\/.*\.spec\.tsx$/.test(relativePath) &&
-    !/\.hook\.spec\.tsx$/.test(relativePath)) ||
   /^src\/context\/releasePlayback\.context\..*\.spec\.tsx$/.test(relativePath);
 
 const INDENTED_NESTED_DESCRIBE_CALL = /^[ \t]+describe\s*\(\s*(?:["'`]|$)/;
