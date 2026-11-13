@@ -17,14 +17,14 @@ interface DuplicatesDetailModalProps {
   onReleaseClick?: (instanceId: string) => void;
 }
 
-export function DuplicatesDetailModal({
+export const DuplicatesDetailModal = ({
   isOpen,
   title,
   description,
   duplicateGroups,
   onClose,
   onReleaseClick,
-}: DuplicatesDetailModalProps) {
+}: DuplicatesDetailModalProps) => {
   const titleId = useId();
   const descriptionId = useId();
 
@@ -50,4 +50,4 @@ export function DuplicatesDetailModal({
       />
     </ScrollModal>
   );
-}
+};

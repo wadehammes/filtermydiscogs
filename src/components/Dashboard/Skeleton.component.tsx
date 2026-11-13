@@ -5,7 +5,7 @@ import styles from "./Skeleton.module.css";
 const pulseSurface = skeletonPulseStyles.pulsesurface;
 const HORIZONTAL_BAR_WIDTHS = [92, 78, 65, 54, 48, 40, 34, 28];
 
-export function SkeletonCard() {
+export const SkeletonCard = () => {
   return (
     <div className={styles.skeletonCard}>
       <div
@@ -31,27 +31,27 @@ export function SkeletonCard() {
       />
     </div>
   );
-}
+};
 
-export function SkeletonGrowthChart() {
+export const SkeletonGrowthChart = () => {
   return (
     <div className={styles.skeletonChart}>
       <div className={classNames(styles.skeletonTitle, pulseSurface)} />
       <div className={classNames(styles.skeletonChartBody, pulseSurface)} />
     </div>
   );
-}
+};
 
-export function SkeletonBarChart() {
+export const SkeletonBarChart = () => {
   return (
     <div className={styles.skeletonChart}>
       <div className={classNames(styles.skeletonTitle, pulseSurface)} />
       <div className={classNames(styles.skeletonChartBody, pulseSurface)} />
     </div>
   );
-}
+};
 
-export function SkeletonHorizontalBarChart() {
+export const SkeletonHorizontalBarChart = () => {
   return (
     <div className={styles.skeletonChart}>
       <div className={classNames(styles.skeletonTitle, pulseSurface)} />
@@ -73,9 +73,9 @@ export function SkeletonHorizontalBarChart() {
       </div>
     </div>
   );
-}
+};
 
-export function SkeletonPieChart() {
+export const SkeletonPieChart = () => {
   return (
     <div className={styles.skeletonChart}>
       <div className={classNames(styles.skeletonTitle, pulseSurface)} />
@@ -92,9 +92,9 @@ export function SkeletonPieChart() {
       </div>
     </div>
   );
-}
+};
 
-export function SkeletonList({ count = 3 }: { count?: number }) {
+export const SkeletonList = ({ count = 3 }: { count?: number }) => {
   return (
     <div className={styles.skeletonChart}>
       <div className={classNames(styles.skeletonTitle, pulseSurface)} />
@@ -108,4 +108,4 @@ export function SkeletonList({ count = 3 }: { count?: number }) {
       </div>
     </div>
   );
-}
+};

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { ReleasePlaybackProvider } from "src/context/ReleasePlaybackProvider.component";
 import { useReleasePlaybackState } from "src/context/releasePlayback.context";
+import { useReleasePlaybackState as useReleasePlaybackStateHook } from "src/context/useReleasePlaybackState.hook";
 import type {
   ReleasePlaybackActions,
   ReleasePlaybackState,
@@ -78,6 +79,10 @@ const PlaybackProbe = () => {
 };
 
 describe("ReleasePlaybackProvider", () => {
+  it("exposes useReleasePlaybackState from the colocated hook module", () => {
+    expect(useReleasePlaybackStateHook).toBe(useReleasePlaybackState);
+  });
+
   it("wires useReleasePlaybackProvider values into playback context", () => {
     render(
       <ReleasePlaybackProvider>

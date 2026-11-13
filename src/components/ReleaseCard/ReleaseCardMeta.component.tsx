@@ -8,10 +8,10 @@ interface ReleaseCardCatalogProps {
   className?: string | undefined;
 }
 
-export function ReleaseCardCatalog({
+export const ReleaseCardCatalog = ({
   catno,
   className,
-}: ReleaseCardCatalogProps) {
+}: ReleaseCardCatalogProps) => {
   const catnoStr = catno ? String(catno) : "";
 
   if (!catnoStr) {
@@ -23,17 +23,17 @@ export function ReleaseCardCatalog({
       <span className={styles.metaCatalog}>{catnoStr}</span>
     </div>
   );
-}
+};
 
 interface ReleaseCardDateAddedProps {
   dateAdded?: string | null | undefined;
   className?: string | undefined;
 }
 
-export function ReleaseCardDateAdded({
+export const ReleaseCardDateAdded = ({
   dateAdded,
   className,
-}: ReleaseCardDateAddedProps) {
+}: ReleaseCardDateAddedProps) => {
   const formattedDateAdded = dateAdded ? formatDate(dateAdded) : "";
 
   if (!(formattedDateAdded && dateAdded)) {
@@ -59,7 +59,7 @@ export function ReleaseCardDateAdded({
       </fieldset>
     </div>
   );
-}
+};
 
 interface ReleaseCardMetaProps {
   labelName?: string | undefined;
@@ -78,14 +78,14 @@ function MetaSeparator() {
   );
 }
 
-export function ReleaseCardMeta({
+export const ReleaseCardMeta = ({
   labelName,
   labelUrl,
   year,
   catno,
   className,
   metaClassName,
-}: ReleaseCardMetaProps) {
+}: ReleaseCardMetaProps) => {
   const showYear = year !== undefined && year !== 0;
   const catnoStr = catno ? String(catno) : "";
   const showCatno = Boolean(catnoStr);
@@ -121,4 +121,4 @@ export function ReleaseCardMeta({
       {showCatno && <span>{catnoStr}</span>}
     </div>
   );
-}
+};

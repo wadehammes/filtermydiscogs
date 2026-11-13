@@ -9,7 +9,7 @@ import { SITE_NAME } from "src/constants/siteMetadata";
 import styles from "./Legal.module.css";
 import { LegalDataManagementActions } from "./LegalDataManagementActions.client";
 
-export function LegalPageContent() {
+export const LegalPageContent = () => {
   return (
     <div className={pageStyles.container}>
       <div className={styles.content} data-prose>
@@ -329,4 +329,4 @@ export function LegalPageContent() {
       </div>
     </div>
   );
-}
+};

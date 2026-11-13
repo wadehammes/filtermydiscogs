@@ -1,9 +1,26 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { PLAYBACK_EMBED_UNAVAILABLE_FALLBACK as fallbackFromConstants } from "src/constants/playbackEmbedErrorCodes";
 import { playbackSkipLogEntryFactory } from "src/tests/factories/PlaybackSkipLogEntry.factory";
 import {
   createPlaybackEmbedUnavailableSkipHandler,
   PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
+  resolvePlaybackEmbedUnavailableReason,
 } from "src/utils/playbackEmbedUnavailableSkip";
+
+describe("playbackEmbedUnavailableSkip constants", () => {
+  it("re-exports PLAYBACK_EMBED_UNAVAILABLE_FALLBACK from playbackEmbedErrorCodes", () => {
+    expect(PLAYBACK_EMBED_UNAVAILABLE_FALLBACK).toBe(-1);
+    expect(PLAYBACK_EMBED_UNAVAILABLE_FALLBACK).toBe(fallbackFromConstants);
+  });
+
+  it("resolvePlaybackEmbedUnavailableReason treats fallback code as private or removed", () => {
+    expect(
+      resolvePlaybackEmbedUnavailableReason(
+        PLAYBACK_EMBED_UNAVAILABLE_FALLBACK,
+      ),
+    ).toBe("Private, removed, blocked, or still loading");
+  });
+});
 
 describe("createPlaybackEmbedUnavailableSkipHandler", () => {
   afterEach(() => {

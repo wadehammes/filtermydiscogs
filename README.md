@@ -179,7 +179,8 @@ mise run pr-prep      # lint:all + handbook:check + test:changed + fallow:audit 
 mise run lint-all     # pnpm lint:all
 
 pnpm lint:all         # Biome (changed vs staging), Stylelint fix, tsc:ci, Knip
-pnpm handbook:check   # handbook sync + spec-pair (TDD) vs origin/staging
+pnpm handbook:audit   # Jest full-repo handbook convention gate (included in handbook:check)
+pnpm handbook:check   # handbook sync + spec-pair (TDD) vs origin/staging + handbook:audit
 pnpm test:changed     # Jest for files changed vs staging (incl. uncommitted); full gate: pnpm test:ci
 
 pnpm test             # Jest (--runInBand --detectOpenHandles; CI: pnpm test:ci)

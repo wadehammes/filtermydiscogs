@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 import {
   ReleasePlaybackProvider,
   useReleasePlayback,
+  useReleasePlaybackState,
 } from "src/context/releasePlayback.context";
+import { useReleasePlaybackState as useReleasePlaybackStateHook } from "src/context/useReleasePlaybackState.hook";
 import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
@@ -39,7 +41,7 @@ import {
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
-import { act, renderHook, waitFor } from "test-utils";
+import { act, render, renderHook, screen, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
 jest.mock("src/utils/similarReleaseQueue", () => ({
@@ -97,6 +99,16 @@ import {
   setupCollectionAndShortReleaseApiMock,
   shortCollectionRelease,
 } from "src/context/releasePlayback.context.spec.harness";
+
+const PlaybackStateProbe = () => {
+  const { isPlaying } = useReleasePlaybackState();
+
+  return (
+    <div data-testid="fmdPlaybackStateProbe">
+      {isPlaying ? "playing" : "idle"}
+    </div>
+  );
+};
 
 describe("ReleasePlaybackProvider — queue and session", () => {
   beforeEach(() => {
@@ -1400,5 +1412,23 @@ describe("ReleasePlaybackProvider — queue and session", () => {
         SHORT_RELEASE_ID,
       );
     });
+  });
+
+  it("re-exports useReleasePlaybackState from useReleasePlaybackState.hook", () => {
+    expect(useReleasePlaybackStateHook).toBe(useReleasePlaybackState);
+  });
+
+  it("useReleasePlaybackState reads session state inside ReleasePlaybackProvider", () => {
+    render(
+      <TestProviders authInitialState={testAuthenticatedAuthState}>
+        <ReleasePlaybackProvider>
+          <PlaybackStateProbe />
+        </ReleasePlaybackProvider>
+      </TestProviders>,
+    );
+
+    expect(screen.getByTestId("fmdPlaybackStateProbe")).toHaveTextContent(
+      "idle",
+    );
   });
 });

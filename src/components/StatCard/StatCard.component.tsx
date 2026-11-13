@@ -11,7 +11,12 @@ interface StatCardProps {
   className?: string;
 }
 
-export function StatCard({ label, value, subtext, className }: StatCardProps) {
+export const StatCard = ({
+  label,
+  value,
+  subtext,
+  className,
+}: StatCardProps) => {
   return (
     <div className={classNames(styles.statCard, className)}>
       <div className={styles.statLabel}>{label}</div>
@@ -19,4 +24,4 @@ export function StatCard({ label, value, subtext, className }: StatCardProps) {
       <div className={styles.statSubtext}>{subtext ?? null}</div>
     </div>
   );
-}
+};

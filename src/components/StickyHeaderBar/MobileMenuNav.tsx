@@ -16,7 +16,7 @@ interface MobileMenuNavProps {
   onNavigation: (e: React.MouseEvent<HTMLAnchorElement>, label: string) => void;
 }
 
-export function MobileMenuNav({
+export const MobileMenuNav = ({
   currentPage,
   showMosaic = true,
   showReleases = true,
@@ -24,7 +24,7 @@ export function MobileMenuNav({
   showCrates = true,
   isDisabled = false,
   onNavigation,
-}: MobileMenuNavProps) {
+}: MobileMenuNavProps) => {
   return (
     <nav className={styles.menuNav}>
       {showDashboard && (
@@ -100,4 +100,4 @@ export function MobileMenuNav({
       )}
     </nav>
   );
-}
+};

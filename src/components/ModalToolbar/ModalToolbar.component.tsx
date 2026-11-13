@@ -14,12 +14,12 @@ interface ModalToolbarProps {
   children?: ReactNode;
 }
 
-export function ModalToolbar({
+export const ModalToolbar = ({
   onClose,
   title,
   titleId,
   children,
-}: ModalToolbarProps) {
+}: ModalToolbarProps) => {
   return (
     <div className={styles.toolbar}>
       <div className={styles.toolbarLead}>
@@ -43,16 +43,16 @@ export function ModalToolbar({
       ) : null}
     </div>
   );
-}
+};
 
-export function ModalToolbarLink({
+export const ModalToolbarLink = ({
   className,
   variant = "default",
   children,
   ...props
 }: AnchorHTMLAttributes<HTMLAnchorElement> & {
   variant?: IconButtonVariant;
-}) {
+}) => {
   return (
     <IconButtonLink
       variant={variant}
@@ -63,4 +63,4 @@ export function ModalToolbarLink({
       {children}
     </IconButtonLink>
   );
-}
+};

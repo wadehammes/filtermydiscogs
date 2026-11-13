@@ -19,13 +19,13 @@ interface DashboardHeroProps {
   valueError: Error | null;
 }
 
-export function DashboardHero({
+export const DashboardHero = ({
   story,
   stats,
   collectionValue,
   isLoadingValue,
   valueError,
-}: DashboardHeroProps) {
+}: DashboardHeroProps) => {
   const releases = useAllReleases();
 
   const yearOverYearChange = useMemo(() => {
@@ -163,4 +163,4 @@ export function DashboardHero({
       )}
     </header>
   );
-}
+};

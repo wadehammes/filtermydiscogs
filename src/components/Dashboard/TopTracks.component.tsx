@@ -103,7 +103,7 @@ function TopTracksColumn({
   );
 }
 
-export function TopTracks({ onReleaseClick }: TopTracksProps) {
+export const TopTracks = ({ onReleaseClick }: TopTracksProps) => {
   const { data, isLoading, error } = useTopUserTracksQuery({ limit: 10 });
   const allReleases = useAllReleases();
   const mostPlayed = data?.most_played ?? [];
@@ -221,4 +221,4 @@ export function TopTracks({ onReleaseClick }: TopTracksProps) {
       />
     </div>
   );
-}
+};

@@ -5,7 +5,7 @@ import { ClearAllDataConfirmDialog } from "src/components/ClearAllDataConfirmDia
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import styles from "./Legal.module.css";
 
-export function LegalDataManagementActions() {
+export const LegalDataManagementActions = () => {
   const {
     closeClearDataDialog,
     handleConfirmClear,
@@ -43,4 +43,4 @@ export function LegalDataManagementActions() {
       />
     </>
   );
-}
+};

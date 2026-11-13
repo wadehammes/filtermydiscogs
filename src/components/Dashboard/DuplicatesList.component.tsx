@@ -12,10 +12,10 @@ interface DuplicatesListProps {
   onReleaseClick?: (instanceId: string) => void;
 }
 
-export function DuplicatesList({
+export const DuplicatesList = ({
   duplicateGroups,
   onReleaseClick,
-}: DuplicatesListProps) {
+}: DuplicatesListProps) => {
   if (duplicateGroups.length === 0) {
     return (
       <EmptyState
@@ -52,4 +52,4 @@ export function DuplicatesList({
       ))}
     </div>
   );
-}
+};

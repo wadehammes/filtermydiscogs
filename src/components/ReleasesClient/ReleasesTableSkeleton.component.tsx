@@ -36,7 +36,7 @@ const columnWidthStyle = (
   width: getReleasesTableColumnWidth(columnId, columnSizing),
 });
 
-export function ReleasesTableSkeleton() {
+export const ReleasesTableSkeleton = () => {
   const [{ columnSizing }] = useState(readReleasesTableLayout);
   const tableMinWidth = getReleasesTableTotalWidth(columnSizing);
 
@@ -238,4 +238,4 @@ export function ReleasesTableSkeleton() {
       </div>
     </div>
   );
-}
+};

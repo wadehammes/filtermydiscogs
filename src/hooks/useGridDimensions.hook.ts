@@ -12,10 +12,10 @@ interface UseGridDimensionsOptions {
   debounceMs?: number;
 }
 
-export function useGridDimensions({
+export const useGridDimensions = ({
   itemCount,
   debounceMs = 100,
-}: UseGridDimensionsOptions) {
+}: UseGridDimensionsOptions) => {
   const calculateGridDimensions = useCallback(
     (count: number): GridDimensions => {
       if (count === 0) return { cols: 0, rows: 0, cellSize: 0 };
@@ -87,4 +87,4 @@ export function useGridDimensions({
   }, [itemCount, debounceMs, calculateGridDimensions]);
 
   return gridDimensions;
-}
+};

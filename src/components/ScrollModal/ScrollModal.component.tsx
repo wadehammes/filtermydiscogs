@@ -22,7 +22,7 @@ interface ScrollModalProps {
   escapeStackingContext?: boolean;
 }
 
-export function ScrollModal({
+export const ScrollModal = ({
   isOpen,
   onClose,
   testId,
@@ -36,7 +36,7 @@ export function ScrollModal({
   asideClassName,
   toolbar,
   escapeStackingContext = false,
-}: ScrollModalProps) {
+}: ScrollModalProps) => {
   const hasAside = aside != null;
 
   return (
@@ -85,4 +85,4 @@ export function ScrollModal({
       )}
     </AppDialog>
   );
-}
+};

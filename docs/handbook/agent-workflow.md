@@ -25,7 +25,7 @@ Checklist for **tools and LLMs** working in this repo—complements [AGENTS.md](
 3. **Local checks** (substantive `src/` work):
 
    ```sh
-   mise run pr-prep   # lint:all, handbook:check, test:changed, fallow audit — preferred before PR
+   mise run pr-prep   # lint:all, handbook:check (includes handbook:audit), test:changed, fallow audit — preferred before PR
    ```
 
    Targeted alternatives: `pnpm lint:all`, `pnpm handbook:check`, `pnpm test:changed`.

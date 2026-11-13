@@ -12,14 +12,14 @@ type SettingsBooleanPreferenceToggleProps = {
   onChange: (enabled: boolean) => void;
 };
 
-export function SettingsBooleanPreferenceToggle({
+export const SettingsBooleanPreferenceToggle = ({
   checked,
   label,
   description,
   descriptionFooter,
   disabled,
   onChange,
-}: SettingsBooleanPreferenceToggleProps) {
+}: SettingsBooleanPreferenceToggleProps) => {
   return (
     <div className={styles.panelBlock}>
       <label className={styles.settingToggle}>
@@ -39,4 +39,4 @@ export function SettingsBooleanPreferenceToggle({
       ) : null}
     </div>
   );
-}
+};

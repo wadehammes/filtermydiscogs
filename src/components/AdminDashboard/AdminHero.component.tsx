@@ -15,7 +15,11 @@ interface AdminHeroProps {
   last7Days: AdminStats["recentActivity"]["last7Days"];
 }
 
-export function AdminHero({ overview, engagement, last7Days }: AdminHeroProps) {
+export const AdminHero = ({
+  overview,
+  engagement,
+  last7Days,
+}: AdminHeroProps) => {
   return (
     <ScrollReveal
       animateOnView={false}
@@ -109,4 +113,4 @@ export function AdminHero({ overview, engagement, last7Days }: AdminHeroProps) {
       </ScrollRevealItem>
     </ScrollReveal>
   );
-}
+};

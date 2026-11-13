@@ -36,6 +36,7 @@ export default async () => {
     ...jestConfig.moduleNameMapper,
     "^src/(.*)$": "<rootDir>/src/$1",
     "^test-utils$": "<rootDir>/src/tests/utils/test-utils.tsx",
+    "^filtermydiscogs-flags$": "<rootDir>/flags.ts",
   };
 
   return {

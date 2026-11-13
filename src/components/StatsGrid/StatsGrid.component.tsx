@@ -14,11 +14,11 @@ interface StatsGridProps {
   className?: string;
 }
 
-export function StatsGrid({
+export const StatsGrid = ({
   children,
   columns = { mobile: 1, tablet: 2, desktop: 4 },
   className,
-}: StatsGridProps) {
+}: StatsGridProps) => {
   const mobileCols = columns.mobile || 1;
   const tabletCols = columns.tablet || 2;
   const desktopCols = columns.desktop || 4;
@@ -37,4 +37,4 @@ export function StatsGrid({
       <div className={classNames(styles.statsGrid, className)}>{children}</div>
     </div>
   );
-}
+};

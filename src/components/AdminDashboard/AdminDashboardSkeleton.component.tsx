@@ -4,7 +4,7 @@ import dashboardStyles from "src/components/Dashboard/DashboardClient.module.css
 import heroStyles from "src/components/Dashboard/DashboardHero.module.css";
 import styles from "./AdminDashboardSkeleton.module.css";
 
-export function AdminDashboardSkeleton() {
+export const AdminDashboardSkeleton = () => {
   return (
     <div className={dashboardStyles.content}>
       <div className={heroStyles.hero}>
@@ -104,4 +104,4 @@ export function AdminDashboardSkeleton() {
       </div>
     </div>
   );
-}
+};

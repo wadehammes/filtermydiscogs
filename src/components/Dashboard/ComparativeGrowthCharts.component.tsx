@@ -10,9 +10,9 @@ interface ComparativeGrowthChartsProps {
   hideHeading?: boolean;
 }
 
-export function ComparativeGrowthCharts({
+export const ComparativeGrowthCharts = ({
   hideHeading = false,
-}: ComparativeGrowthChartsProps) {
+}: ComparativeGrowthChartsProps) => {
   const colors = useChartColors();
   const {
     genreOptions,
@@ -144,4 +144,4 @@ export function ComparativeGrowthCharts({
       </div>
     </section>
   );
-}
+};

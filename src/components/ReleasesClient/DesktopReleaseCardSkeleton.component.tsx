@@ -4,7 +4,7 @@ import styles from "./DesktopReleaseCardSkeleton.module.css";
 
 const pulseSurface = skeletonPulseStyles.pulsesurface;
 
-export function DesktopReleaseCardSkeleton() {
+export const DesktopReleaseCardSkeleton = () => {
   return (
     <div
       className={styles.card}
@@ -29,4 +29,4 @@ export function DesktopReleaseCardSkeleton() {
       </div>
     </div>
   );
-}
+};

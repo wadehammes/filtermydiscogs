@@ -22,10 +22,10 @@ type SettingsAccountPanelProps = {
   onCompleteLogout: () => void;
 };
 
-export function SettingsAccountPanel({
+export const SettingsAccountPanel = ({
   authState,
   onCompleteLogout,
-}: SettingsAccountPanelProps) {
+}: SettingsAccountPanelProps) => {
   return (
     <>
       <div className={styles.field}>
@@ -50,7 +50,7 @@ export function SettingsAccountPanel({
       </div>
     </>
   );
-}
+};
 
 type SettingsAppearancePanelProps = {
   settingsViewValue: "card" | "list";
@@ -66,7 +66,7 @@ type SettingsAppearancePanelProps = {
   onThemePersistError: () => void;
 };
 
-export function SettingsAppearancePanel({
+export const SettingsAppearancePanel = ({
   settingsViewValue,
   defaultCollectionSidePanel,
   playlistsFeatureEnabled,
@@ -76,7 +76,7 @@ export function SettingsAppearancePanel({
   onDefaultCollectionSidePanelChange,
   onThemePersisted,
   onThemePersistError,
-}: SettingsAppearancePanelProps) {
+}: SettingsAppearancePanelProps) => {
   return (
     <>
       <div className={styles.field}>
@@ -130,7 +130,7 @@ export function SettingsAppearancePanel({
       ) : null}
     </>
   );
-}
+};
 
 type SettingsPlaybackPanelProps = {
   autoPlayOnQueueAdd: boolean;
@@ -141,14 +141,14 @@ type SettingsPlaybackPanelProps = {
   onExtendQueueWithSimilarReleasesChange: (enabled: boolean) => void;
 };
 
-export function SettingsPlaybackPanel({
+export const SettingsPlaybackPanel = ({
   autoPlayOnQueueAdd,
   extendQueueWithSimilarReleases,
   isPreferencesLoading,
   isPreferencesSaving,
   onAutoPlayOnQueueAddChange,
   onExtendQueueWithSimilarReleasesChange,
-}: SettingsPlaybackPanelProps) {
+}: SettingsPlaybackPanelProps) => {
   return (
     <>
       <SettingsBooleanPreferenceToggle
@@ -179,7 +179,7 @@ export function SettingsPlaybackPanel({
       />
     </>
   );
-}
+};
 
 type SettingsFiltersPanelProps = {
   persistFilters: boolean;
@@ -188,12 +188,12 @@ type SettingsFiltersPanelProps = {
   onPersistFiltersChange: (enabled: boolean) => void;
 };
 
-export function SettingsFiltersPanel({
+export const SettingsFiltersPanel = ({
   persistFilters,
   isPreferencesLoading,
   isPreferencesSaving,
   onPersistFiltersChange,
-}: SettingsFiltersPanelProps) {
+}: SettingsFiltersPanelProps) => {
   const { filterViews, deleteView, renameView, isSavingPreferences } =
     useFilterViews();
   const [renamingView, setRenamingView] = useState<FilterView | null>(null);
@@ -280,7 +280,7 @@ export function SettingsFiltersPanel({
       />
     </>
   );
-}
+};
 
 type SettingsCollectionPanelProps = {
   isSyncDisabled: boolean;
@@ -289,12 +289,12 @@ type SettingsCollectionPanelProps = {
   onSyncClick: () => void;
 };
 
-export function SettingsCollectionPanel({
+export const SettingsCollectionPanel = ({
   isSyncDisabled,
   isSyncing,
   isCollectionLoading,
   onSyncClick,
-}: SettingsCollectionPanelProps) {
+}: SettingsCollectionPanelProps) => {
   return (
     <div className={styles.panelBlock}>
       <h3 className={styles.panelBlockTitle}>Sync crates</h3>
@@ -318,17 +318,17 @@ export function SettingsCollectionPanel({
       </div>
     </div>
   );
-}
+};
 
 type SettingsDataPanelProps = {
   isClearing: boolean;
   onClearData: () => void;
 };
 
-export function SettingsDataPanel({
+export const SettingsDataPanel = ({
   isClearing,
   onClearData,
-}: SettingsDataPanelProps) {
+}: SettingsDataPanelProps) => {
   const {
     isAnalyticsEnabled,
     isReady: isAnalyticsConsentReady,
@@ -378,4 +378,4 @@ export function SettingsDataPanel({
       </div>
     </>
   );
-}
+};

@@ -7,7 +7,7 @@ export function getChartColor(colors: string[], index: number): string {
   return colors[index % colors.length] ?? colors[0] ?? DEFAULT_CHART_COLOR;
 }
 
-export function useChartColors() {
+export const useChartColors = () => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
@@ -29,4 +29,4 @@ export function useChartColors() {
     ],
     [isLight],
   );
-}
+};

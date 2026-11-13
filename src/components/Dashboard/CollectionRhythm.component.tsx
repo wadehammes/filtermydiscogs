@@ -85,9 +85,9 @@ function RhythmStat({
   );
 }
 
-export function CollectionRhythm({
+export const CollectionRhythm = ({
   acquisitionStreaks,
-}: CollectionRhythmProps) {
+}: CollectionRhythmProps) => {
   const releases = useAllReleases();
   const colors = useChartColors();
   const [timeframe, setTimeframe] = useState<YearInReviewTimeframe>("year");
@@ -364,4 +364,4 @@ export function CollectionRhythm({
       )}
     </div>
   );
-}
+};

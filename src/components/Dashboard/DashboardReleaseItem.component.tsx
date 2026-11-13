@@ -17,12 +17,12 @@ interface DashboardReleaseItemProps {
   onReleaseClick?: (instanceId: string) => void;
 }
 
-export function DashboardReleaseItem({
+export const DashboardReleaseItem = ({
   release,
   wrapText = false,
   children,
   onReleaseClick,
-}: DashboardReleaseItemProps) {
+}: DashboardReleaseItemProps) => {
   const { title, artists, labels, thumb, year, resource_url } =
     release.basic_information;
   const releaseUrl = getResourceUrl({
@@ -159,4 +159,4 @@ export function DashboardReleaseItem({
       {children}
     </div>
   );
-}
+};

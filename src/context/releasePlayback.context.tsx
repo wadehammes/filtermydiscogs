@@ -11,22 +11,11 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
   ReleasePlaybackActions,
   ReleasePlaybackContextValue,
-  ReleasePlaybackState,
 } from "src/types/releasePlaybackContext.types";
+import { useReleasePlaybackState } from "./useReleasePlaybackState.hook";
 
 export { ReleasePlaybackProvider } from "./ReleasePlaybackProvider.component";
-
-export const useReleasePlaybackState = (): ReleasePlaybackState => {
-  const context = useContext(ReleasePlaybackStateContext);
-
-  if (!context) {
-    throw new Error(
-      "useReleasePlaybackState must be used within ReleasePlaybackProvider",
-    );
-  }
-
-  return context;
-};
+export { useReleasePlaybackState } from "./useReleasePlaybackState.hook";
 
 export const useReleasePlaybackActions = (): ReleasePlaybackActions => {
   const context = useContext(ReleasePlaybackActionsContext);

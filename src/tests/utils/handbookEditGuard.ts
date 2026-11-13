@@ -1,6 +1,9 @@
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import {
   formatHandbookTestViolations,
   type HandbookTestViolation,
+  isHandbookScannedTestFile,
   validateFeatureTestSource,
 } from "src/tests/utils/handbookTestRules";
 
@@ -26,6 +29,7 @@ const endsMultilineImportBlock = (line: string): boolean =>
 
 const isProductionSource = (relativePath: string): boolean =>
   relativePath.startsWith("src/") &&
+  !relativePath.startsWith("src/@types/") &&
   !relativePath.includes(".spec.") &&
   !relativePath.endsWith(".po.tsx") &&
   !relativePath.startsWith("src/tests/");
@@ -199,12 +203,53 @@ export const findHandbookViolations = (
     return [];
   }
 
+  const featureTestViolations = isHandbookScannedTestFile(normalized)
+    ? validateFeatureTestSource(normalized, source)
+    : [];
+
   return [
-    ...validateFeatureTestSource(normalized, source),
+    ...featureTestViolations,
     ...validateFlatDescribe(normalized, source),
     ...validateProductionSource(normalized, source),
   ];
 };
+
+const listHandbookGuardScannedFiles = (rootDir: string): string[] => {
+  const files: string[] = [];
+
+  const walk = (directory: string, relativeRoot: string) => {
+    for (const entry of readdirSync(directory)) {
+      const absolutePath = join(directory, entry);
+      const stats = statSync(absolutePath);
+
+      if (stats.isDirectory()) {
+        walk(absolutePath, relativeRoot);
+        continue;
+      }
+
+      const relativePath = relative(relativeRoot, absolutePath).replace(
+        /\\/g,
+        "/",
+      );
+
+      if (isHandbookGuardScope(relativePath)) {
+        files.push(relativePath);
+      }
+    }
+  };
+
+  walk(join(rootDir, "src"), rootDir);
+  walk(join(rootDir, "e2e"), rootDir);
+  return files.sort();
+};
+
+export const collectHandbookRepoViolations = (
+  rootDir: string,
+): HandbookEditViolation[] =>
+  listHandbookGuardScannedFiles(rootDir).flatMap((filePath) => {
+    const source = readFileSync(join(rootDir, filePath), "utf8");
+    return findHandbookViolations(filePath, source);
+  });
 
 const handbookViolationKey = (violation: HandbookEditViolation) =>
   `${violation.rule}\u0000${violation.excerpt}`;
