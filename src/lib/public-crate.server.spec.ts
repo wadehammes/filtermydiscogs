@@ -263,7 +263,9 @@ describe("getPublicCrateMetadataForPage", () => {
   });
 
   it("when the crate id is invalid, returns null without querying", async () => {
-    await expect(getPublicCrateMetadataForPage("not-a-uuid")).resolves.toBeNull();
+    await expect(
+      getPublicCrateMetadataForPage("not-a-uuid"),
+    ).resolves.toBeNull();
     expect(mockFindPublicCrateById).not.toHaveBeenCalled();
   });
 
