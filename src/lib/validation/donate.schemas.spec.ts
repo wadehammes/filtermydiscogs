@@ -20,12 +20,12 @@ describe("donateAmountCentsSchema", () => {
   });
 
   it("rejects amounts below the minimum or above the maximum", () => {
-    expect(donateAmountCentsSchema.safeParse(DONATION_MIN_CENTS - 1).success).toBe(
-      false,
-    );
-    expect(donateAmountCentsSchema.safeParse(DONATION_MAX_CENTS + 1).success).toBe(
-      false,
-    );
+    expect(
+      donateAmountCentsSchema.safeParse(DONATION_MIN_CENTS - 1).success,
+    ).toBe(false);
+    expect(
+      donateAmountCentsSchema.safeParse(DONATION_MAX_CENTS + 1).success,
+    ).toBe(false);
   });
 
   it("rejects non-integer cent amounts", () => {
