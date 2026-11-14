@@ -104,12 +104,6 @@
   display: flex;
   flex: 1 1 auto;
   min-width: 0;
-
-  & .similarCountSegment {
-    flex: 1 1 auto;
-    min-width: 0;
-    width: 100%;
-  }
 }
 
 .sidebarActions .sidebarSegment {
@@ -127,6 +121,10 @@
   justify-content: flex-start;
   min-width: 0;
   text-align: start;
+}
+
+.sidebarActions .similarCountTooltipRoot .similarCountSegment {
+  width: 100%;
 }
 
 .sidebarActions .similarCountSegmentWithPageNav {
