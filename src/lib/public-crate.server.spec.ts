@@ -90,6 +90,27 @@ describe("getPublicCrateIdsForStaticGeneration", () => {
     expect(mockFindMany).not.toHaveBeenCalled();
   });
 
+  it("when the database returns public crate ids, returns those ids", async () => {
+    delete process.env.POSTGRES_URL;
+    process.env.DATABASE_URL =
+      "postgres://user:pass@pooled.db.prisma.io:5432/postgres?sslmode=require";
+    mockFindMany.mockResolvedValue([
+      { id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" },
+      { id: "ffffffff-1111-2222-3333-444444444444" },
+    ] as Awaited<ReturnType<typeof mockFindMany>>);
+
+    await expect(getPublicCrateIdsForStaticGeneration(2)).resolves.toEqual([
+      "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+      "ffffffff-1111-2222-3333-444444444444",
+    ]);
+    expect(mockFindMany).toHaveBeenCalledWith({
+      where: { private: false },
+      select: { id: true },
+      orderBy: { updated_at: "desc" },
+      take: 2,
+    });
+  });
+
   it("when build query returns no public crates, returns demo crate id", async () => {
     process.env.NEXT_PHASE = "phase-production-build";
     mockFindMany.mockResolvedValue([]);
@@ -239,5 +260,34 @@ describe("getPublicCrateMetadataForPage", () => {
     ).resolves.toBeNull();
 
     expect(mockFindPublicCrateById).not.toHaveBeenCalled();
+  });
+
+  it("when the crate id is invalid, returns null without querying", async () => {
+    await expect(
+      getPublicCrateMetadataForPage("not-a-uuid"),
+    ).resolves.toBeNull();
+    expect(mockFindPublicCrateById).not.toHaveBeenCalled();
+  });
+
+  it("returns crate metadata and release count for a public crate", async () => {
+    const crateId = "11111111-2222-3333-4444-555555555555";
+    const { prisma } = await import("src/lib/db");
+    const mockCount = jest.mocked(prisma.crateRelease.count);
+    mockCount.mockResolvedValue(42);
+    mockFindPublicCrateById.mockResolvedValue({
+      user_id: 7,
+      id: crateId,
+      name: "Weekend picks",
+      username: "collector",
+      is_default: false,
+      private: false,
+      created_at: new Date("2026-01-01"),
+      updated_at: new Date("2026-01-02"),
+    });
+
+    await expect(getPublicCrateMetadataForPage(crateId)).resolves.toEqual({
+      crate: { name: "Weekend picks", username: "collector" },
+      pagination: { total: 42 },
+    });
   });
 });
