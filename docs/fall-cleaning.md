@@ -87,7 +87,8 @@ Many other `it("renders …")` cases are acceptable when the same file has inter
 
 ```bash
 st checkout fall-cleaning/audit   # or PR base chain
-pnpm test -- src/lib/db-audit.spec.ts
+# Per-layer before push (handbook: conventions.md → Lint and format before commit):
+pnpm lint:all
 pnpm test:changed
-mise run pr-prep
+mise run pr-prep   # lint:all + handbook:check + test:changed + fallow audit
 ```

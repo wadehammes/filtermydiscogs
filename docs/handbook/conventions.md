@@ -92,12 +92,22 @@ Client form schemas under [`src/lib/validation/`](../../src/lib/validation/) mus
   - `pnpm lint:fix` — `biome check --fix`
   - `pnpm lint:check` — Biome on changed files since `origin/staging` (trunk baseline)
   - `pnpm lint:css` / `pnpm lint:css:fix` — Stylelint over `src/**/*.css`
-  - `pnpm lint:all` — `lint:check` then `lint:css:fix`
+  - `pnpm lint:all` — `lint:check`, `lint:css:fix`, **`tsc:ci`**, **`knip:ci`** (local pre-PR gate; matches substantive CI lint/type/dead-code checks)
   - `pnpm tsc:ci` — `db:generate` then strict TypeScript (`tsc --strict`)
 - **Configs**: [`biome.json`](../../biome.json), [`stylelint.config.mjs`](../../stylelint.config.mjs).
 - **Handbook tables:** Biome 2.6.2’s Markdown formatter never settles on wide handbook tables — each **`biome check --write`** can flip column-padding by one space (notably [`platform.md`](platform.md) package-script tables). The formatter is off for all **`docs/handbook/**/*.md`** in [`biome.json`](../../biome.json); the linter still runs.
 - **CI**: `pnpm lint:ci`, `pnpm lint:css`, `pnpm test:ci` (parallel Jest, **`--maxWorkers=50%`**), `pnpm knip:ci` (see [platform.md](platform.md)). Local **`pnpm test`** stays **`--runInBand --detectOpenHandles`** for open-handle debugging.
-- **Stacked PRs:** Each branch tip in a dependency stack should pass **`pnpm lint:all`** on its own (Biome uses **`--changed --since origin/staging`**, so the check is cumulative from trunk). Fix lint/Knip on the **lowest** branch that introduces the failure, then **`gh stack rebase --upstack`** — do not pile unrelated fixes on the top PR only.
+
+### Lint and format before commit (non-negotiable)
+
+**Biome/Stylelint/TypeScript/Knip failures on a stacked PR force painful rebases** — format and lint belong **on the branch that introduced the edits**, not in a catch-up commit on the top PR.
+
+1. **Before every commit** on substantive **`src/`**, **`e2e/`**, or test-infra edits: run **`pnpm lint:all`** while checked out on **that** branch (after staging is sensible, before **`scripts/git-commit.sh`**). Agents must not **`st ss --auto`** / push a layer that has not passed **`lint:all`** locally.
+2. **When editing files on a stack layer:** run **`pnpm lint:fix`** or **`biome check --write`** on the paths you touched if you need a fast pass; **`pnpm lint:all`** is still required before commit ( **`lint:check`** uses **`--changed --since origin/staging`**, so it is cumulative from trunk—each layer must stay green at its tip).
+3. **Fix on the lowest layer** that introduces the failure, then **`st rebase --upstack`** (or **`st sync`**). Do not land Biome-only or Knip-only churn only on the top branch—that rebases every PR above it for no reason.
+4. **Handbook / agent-only edits** ( **`docs/handbook/**`** with no **`src/`** change): **`pnpm lint:check`** is enough unless you also changed formattable markdown outside the handbook ignore list.
+
+Stack workflow detail: [platform.md → Stacked pull requests](platform.md#stacked-pull-requests-st).
 
 ## CSS and styling
 

@@ -30,6 +30,8 @@ Checklist for **tools and LLMs** working in this repo—complements [AGENTS.md](
 
    Targeted alternatives: `pnpm lint:all`, `pnpm handbook:check`, `pnpm test:changed`.
 
+   **Stacked PRs:** Run **`pnpm lint:all` on every branch in the stack** (bottom → top) before **`st ss --auto`** — not only on the top branch. See [conventions.md → Lint and format before commit](conventions.md#lint-and-format-before-commit-non-negotiable) and [platform.md → Stacked pull requests](platform.md#stacked-pull-requests-st).
+
 ## Cursor stop hook (one follow-up per turn)
 
 [`.cursor/hooks/session-stop-checks.sh`](../../.cursor/hooks/session-stop-checks.sh) may prompt you to:

@@ -124,9 +124,9 @@ Large or multi-theme work should land as a **stack** of dependent PRs into **`st
 | Step                                   | Command                                                                                         |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Create / adopt branches (bottom → top) | `st init branch-a branch-b` (trunk defaults to **`staging`**)                                   |
-| Add a layer + commit                   | `git add …` + `git commit …`, then `st add next-branch` (or `st add -Am "message" next-branch`) |
+| Add a layer + commit                   | `git add …` → **`pnpm lint:all`** on this branch → `git commit …` → `st add next-branch` (or `st add -Am` only after lint is green) |
 | Rebase the chain                       | `st sync` or `st rebase`                                                                        |
-| Push + open/update PRs                 | `st ss --auto` (alias for `st submit --auto`)                                                   |
+| Push + open/update PRs                 | `st ss --auto` (alias for `st submit --auto`) — only after **`lint:all`** on **each** branch tip |
 | Inspect stack                          | `st view --json`                                                                                |
 | Share stack (Slack/Teams)              | `st print-stack-list` (`-c` copies); `-S` prepends `https://github.com/{owner}/{repo}/stack/{N}` when GitHub has linked **two or more** PRs |
 
@@ -135,6 +135,8 @@ Keep **`github/gh-stack` v0.3.0+** (`gh extension upgrade stack` or **`st upgrad
 **GitHub stack pages:** A single open PR after **`st ss --auto`** does not create a **`/stack/N`** URL yet — GitHub creates the remote stack object when **two or more** PRs are linked (same rule as **`gh stack sync`**). Until then, **`st print-stack-list -S`** prints the usual PR bullet list and notes on stderr that there is no stack page to prepend; avoid duplicating the PR URL on its own line.
 
 **Agents:** Plan layers **before** coding (foundation → tests → follow-ups). Commit **one concern per branch**; use **`st bottom`** / **`st up`** to move between layers. Prefer **`st`** over raw **`gh stack`** so local workflows match maintainer scripts. Non-interactive automation must pass flags documented in **`st cheatsheet`** (e.g. **`st ss --auto`**, **`st view --json`**, **`st print-stack-list -c`** for review paste; **`-S`** only when the stack page exists).
+
+**Lint every layer (non-negotiable):** Check out each stack branch in order (bottom → top), run **`pnpm lint:all`**, apply **`biome check --write`** on paths you edited when Biome would auto-fix, commit fixes on **that** branch, then **`st rebase --upstack`** before push. CI **`lint:ci`** is not stack-aware—format drift on a lower PR will fail **Unit gates** and require restacking. Full policy: [conventions.md → Lint and format before commit](conventions.md#lint-and-format-before-commit-non-negotiable).
 
 ## mise
 

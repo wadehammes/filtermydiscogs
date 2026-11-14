@@ -30,6 +30,8 @@ gh extension install github/gh-stack
 
 Plan layers **before** coding: schema/API → consumers → UI/tests. **One concern per branch**; use `git add` + `git commit` deliberately per layer.
 
+**Lint each layer before commit:** **`pnpm lint:all`** on the checked-out branch (use **`biome check --write`** on touched paths when needed). Fix on the **lowest** failing branch, then **`st rebase --upstack`**. Handbook: [conventions.md → Lint and format before commit](../../docs/handbook/conventions.md#lint-and-format-before-commit-non-negotiable).
+
 **Stack page URL:** GitHub exposes `https://github.com/{owner}/{repo}/stack/{N}` only after **two or more** PRs are linked. Use **`st print-stack-list -S`** (optionally with **`-c`**) once that exists; with a single PR, skip **`-S`** or expect a stderr note and PR-only bullets (no duplicate header link). Prefer **`gh extension upgrade stack`** / **`st upgrade-all`** for **gh-stack v0.3.0+**.
 
 ## Agent rules (non-interactive)
