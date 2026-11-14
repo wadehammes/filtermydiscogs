@@ -1,43 +1,18 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 
-jest.mock("src/lib/playlistsFeatureFlag.server", () => ({
-  evaluatePlaylistsFeatureFlag: jest.fn(),
-}));
-
-type PlaylistsFeatureFlagModule =
-  typeof import("src/lib/playlistsFeatureFlag.server");
 type PlaylistsFeatureServerModule =
   typeof import("src/lib/playlistsFeature.server");
 
 let getPlaylistsFeatureEnabled: PlaylistsFeatureServerModule["getPlaylistsFeatureEnabled"];
 let resolvePlaylistsFeatureLocalOverride: PlaylistsFeatureServerModule["resolvePlaylistsFeatureLocalOverride"];
-let mockEvaluatePlaylistsFeatureFlag: jest.MockedFunction<
-  PlaylistsFeatureFlagModule["evaluatePlaylistsFeatureFlag"]
->;
 
 describe("playlistsFeature.server", () => {
   const originalOverride = process.env.PLAYLISTS_FEATURE_OVERRIDE;
   const originalE2eMock = process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED;
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    const serverModule = await import("src/lib/playlistsFeature.server");
 
-    const [flagModule, serverModule] = await Promise.all([
-      import("src/lib/playlistsFeatureFlag.server"),
-      import("src/lib/playlistsFeature.server"),
-    ]);
-
-    mockEvaluatePlaylistsFeatureFlag = jest.mocked(
-      flagModule.evaluatePlaylistsFeatureFlag,
-    );
-    mockEvaluatePlaylistsFeatureFlag.mockResolvedValue(true);
     getPlaylistsFeatureEnabled = serverModule.getPlaylistsFeatureEnabled;
     resolvePlaylistsFeatureLocalOverride =
       serverModule.resolvePlaylistsFeatureLocalOverride;
@@ -72,18 +47,13 @@ describe("playlistsFeature.server", () => {
     expect(resolvePlaylistsFeatureLocalOverride()).toBe(true);
   });
 
-  it("getPlaylistsFeatureEnabled uses local override before the Vercel flag", async () => {
+  it("getPlaylistsFeatureEnabled uses local override before defaulting to on", async () => {
     process.env.PLAYLISTS_FEATURE_OVERRIDE = "0";
-    mockEvaluatePlaylistsFeatureFlag.mockResolvedValue(true);
 
     await expect(getPlaylistsFeatureEnabled()).resolves.toBe(false);
-    expect(mockEvaluatePlaylistsFeatureFlag).not.toHaveBeenCalled();
   });
 
-  it("getPlaylistsFeatureEnabled evaluates the Vercel flag when no override applies", async () => {
-    mockEvaluatePlaylistsFeatureFlag.mockResolvedValue(false);
-
-    await expect(getPlaylistsFeatureEnabled()).resolves.toBe(false);
-    expect(mockEvaluatePlaylistsFeatureFlag).toHaveBeenCalled();
+  it("getPlaylistsFeatureEnabled defaults to on when no override applies", async () => {
+    await expect(getPlaylistsFeatureEnabled()).resolves.toBe(true);
   });
 });

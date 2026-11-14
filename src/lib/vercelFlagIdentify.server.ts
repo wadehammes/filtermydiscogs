@@ -1,6 +1,3 @@
-import type { ReadonlyRequestCookies } from "flags";
-import { dedupe } from "flags/next";
-
 export type VercelFlagEntities = {
   user?: {
     id: string;
@@ -25,15 +22,3 @@ export const buildVercelFlagEntitiesFromDiscogsCookies = (
     },
   };
 };
-
-export const vercelFlagIdentify = dedupe(
-  async ({
-    cookies: cookieJar,
-  }: {
-    cookies: ReadonlyRequestCookies;
-  }): Promise<VercelFlagEntities> =>
-    buildVercelFlagEntitiesFromDiscogsCookies(
-      cookieJar.get("discogs_user_id")?.value,
-      cookieJar.get("discogs_username")?.value,
-    ),
-);

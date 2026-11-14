@@ -503,13 +503,13 @@ export default function AdminDashboardClient({
               </DashboardSection>
 
               <DashboardSection
-                lede="Saved playlists, rollout flag state on this deployment, and Vercel targeting hints."
+                lede="Saved playlists and optional PLAYLISTS_FEATURE_OVERRIDE readout on this deployment."
                 title="Playlists"
               >
                 <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 4 }}>
                   <StatCard
-                    label="Playlists feature (this deployment)"
-                    subtext="Vercel playlists flag + local overrides"
+                    label="Playlists kill-switch (this deployment)"
+                    subtext="PLAYLISTS_FEATURE_OVERRIDE only; default on"
                     value={deployment.playlistsFeatureEnabled ? "On" : "Off"}
                   />
                   <StatCard

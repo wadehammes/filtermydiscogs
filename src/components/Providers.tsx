@@ -27,18 +27,15 @@ import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
 import { CrateProvider } from "src/context/crate.context";
-import { FeatureFlagProvider } from "src/context/featureFlags.context";
 import { FiltersProvider } from "src/context/filters.context";
 import { PlaybackReleaseClickProvider } from "src/context/playbackReleaseClick.context";
 import { ThemeProvider } from "src/context/theme.context";
 import { ViewProvider } from "src/context/view.context";
 import { useSentryUserSync } from "src/hooks/useSentryUserSync.hook";
 import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
-import type { FeatureFlags } from "src/types/featureFlags.types";
 
 interface ProvidersProps {
   children: React.ReactNode;
-  featureFlags: FeatureFlags;
 }
 
 const LogoutOverlayWrapper = () => {
@@ -67,7 +64,7 @@ const AnalyticsShell = ({ children }: { children: React.ReactNode }) => (
   </AnalyticsConsentProvider>
 );
 
-export const Providers = ({ children, featureFlags }: ProvidersProps) => {
+export const Providers = ({ children }: ProvidersProps) => {
   const queryClient = useMemo(() => {
     const client = new QueryClient({
       mutationCache: new MutationCache({
@@ -103,32 +100,30 @@ export const Providers = ({ children, featureFlags }: ProvidersProps) => {
         <ThemeProvider>
           <AuthProvider>
             <SentryUserSync />
-            <FeatureFlagProvider featureFlags={featureFlags}>
-              <CollectionContextProvider>
-                <FiltersProvider>
-                  <ViewProvider>
-                    <PlaybackReleaseClickProvider>
-                      <CrateProvider>
-                        <CollectionCachePrepGate />
-                        <AuthenticatedCollectionSyncGate />
-                        <AuthenticatedProvidersGate>
-                          <AnalyticsShell>
-                            {children}
-                            <LogoutOverlayWrapper />
-                            <AuthCheckingToast />
-                            <CollectionLoadingToast />
-                            <DeploymentUpdateToast />
-                            <DiscogsOutageToast />
-                            <SupportProjectToast />
-                            <SentryUserFeedbackDialogHost />
-                          </AnalyticsShell>
-                        </AuthenticatedProvidersGate>
-                      </CrateProvider>
-                    </PlaybackReleaseClickProvider>
-                  </ViewProvider>
-                </FiltersProvider>
-              </CollectionContextProvider>
-            </FeatureFlagProvider>
+            <CollectionContextProvider>
+              <FiltersProvider>
+                <ViewProvider>
+                  <PlaybackReleaseClickProvider>
+                    <CrateProvider>
+                      <CollectionCachePrepGate />
+                      <AuthenticatedCollectionSyncGate />
+                      <AuthenticatedProvidersGate>
+                        <AnalyticsShell>
+                          {children}
+                          <LogoutOverlayWrapper />
+                          <AuthCheckingToast />
+                          <CollectionLoadingToast />
+                          <DeploymentUpdateToast />
+                          <DiscogsOutageToast />
+                          <SupportProjectToast />
+                          <SentryUserFeedbackDialogHost />
+                        </AnalyticsShell>
+                      </AuthenticatedProvidersGate>
+                    </CrateProvider>
+                  </PlaybackReleaseClickProvider>
+                </ViewProvider>
+              </FiltersProvider>
+            </CollectionContextProvider>
           </AuthProvider>
           <AppToaster />
           <DonationSuccessToast />

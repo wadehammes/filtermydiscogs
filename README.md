@@ -95,12 +95,9 @@ STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 # Playlists (optional — force on/off locally without the Vercel adapter)
 # PLAYLISTS_FEATURE_OVERRIDE=1
 
-# Vercel Flags SDK (optional — pull Development env for dashboard flag state in next dev;
-# Production/Preview rollout and per-user allowlists use the Vercel Flags UI — Discogs username or user id)
-# FLAGS=...
 ```
 
-Full variable list (including Vercel feature flags): [`docs/handbook/platform.md`](./docs/handbook/platform.md).
+Full variable list: [`docs/handbook/platform.md`](./docs/handbook/platform.md).
 
 ### Database Setup
 
@@ -130,7 +127,7 @@ The app will be available at `http://localhost:6767`.
 
 1. Click **Connect with Discogs** on the home page and authorize the app
 2. Browse **Releases** — narrow by genre, format, and year (filter lists update as the grid shrinks); search, sort, or try random view; open release details; preview tracks; queue or playlist from track menus; **Add all to…** from the tracklist toolbar; set per-track YouTube links when needed
-3. On **Releases**, use the side panel — **Crates** always; **Playlists** when enabled — stage albums into crates or add tracks to playlists while you browse
+3. On **Releases**, use the side panel — **Crates** or **Playlists** — stage albums into crates or add tracks to playlists while you browse
 4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Releases
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
 6. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu
@@ -157,8 +154,8 @@ The app will be available at `http://localhost:6767`.
 
 - **Framework**: Next.js 16 (App Router, Turbopack) + React 19 + TypeScript 7
 - **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, youtube-video-element (landing demo)
-- **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback, feature flags)
-- **Feature flags**: [Flags SDK](https://flags-sdk.dev) + Vercel (`flags`, `@flags-sdk/vercel`; definitions in [`flags.ts`](./flags.ts)) — **`playlists`** defaults on; use the Vercel dashboard or **`PLAYLISTS_FEATURE_OVERRIDE=0`** as a kill switch (details in [platform.md → Feature flags](./docs/handbook/platform.md#feature-flags-vercel))
+- **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
+- **Playlists env override**: **`PLAYLISTS_FEATURE_OVERRIDE=0`** for a local/CI kill switch ([platform.md → Playlists env override](./docs/handbook/platform.md#playlists-env-override))
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
 - **Forms**: React Hook Form + Zod 4
 - **Tooling**: pnpm 12, mise (Node 26 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
@@ -225,7 +222,7 @@ pnpm db:pull:staging  # Vercel Preview env → .env.local
 | E2E smoke (PR)     | `pnpm test:e2e:smoke:ci` or `mise run ci` | [`install-playwright-chromium-ci.sh`](./scripts/install-playwright-chromium-ci.sh): when [`ensure-playwright-chromium.mjs`](./scripts/ensure-playwright-chromium.mjs) **`check`** passes (Actions cache restored), **skips** `playwright install`; otherwise **`playwright install chromium`** ( **`--force`** if needed; OS deps skipped on Actions **`ubuntu-24.04`**). Then [`build:e2e`](./package.json) and smoke specs in [`e2e/smokeSpecs.constants.ts`](./e2e/smokeSpecs.constants.ts) against **`next start`** |
 | E2E full           | `pnpm test:e2e:ci` or `mise run ci-full`  | Same install script + build, then every spec × desktop, phone, and tablet (push to **`staging`**)                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
-Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixtures/msw.fixture.ts): **MSW intercepts `/api/*`** with a **fresh handler stack per test** and **factory-backed** data under [`src/tests/msw/`](./src/tests/msw/) and [`src/tests/factories/`](./src/tests/factories/) — no live Discogs collection sync or YouTube embeds in CI. The Playwright **`webServer`** and **`build:e2e`** set server env so gated UI (e.g. playlists) matches production flag wiring without calling Vercel Flags. Public-route E2E does not require **`DATABASE_URL`**. Spec catalog, embed mock, and flag overrides: [`docs/handbook/platform.md` → Playwright](./docs/handbook/platform.md#playwright-instant-navigation-tests) and [Feature flags](./docs/handbook/platform.md#feature-flags-vercel).
+Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixtures/msw.fixture.ts): **MSW intercepts `/api/*`** with a **fresh handler stack per test** and **factory-backed** data under [`src/tests/msw/`](./src/tests/msw/) and [`src/tests/factories/`](./src/tests/factories/) — no live Discogs collection sync or YouTube embeds in CI. The Playwright **`webServer`** and **`build:e2e`** set **`PLAYLISTS_FEATURE_OVERRIDE`** for playlist UI smoke. Public-route E2E does not require **`DATABASE_URL`**. Spec catalog and embed mock: [`docs/handbook/platform.md` → Playwright](./docs/handbook/platform.md#playwright-instant-navigation-tests) and [Playlists env override](./docs/handbook/platform.md#playlists-env-override).
 
 Test data conventions (factories, TDD, E2E MSW): [`docs/handbook/factories.md`](./docs/handbook/factories.md), [`docs/handbook/conventions.md`](./docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents).
 

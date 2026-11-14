@@ -1,5 +1,4 @@
 import { cache } from "react";
-import { evaluatePlaylistsFeatureFlag } from "src/lib/playlistsFeatureFlag.server";
 
 export const resolvePlaylistsFeatureLocalOverride = (): boolean | null => {
   const override = process.env.PLAYLISTS_FEATURE_OVERRIDE;
@@ -26,5 +25,5 @@ export const getPlaylistsFeatureEnabled = cache(async (): Promise<boolean> => {
     return localOverride;
   }
 
-  return evaluatePlaylistsFeatureFlag();
+  return true;
 });
