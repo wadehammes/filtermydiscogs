@@ -56,8 +56,6 @@ export const useReleaseModalPlayback = ({
     videos: releaseDetail?.videos,
   });
 
-  const hasEmbeddableVideo = playbackMatchIndex.embeddableVideos.length > 0;
-
   const hasPlayableTracks = playbackMatchIndex.hasPlayableTracks;
 
   const releasePreviewVideos = playbackMatchIndex.previewVideos;
@@ -231,7 +229,6 @@ export const useReleaseModalPlayback = ({
   return {
     tracks,
     videos,
-    hasEmbeddableVideo,
     hasPlayableTracks,
     hasTracklistPlayback,
     releasePreviewVideos,

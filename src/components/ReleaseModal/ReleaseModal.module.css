@@ -90,13 +90,13 @@
 }
 
 .playbackNoPreview {
-  align-items: center;
+  background: color-mix(in srgb, var(--warning) 10%, var(--card));
+  border-bottom: 1px dashed
+    color-mix(in srgb, var(--warning) 30%, var(--border));
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  text-align: center;
-  border-bottom: 1px dashed var(--border);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
 }
 
 .playbackPreview {
@@ -133,8 +133,7 @@
 }
 
 .loadingMessage,
-.errorMessage,
-.noPreviewMessage {
+.errorMessage {
   color: var(--muted-foreground);
   font-size: var(--text-sm);
   margin: 0;
@@ -142,10 +141,19 @@
   line-height: 1.25;
 }
 
-.searchLink {
+.noPreviewMessage {
+  color: color-mix(in srgb, var(--warning) 72%, var(--foreground));
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.inlineCtaLink {
   color: var(--link);
-  font-size: var(--text-sm);
+  font-size: inherit;
   text-decoration: none;
+  white-space: nowrap;
 
   &:hover {
     text-decoration: underline;

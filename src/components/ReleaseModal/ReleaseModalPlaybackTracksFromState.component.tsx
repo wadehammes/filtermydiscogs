@@ -71,7 +71,6 @@ export const ReleaseModalPlaybackTracksFromState = ({
   const {
     tracks,
     videos,
-    hasEmbeddableVideo,
     hasTracklistPlayback,
     releasePreviewVideos,
     releasePreviewTracks,
@@ -110,10 +109,10 @@ export const ReleaseModalPlaybackTracksFromState = ({
   return (
     <>
       <ReleaseModalPlaybackTracksSection
+        discogsReleaseId={release.basic_information.id}
         releaseTitle={releaseTitle}
         tracks={tracks}
         videos={videos}
-        hasEmbeddableVideo={hasEmbeddableVideo}
         hasTracklistPlayback={hasTracklistPlayback}
         releasePreviewVideos={releasePreviewVideos}
         releasePreviewTracks={releasePreviewTracks}
