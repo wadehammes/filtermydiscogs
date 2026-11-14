@@ -3,13 +3,13 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import type { DiscogsRelease } from "src/types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { ReleaseSimilarSidebar } from "./ReleaseSimilarSidebar.component";
 import type { ReleaseSimilarSidebarProps } from "./ReleaseSimilarSidebar.types";
 
-export type ReleaseSimilarSidebarRenderProps = Partial<ReleaseSimilarSidebarProps>;
+export type ReleaseSimilarSidebarRenderProps =
+  Partial<ReleaseSimilarSidebarProps>;
 
 export class ReleaseSimilarSidebarPageObject extends BasePageObject {
   public testId = "fmdReleaseSimilarSidebar";

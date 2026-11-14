@@ -19,6 +19,5 @@ export const getReleaseSimilarSidebarChrome = ({
   showActionsToolbar: visibleReleaseCount > 0 || totalSimilarMatchCount > 0,
   showListLoader:
     isLoading && visibleReleaseCount === 0 && totalSimilarMatchCount === 0,
-  showSimilarPagination:
-    similarPageCount > 1 && hasPaginationHandlers,
+  showSimilarPagination: similarPageCount > 1 && hasPaginationHandlers,
 });

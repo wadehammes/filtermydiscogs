@@ -12,8 +12,8 @@ import {
   RELEASE_SIMILAR_PAGE_PREV_ARIA_LABEL,
 } from "src/constants/releaseSimilarSidebar.constants";
 import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
-import { ReleaseSimilarSidebarCountSegment } from "./ReleaseSimilarSidebarCountSegment.component";
 import styles from "./ReleaseSimilarSidebar.module.css";
+import { ReleaseSimilarSidebarCountSegment } from "./ReleaseSimilarSidebarCountSegment.component";
 
 type ReleaseSimilarSidebarPaginationProps = {
   totalSimilarMatchCount: number;
@@ -35,8 +35,7 @@ export const ReleaseSimilarSidebarPagination = ({
   onSimilarPageNext,
 }: ReleaseSimilarSidebarPaginationProps) => {
   const showSimilarPagination =
-    similarPageCount > 1 &&
-    Boolean(onSimilarPagePrev && onSimilarPageNext);
+    similarPageCount > 1 && Boolean(onSimilarPagePrev && onSimilarPageNext);
 
   return (
     <SegmentedControl
