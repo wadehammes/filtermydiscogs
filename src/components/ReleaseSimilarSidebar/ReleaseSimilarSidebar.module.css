@@ -115,6 +115,10 @@
   text-align: start;
 }
 
+.sidebarActions .similarCountSegmentWithPageNav {
+  border-inline-end: 1px solid var(--border);
+}
+
 .countTooltipPositioner {
   composes: tooltippositioner from "../../styles/modules/base-ui-tooltip.module.css";
 }
@@ -183,6 +187,10 @@
 
 .pageChevronPrevious {
   transform: translateZ(0) rotate(180deg);
+}
+
+.sidebarActions .pageNavPrevButton {
+  border-inline-start: none;
 }
 
 .pageNavPrevButton {

@@ -25,8 +25,10 @@ import styles from "./ReleaseSimilarSidebar.module.css";
 
 const ReleaseSimilarSidebarCountSegment = ({
   totalSimilarMatchCount,
+  showPaginationDivider = false,
 }: {
   totalSimilarMatchCount: number;
+  showPaginationDivider?: boolean;
 }) => (
   <Tooltip.Root>
     <Tooltip.Trigger
@@ -34,6 +36,7 @@ const ReleaseSimilarSidebarCountSegment = ({
         segmentedStyles.segment,
         styles.sidebarSegment,
         styles.similarCountSegment,
+        showPaginationDivider && styles.similarCountSegmentWithPageNav,
       )}
       data-testid="fmdReleaseSimilarSidebarCount"
     >
@@ -117,6 +120,7 @@ export const ReleaseSimilarSidebar = ({
               >
                 <ReleaseSimilarSidebarCountSegment
                   totalSimilarMatchCount={totalSimilarMatchCount}
+                  showPaginationDivider={showSimilarPagination}
                 />
                 {showSimilarPagination ? (
                   <>
