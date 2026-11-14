@@ -116,6 +116,8 @@ describe("useSimilarReleasesInCollection", () => {
         result.current.similarReleases.map((release) => release.instance_id),
       ).not.toEqual(initialInstanceIds);
     });
+
+    expect(result.current.isSimilarLoading).toBe(false);
   });
 
   beforeEach(() => {

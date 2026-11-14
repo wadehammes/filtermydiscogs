@@ -6,14 +6,15 @@ import type { DiscogsRelease } from "src/types";
 import { releaseHasSimilarMatchTags } from "src/utils/similarReleases";
 import {
   getModalSimilarReleasesBatch,
-  getModalSimilarReleasesPool,
   getSimilarReleasesSidebarLoading,
-  isDeferredSimilarAnchorReady,
+  getSimilarReleasesUnsettled,
+  resolveSimilarAnchorRelease,
 } from "./useSimilarReleasesInCollection.utils";
 import {
   persistSimilarPageIndexForAnchor,
   useSimilarReleasesPageState,
 } from "./useSimilarReleasesPageState.hook";
+import { useStableSimilarModalPool } from "./useStableSimilarModalPool.hook";
 
 const EMPTY_SIMILAR_BATCH: DiscogsRelease[] = [];
 
@@ -35,34 +36,24 @@ export const useSimilarReleasesInCollection = (
   });
 
   const canHaveSimilar = release ? releaseHasSimilarMatchTags(release) : false;
-
-  const deferredAnchorRelease = isDeferredSimilarAnchorReady(
-    deferredSimilarSourceKey,
+  const similarAnchorRelease = resolveSimilarAnchorRelease(
     release,
-    isCollectionLoading,
-  )
-    ? release
-    : null;
-
-  const similarModalPool = useMemo(() => {
-    if (!deferredAnchorRelease) {
-      return null;
-    }
-
-    return getModalSimilarReleasesPool({
-      release: deferredAnchorRelease,
-      releasesForSimilar,
-    });
-  }, [deferredAnchorRelease, releasesForSimilar]);
+    similarSourceKey,
+    deferredSimilarSourceKey,
+  );
+  const similarModalPool = useStableSimilarModalPool(
+    similarSourceKey,
+    similarAnchorRelease,
+    releasesForSimilar,
+  );
 
   const similarPageCount = similarModalPool?.pageCount ?? 0;
   const totalSimilarMatchCount = similarModalPool?.totalMatchCount ?? 0;
 
   const { similarPageIndex, goSimilarPagePrev, goSimilarPageNext } =
     useSimilarReleasesPageState(
-      deferredSimilarSourceKey,
       similarSourceKey,
-      allReleases.length,
+      similarSourceKey,
       similarPageCount,
     );
 
@@ -92,7 +83,7 @@ export const useSimilarReleasesInCollection = (
   const canGoSimilarPagePrev = similarPageIndex > 0;
   const canGoSimilarPageNext = similarPageIndex < similarPageCount - 1;
 
-  const isSimilarLoading = getSimilarReleasesSidebarLoading({
+  const unsettledParams = {
     enabled,
     release,
     canHaveSimilar,
@@ -101,6 +92,12 @@ export const useSimilarReleasesInCollection = (
     deferredSimilarSourceKey,
     releasesForSimilar,
     allReleases,
+  };
+
+  const isSimilarUnsettled = getSimilarReleasesUnsettled(unsettledParams);
+  const isSimilarLoading = getSimilarReleasesSidebarLoading({
+    ...unsettledParams,
+    similarModalPool,
   });
 
   return {
@@ -108,6 +105,7 @@ export const useSimilarReleasesInCollection = (
     totalSimilarMatchCount,
     similarPageCount,
     similarPageIndex,
+    isSimilarUnsettled,
     isSimilarLoading,
     canHaveSimilar,
     canGoSimilarPagePrev,

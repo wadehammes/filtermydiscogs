@@ -14,6 +14,7 @@ export const useReleaseModalSimilarSection = (
     totalSimilarMatchCount,
     similarPageCount,
     similarPageIndex,
+    isSimilarUnsettled,
     isSimilarLoading,
     canHaveSimilar,
     canGoSimilarPagePrev,
@@ -22,7 +23,10 @@ export const useReleaseModalSimilarSection = (
     goSimilarPageNext,
   } = useSimilarReleasesInCollection(release, isOpen);
   const showSimilarSection =
-    canHaveSimilar && (isSimilarLoading || similarReleases.length > 0);
+    canHaveSimilar &&
+    (isSimilarUnsettled ||
+      totalSimilarMatchCount > 0 ||
+      similarReleases.length > 0);
   const isDesktop = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY);
   const showAsideSimilar = showSimilarSection && isDesktop;
   const showInlineSimilar = showSimilarSection && !isDesktop;

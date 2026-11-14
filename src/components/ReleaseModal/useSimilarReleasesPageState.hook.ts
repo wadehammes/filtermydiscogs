@@ -1,11 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { SIMILAR_PAGE_INDEX_SESSION_KEY } from "src/constants/storageKeys";
-
-type SimilarReleasesPageState = {
-  anchorKey: string;
-  collectionCount: number;
-  index: number;
-};
+import {
+  clampSimilarPageIndex,
+  resolveSimilarReleasesPageState,
+  type SimilarReleasesPageState,
+} from "./useSimilarReleasesPageState.utils";
 
 const similarPageIndexByAnchor = new Map<string, number>();
 
@@ -81,14 +80,6 @@ export const persistSimilarPageIndexForAnchor = (
   flushSimilarPageIndexSessionStore();
 };
 
-const clampSimilarPageIndex = (index: number, pageCount: number) => {
-  if (pageCount <= 0) {
-    return 0;
-  }
-
-  return Math.min(index, pageCount - 1);
-};
-
 const readSimilarPageIndexFromMemory = (
   persistKey: string,
   anchorKey: string,
@@ -105,52 +96,26 @@ const readSimilarPageIndexFromMemory = (
 const resolveSimilarPageIndex = (
   anchorKey: string,
   persistKey: string,
-  collectionReleaseCount: number,
   previous: SimilarReleasesPageState,
   pageCount: number,
 ): SimilarReleasesPageState => {
   const anchorChanged = previous.anchorKey !== anchorKey;
-  const collectionChanged = previous.collectionCount !== collectionReleaseCount;
 
   if (anchorChanged) {
     persistSimilarPageIndexForAnchor(previous.anchorKey, previous.index);
-    const restored = readSimilarPageIndexFromMemory(persistKey, anchorKey);
-
-    const index =
-      pageCount <= 0 ? restored : clampSimilarPageIndex(restored, pageCount);
-
-    return {
-      anchorKey,
-      collectionCount: collectionReleaseCount,
-      index,
-    };
   }
 
-  if (collectionChanged) {
-    persistSimilarPageIndexForAnchor(anchorKey, 0);
-
-    return {
-      anchorKey,
-      collectionCount: collectionReleaseCount,
-      index: 0,
-    };
-  }
-
-  if (pageCount <= 0) {
-    return previous;
-  }
-
-  const clampedIndex = clampSimilarPageIndex(previous.index, pageCount);
-
-  return clampedIndex === previous.index
-    ? previous
-    : { ...previous, index: clampedIndex };
+  return resolveSimilarReleasesPageState({
+    anchorKey,
+    previous,
+    pageCount,
+    restoredPageIndex: readSimilarPageIndexFromMemory(persistKey, anchorKey),
+  });
 };
 
 export const useSimilarReleasesPageState = (
   deferredSimilarSourceKey: string | null,
   persistAnchorKey: string | null,
-  collectionReleaseCount: number,
   pageCount: number,
 ) => {
   const anchorKey = deferredSimilarSourceKey ?? "";
@@ -160,29 +125,32 @@ export const useSimilarReleasesPageState = (
 
     return {
       anchorKey,
-      collectionCount: collectionReleaseCount,
       index:
         pageCount <= 0 ? restored : clampSimilarPageIndex(restored, pageCount),
     };
   });
 
-  const syncedPageState = resolveSimilarPageIndex(
-    anchorKey,
-    persistKey,
-    collectionReleaseCount,
-    pageState,
-    pageCount,
-  );
+  useLayoutEffect(() => {
+    setPageState((previous) => {
+      const resolved = resolveSimilarPageIndex(
+        anchorKey,
+        persistKey,
+        previous,
+        pageCount,
+      );
 
-  if (
-    syncedPageState.anchorKey !== pageState.anchorKey ||
-    syncedPageState.collectionCount !== pageState.collectionCount ||
-    syncedPageState.index !== pageState.index
-  ) {
-    setPageState(syncedPageState);
-  }
+      if (
+        resolved.anchorKey === previous.anchorKey &&
+        resolved.index === previous.index
+      ) {
+        return previous;
+      }
 
-  const similarPageIndex = syncedPageState.index;
+      return resolved;
+    });
+  }, [anchorKey, pageCount, persistKey]);
+
+  const similarPageIndex = pageState.index;
 
   const goSimilarPagePrev = useCallback(() => {
     setPageState((previous) => {

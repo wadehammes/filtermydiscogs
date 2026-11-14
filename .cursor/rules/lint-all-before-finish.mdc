@@ -1,0 +1,15 @@
+---
+description: Run pnpm lint:all before commit, push, or claiming work is ready (pr-prep gate).
+alwaysApply: true
+---
+
+# Lint and typecheck before finish
+
+Before **`git commit`**, **`st ss` / `st ss --auto`**, or telling the user a branch or PR is ready to merge:
+
+1. Run **`pnpm lint:all`** (same gate as CI: Biome changed-since-staging, Stylelint, **`tsc --strict`**, Knip). Fix failures in the **same turn**; do not push with a red tree.
+2. Prefer **`mise run pr-prep`** when opening or refreshing a PR (adds handbook + **`test:changed`**).
+
+Do not run **`pnpm lint:css`** alone and assume the tree is clean — TypeScript and Biome are part of **`lint:all`**.
+
+After CSS edits to `ReleaseSimilarSidebar` or other module CSS, **`lint:all`** is required before commit, not optional.

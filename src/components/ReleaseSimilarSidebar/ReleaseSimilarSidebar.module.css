@@ -92,6 +92,7 @@
 }
 
 .sidebarActions .sidebarActionControl {
+  align-items: stretch;
   background: var(--muted);
   border: none;
   border-radius: 0;
@@ -99,20 +100,49 @@
   width: 100%;
 }
 
+.sidebarActions .similarCountTooltipRoot {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .sidebarActions .sidebarSegment {
+  align-self: stretch;
   border-radius: 0;
+}
+
+.sidebarActions :is(.similarCountSegment, .similarPageSegment) {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: normal;
+  line-height: 1.2;
 }
 
 .similarCountSegment {
   cursor: help;
   flex: 1 1 auto;
   font-family: var(--font-family-meta);
-  font-size: var(--text-meta-xxs);
+  font-size: var(--text-meta-xs);
   font-variant-numeric: tabular-nums;
   font-weight: var(--font-medium);
   justify-content: flex-start;
   min-width: 0;
   text-align: start;
+}
+
+.sidebarActions .similarCountSegment {
+  cursor: help;
+  justify-content: flex-start;
+  text-align: start;
+}
+
+.sidebarActions .similarCountTooltipRoot .similarCountSegment {
+  width: 100%;
+}
+
+.sidebarActions .similarCountSegmentWithPageNav {
+  border-inline-end: 1px solid var(--border);
 }
 
 .countTooltipPositioner {
@@ -141,7 +171,7 @@
   cursor: default;
   flex: 0 0 auto;
   font-family: var(--font-family-meta);
-  font-size: var(--text-meta-xxs);
+  font-size: var(--text-meta-xs);
   font-weight: var(--font-medium);
   justify-content: center;
   min-width: calc(
@@ -172,7 +202,6 @@
 }
 
 .pageNavSegmentDisabled {
-  cursor: not-allowed;
   opacity: 0.45;
 
   &:hover {
@@ -181,8 +210,16 @@
   }
 }
 
+.sidebarActions .pageNavSegmentDisabled {
+  cursor: not-allowed;
+}
+
 .pageChevronPrevious {
   transform: translateZ(0) rotate(180deg);
+}
+
+.sidebarActions .pageNavPrevButton {
+  border-inline-start: none;
 }
 
 .pageNavPrevButton {

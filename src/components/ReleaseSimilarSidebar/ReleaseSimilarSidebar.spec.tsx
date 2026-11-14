@@ -42,11 +42,43 @@ describe("ReleaseSimilarSidebar", () => {
   it("when loading, shows the similar loading state", () => {
     po.renderReleaseSimilarSidebar({
       similarReleases: [],
+      totalSimilarMatchCount: 0,
       isLoading: true,
     });
 
     expect(
       screen.getByTestId("fmdReleaseSimilarSidebarLoading"),
     ).toBeInTheDocument();
+  });
+
+  it("when loading with a visible batch, keeps the header chrome and list", () => {
+    po.renderReleaseSimilarSidebar({ isLoading: true });
+
+    expect(screen.getByText(RELEASE_SIMILAR_SIDEBAR_TITLE)).toBeInTheDocument();
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarPage"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("fmdReleaseSimilarSidebarLoading"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("when loading with a known pool count but no visible batch, keeps pagination toolbar chrome", () => {
+    po.renderReleaseSimilarSidebar({
+      similarReleases: [],
+      totalSimilarMatchCount: 12,
+      similarPageCount: 3,
+      isLoading: true,
+    });
+
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarCount"),
+    ).toHaveTextContent("12 similar");
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarPage"),
+    ).toHaveTextContent("2 of 3");
+    expect(
+      screen.queryByTestId("fmdReleaseSimilarSidebarLoading"),
+    ).not.toBeInTheDocument();
   });
 });
