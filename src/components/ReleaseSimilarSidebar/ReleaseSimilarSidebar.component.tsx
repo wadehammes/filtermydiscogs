@@ -30,7 +30,7 @@ const ReleaseSimilarSidebarCountSegment = ({
   totalSimilarMatchCount: number;
   showPaginationDivider?: boolean;
 }) => (
-  <Tooltip.Root>
+  <Tooltip.Root className={styles.similarCountTooltipRoot}>
     <Tooltip.Trigger
       className={classNames(
         segmentedStyles.segment,

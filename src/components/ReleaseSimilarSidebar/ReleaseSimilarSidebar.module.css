@@ -92,6 +92,7 @@
 }
 
 .sidebarActions .sidebarActionControl {
+  align-items: stretch;
   background: var(--muted);
   border: none;
   border-radius: 0;
@@ -99,7 +100,20 @@
   width: 100%;
 }
 
+.sidebarActions .similarCountTooltipRoot {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+
+  & .similarCountSegment {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .sidebarActions .sidebarSegment {
+  align-self: stretch;
   border-radius: 0;
 }
 
