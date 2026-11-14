@@ -153,4 +153,32 @@ describe("discogsOAuthService", () => {
       process.off("unhandledRejection", onUnhandledRejection);
     }
   });
+
+  it("builds the Discogs authorize URL from the request token", () => {
+    expect(discogsOAuthService.getAuthorizationUrl("request-token-abc")).toBe(
+      "https://www.discogs.com/oauth/authorize?oauth_token=request-token-abc",
+    );
+  });
+
+  it("when getUserProfile succeeds, returns the user profile JSON", async () => {
+    const profile = {
+      id: 42,
+      username: "crate-digger",
+      avatar_url: "https://i.discogs.com/avatar.png",
+    };
+    mockDiscogsFetch.mockResolvedValue(
+      new Response(JSON.stringify(profile), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await expect(
+      discogsOAuthService.getUserProfile(
+        "crate-digger",
+        "access-token",
+        "access-secret",
+      ),
+    ).resolves.toEqual(profile);
+  });
 });
