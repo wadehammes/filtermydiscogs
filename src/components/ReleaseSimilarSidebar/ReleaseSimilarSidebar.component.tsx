@@ -85,7 +85,8 @@ export const ReleaseSimilarSidebar = ({
   }
 
   const Root = variant === "inline" ? "section" : "aside";
-  const showActionsToolbar = !isLoading && similarReleases.length > 0;
+  const showActionsToolbar = similarReleases.length > 0;
+  const showListLoader = isLoading && similarReleases.length === 0;
   const showSimilarPagination =
     similarPageCount > 1 && Boolean(onSimilarPagePrev && onSimilarPageNext);
 
@@ -187,7 +188,7 @@ export const ReleaseSimilarSidebar = ({
           </Tooltip.Provider>
         ) : null}
       </div>
-      {isLoading ? (
+      {showListLoader ? (
         <div
           className={styles.loadingState}
           data-testid="fmdReleaseSimilarSidebarLoading"

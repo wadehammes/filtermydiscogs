@@ -49,4 +49,16 @@ describe("ReleaseSimilarSidebar", () => {
       screen.getByTestId("fmdReleaseSimilarSidebarLoading"),
     ).toBeInTheDocument();
   });
+
+  it("when loading with a visible batch, keeps the header chrome and list", () => {
+    po.renderReleaseSimilarSidebar({ isLoading: true });
+
+    expect(screen.getByText(RELEASE_SIMILAR_SIDEBAR_TITLE)).toBeInTheDocument();
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarPage"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("fmdReleaseSimilarSidebarLoading"),
+    ).not.toBeInTheDocument();
+  });
 });

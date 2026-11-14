@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SIMILAR_PAGE_INDEX_SESSION_KEY } from "src/constants/storageKeys";
 
 type SimilarReleasesPageState = {
@@ -166,7 +166,7 @@ export const useSimilarReleasesPageState = (
     };
   });
 
-  const syncedPageState = resolveSimilarPageIndex(
+  const resolvedPageState = resolveSimilarPageIndex(
     anchorKey,
     persistKey,
     collectionReleaseCount,
@@ -174,15 +174,29 @@ export const useSimilarReleasesPageState = (
     pageCount,
   );
 
-  if (
-    syncedPageState.anchorKey !== pageState.anchorKey ||
-    syncedPageState.collectionCount !== pageState.collectionCount ||
-    syncedPageState.index !== pageState.index
-  ) {
-    setPageState(syncedPageState);
-  }
+  useEffect(() => {
+    setPageState((previous) => {
+      const resolved = resolveSimilarPageIndex(
+        anchorKey,
+        persistKey,
+        collectionReleaseCount,
+        previous,
+        pageCount,
+      );
 
-  const similarPageIndex = syncedPageState.index;
+      if (
+        resolved.anchorKey === previous.anchorKey &&
+        resolved.collectionCount === previous.collectionCount &&
+        resolved.index === previous.index
+      ) {
+        return previous;
+      }
+
+      return resolved;
+    });
+  }, [anchorKey, collectionReleaseCount, pageCount, persistKey]);
+
+  const similarPageIndex = resolvedPageState.index;
 
   const goSimilarPagePrev = useCallback(() => {
     setPageState((previous) => {
