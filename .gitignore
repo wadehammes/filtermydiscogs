@@ -34,6 +34,10 @@
 # production
 /build
 
+# Fallow local analysis dumps (do not commit)
+.fallow-health-snapshot.json
+.fallow-*.json
+
 # misc
 .DS_Store
 /.pnpm-store
