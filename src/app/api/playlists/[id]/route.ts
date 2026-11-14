@@ -8,7 +8,6 @@ import {
   getPlaylistDetail,
   updatePlaylistFields,
 } from "src/lib/playlist.server";
-import { requirePlaylistsFeatureEnabled } from "src/lib/playlistsFeatureGuard.server";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { revalidatePublicShareSeo } from "src/lib/public-share-cache.server";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -19,11 +18,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(request);
     if ("error" in verified) {
       return verified.error;
@@ -47,11 +41,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(
       request,
       true,
@@ -115,11 +104,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(
       request,
       true,

@@ -16,7 +16,6 @@ import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/Co
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
 import { SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE } from "src/constants/settingsCopy.constants";
 import { useAuth } from "src/context/auth.context";
-import { useFeatureFlag } from "src/context/featureFlags.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
@@ -102,7 +101,6 @@ export default function SettingsClient() {
     });
   const { persistPreferences, isPending: isPreferencesSaving } =
     usePersistUserPreferences();
-  const playlistsFeatureEnabled = useFeatureFlag("playlists");
   const dispatchView = useSetAtom(viewDispatchAtom);
   const store = useStore();
   const currentView = useCurrentView();
@@ -210,7 +208,6 @@ export default function SettingsClient() {
               preferences?.defaultCollectionSidePanel ??
               DEFAULT_COLLECTION_SIDE_PANEL
             }
-            playlistsFeatureEnabled={playlistsFeatureEnabled}
             isPreferencesLoading={isPreferencesLoading}
             isPreferencesSaving={isPreferencesSaving}
             onViewChange={handleViewChange}

@@ -15,7 +15,6 @@ export interface CollectionSidePanelToggleProps {
   sidePanel: CollectionSidePanelMode;
   isDrawerOpen: boolean;
   onSelectSidePanel: (panel: CollectionSidePanelMode) => void;
-  playlistsEnabled?: boolean;
   deferSegmentHighlight?: boolean;
   className?: string;
 }
@@ -24,7 +23,6 @@ export const CollectionSidePanelToggle = ({
   sidePanel,
   isDrawerOpen,
   onSelectSidePanel,
-  playlistsEnabled = true,
   deferSegmentHighlight = false,
   className,
 }: CollectionSidePanelToggleProps) => {
@@ -53,25 +51,23 @@ export const CollectionSidePanelToggle = ({
         >
           <CratesIcon />
         </IconButton>
-        {playlistsEnabled ? (
-          <IconButton
-            className={classNames(segmentedStyles.segment, {
-              [segmentedStyles.active]: playlistsActive,
-            })}
-            iconClassName={styles.segmentIcon}
-            label="Playlists"
-            onClick={() => {
-              onSelectSidePanel("playlists");
-            }}
-            aria-label={
-              playlistsActive ? "Close playlists panel" : "Open playlists panel"
-            }
-            title={playlistsActive ? "Close playlists" : "Playlists"}
-            aria-pressed={playlistsActive}
-          >
-            <PlaylistThinIcon />
-          </IconButton>
-        ) : null}
+        <IconButton
+          className={classNames(segmentedStyles.segment, {
+            [segmentedStyles.active]: playlistsActive,
+          })}
+          iconClassName={styles.segmentIcon}
+          label="Playlists"
+          onClick={() => {
+            onSelectSidePanel("playlists");
+          }}
+          aria-label={
+            playlistsActive ? "Close playlists panel" : "Open playlists panel"
+          }
+          title={playlistsActive ? "Close playlists" : "Playlists"}
+          aria-pressed={playlistsActive}
+        >
+          <PlaylistThinIcon />
+        </IconButton>
       </SegmentedControl>
     </div>
   );

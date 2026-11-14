@@ -55,7 +55,6 @@ export const SettingsAccountPanel = ({
 type SettingsAppearancePanelProps = {
   settingsViewValue: "card" | "list";
   defaultCollectionSidePanel: CollectionSidePanelPreference;
-  playlistsFeatureEnabled: boolean;
   isPreferencesLoading: boolean;
   isPreferencesSaving: boolean;
   onViewChange: (view: "card" | "list") => void;
@@ -69,7 +68,6 @@ type SettingsAppearancePanelProps = {
 export const SettingsAppearancePanel = ({
   settingsViewValue,
   defaultCollectionSidePanel,
-  playlistsFeatureEnabled,
   isPreferencesLoading,
   isPreferencesSaving,
   onViewChange,
@@ -104,30 +102,28 @@ export const SettingsAppearancePanel = ({
           className={styles.fieldControl}
         />
       </div>
-      {playlistsFeatureEnabled ? (
-        <div className={styles.field}>
-          <span className={styles.fieldLabel}>Default collection panel</span>
-          <Select
-            label="Default collection panel"
-            options={[
-              { value: "crates", label: "Crates" },
-              { value: "playlists", label: "Playlists" },
-            ]}
-            value={defaultCollectionSidePanel}
-            onChange={(value) => {
-              onDefaultCollectionSidePanelChange(
-                value as CollectionSidePanelPreference,
-              );
-            }}
-            disabled={isPreferencesLoading || isPreferencesSaving}
-            className={styles.fieldControl}
-          />
-          <p className={styles.sectionDescription}>
-            On desktop, which side panel opens when you load Releases. You can
-            still switch panels anytime from the collection toolbar.
-          </p>
-        </div>
-      ) : null}
+      <div className={styles.field}>
+        <span className={styles.fieldLabel}>Default collection panel</span>
+        <Select
+          label="Default collection panel"
+          options={[
+            { value: "crates", label: "Crates" },
+            { value: "playlists", label: "Playlists" },
+          ]}
+          value={defaultCollectionSidePanel}
+          onChange={(value) => {
+            onDefaultCollectionSidePanelChange(
+              value as CollectionSidePanelPreference,
+            );
+          }}
+          disabled={isPreferencesLoading || isPreferencesSaving}
+          className={styles.fieldControl}
+        />
+        <p className={styles.sectionDescription}>
+          On desktop, which side panel opens when you load Releases. You can
+          still switch panels anytime from the collection toolbar.
+        </p>
+      </div>
     </>
   );
 };

@@ -4,7 +4,6 @@ import {
   getVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { createPlaylist, listPlaylistsForUser } from "src/lib/playlist.server";
-import { requirePlaylistsFeatureEnabled } from "src/lib/playlistsFeatureGuard.server";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import {
@@ -14,11 +13,6 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(request);
     if ("error" in verified) {
       return verified.error;
@@ -47,11 +41,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(
       request,
       true,

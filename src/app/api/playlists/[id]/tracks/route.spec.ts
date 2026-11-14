@@ -15,10 +15,6 @@ jest.mock("src/lib/playlist.server", () => ({
 
 jest.mock("src/lib/api-helpers");
 
-jest.mock("src/lib/playlistsFeature.server", () => ({
-  getPlaylistsFeatureEnabled: jest.fn(),
-}));
-
 jest.mock("src/lib/public-share-cache.server", () => ({
   revalidatePublicPlaylistShareWhenPublic: jest.fn(),
 }));
@@ -26,7 +22,6 @@ jest.mock("src/lib/public-share-cache.server", () => ({
 type RouteModule = typeof import("src/app/api/playlists/[id]/tracks/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
 type PlaylistServerModule = typeof import("src/lib/playlist.server");
-type PlaylistsFeatureModule = typeof import("src/lib/playlistsFeature.server");
 type PublicShareCacheModule =
   typeof import("src/lib/public-share-cache.server");
 
@@ -36,9 +31,6 @@ let mockGetVerifiedUser: jest.MockedFunction<
 >;
 let mockRemoveTrackFromPlaylist: jest.MockedFunction<
   PlaylistServerModule["removeTrackFromPlaylist"]
->;
-let mockGetPlaylistsFeatureEnabled: jest.MockedFunction<
-  PlaylistsFeatureModule["getPlaylistsFeatureEnabled"]
 >;
 let mockRevalidatePublicPlaylistShareWhenPublic: jest.MockedFunction<
   PublicShareCacheModule["revalidatePublicPlaylistShareWhenPublic"]
@@ -50,19 +42,13 @@ const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
 });
 
 beforeAll(async () => {
-  const [
-    routeModule,
-    apiHelpers,
-    playlistServer,
-    playlistsFeature,
-    publicShareCache,
-  ] = await Promise.all([
-    import("src/app/api/playlists/[id]/tracks/route"),
-    import("src/lib/api-helpers"),
-    import("src/lib/playlist.server"),
-    import("src/lib/playlistsFeature.server"),
-    import("src/lib/public-share-cache.server"),
-  ]);
+  const [routeModule, apiHelpers, playlistServer, publicShareCache] =
+    await Promise.all([
+      import("src/app/api/playlists/[id]/tracks/route"),
+      import("src/lib/api-helpers"),
+      import("src/lib/playlist.server"),
+      import("src/lib/public-share-cache.server"),
+    ]);
 
   DELETE = routeModule.DELETE;
   mockGetVerifiedUser = jest.mocked(
@@ -70,9 +56,6 @@ beforeAll(async () => {
   );
   mockRemoveTrackFromPlaylist = jest.mocked(
     playlistServer.removeTrackFromPlaylist,
-  );
-  mockGetPlaylistsFeatureEnabled = jest.mocked(
-    playlistsFeature.getPlaylistsFeatureEnabled,
   );
   mockRevalidatePublicPlaylistShareWhenPublic = jest.mocked(
     publicShareCache.revalidatePublicPlaylistShareWhenPublic,
@@ -83,7 +66,6 @@ describe("/api/playlists/[id]/tracks DELETE", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
-    mockGetPlaylistsFeatureEnabled.mockResolvedValue(true);
     mockRemoveTrackFromPlaylist.mockResolvedValue(true);
     mockRevalidatePublicPlaylistShareWhenPublic.mockResolvedValue(undefined);
   });

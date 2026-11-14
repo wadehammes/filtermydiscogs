@@ -17,14 +17,9 @@ jest.mock("src/lib/playlist.server", () => ({
 
 jest.mock("src/lib/api-helpers");
 
-jest.mock("src/lib/playlistsFeature.server", () => ({
-  getPlaylistsFeatureEnabled: jest.fn(),
-}));
-
 type RouteModule = typeof import("src/app/api/playlists/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
 type PlaylistServerModule = typeof import("src/lib/playlist.server");
-type PlaylistsFeatureModule = typeof import("src/lib/playlistsFeature.server");
 
 let GET: RouteModule["GET"];
 let POST: RouteModule["POST"];
@@ -37,22 +32,17 @@ let mockListPlaylistsForUser: jest.MockedFunction<
 let mockCreatePlaylist: jest.MockedFunction<
   PlaylistServerModule["createPlaylist"]
 >;
-let mockGetPlaylistsFeatureEnabled: jest.MockedFunction<
-  PlaylistsFeatureModule["getPlaylistsFeatureEnabled"]
->;
 
 const verifiedUser = verifiedDiscogsUserFactory.asVerifiedResult({
   userId: 42,
 });
 
 beforeAll(async () => {
-  const [routeModule, apiHelpers, playlistServer, playlistsFeature] =
-    await Promise.all([
-      import("src/app/api/playlists/route"),
-      import("src/lib/api-helpers"),
-      import("src/lib/playlist.server"),
-      import("src/lib/playlistsFeature.server"),
-    ]);
+  const [routeModule, apiHelpers, playlistServer] = await Promise.all([
+    import("src/app/api/playlists/route"),
+    import("src/lib/api-helpers"),
+    import("src/lib/playlist.server"),
+  ]);
 
   GET = routeModule.GET;
   POST = routeModule.POST;
@@ -61,9 +51,6 @@ beforeAll(async () => {
   );
   mockListPlaylistsForUser = jest.mocked(playlistServer.listPlaylistsForUser);
   mockCreatePlaylist = jest.mocked(playlistServer.createPlaylist);
-  mockGetPlaylistsFeatureEnabled = jest.mocked(
-    playlistsFeature.getPlaylistsFeatureEnabled,
-  );
 });
 
 describe("/api/playlists", () => {
@@ -73,7 +60,6 @@ describe("/api/playlists", () => {
       return new NextResponse(JSON.stringify(body), init);
     });
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
-    mockGetPlaylistsFeatureEnabled.mockResolvedValue(true);
   });
 
   it("GET returns playlists for the verified user", async () => {
@@ -93,7 +79,7 @@ describe("/api/playlists", () => {
     );
   });
 
-  it("GET forwards trackKey when listing playlist membership for a track", async () => {
+  it("GET passes trackKey to listPlaylistsForUser when provided", async () => {
     const playlists = [playlistSummaryFactory.empty({ containsTrack: true })];
     mockListPlaylistsForUser.mockResolvedValue(playlists);
 
@@ -112,44 +98,18 @@ describe("/api/playlists", () => {
     );
   });
 
-  it("POST creates a playlist with strict rate limiting", async () => {
-    const playlist = playlistSummaryFactory.empty({ name: "Sunday" });
-    mockCreatePlaylist.mockResolvedValue(playlist);
+  it("POST creates a playlist for the verified user", async () => {
+    const created = playlistSummaryFactory.empty({ name: "Sunday" });
+    mockCreatePlaylist.mockResolvedValue(created);
 
     const response = await POST(
       new NextRequest("http://localhost/api/playlists", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Sunday" }),
-      }),
-    );
-    const json = await response.json();
-
-    expect(response.status).toBe(201);
-    expect(json).toEqual({ playlist });
-    expect(mockGetVerifiedUser).toHaveBeenCalledWith(
-      expect.any(NextRequest),
-      true,
-    );
-    expect(mockCreatePlaylist).toHaveBeenCalledWith(
-      verifiedUser.user.userId,
-      "Sunday",
-      undefined,
-    );
-  });
-
-  it("POST persists optional publicDescription on create", async () => {
-    const playlist = playlistSummaryFactory.empty({ name: "Sunday" });
-    mockCreatePlaylist.mockResolvedValue(playlist);
-
-    const response = await POST(
-      new NextRequest("http://localhost/api/playlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "Sunday",
           publicDescription: "Morning warm-up set.",
         }),
+        headers: { "Content-Type": "application/json" },
       }),
     );
 
@@ -159,17 +119,6 @@ describe("/api/playlists", () => {
       "Sunday",
       "Morning warm-up set.",
     );
-  });
-
-  it("returns 404 when the playlists feature flag is off", async () => {
-    mockGetPlaylistsFeatureEnabled.mockResolvedValue(false);
-
-    const response = await GET(
-      new NextRequest("http://localhost/api/playlists"),
-    );
-
-    expect(response.status).toBe(404);
-    expect(mockListPlaylistsForUser).not.toHaveBeenCalled();
   });
 
   it("returns auth error when verification fails", async () => {

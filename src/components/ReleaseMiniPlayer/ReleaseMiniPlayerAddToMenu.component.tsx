@@ -2,7 +2,6 @@
 
 import { ReleaseMiniPlayerAddToMenuView } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayerAddToMenuView.component";
 import { ReleaseMiniPlayerAddToMenuWithPlaylist } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayerAddToMenuWithPlaylist.component";
-import { useFeatureFlag } from "src/context/featureFlags.context";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -24,9 +23,7 @@ export const ReleaseMiniPlayerAddToMenu = ({
   slotClass = "",
   submenuOpenOnHover,
 }: ReleaseMiniPlayerAddToMenuProps) => {
-  const playlistsEnabled = useFeatureFlag("playlists");
-
-  if (playlistsEnabled && playlistMetadata) {
+  if (playlistMetadata) {
     return (
       <ReleaseMiniPlayerAddToMenuWithPlaylist
         release={release}
