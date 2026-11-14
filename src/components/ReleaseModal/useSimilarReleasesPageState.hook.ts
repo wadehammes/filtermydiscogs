@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { SIMILAR_PAGE_INDEX_SESSION_KEY } from "src/constants/storageKeys";
-
-type SimilarReleasesPageState = {
-  anchorKey: string;
-  collectionCount: number;
-  index: number;
-};
+import {
+  clampSimilarPageIndex,
+  resolveSimilarReleasesPageState,
+  type SimilarReleasesPageState,
+} from "./useSimilarReleasesPageState.utils";
 
 const similarPageIndexByAnchor = new Map<string, number>();
 
@@ -81,14 +80,6 @@ export const persistSimilarPageIndexForAnchor = (
   flushSimilarPageIndexSessionStore();
 };
 
-const clampSimilarPageIndex = (index: number, pageCount: number) => {
-  if (pageCount <= 0) {
-    return 0;
-  }
-
-  return Math.min(index, pageCount - 1);
-};
-
 const readSimilarPageIndexFromMemory = (
   persistKey: string,
   anchorKey: string,
@@ -110,41 +101,18 @@ const resolveSimilarPageIndex = (
   pageCount: number,
 ): SimilarReleasesPageState => {
   const anchorChanged = previous.anchorKey !== anchorKey;
-  const collectionChanged = previous.collectionCount !== collectionReleaseCount;
 
   if (anchorChanged) {
     persistSimilarPageIndexForAnchor(previous.anchorKey, previous.index);
-    const restored = readSimilarPageIndexFromMemory(persistKey, anchorKey);
-
-    const index =
-      pageCount <= 0 ? restored : clampSimilarPageIndex(restored, pageCount);
-
-    return {
-      anchorKey,
-      collectionCount: collectionReleaseCount,
-      index,
-    };
   }
 
-  if (collectionChanged) {
-    persistSimilarPageIndexForAnchor(anchorKey, 0);
-
-    return {
-      anchorKey,
-      collectionCount: collectionReleaseCount,
-      index: 0,
-    };
-  }
-
-  if (pageCount <= 0) {
-    return previous;
-  }
-
-  const clampedIndex = clampSimilarPageIndex(previous.index, pageCount);
-
-  return clampedIndex === previous.index
-    ? previous
-    : { ...previous, index: clampedIndex };
+  return resolveSimilarReleasesPageState({
+    anchorKey,
+    collectionReleaseCount,
+    previous,
+    pageCount,
+    restoredPageIndex: readSimilarPageIndexFromMemory(persistKey, anchorKey),
+  });
 };
 
 export const useSimilarReleasesPageState = (
