@@ -30,30 +30,32 @@ const ReleaseSimilarSidebarCountSegment = ({
   totalSimilarMatchCount: number;
   showPaginationDivider?: boolean;
 }) => (
-  <Tooltip.Root className={styles.similarCountTooltipRoot}>
-    <Tooltip.Trigger
-      className={classNames(
-        segmentedStyles.segment,
-        styles.sidebarSegment,
-        styles.similarCountSegment,
-        showPaginationDivider && styles.similarCountSegmentWithPageNav,
-      )}
-      data-testid="fmdReleaseSimilarSidebarCount"
-    >
-      {formatSimilarReleaseCountLabel(totalSimilarMatchCount)}
-    </Tooltip.Trigger>
-    <Tooltip.Portal>
-      <Tooltip.Positioner
-        align="start"
-        className={styles.countTooltipPositioner}
-        side="top"
+  <div className={styles.similarCountTooltipRoot}>
+    <Tooltip.Root>
+      <Tooltip.Trigger
+        className={classNames(
+          segmentedStyles.segment,
+          styles.sidebarSegment,
+          styles.similarCountSegment,
+          showPaginationDivider && styles.similarCountSegmentWithPageNav,
+        )}
+        data-testid="fmdReleaseSimilarSidebarCount"
       >
-        <Tooltip.Popup className={styles.countTooltipPopup}>
-          {RELEASE_SIMILAR_COUNT_TOOLTIP}
-        </Tooltip.Popup>
-      </Tooltip.Positioner>
-    </Tooltip.Portal>
-  </Tooltip.Root>
+        {formatSimilarReleaseCountLabel(totalSimilarMatchCount)}
+      </Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Positioner
+          align="start"
+          className={styles.countTooltipPositioner}
+          side="top"
+        >
+          <Tooltip.Popup className={styles.countTooltipPopup}>
+            {RELEASE_SIMILAR_COUNT_TOOLTIP}
+          </Tooltip.Popup>
+        </Tooltip.Positioner>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  </div>
 );
 
 interface ReleaseSimilarSidebarProps {
@@ -88,8 +90,10 @@ export const ReleaseSimilarSidebar = ({
   }
 
   const Root = variant === "inline" ? "section" : "aside";
-  const showActionsToolbar = similarReleases.length > 0;
-  const showListLoader = isLoading && similarReleases.length === 0;
+  const showActionsToolbar =
+    similarReleases.length > 0 || totalSimilarMatchCount > 0;
+  const showListLoader =
+    isLoading && similarReleases.length === 0 && totalSimilarMatchCount === 0;
   const showSimilarPagination =
     similarPageCount > 1 && Boolean(onSimilarPagePrev && onSimilarPageNext);
 

@@ -111,15 +111,29 @@
   border-radius: 0;
 }
 
+.sidebarActions :is(.similarCountSegment, .similarPageSegment) {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
 .similarCountSegment {
   cursor: help;
   flex: 1 1 auto;
   font-family: var(--font-family-meta);
-  font-size: var(--text-meta-xxs);
+  font-size: var(--text-meta-xs);
   font-variant-numeric: tabular-nums;
   font-weight: var(--font-medium);
   justify-content: flex-start;
   min-width: 0;
+  text-align: start;
+}
+
+.sidebarActions .similarCountSegment {
+  cursor: help;
+  justify-content: flex-start;
   text-align: start;
 }
 
@@ -157,7 +171,7 @@
   cursor: default;
   flex: 0 0 auto;
   font-family: var(--font-family-meta);
-  font-size: var(--text-meta-xxs);
+  font-size: var(--text-meta-xs);
   font-weight: var(--font-medium);
   justify-content: center;
   min-width: calc(
@@ -188,13 +202,16 @@
 }
 
 .pageNavSegmentDisabled {
-  cursor: not-allowed;
   opacity: 0.45;
 
   &:hover {
     background: transparent;
     color: var(--muted-foreground);
   }
+}
+
+.sidebarActions .pageNavSegmentDisabled {
+  cursor: not-allowed;
 }
 
 .pageChevronPrevious {

@@ -9,7 +9,7 @@ import {
   getModalSimilarReleasesPool,
   getSimilarReleasesSidebarLoading,
   getSimilarReleasesUnsettled,
-  isDeferredSimilarAnchorReady,
+  resolveSimilarAnchorRelease,
 } from "./useSimilarReleasesInCollection.utils";
 import {
   persistSimilarPageIndexForAnchor,
@@ -37,30 +37,55 @@ export const useSimilarReleasesInCollection = (
 
   const canHaveSimilar = release ? releaseHasSimilarMatchTags(release) : false;
 
-  const deferredAnchorRelease = isDeferredSimilarAnchorReady(
-    deferredSimilarSourceKey,
+  const similarAnchorRelease = resolveSimilarAnchorRelease(
     release,
-  )
-    ? release
-    : null;
+    similarSourceKey,
+    deferredSimilarSourceKey,
+  );
 
-  const similarModalPool = useMemo(() => {
-    if (!deferredAnchorRelease) {
+  const computedSimilarModalPool = useMemo(() => {
+    if (!similarAnchorRelease) {
       return null;
     }
 
     return getModalSimilarReleasesPool({
-      release: deferredAnchorRelease,
+      release: similarAnchorRelease,
       releasesForSimilar,
     });
-  }, [deferredAnchorRelease, releasesForSimilar]);
+  }, [similarAnchorRelease, releasesForSimilar]);
+
+  const similarModalPoolRef = useRef<{
+    anchorKey: string;
+    pool: NonNullable<typeof computedSimilarModalPool>;
+  } | null>(null);
+
+  if (computedSimilarModalPool && similarSourceKey) {
+    similarModalPoolRef.current = {
+      anchorKey: similarSourceKey,
+      pool: computedSimilarModalPool,
+    };
+  }
+
+  if (
+    similarSourceKey &&
+    similarModalPoolRef.current?.anchorKey !== similarSourceKey
+  ) {
+    similarModalPoolRef.current = null;
+  }
+
+  const similarModalPool =
+    computedSimilarModalPool ??
+    (similarSourceKey &&
+    similarModalPoolRef.current?.anchorKey === similarSourceKey
+      ? similarModalPoolRef.current.pool
+      : null);
 
   const similarPageCount = similarModalPool?.pageCount ?? 0;
   const totalSimilarMatchCount = similarModalPool?.totalMatchCount ?? 0;
 
   const { similarPageIndex, goSimilarPagePrev, goSimilarPageNext } =
     useSimilarReleasesPageState(
-      deferredSimilarSourceKey,
+      similarSourceKey,
       similarSourceKey,
       similarPageCount,
     );

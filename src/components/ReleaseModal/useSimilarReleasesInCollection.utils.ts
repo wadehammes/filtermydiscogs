@@ -16,6 +16,24 @@ export const isDeferredSimilarAnchorReady = (
       String(release.instance_id) === deferredSimilarSourceKey,
   );
 
+export const resolveSimilarAnchorRelease = (
+  release: DiscogsRelease | null,
+  similarSourceKey: string | null,
+  deferredSimilarSourceKey: string | null,
+): DiscogsRelease | null => {
+  if (
+    release &&
+    similarSourceKey &&
+    String(release.instance_id) === similarSourceKey
+  ) {
+    return release;
+  }
+
+  return isDeferredSimilarAnchorReady(deferredSimilarSourceKey, release)
+    ? release
+    : null;
+};
+
 export const getSimilarReleasesUnsettled = ({
   enabled,
   release,

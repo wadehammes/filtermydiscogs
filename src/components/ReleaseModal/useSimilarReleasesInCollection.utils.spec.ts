@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   getSimilarReleasesSidebarLoading,
   isDeferredSimilarAnchorReady,
+  resolveSimilarAnchorRelease,
 } from "src/components/ReleaseModal/useSimilarReleasesInCollection.utils";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 
@@ -18,6 +19,27 @@ describe("useSimilarReleasesInCollection.utils", () => {
       true,
     );
     expect(isDeferredSimilarAnchorReady(null, sourceRelease)).toBe(false);
+  });
+
+  it("resolveSimilarAnchorRelease uses the current release while its anchor key is active", () => {
+    expect(
+      resolveSimilarAnchorRelease(
+        sourceRelease,
+        "source-instance",
+        "previous-instance",
+      ),
+    ).toBe(sourceRelease);
+    expect(
+      resolveSimilarAnchorRelease(
+        sourceRelease,
+        "source-instance",
+        "source-instance",
+      ),
+    ).toBe(sourceRelease);
+    expect(
+      resolveSimilarAnchorRelease(sourceRelease, null, "source-instance"),
+    ).toBe(sourceRelease);
+    expect(resolveSimilarAnchorRelease(sourceRelease, null, null)).toBe(null);
   });
 
   it("getSimilarReleasesSidebarLoading is true while collection or deferred inputs lag", () => {

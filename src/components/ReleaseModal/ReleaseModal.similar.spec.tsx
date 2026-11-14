@@ -168,6 +168,12 @@ describe("ReleaseModal similar sidebar", () => {
     expect(
       screen.getByTestId("fmdReleaseSimilarSidebarPage"),
     ).toHaveTextContent("2 of 2");
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarCount"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("fmdReleaseSimilarSidebarLoading"),
+    ).not.toBeInTheDocument();
   });
 
   it("when collection pagination is still in progress, scores similar matches from the loaded snapshot", async () => {
