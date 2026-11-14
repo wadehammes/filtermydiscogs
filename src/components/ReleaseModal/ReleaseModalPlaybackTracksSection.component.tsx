@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import styles from "src/components/ReleaseModal/ReleaseModal.module.css";
+import { getReleaseModalPlaybackFallbackProps } from "src/components/ReleaseModal/ReleaseModalPlaybackFallbackProps.utils";
 import { ReleasePlaybackFallback } from "src/components/ReleasePlaybackFallback/ReleasePlaybackFallback.component";
 import { ReleasePlaybackPreview } from "src/components/ReleasePlaybackPreview/ReleasePlaybackPreview.component";
 import { ReleaseTracklist } from "src/components/ReleaseTracklist/ReleaseTracklist.component";
@@ -11,11 +12,11 @@ import { definedProps } from "src/utils/definedProps";
 import type { UserTrackStatCounts } from "src/utils/userTrack";
 
 interface ReleaseModalPlaybackTracksSectionProps {
+  discogsReleaseId: number | null | undefined;
   releaseTitle: string;
   releaseArtistNames: string;
   tracks: DiscogsTrack[];
   videos: DiscogsVideo[];
-  hasEmbeddableVideo: boolean;
   hasTracklistPlayback: boolean;
   releasePreviewVideos: DiscogsVideo[];
   releasePreviewTracks: DiscogsTrack[];
@@ -49,10 +50,10 @@ interface ReleaseModalPlaybackTracksSectionProps {
 }
 
 export const ReleaseModalPlaybackTracksSection = ({
+  discogsReleaseId,
   releaseTitle,
   tracks,
   videos,
-  hasEmbeddableVideo,
   hasTracklistPlayback,
   releasePreviewVideos,
   releasePreviewTracks,
@@ -95,18 +96,20 @@ export const ReleaseModalPlaybackTracksSection = ({
 
   const hasUserYoutubeOverride = (trackPosition: string) =>
     Boolean(userYoutubeIdByPosition[trackPosition]);
-  const hasUserYoutubeOverrideOnRelease =
-    Object.keys(userYoutubeIdByPosition).length > 0;
+  const { fallbackVideos, tracksLackMatchedVideos } =
+    getReleaseModalPlaybackFallbackProps(videos, releasePreviewVideos);
 
   return (
     <section
       className={classNames(styles.modalCard, styles.playbackSection)}
       aria-label="Tracks"
     >
-      {!(hasEmbeddableVideo || hasUserYoutubeOverrideOnRelease) ? (
+      {!hasTracklistPlayback ? (
         <ReleasePlaybackFallback
+          discogsReleaseId={discogsReleaseId}
           fallbackSearchUrl={fallbackSearchUrl}
-          videos={videos}
+          tracksLackMatchedVideos={tracksLackMatchedVideos}
+          videos={fallbackVideos}
         />
       ) : null}
       <ReleaseTracklist
