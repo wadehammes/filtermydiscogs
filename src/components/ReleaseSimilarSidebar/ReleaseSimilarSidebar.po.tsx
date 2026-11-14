@@ -7,20 +7,9 @@ import type { DiscogsRelease } from "src/types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import { ReleaseSimilarSidebar } from "./ReleaseSimilarSidebar.component";
+import type { ReleaseSimilarSidebarProps } from "./ReleaseSimilarSidebar.types";
 
-export type ReleaseSimilarSidebarRenderProps = {
-  similarReleases?: DiscogsRelease[];
-  totalSimilarMatchCount?: number;
-  similarPageCount?: number;
-  similarPageIndex?: number;
-  isLoading?: boolean;
-  canGoSimilarPagePrev?: boolean;
-  canGoSimilarPageNext?: boolean;
-  onSimilarPagePrev?: () => void;
-  onSimilarPageNext?: () => void;
-  onReleaseClick?: (instanceId: string) => void;
-  variant?: "aside" | "inline";
-};
+export type ReleaseSimilarSidebarRenderProps = Partial<ReleaseSimilarSidebarProps>;
 
 export class ReleaseSimilarSidebarPageObject extends BasePageObject {
   public testId = "fmdReleaseSimilarSidebar";

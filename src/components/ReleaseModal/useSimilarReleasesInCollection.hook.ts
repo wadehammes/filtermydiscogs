@@ -6,7 +6,6 @@ import type { DiscogsRelease } from "src/types";
 import { releaseHasSimilarMatchTags } from "src/utils/similarReleases";
 import {
   getModalSimilarReleasesBatch,
-  getModalSimilarReleasesPool,
   getSimilarReleasesSidebarLoading,
   getSimilarReleasesUnsettled,
   resolveSimilarAnchorRelease,
@@ -15,6 +14,7 @@ import {
   persistSimilarPageIndexForAnchor,
   useSimilarReleasesPageState,
 } from "./useSimilarReleasesPageState.hook";
+import { useStableSimilarModalPool } from "./useStableSimilarModalPool.hook";
 
 const EMPTY_SIMILAR_BATCH: DiscogsRelease[] = [];
 
@@ -36,49 +36,16 @@ export const useSimilarReleasesInCollection = (
   });
 
   const canHaveSimilar = release ? releaseHasSimilarMatchTags(release) : false;
-
   const similarAnchorRelease = resolveSimilarAnchorRelease(
     release,
     similarSourceKey,
     deferredSimilarSourceKey,
   );
-
-  const computedSimilarModalPool = useMemo(() => {
-    if (!similarAnchorRelease) {
-      return null;
-    }
-
-    return getModalSimilarReleasesPool({
-      release: similarAnchorRelease,
-      releasesForSimilar,
-    });
-  }, [similarAnchorRelease, releasesForSimilar]);
-
-  const similarModalPoolRef = useRef<{
-    anchorKey: string;
-    pool: NonNullable<typeof computedSimilarModalPool>;
-  } | null>(null);
-
-  if (computedSimilarModalPool && similarSourceKey) {
-    similarModalPoolRef.current = {
-      anchorKey: similarSourceKey,
-      pool: computedSimilarModalPool,
-    };
-  }
-
-  if (
-    similarSourceKey &&
-    similarModalPoolRef.current?.anchorKey !== similarSourceKey
-  ) {
-    similarModalPoolRef.current = null;
-  }
-
-  const similarModalPool =
-    computedSimilarModalPool ??
-    (similarSourceKey &&
-    similarModalPoolRef.current?.anchorKey === similarSourceKey
-      ? similarModalPoolRef.current.pool
-      : null);
+  const similarModalPool = useStableSimilarModalPool(
+    similarSourceKey,
+    similarAnchorRelease,
+    releasesForSimilar,
+  );
 
   const similarPageCount = similarModalPool?.pageCount ?? 0;
   const totalSimilarMatchCount = similarModalPool?.totalMatchCount ?? 0;

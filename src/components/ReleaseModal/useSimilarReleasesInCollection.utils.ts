@@ -97,3 +97,36 @@ export const getModalSimilarReleasesBatch = (
   pageIndex: number,
 ): DiscogsRelease[] =>
   sliceSimilarReleasesModalBatch(pool, RELEASE_MODAL_SIMILAR_LIMIT, pageIndex);
+
+export type SimilarModalPoolCache = {
+  anchorKey: string;
+  pool: SimilarReleasesModalPool;
+} | null;
+
+export const resolveStableSimilarModalPool = ({
+  similarSourceKey,
+  computedPool,
+  cache,
+}: {
+  similarSourceKey: string | null;
+  computedPool: SimilarReleasesModalPool | null;
+  cache: SimilarModalPoolCache;
+}): {
+  cache: SimilarModalPoolCache;
+  similarModalPool: SimilarReleasesModalPool | null;
+} => {
+  let nextCache =
+    similarSourceKey && cache?.anchorKey !== similarSourceKey ? null : cache;
+
+  if (computedPool && similarSourceKey) {
+    nextCache = { anchorKey: similarSourceKey, pool: computedPool };
+  }
+
+  const similarModalPool =
+    computedPool ??
+    (similarSourceKey && nextCache?.anchorKey === similarSourceKey
+      ? nextCache.pool
+      : null);
+
+  return { cache: nextCache, similarModalPool };
+};

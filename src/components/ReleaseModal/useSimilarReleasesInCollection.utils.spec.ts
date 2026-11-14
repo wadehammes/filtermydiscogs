@@ -3,6 +3,7 @@ import {
   getSimilarReleasesSidebarLoading,
   isDeferredSimilarAnchorReady,
   resolveSimilarAnchorRelease,
+  resolveStableSimilarModalPool,
 } from "src/components/ReleaseModal/useSimilarReleasesInCollection.utils";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 
@@ -40,6 +41,30 @@ describe("useSimilarReleasesInCollection.utils", () => {
       resolveSimilarAnchorRelease(sourceRelease, null, "source-instance"),
     ).toBe(sourceRelease);
     expect(resolveSimilarAnchorRelease(sourceRelease, null, null)).toBe(null);
+  });
+
+  it("resolveStableSimilarModalPool reuses the prior pool while rescore is pending", () => {
+    const pool = {
+      fullPool: [sourceRelease, peerRelease],
+      pageCount: 2,
+      totalMatchCount: 2,
+    };
+
+    const settled = resolveStableSimilarModalPool({
+      similarSourceKey: "source-instance",
+      computedPool: pool,
+      cache: null,
+    });
+
+    expect(settled.similarModalPool).toBe(pool);
+
+    const sticky = resolveStableSimilarModalPool({
+      similarSourceKey: "source-instance",
+      computedPool: null,
+      cache: settled.cache,
+    });
+
+    expect(sticky.similarModalPool).toBe(pool);
   });
 
   it("getSimilarReleasesSidebarLoading is true while collection or deferred inputs lag", () => {
