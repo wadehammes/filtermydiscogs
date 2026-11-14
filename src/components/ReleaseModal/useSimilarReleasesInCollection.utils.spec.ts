@@ -69,7 +69,7 @@ describe("useSimilarReleasesInCollection.utils", () => {
         releasesForSimilar: [sourceRelease],
         allReleases: collection,
         similarModalPool: {
-          orderedMatches: collection,
+          fullPool: collection,
           pageCount: 1,
           totalMatchCount: 1,
         },
