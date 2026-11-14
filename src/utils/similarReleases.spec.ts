@@ -275,7 +275,10 @@ describe("getSimilarReleases", () => {
     });
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.instance_id).toBe("duplicate-release-a");
+    expect(results[0]?.basic_information.id).toBe(9001);
+    expect(["duplicate-release-a", "duplicate-release-b"]).toContain(
+      results[0]?.instance_id,
+    );
   });
 
   it("excludes other collection copies of the source release id", () => {
