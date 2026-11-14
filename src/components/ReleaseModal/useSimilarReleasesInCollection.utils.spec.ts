@@ -13,10 +13,11 @@ describe("useSimilarReleasesInCollection.utils", () => {
     instance_id: "peer-instance",
   });
 
-  it("isDeferredSimilarAnchorReady is false while the collection is loading", () => {
-    expect(
-      isDeferredSimilarAnchorReady("source-instance", sourceRelease, true),
-    ).toBe(false);
+  it("isDeferredSimilarAnchorReady is true when the deferred anchor matches the release", () => {
+    expect(isDeferredSimilarAnchorReady("source-instance", sourceRelease)).toBe(
+      true,
+    );
+    expect(isDeferredSimilarAnchorReady(null, sourceRelease)).toBe(false);
   });
 
   it("getSimilarReleasesSidebarLoading is true while collection or deferred inputs lag", () => {

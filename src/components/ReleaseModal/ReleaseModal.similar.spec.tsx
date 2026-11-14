@@ -170,7 +170,7 @@ describe("ReleaseModal similar sidebar", () => {
     ).toHaveTextContent("2 of 2");
   });
 
-  it("shows crate-style loading in the sidebar until the collection has fully loaded", async () => {
+  it("when collection pagination is still in progress, scores similar matches from the loaded snapshot", async () => {
     const { sourceRelease, similarRelease } = buildSimilarReleasesFixture();
 
     mockCollectionLoadState.hasNextPage = true;
@@ -179,7 +179,9 @@ describe("ReleaseModal similar sidebar", () => {
 
     await expectSimilarSidebar();
 
-    expect(screen.getByTestId("fmdPageLoader")).toBeInTheDocument();
-    expect(screen.queryByText("Similar Album")).not.toBeInTheDocument();
+    expect(screen.getByText("Similar Album")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("fmdReleaseSimilarSidebarLoading"),
+    ).not.toBeInTheDocument();
   });
 });

@@ -7,38 +7,33 @@ import {
 describe("useSimilarReleasesPageState.utils", () => {
   const baseState: SimilarReleasesPageState = {
     anchorKey: "source-instance",
-    collectionCount: 100,
     index: 1,
   };
 
-  it("when the collection grows, keeps the current page index clamped to the page count", () => {
+  it("when the page count changes, clamps the current page index", () => {
     expect(
       resolveSimilarReleasesPageState({
         anchorKey: "source-instance",
-        collectionReleaseCount: 101,
-        previous: baseState,
+        previous: { anchorKey: "source-instance", index: 3 },
         pageCount: 2,
         restoredPageIndex: 0,
       }),
     ).toEqual({
       anchorKey: "source-instance",
-      collectionCount: 101,
       index: 1,
     });
   });
 
-  it("when the collection grows, resets the page index for a new anchor", () => {
+  it("when the anchor changes, restores the remembered page index", () => {
     expect(
       resolveSimilarReleasesPageState({
         anchorKey: "next-instance",
-        collectionReleaseCount: 101,
         previous: baseState,
         pageCount: 2,
         restoredPageIndex: 0,
       }),
     ).toEqual({
       anchorKey: "next-instance",
-      collectionCount: 101,
       index: 0,
     });
   });

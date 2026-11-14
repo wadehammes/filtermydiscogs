@@ -8,6 +8,7 @@ import {
   getModalSimilarReleasesBatch,
   getModalSimilarReleasesPool,
   getSimilarReleasesSidebarLoading,
+  getSimilarReleasesUnsettled,
   isDeferredSimilarAnchorReady,
 } from "./useSimilarReleasesInCollection.utils";
 import {
@@ -39,7 +40,6 @@ export const useSimilarReleasesInCollection = (
   const deferredAnchorRelease = isDeferredSimilarAnchorReady(
     deferredSimilarSourceKey,
     release,
-    isCollectionLoading,
   )
     ? release
     : null;
@@ -62,7 +62,6 @@ export const useSimilarReleasesInCollection = (
     useSimilarReleasesPageState(
       deferredSimilarSourceKey,
       similarSourceKey,
-      allReleases.length,
       similarPageCount,
     );
 
@@ -92,7 +91,7 @@ export const useSimilarReleasesInCollection = (
   const canGoSimilarPagePrev = similarPageIndex > 0;
   const canGoSimilarPageNext = similarPageIndex < similarPageCount - 1;
 
-  const isSimilarLoading = getSimilarReleasesSidebarLoading({
+  const unsettledParams = {
     enabled,
     release,
     canHaveSimilar,
@@ -101,6 +100,11 @@ export const useSimilarReleasesInCollection = (
     deferredSimilarSourceKey,
     releasesForSimilar,
     allReleases,
+  };
+
+  const isSimilarUnsettled = getSimilarReleasesUnsettled(unsettledParams);
+  const isSimilarLoading = getSimilarReleasesSidebarLoading({
+    ...unsettledParams,
     similarModalPool,
   });
 
@@ -109,6 +113,7 @@ export const useSimilarReleasesInCollection = (
     totalSimilarMatchCount,
     similarPageCount,
     similarPageIndex,
+    isSimilarUnsettled,
     isSimilarLoading,
     canHaveSimilar,
     canGoSimilarPagePrev,

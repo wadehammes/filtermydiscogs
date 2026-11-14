@@ -9,16 +9,14 @@ import {
 export const isDeferredSimilarAnchorReady = (
   deferredSimilarSourceKey: string | null,
   release: DiscogsRelease | null,
-  isCollectionLoading: boolean,
 ): release is DiscogsRelease =>
   Boolean(
     deferredSimilarSourceKey &&
       release &&
-      !isCollectionLoading &&
       String(release.instance_id) === deferredSimilarSourceKey,
   );
 
-export const getSimilarReleasesSidebarLoading = ({
+export const getSimilarReleasesUnsettled = ({
   enabled,
   release,
   canHaveSimilar,
@@ -27,7 +25,29 @@ export const getSimilarReleasesSidebarLoading = ({
   deferredSimilarSourceKey,
   releasesForSimilar,
   allReleases,
+}: {
+  enabled: boolean;
+  release: DiscogsRelease | null;
+  canHaveSimilar: boolean;
+  isCollectionLoading: boolean;
+  similarSourceKey: string | null;
+  deferredSimilarSourceKey: string | null;
+  releasesForSimilar: DiscogsRelease[];
+  allReleases: DiscogsRelease[];
+}): boolean =>
+  Boolean(
+    enabled &&
+      release &&
+      canHaveSimilar &&
+      (isCollectionLoading ||
+        (similarSourceKey !== null &&
+          similarSourceKey !== deferredSimilarSourceKey) ||
+        releasesForSimilar !== allReleases),
+  );
+
+export const getSimilarReleasesSidebarLoading = ({
   similarModalPool,
+  ...unsettledParams
 }: {
   enabled: boolean;
   release: DiscogsRelease | null;
@@ -39,16 +59,7 @@ export const getSimilarReleasesSidebarLoading = ({
   allReleases: DiscogsRelease[];
   similarModalPool: SimilarReleasesModalPool | null;
 }): boolean =>
-  similarModalPool == null &&
-  Boolean(
-    enabled &&
-      release &&
-      canHaveSimilar &&
-      (isCollectionLoading ||
-        (similarSourceKey !== null &&
-          similarSourceKey !== deferredSimilarSourceKey) ||
-        releasesForSimilar !== allReleases),
-  );
+  similarModalPool == null && getSimilarReleasesUnsettled(unsettledParams);
 
 export const getModalSimilarReleasesPool = ({
   release,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { SIMILAR_PAGE_INDEX_SESSION_KEY } from "src/constants/storageKeys";
 import {
   clampSimilarPageIndex,
@@ -96,7 +96,6 @@ const readSimilarPageIndexFromMemory = (
 const resolveSimilarPageIndex = (
   anchorKey: string,
   persistKey: string,
-  collectionReleaseCount: number,
   previous: SimilarReleasesPageState,
   pageCount: number,
 ): SimilarReleasesPageState => {
@@ -108,7 +107,6 @@ const resolveSimilarPageIndex = (
 
   return resolveSimilarReleasesPageState({
     anchorKey,
-    collectionReleaseCount,
     previous,
     pageCount,
     restoredPageIndex: readSimilarPageIndexFromMemory(persistKey, anchorKey),
@@ -118,7 +116,6 @@ const resolveSimilarPageIndex = (
 export const useSimilarReleasesPageState = (
   deferredSimilarSourceKey: string | null,
   persistAnchorKey: string | null,
-  collectionReleaseCount: number,
   pageCount: number,
 ) => {
   const anchorKey = deferredSimilarSourceKey ?? "";
@@ -128,33 +125,22 @@ export const useSimilarReleasesPageState = (
 
     return {
       anchorKey,
-      collectionCount: collectionReleaseCount,
       index:
         pageCount <= 0 ? restored : clampSimilarPageIndex(restored, pageCount),
     };
   });
 
-  const resolvedPageState = resolveSimilarPageIndex(
-    anchorKey,
-    persistKey,
-    collectionReleaseCount,
-    pageState,
-    pageCount,
-  );
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     setPageState((previous) => {
       const resolved = resolveSimilarPageIndex(
         anchorKey,
         persistKey,
-        collectionReleaseCount,
         previous,
         pageCount,
       );
 
       if (
         resolved.anchorKey === previous.anchorKey &&
-        resolved.collectionCount === previous.collectionCount &&
         resolved.index === previous.index
       ) {
         return previous;
@@ -162,9 +148,9 @@ export const useSimilarReleasesPageState = (
 
       return resolved;
     });
-  }, [anchorKey, collectionReleaseCount, pageCount, persistKey]);
+  }, [anchorKey, pageCount, persistKey]);
 
-  const similarPageIndex = resolvedPageState.index;
+  const similarPageIndex = pageState.index;
 
   const goSimilarPagePrev = useCallback(() => {
     setPageState((previous) => {
