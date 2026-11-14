@@ -30,6 +30,7 @@ describe("useSimilarReleasesInCollection.utils", () => {
       deferredSimilarSourceKey: "source-instance",
       releasesForSimilar: collection,
       allReleases: collection,
+      similarModalPool: null,
     };
 
     expect(getSimilarReleasesSidebarLoading(base)).toBe(false);
@@ -52,5 +53,27 @@ describe("useSimilarReleasesInCollection.utils", () => {
         allReleases: collection,
       }),
     ).toBe(true);
+  });
+
+  it("getSimilarReleasesSidebarLoading is false when the modal pool is already settled", () => {
+    const collection = [sourceRelease, peerRelease];
+
+    expect(
+      getSimilarReleasesSidebarLoading({
+        enabled: true,
+        release: sourceRelease,
+        canHaveSimilar: true,
+        isCollectionLoading: false,
+        similarSourceKey: "source-instance",
+        deferredSimilarSourceKey: "source-instance",
+        releasesForSimilar: [sourceRelease],
+        allReleases: collection,
+        similarModalPool: {
+          orderedMatches: collection,
+          pageCount: 1,
+          totalMatchCount: 1,
+        },
+      }),
+    ).toBe(false);
   });
 });

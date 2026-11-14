@@ -92,18 +92,17 @@ export const useSimilarReleasesInCollection = (
   const canGoSimilarPagePrev = similarPageIndex > 0;
   const canGoSimilarPageNext = similarPageIndex < similarPageCount - 1;
 
-  const isSimilarLoading =
-    similarModalPool == null &&
-    getSimilarReleasesSidebarLoading({
-      enabled,
-      release,
-      canHaveSimilar,
-      isCollectionLoading,
-      similarSourceKey,
-      deferredSimilarSourceKey,
-      releasesForSimilar,
-      allReleases,
-    });
+  const isSimilarLoading = getSimilarReleasesSidebarLoading({
+    enabled,
+    release,
+    canHaveSimilar,
+    isCollectionLoading,
+    similarSourceKey,
+    deferredSimilarSourceKey,
+    releasesForSimilar,
+    allReleases,
+    similarModalPool,
+  });
 
   return {
     similarReleases,

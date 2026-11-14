@@ -27,6 +27,7 @@ export const getSimilarReleasesSidebarLoading = ({
   deferredSimilarSourceKey,
   releasesForSimilar,
   allReleases,
+  similarModalPool,
 }: {
   enabled: boolean;
   release: DiscogsRelease | null;
@@ -36,7 +37,9 @@ export const getSimilarReleasesSidebarLoading = ({
   deferredSimilarSourceKey: string | null;
   releasesForSimilar: DiscogsRelease[];
   allReleases: DiscogsRelease[];
+  similarModalPool: SimilarReleasesModalPool | null;
 }): boolean =>
+  similarModalPool == null &&
   Boolean(
     enabled &&
       release &&
