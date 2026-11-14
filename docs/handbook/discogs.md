@@ -43,7 +43,7 @@ Set in [`src/app/api/auth/callback/route.ts`](../../src/app/api/auth/callback/ro
 
 `secure` is **`false` in development**, **`true` in production**. Max age: 30 days.
 
-Client reads username via [`getUsernameFromCookies`](../../src/services/auth.service.ts) (`js-cookie`). User ID and **`avatarUrl`** come from [`/api/auth/check`](../../src/app/api/auth/check/route.ts) (verified OAuth identity; avatar via **`GET /users/{username}`** through [`resolveDiscogsAvatarUrl`](../../src/lib/user-profile.server.ts) with a 24h in-memory cache and in-flight request dedup in [`user-profile-cache.ts`](../../src/lib/user-profile-cache.ts)) and are stored in [`AuthProvider`](../../src/context/auth.context.tsx)—not from a client-readable cookie. Header avatars render through [`buildDiscogsAvatarProxyUrl`](../../src/utils/discogsAvatarUrl.ts) → **`/api/image-proxy`**. Access tokens are **never** exposed to client JS.
+Client reads username via [`getUsernameFromCookies`](../../src/services/auth.service.ts) (`js-cookie`). User ID and **`avatarUrl`** come from [`/api/auth/check`](../../src/app/api/auth/check/route.ts) (verified OAuth identity; avatar via **`GET /users/{username}`** through [`resolveDiscogsAvatarUrl`](../../src/lib/user-profile.server.ts) with a 24h in-memory cache and in-flight request dedup in [`user-profile-cache.ts`](../../src/lib/user-profile-cache.ts)—see [`user-profile-cache.spec.ts`](../../src/lib/user-profile-cache.spec.ts)) and are stored in [`AuthProvider`](../../src/context/auth.context.tsx)—not from a client-readable cookie. Header avatars render through [`buildDiscogsAvatarProxyUrl`](../../src/utils/discogsAvatarUrl.ts) → **`/api/image-proxy`**. Access tokens are **never** exposed to client JS.
 
 ## Authenticated API routes
 
