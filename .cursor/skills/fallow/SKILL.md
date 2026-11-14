@@ -9,7 +9,7 @@ traces, duplication, health score, guard boundaries, or fallow commands.
 # Fallow (this repo)
 
 - **MCP:** [`.cursor/mcp.json`](../../.cursor/mcp.json) — use **`fallow`** namespace tools in agent sessions.
-- **Config:** [`.fallowrc.jsonc`](../../.fallowrc.jsonc). **CI dead-code gate** stays **`pnpm knip:ci`**, not Fallow.
+- **Config:** [`.fallowrc.jsonc`](../../.fallowrc.jsonc). **CI:** **`pnpm knip:ci`** (dead code) + **`pnpm fallow:audit:ci`** (worsened complexity at **error** severity vs **`origin/staging`**).
 - **Task map:** [`AGENTS.md`](../../AGENTS.md) (also in session hooks).
 - **Full skill + CLI flags:** `node_modules/fallow/skills/fallow/SKILL.md` after **`pnpm install`** — read before non-trivial analysis; resolve flags from `fallow --help`, not memory.
 - **Refresh MCP after upgrade:** `pnpm exec fallow agent install --harness cursor --without hooks --without skill`

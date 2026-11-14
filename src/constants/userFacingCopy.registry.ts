@@ -25,6 +25,14 @@ import {
 import { formatPlaylistSkippedNotInCollectionToast } from "src/constants/playlistPlaybackCopy.constants";
 import { PUBLIC_RELEASE_NO_PLAYABLE_TRACKS_INFO_TOOLTIP } from "src/constants/publicReleaseListen.constants";
 import {
+  formatSimilarReleaseCountLabel,
+  RELEASE_SIMILAR_SHUFFLE_ARIA_LABEL,
+  RELEASE_SIMILAR_SHUFFLE_LABEL,
+  RELEASE_SIMILAR_SHUFFLE_TOOLTIP,
+  RELEASE_SIMILAR_SIDEBAR_SUBTITLE,
+  RELEASE_SIMILAR_SIDEBAR_TITLE,
+} from "src/constants/releaseSimilarSidebar.constants";
+import {
   SENTRY_USER_FEEDBACK_DIALOG_DESCRIPTION,
   SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE,
 } from "src/constants/sentryUserFeedbackForm.constants";
@@ -142,6 +150,36 @@ export const getUserFacingCopyEntries = (
       text: formatPlaylistSkippedNotInCollectionToast(2),
       source: "playlistPlaybackCopy.constants.ts",
     },
+    {
+      id: "releaseSimilar.sidebarTitle",
+      text: RELEASE_SIMILAR_SIDEBAR_TITLE,
+      source: "releaseSimilarSidebar.constants.ts",
+    },
+    {
+      id: "releaseSimilar.sidebarSubtitle",
+      text: RELEASE_SIMILAR_SIDEBAR_SUBTITLE,
+      source: "releaseSimilarSidebar.constants.ts",
+    },
+    {
+      id: "releaseSimilar.shuffleLabel",
+      text: RELEASE_SIMILAR_SHUFFLE_LABEL,
+      source: "releaseSimilarSidebar.constants.ts",
+    },
+    {
+      id: "releaseSimilar.shuffleAriaLabel",
+      text: RELEASE_SIMILAR_SHUFFLE_ARIA_LABEL,
+      source: "releaseSimilarSidebar.constants.ts",
+    },
+    {
+      id: "releaseSimilar.shuffleTooltip",
+      text: RELEASE_SIMILAR_SHUFFLE_TOOLTIP,
+      source: "releaseSimilarSidebar.constants.ts",
+    },
+    {
+      id: "releaseSimilar.countLabel",
+      text: formatSimilarReleaseCountLabel(12),
+      source: "releaseSimilarSidebar.constants.ts",
+    },
   ];
 
   return entries;
@@ -160,6 +198,8 @@ export const USER_FACING_COPY_SOURCE_FILES = [
   "src/constants/sentryUserFeedbackForm.constants.ts",
   "src/constants/publicReleaseListen.constants.ts",
   "src/constants/playlistPlaybackCopy.constants.ts",
+  "src/constants/releaseSimilarSidebar.constants.ts",
+  "src/components/ReleaseSimilarSidebar/ReleaseSimilarSidebar.component.tsx",
   "src/components/SupportProjectToast/supportProjectToast.tsx",
   "src/components/About/AboutDonationSection.component.tsx",
   "src/components/CookieConsentBanner/CookieConsentBanner.component.tsx",

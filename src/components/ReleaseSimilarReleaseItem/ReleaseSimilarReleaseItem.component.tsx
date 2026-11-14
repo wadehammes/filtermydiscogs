@@ -82,21 +82,24 @@ export const ReleaseSimilarReleaseItem = ({
         >
           <span
             className={classNames(
-              "typography-span",
+              styles.itemTextLine,
               crateItemStyles.itemArtist,
             )}
           >
             {artist}
           </span>
           <span
-            className={classNames("typography-span", crateItemStyles.itemTitle)}
+            className={classNames(
+              styles.itemTextLine,
+              crateItemStyles.itemTitle,
+            )}
           >
             {basicInfo.title}
           </span>
           {meta ? (
             <span
               className={classNames(
-                "typography-span",
+                styles.itemTextLine,
                 crateItemStyles.itemLabel,
               )}
             >

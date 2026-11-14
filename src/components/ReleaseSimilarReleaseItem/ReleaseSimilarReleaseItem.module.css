@@ -53,9 +53,19 @@
 
 .itemContent {
   gap: 0;
+  min-width: 0;
   padding: var(--space-1) var(--space-1) var(--space-1) 0;
 
   & > * {
     line-height: 1;
   }
+}
+
+.itemTextLine {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--space-1) 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

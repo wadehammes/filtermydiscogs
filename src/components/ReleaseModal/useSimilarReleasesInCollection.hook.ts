@@ -1,16 +1,18 @@
-import { useDeferredValue, useMemo } from "react";
-import { RELEASE_MODAL_SIMILAR_LIMIT } from "src/constants/collection";
+import { useCallback, useDeferredValue, useMemo, useRef } from "react";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import type { DiscogsRelease } from "src/types";
-import { getSimilarReleases } from "src/utils/similarReleases";
+import { releaseHasSimilarMatchTags } from "src/utils/similarReleases";
+import {
+  getCanShuffleSimilarReleases,
+  getModalSimilarReleasesSnapshot,
+  isDeferredSimilarAnchorReady as isSimilarAnchorDeferredReady,
+  planModalSimilarReleaseShuffle,
+} from "./useSimilarReleasesInCollection.utils";
+import { useSimilarReleasesShuffleState } from "./useSimilarReleasesShuffleState.hook";
 
-const releaseCanHaveSimilarMatches = (release: DiscogsRelease): boolean => {
-  const { genres, styles } = release.basic_information;
-
-  return (genres?.length ?? 0) > 0 || (styles?.length ?? 0) > 0;
-};
+const EMPTY_SIMILAR_BATCH: DiscogsRelease[] = [];
 
 export const useSimilarReleasesInCollection = (
   release: DiscogsRelease | null,
@@ -28,30 +30,88 @@ export const useSimilarReleasesInCollection = (
     hasNextPage,
     isFetchingNextPage,
   });
-
-  const canHaveSimilar = release
-    ? releaseCanHaveSimilarMatches(release)
-    : false;
-
-  const similarReleases = useMemo(() => {
-    if (!deferredSimilarSourceKey || isCollectionLoading) {
-      return [];
-    }
-
-    if (!release || String(release.instance_id) !== deferredSimilarSourceKey) {
-      return [];
-    }
-
-    return getSimilarReleases({
-      releases: releasesForSimilar,
-      sourceRelease: release,
-      limit: RELEASE_MODAL_SIMILAR_LIMIT,
-    });
-  }, [
+  const {
+    excludedInstanceIds,
+    shuffleSeed,
+    shuffledSimilarReleases,
+    applyShufflePlan,
+  } = useSimilarReleasesShuffleState(
     deferredSimilarSourceKey,
+    releasesForSimilar,
+  );
+
+  const canHaveSimilar = release ? releaseHasSimilarMatchTags(release) : false;
+
+  const isDeferredSimilarAnchorReady = isSimilarAnchorDeferredReady(
+    deferredSimilarSourceKey,
+    release,
     isCollectionLoading,
+  );
+
+  const { computedSimilarReleases, totalSimilarMatchCount } = useMemo(() => {
+    if (!isDeferredSimilarAnchorReady) {
+      return {
+        computedSimilarReleases: EMPTY_SIMILAR_BATCH,
+        totalSimilarMatchCount: 0,
+      };
+    }
+
+    const snapshot = getModalSimilarReleasesSnapshot({
+      release,
+      releasesForSimilar,
+      excludedInstanceIds,
+      shuffleSeed,
+    });
+
+    return {
+      computedSimilarReleases: snapshot.batch,
+      totalSimilarMatchCount: snapshot.totalMatchCount,
+    };
+  }, [
+    excludedInstanceIds,
+    isDeferredSimilarAnchorReady,
     release,
     releasesForSimilar,
+    shuffleSeed,
+  ]);
+
+  const similarReleases = shuffledSimilarReleases ?? computedSimilarReleases;
+
+  const similarReleasesRef = useRef(similarReleases);
+  similarReleasesRef.current = similarReleases;
+
+  const canShuffleSimilarReleases =
+    isDeferredSimilarAnchorReady &&
+    canHaveSimilar &&
+    getCanShuffleSimilarReleases({
+      release: release!,
+      releasesForSimilar,
+      excludedInstanceIds,
+      similarReleases,
+      totalSimilarMatchCount,
+    });
+
+  const shuffleSimilarReleases = useCallback(() => {
+    if (!isDeferredSimilarAnchorReady) {
+      return;
+    }
+
+    const plan = planModalSimilarReleaseShuffle({
+      release: release!,
+      releasesForSimilar,
+      excludedInstanceIds,
+      shuffleSeed,
+      visibleBatch: similarReleasesRef.current,
+    });
+
+    applyShufflePlan(plan);
+  }, [
+    applyShufflePlan,
+    excludedInstanceIds,
+    isDeferredSimilarAnchorReady,
+    release,
+    releasesForSimilar,
+    shuffleSeed,
   ]);
 
   const isSimilarLoading = Boolean(
@@ -60,7 +120,10 @@ export const useSimilarReleasesInCollection = (
 
   return {
     similarReleases,
+    totalSimilarMatchCount,
     isSimilarLoading,
     canHaveSimilar,
+    canShuffleSimilarReleases,
+    shuffleSimilarReleases,
   };
 };

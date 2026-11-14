@@ -10,14 +10,29 @@ interface GetSimilarReleasesParams {
   sourceRelease: DiscogsRelease;
   limit?: number;
   excludeInstanceIds?: ReadonlySet<string>;
+  tieBreakSeed?: number;
 }
+
+const hashInstanceIdWithSeed = (instanceId: string, seed: number): number => {
+  let hash = seed;
+  const value = `${seed}:${instanceId}`;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) | 0;
+  }
+
+  return hash;
+};
 
 const STYLE_WEIGHT = 0.65;
 const GENRE_WEIGHT = 0.35;
 const SHARED_ARTIST_PENALTY = 0.2;
-const SHARED_LABEL_BOOST = 0.05;
-const YEAR_PROXIMITY_MAX_BOOST = 0.1;
-const YEAR_PROXIMITY_WINDOW = 5;
+const SHARED_LABEL_BOOST = 0.08;
+const SHARED_FORMAT_BOOST = 0.05;
+const TAG_OVERLAP_BONUS_PER_TAG = 0.025;
+const TAG_OVERLAP_BONUS_MAX = 0.15;
+const YEAR_PROXIMITY_MAX_BOOST = 0.12;
+const YEAR_PROXIMITY_WINDOW = 8;
 
 const normalizeTag = (value: string): string => value.trim().toLowerCase();
 
@@ -112,20 +127,41 @@ const getLabelMatchKeys = (
   return keys;
 };
 
-const hasSharedArtist = (
-  sourceArtists: DiscogsArtist[] | undefined,
-  candidateArtists: DiscogsArtist[] | undefined,
-): boolean => {
-  const sourceKeys = new Set<string>();
+const buildArtistKeySet = (
+  artists: DiscogsArtist[] | undefined,
+): Set<string> => {
+  const keys = new Set<string>();
 
-  sourceArtists?.forEach((artist) => {
+  artists?.forEach((artist) => {
     for (const key of getArtistMatchKeys(artist)) {
-      sourceKeys.add(key);
+      keys.add(key);
     }
   });
 
-  for (const artist of candidateArtists ?? []) {
-    for (const key of getArtistMatchKeys(artist)) {
+  return keys;
+};
+
+const buildLabelKeySet = (
+  labels: DiscogsBasicInformation["labels"] | undefined,
+): Set<string> => {
+  const keys = new Set<string>();
+
+  labels?.forEach((label) => {
+    for (const key of getLabelMatchKeys(label)) {
+      keys.add(key);
+    }
+  });
+
+  return keys;
+};
+
+const candidateSharesKey = (
+  sourceKeys: Set<string>,
+  candidates: DiscogsArtist[] | undefined,
+  getKeys: (artist: DiscogsArtist) => string[],
+): boolean => {
+  for (const candidate of candidates ?? []) {
+    for (const key of getKeys(candidate)) {
       if (sourceKeys.has(key)) {
         return true;
       }
@@ -135,18 +171,10 @@ const hasSharedArtist = (
   return false;
 };
 
-const hasSharedLabel = (
-  sourceLabels: DiscogsBasicInformation["labels"] | undefined,
+const candidateSharesLabelKey = (
+  sourceKeys: Set<string>,
   candidateLabels: DiscogsBasicInformation["labels"] | undefined,
 ): boolean => {
-  const sourceKeys = new Set<string>();
-
-  sourceLabels?.forEach((label) => {
-    for (const key of getLabelMatchKeys(label)) {
-      sourceKeys.add(key);
-    }
-  });
-
   for (const label of candidateLabels ?? []) {
     for (const key of getLabelMatchKeys(label)) {
       if (sourceKeys.has(key)) {
@@ -156,6 +184,49 @@ const hasSharedLabel = (
   }
 
   return false;
+};
+
+const countSharedTags = ({
+  sourceGenres,
+  sourceStyles,
+  candidateGenres,
+  candidateStyles,
+}: {
+  sourceGenres: Set<string>;
+  sourceStyles: Set<string>;
+  candidateGenres: Set<string>;
+  candidateStyles: Set<string>;
+}): number => {
+  const sourceTags = new Set([...sourceGenres, ...sourceStyles]);
+  const candidateTags = new Set([...candidateGenres, ...candidateStyles]);
+  let overlap = 0;
+
+  for (const tag of sourceTags) {
+    if (candidateTags.has(tag)) {
+      overlap += 1;
+    }
+  }
+
+  return overlap;
+};
+
+const getTagOverlapBoost = (sharedTagCount: number): number => {
+  if (sharedTagCount === 0) {
+    return 0;
+  }
+
+  return Math.min(
+    sharedTagCount * TAG_OVERLAP_BONUS_PER_TAG,
+    TAG_OVERLAP_BONUS_MAX,
+  );
+};
+
+const getPrimaryFormatName = (
+  formats: DiscogsBasicInformation["formats"] | undefined,
+): string => {
+  const name = formats?.[0]?.name;
+
+  return name ? normalizeTag(name) : "";
 };
 
 const getWeightedTagScore = ({
@@ -207,54 +278,177 @@ const getYearProximityBoost = (
   );
 };
 
-const scoreSimilarRelease = ({
-  sourceRelease,
-  candidateRelease,
-}: {
-  sourceRelease: DiscogsRelease;
-  candidateRelease: DiscogsRelease;
-}): number | null => {
+type SimilarReleaseSourceContext = {
+  sourceGenres: Set<string>;
+  sourceStyles: Set<string>;
+  hasSourceTags: boolean;
+  sourceArtistKeys: Set<string>;
+  sourceLabelKeys: Set<string>;
+  sourcePrimaryFormat: string;
+  sourceYear: number;
+  sourceMasterId: number | undefined;
+  sourceInstanceId: string;
+  sourceReleaseId: number | null;
+};
+
+const buildSimilarReleaseSourceContext = (
+  sourceRelease: DiscogsRelease,
+): SimilarReleaseSourceContext => {
   const sourceInfo = sourceRelease.basic_information;
-  const candidateInfo = candidateRelease.basic_information;
   const sourceGenres = normalizeTagSet(sourceInfo.genres);
   const sourceStyles = normalizeTagSet(sourceInfo.styles);
+
+  return {
+    sourceGenres,
+    sourceStyles,
+    hasSourceTags: sourceGenres.size > 0 || sourceStyles.size > 0,
+    sourceArtistKeys: buildArtistKeySet(sourceInfo.artists),
+    sourceLabelKeys: buildLabelKeySet(sourceInfo.labels),
+    sourcePrimaryFormat: getPrimaryFormatName(sourceInfo.formats),
+    sourceYear: sourceInfo.year,
+    sourceMasterId: sourceInfo.master_id,
+    sourceInstanceId: sourceRelease.instance_id,
+    sourceReleaseId: parseReleaseId(sourceRelease),
+  };
+};
+
+export const releaseHasSimilarMatchTags = (
+  release: DiscogsRelease,
+): boolean => {
+  const { genres, styles } = release.basic_information;
+
+  return (genres?.length ?? 0) > 0 || (styles?.length ?? 0) > 0;
+};
+
+const scoreSimilarReleaseWithContext = (
+  source: SimilarReleaseSourceContext,
+  candidateRelease: DiscogsRelease,
+): number | null => {
+  const candidateInfo = candidateRelease.basic_information;
   const candidateGenres = normalizeTagSet(candidateInfo.genres);
   const candidateStyles = normalizeTagSet(candidateInfo.styles);
-  const sharedArtist = hasSharedArtist(
-    sourceInfo.artists,
+  const sharedArtist = candidateSharesKey(
+    source.sourceArtistKeys,
     candidateInfo.artists,
+    getArtistMatchKeys,
   );
-  const hasSourceTags = sourceGenres.size > 0 || sourceStyles.size > 0;
-  const styleScore = jaccardSimilarity(sourceStyles, candidateStyles);
+  const styleScore = jaccardSimilarity(source.sourceStyles, candidateStyles);
 
-  if (sourceStyles.size > 0 && styleScore === 0) {
+  if (source.sourceStyles.size > 0 && styleScore === 0) {
     return null;
   }
 
   const tagScore = getWeightedTagScore({
-    sourceGenres,
-    sourceStyles,
+    sourceGenres: source.sourceGenres,
+    sourceStyles: source.sourceStyles,
     candidateGenres,
     candidateStyles,
   });
 
-  if (!hasSourceTags || tagScore === 0) {
+  if (!source.hasSourceTags || tagScore === 0) {
     return null;
   }
 
-  let score = tagScore;
+  let score =
+    tagScore +
+    getTagOverlapBoost(
+      countSharedTags({
+        sourceGenres: source.sourceGenres,
+        sourceStyles: source.sourceStyles,
+        candidateGenres,
+        candidateStyles,
+      }),
+    );
 
   if (sharedArtist) {
     score -= SHARED_ARTIST_PENALTY;
   }
 
-  if (hasSharedLabel(sourceInfo.labels, candidateInfo.labels)) {
+  if (candidateSharesLabelKey(source.sourceLabelKeys, candidateInfo.labels)) {
     score += SHARED_LABEL_BOOST;
   }
 
-  score += getYearProximityBoost(sourceInfo.year, candidateInfo.year);
+  const candidatePrimaryFormat = getPrimaryFormatName(candidateInfo.formats);
+
+  if (
+    source.sourcePrimaryFormat !== "" &&
+    source.sourcePrimaryFormat === candidatePrimaryFormat
+  ) {
+    score += SHARED_FORMAT_BOOST;
+  }
+
+  score += getYearProximityBoost(source.sourceYear, candidateInfo.year);
 
   return score;
+};
+
+const sortScoredSimilarReleases = (
+  scored: Array<{ release: DiscogsRelease; score: number }>,
+  tieBreakSeed?: number,
+): void => {
+  scored.sort((left, right) => {
+    if (right.score !== left.score) {
+      return right.score - left.score;
+    }
+
+    if (tieBreakSeed !== undefined && tieBreakSeed > 0) {
+      return (
+        hashInstanceIdWithSeed(left.release.instance_id, tieBreakSeed) -
+        hashInstanceIdWithSeed(right.release.instance_id, tieBreakSeed)
+      );
+    }
+
+    return left.release.basic_information.title.localeCompare(
+      right.release.basic_information.title,
+    );
+  });
+};
+
+const collectScoredSimilarReleases = ({
+  releases,
+  source,
+  excludeInstanceIds,
+}: {
+  releases: DiscogsRelease[];
+  source: SimilarReleaseSourceContext;
+  excludeInstanceIds?: ReadonlySet<string>;
+}): Array<{ release: DiscogsRelease; score: number }> => {
+  const scored: Array<{ release: DiscogsRelease; score: number }> = [];
+
+  for (const release of releases) {
+    if (release.instance_id === source.sourceInstanceId) {
+      continue;
+    }
+
+    if (excludeInstanceIds?.has(release.instance_id)) {
+      continue;
+    }
+
+    const candidateReleaseId = parseReleaseId(release);
+    if (
+      source.sourceReleaseId &&
+      candidateReleaseId === source.sourceReleaseId
+    ) {
+      continue;
+    }
+
+    if (
+      source.sourceMasterId &&
+      release.basic_information.master_id === source.sourceMasterId
+    ) {
+      continue;
+    }
+
+    const score = scoreSimilarReleaseWithContext(source, release);
+
+    if (score === null) {
+      continue;
+    }
+
+    scored.push({ release, score });
+  }
+
+  return scored;
 };
 
 const dedupeSimilarResults = (
@@ -303,55 +497,66 @@ export const getSimilarReleases = ({
   sourceRelease,
   limit = 8,
   excludeInstanceIds,
+  tieBreakSeed,
 }: GetSimilarReleasesParams): DiscogsRelease[] => {
-  const sourceMasterId = sourceRelease.basic_information.master_id;
-  const sourceInstanceId = sourceRelease.instance_id;
-  const sourceReleaseId = parseReleaseId(sourceRelease);
-
-  const scored: Array<{ release: DiscogsRelease; score: number }> = [];
-
-  for (const release of releases) {
-    if (release.instance_id === sourceInstanceId) {
-      continue;
-    }
-
-    if (excludeInstanceIds?.has(release.instance_id)) {
-      continue;
-    }
-
-    const candidateReleaseId = parseReleaseId(release);
-    if (sourceReleaseId && candidateReleaseId === sourceReleaseId) {
-      continue;
-    }
-
-    if (
-      sourceMasterId &&
-      release.basic_information.master_id === sourceMasterId
-    ) {
-      continue;
-    }
-
-    const score = scoreSimilarRelease({
-      sourceRelease,
-      candidateRelease: release,
-    });
-
-    if (score === null) {
-      continue;
-    }
-
-    scored.push({ release, score });
-  }
-
-  scored.sort((left, right) => {
-    if (right.score !== left.score) {
-      return right.score - left.score;
-    }
-
-    return left.release.basic_information.title.localeCompare(
-      right.release.basic_information.title,
-    );
+  const source = buildSimilarReleaseSourceContext(sourceRelease);
+  const scored = collectScoredSimilarReleases({
+    releases,
+    source,
+    ...(excludeInstanceIds !== undefined ? { excludeInstanceIds } : {}),
   });
 
+  sortScoredSimilarReleases(scored, tieBreakSeed);
+
   return dedupeSimilarResults(scored, limit);
+};
+
+export type GetSimilarReleasesModalSnapshotParams = {
+  releases: DiscogsRelease[];
+  sourceRelease: DiscogsRelease;
+  batchLimit: number;
+  excludedInstanceIds: ReadonlySet<string>;
+  tieBreakSeed?: number;
+};
+
+export const getSimilarReleasesModalSnapshot = ({
+  releases,
+  sourceRelease,
+  batchLimit,
+  excludedInstanceIds,
+  tieBreakSeed,
+}: GetSimilarReleasesModalSnapshotParams): {
+  totalMatchCount: number;
+  batch: DiscogsRelease[];
+} => {
+  const source = buildSimilarReleaseSourceContext(sourceRelease);
+  const scoredForTotal = collectScoredSimilarReleases({ releases, source });
+
+  sortScoredSimilarReleases(scoredForTotal);
+
+  const fullPool = dedupeSimilarResults(scoredForTotal, releases.length);
+  const totalMatchCount = fullPool.length;
+
+  const needsSeparateBatch =
+    excludedInstanceIds.size > 0 || (tieBreakSeed ?? 0) > 0;
+
+  if (!needsSeparateBatch) {
+    return {
+      totalMatchCount,
+      batch: fullPool.slice(0, batchLimit),
+    };
+  }
+
+  const scoredForBatch = collectScoredSimilarReleases({
+    releases,
+    source,
+    excludeInstanceIds: excludedInstanceIds,
+  });
+
+  sortScoredSimilarReleases(scoredForBatch, tieBreakSeed);
+
+  return {
+    totalMatchCount,
+    batch: dedupeSimilarResults(scoredForBatch, batchLimit),
+  };
 };
