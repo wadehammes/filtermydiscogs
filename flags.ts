@@ -10,7 +10,7 @@ export const playlistsFeature = flag<boolean, VercelFlagEntities>({
   description:
     "Cross-release playlists: side panel, track menus, playback add-to, and API",
   adapter: vercelAdapter(),
-  defaultValue: false,
+  defaultValue: true,
   options: [
     { label: "Off", value: false },
     { label: "On", value: true },
