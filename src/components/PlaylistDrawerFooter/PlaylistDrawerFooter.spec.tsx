@@ -10,12 +10,6 @@ describe("PlaylistDrawerFooter", () => {
     po = new PlaylistDrawerFooterPageObject();
   });
 
-  it("renders PlaylistDrawerFooter", () => {
-    po.renderPlaylistDrawerFooter();
-
-    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
-  });
-
   it("opens the rename dialog from the edit menu", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     const playlist = po.mockActivePlaylist();

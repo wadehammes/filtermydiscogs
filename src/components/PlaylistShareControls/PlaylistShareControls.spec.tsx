@@ -9,9 +9,22 @@ describe("PlaylistShareControls", () => {
     po = new PlaylistShareControlsPageObject();
   });
 
-  it("renders PlaylistShareControls", () => {
+  it("when playlist detail is still loading, disables the public link switch", () => {
     po.renderPlaylistShareControls();
 
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: /Public link/i })).toBeDisabled();
+  });
+
+  it("when the active playlist is private, shows only-you copy and keeps copy hidden", () => {
+    po.mockActivePlaylist();
+    po.renderPlaylistShareControls();
+
+    expect(
+      screen.getByText("Only you can view this playlist."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Copy link" }),
+    ).not.toBeInTheDocument();
   });
 });
