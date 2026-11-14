@@ -9,9 +9,13 @@ describe("PlaylistDrawerTracks", () => {
     po = new PlaylistDrawerTracksPageObject();
   });
 
-  it("renders PlaylistDrawerTracks", () => {
+  it("when no playlist is selected, shows the empty-state copy", () => {
     po.renderPlaylistDrawerTracks();
 
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+    expect(screen.getByText("No playlist selected")).toBeInTheDocument();
+    expect(
+      screen.getByText("Create a playlist or pick one from the menu above."),
+    ).toBeInTheDocument();
   });
 });

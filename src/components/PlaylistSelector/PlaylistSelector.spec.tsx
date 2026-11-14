@@ -9,12 +9,6 @@ describe("PlaylistSelector", () => {
     po = new PlaylistSelectorPageObject();
   });
 
-  it("renders PlaylistSelector", () => {
-    po.renderPlaylistSelector();
-
-    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
-  });
-
   it("when there are no playlists, disables the playlist select", async () => {
     po.renderPlaylistSelector();
 

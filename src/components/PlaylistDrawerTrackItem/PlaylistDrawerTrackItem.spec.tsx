@@ -11,12 +11,6 @@ describe("PlaylistDrawerTrackItem", () => {
     po = new PlaylistDrawerTrackItemPageObject();
   });
 
-  it("renders PlaylistDrawerTrackItem", () => {
-    po.renderPlaylistDrawerTrackItem();
-
-    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
-  });
-
   it("shows a playing indicator when the track matches active playback", () => {
     const release = releaseFactory.withDisplayDefaults({ instance_id: 9001 });
     const track = playlistTrackRowFactory.opening();
