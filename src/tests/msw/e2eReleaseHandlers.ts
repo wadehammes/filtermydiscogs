@@ -2,6 +2,7 @@ import type { RequestHandler } from "msw";
 import { delay, HttpResponse, http } from "msw";
 import {
   buildE2eReleaseDetailByDiscogsId,
+  buildE2eReleaseDetailMapWithSimilarModalPeers,
   buildE2eReleaseDetailWithYoutubeVideoId,
 } from "src/tests/msw/e2eReleaseDetailData";
 import {
@@ -13,7 +14,13 @@ import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.type
 export type E2eReleaseByIdHandlerOptions = {
   albumOneYoutubeVideoId?: string;
   notFoundReleaseIds?: ReadonlySet<string>;
+  withSimilarModalPeers?: boolean;
 };
+
+const buildE2eReleaseDetailsMap = (options: E2eReleaseByIdHandlerOptions) =>
+  options.withSimilarModalPeers
+    ? buildE2eReleaseDetailMapWithSimilarModalPeers()
+    : buildE2eReleaseDetailByDiscogsId();
 
 export const buildE2eReleaseBatchResponseBody = (
   ids: string[],
@@ -67,7 +74,7 @@ const buildE2eReleaseByIdResponse = (
 export const createE2eReleaseByIdHandler = (
   options: E2eReleaseByIdHandlerOptions = {},
 ): RequestHandler => {
-  const releaseDetails = buildE2eReleaseDetailByDiscogsId();
+  const releaseDetails = buildE2eReleaseDetailsMap(options);
   const notFoundReleaseIds = options.notFoundReleaseIds ?? new Set<string>();
 
   return http.get("/api/release/:id", ({ params }) => {

@@ -1,3 +1,4 @@
+import { clearSimilarReleasesPageIndexByAnchor } from "src/components/ReleaseModal/useSimilarReleasesPageState.hook";
 import {
   LEGACY_COMMUNITY_RATINGS_STORAGE_KEY,
   RELEASES_TABLE_LAYOUT_STORAGE_KEY,
@@ -38,4 +39,5 @@ export const clearClientStoredData = (): void => {
   clearPlaybackVideoIntroSeen();
   clearAllLastPlayedPlaylistIds();
   clearAnalyticsConsentChoice();
+  clearSimilarReleasesPageIndexByAnchor();
 };

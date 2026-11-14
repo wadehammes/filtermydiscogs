@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { clearSimilarReleasesPageIndexByAnchor } from "src/components/ReleaseModal/useSimilarReleasesPageState.hook";
 import { useCollectionReleaseByInstanceId } from "src/hooks/queries/useCollectionReleaseByInstanceId.hook";
 import type { DiscogsRelease } from "src/types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
@@ -201,6 +202,7 @@ const useUrlSyncedReleaseModal = ({
   const handleCloseModal = useCallback(() => {
     const hadOpenRelease = urlInstanceId ?? modalSync.optimisticId;
 
+    clearSimilarReleasesPageIndexByAnchor();
     dispatchModalSync({ type: "close" });
 
     const returnUrl = preModalUrlRef.current;

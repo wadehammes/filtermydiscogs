@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { clearSimilarReleasesPageIndexByAnchor } from "src/components/ReleaseModal/useSimilarReleasesPageState.hook";
 import {
   ANALYTICS_CONSENT_STORAGE_KEY,
   COLLECTION_ITEM_COUNTS_STORAGE_KEY,
@@ -19,6 +20,13 @@ import {
 import { PLAYBACK_VIDEO_INTRO_STORAGE_KEY } from "src/utils/playbackVideoIntroStorage";
 import { RELEASE_PLAYBACK_STORAGE_KEY } from "src/utils/releasePlaybackStorage";
 import { clearClientStoredData } from "./clearClientStoredData";
+
+jest.mock(
+  "src/components/ReleaseModal/useSimilarReleasesPageState.hook",
+  () => ({
+    clearSimilarReleasesPageIndexByAnchor: jest.fn(),
+  }),
+);
 
 jest.mock("src/utils/collectionCacheStorage", () => ({
   clearPersistedCollectionCaches: jest.fn(),
@@ -73,6 +81,12 @@ describe("clearClientStoredData", () => {
     clearClientStoredData();
 
     expect(mockClearPersistedCollectionCaches).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears similar release modal page index memory", () => {
+    clearClientStoredData();
+
+    expect(clearSimilarReleasesPageIndexByAnchor).toHaveBeenCalledTimes(1);
   });
 
   it("removes last played playlist ids from localStorage", () => {

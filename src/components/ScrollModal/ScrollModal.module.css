@@ -108,7 +108,7 @@
   overflow: hidden;
 
   @media (width >= 1024px) {
-    margin-right: 20rem;
+    margin-right: var(--scroll-modal-aside-width, 20rem);
   }
 }
 
@@ -132,6 +132,6 @@
     position: absolute;
     right: 0;
     top: 0;
-    width: 20rem;
+    width: var(--scroll-modal-aside-width, 20rem);
   }
 }

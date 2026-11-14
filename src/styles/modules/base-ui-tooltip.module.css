@@ -1,0 +1,20 @@
+.tooltippositioner {
+  z-index: var(--z-7-tooltip);
+}
+
+.tooltippopup {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--shadow-md);
+  color: var(--popover-foreground);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  max-width: 14rem;
+  padding: var(--space-2) var(--space-3);
+}
+
+.tooltippopupwide {
+  composes: tooltippopup;
+  max-width: 18rem;
+}

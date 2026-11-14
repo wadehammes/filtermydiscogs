@@ -4,6 +4,11 @@ import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJso
 import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import {
+  E2E_SIMILAR_MODAL_PEER_COUNT,
+  E2E_SIMILAR_MODAL_PEER_DISCOGS_ID_START,
+  e2eSimilarModalPeerTitle,
+} from "src/tests/msw/e2eCollectionData";
+import {
   E2E_ALBUM_ONE,
   E2E_ALBUM_THREE,
   E2E_ALBUM_TWO,
@@ -65,11 +70,11 @@ export function buildE2eReleaseDetailWithYoutubeVideoId(
   return buildE2eReleaseDetail(id, title, youtubeVideoId);
 }
 
-export function buildE2eReleaseDetailByDiscogsId(): Map<
+export const buildE2eReleaseDetailByDiscogsId = (): Map<
   string,
   DiscogsReleaseDetail
-> {
-  return new Map([
+> =>
+  new Map([
     [
       String(E2E_DISCOGS_RELEASE_ID_ONE),
       buildE2eReleaseDetail(E2E_DISCOGS_RELEASE_ID_ONE, E2E_ALBUM_ONE),
@@ -83,6 +88,28 @@ export function buildE2eReleaseDetailByDiscogsId(): Map<
       buildE2eReleaseDetail(E2E_DISCOGS_RELEASE_ID_THREE, E2E_ALBUM_THREE),
     ],
   ]);
-}
+
+export const buildE2eReleaseDetailMapWithSimilarModalPeers = (): Map<
+  string,
+  DiscogsReleaseDetail
+> => {
+  const releaseDetails = buildE2eReleaseDetailByDiscogsId();
+
+  for (let index = 0; index < E2E_SIMILAR_MODAL_PEER_COUNT; index += 1) {
+    const releaseId = E2E_SIMILAR_MODAL_PEER_DISCOGS_ID_START + index;
+    const title = e2eSimilarModalPeerTitle(index);
+
+    releaseDetails.set(
+      String(releaseId),
+      buildE2eReleaseDetailWithYoutubeVideoId(
+        releaseId,
+        title,
+        E2E_EMBED_MOCK_VIDEO_IDS.normal,
+      ),
+    );
+  }
+
+  return releaseDetails;
+};
 
 export { e2eTrackTitle };

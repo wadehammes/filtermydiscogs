@@ -32,21 +32,33 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  gap: 0;
+}
+
+.sidebarHeaderCopy {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-3) 0 var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-3);
 
   @media (width >= 768px) {
     padding: var(--space-4) var(--space-4) var(--space-3);
   }
 }
 
+.sidebarInline .sidebarHeaderCopy {
+  padding-inline: 0;
+
+  @media (width >= 768px) {
+    padding-inline: var(--space-4);
+  }
+}
+
 .sidebarInline .sidebarHeader {
   border-bottom: none;
-  padding-bottom: var(--space-4);
 
   @media (width >= 768px) {
     border-bottom: 1px solid var(--border);
-    padding: var(--space-4) var(--space-4) var(--space-3);
   }
 }
 
@@ -63,6 +75,125 @@
   font-size: var(--text-meta-xs);
   line-height: 1.4;
   margin: 0;
+}
+
+.sidebarActions {
+  width: 100%;
+}
+
+.sidebarInline .sidebarActions {
+  margin-inline: calc(-1 * var(--space-3));
+  width: auto;
+
+  @media (width >= 768px) {
+    margin-inline: 0;
+    width: 100%;
+  }
+}
+
+.sidebarActions .sidebarActionControl {
+  background: var(--muted);
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+.sidebarActions .sidebarSegment {
+  border-radius: 0;
+}
+
+.similarCountSegment {
+  cursor: help;
+  flex: 1 1 auto;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-medium);
+  justify-content: flex-start;
+  min-width: 0;
+  text-align: start;
+}
+
+.countTooltipPositioner {
+  composes: tooltippositioner from "../../styles/modules/base-ui-tooltip.module.css";
+}
+
+.countTooltipPopup {
+  composes: tooltippopup from "../../styles/modules/base-ui-tooltip.module.css";
+  max-width: 16.5rem;
+}
+
+.segmentIcon {
+  display: flex;
+  height: 1rem;
+  width: 1rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.similarPageSegment {
+  --similar-page-of-ch: 3ch;
+
+  cursor: default;
+  flex: 0 0 auto;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  font-weight: var(--font-medium);
+  justify-content: center;
+  min-width: calc(
+    var(--similar-page-digit-ch, 1ch) *
+    2 +
+    var(--similar-page-of-ch)
+  );
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.similarPageNumber,
+.similarPageTotal {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  min-width: var(--similar-page-digit-ch, 1ch);
+  text-align: center;
+}
+
+.similarPageOf {
+  display: inline-block;
+  text-align: center;
+}
+
+.sidebarActions .pageNavSegment {
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-2);
+}
+
+.pageNavSegmentDisabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+
+  &:hover {
+    background: transparent;
+    color: var(--muted-foreground);
+  }
+}
+
+.pageChevronPrevious {
+  transform: translateZ(0) rotate(180deg);
+}
+
+.pageNavPrevButton {
+  &:hover:not(:disabled) > .segmentIcon,
+  &:focus-visible:not(:disabled) > .segmentIcon {
+    transform: translateZ(0) rotate(180deg) scale(1.1);
+
+    @media (prefers-reduced-motion: reduce) {
+      transform: translateZ(0) rotate(180deg);
+    }
+  }
 }
 
 .releasesList {

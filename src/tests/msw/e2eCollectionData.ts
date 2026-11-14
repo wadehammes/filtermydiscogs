@@ -3,6 +3,7 @@ import { basicInformationFactory } from "src/tests/factories/BasicInformation.fa
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   E2E_ALBUM_ONE,
+  E2E_ALBUM_ONE_INSTANCE_ID,
   E2E_ALBUM_THREE,
   E2E_ALBUM_TWO,
   E2E_DISCOGS_RELEASE_ID_ONE,
@@ -58,7 +59,7 @@ export const buildE2eCollectionReleases = (): DiscogsRelease[] => {
   return [
     buildE2eCollectionRelease({
       title: E2E_ALBUM_ONE,
-      instanceId: "e2e-release-1",
+      instanceId: E2E_ALBUM_ONE_INSTANCE_ID,
       discogsReleaseId: E2E_DISCOGS_RELEASE_ID_ONE,
       dateAdded: thisYear,
       styles: ["Indie Rock"],
@@ -80,8 +81,7 @@ export const buildE2eCollectionReleases = (): DiscogsRelease[] => {
   ];
 };
 
-export const buildE2eSimilarTailCollectionReleases = (): DiscogsRelease[] => {
-  const collection = buildE2eCollectionReleases();
+const getE2eSimilarPeerTagsFromAlbumOne = (collection: DiscogsRelease[]) => {
   const sourceRelease = collection.find(
     (release) => release.basic_information.id === E2E_DISCOGS_RELEASE_ID_ONE,
   );
@@ -90,8 +90,65 @@ export const buildE2eSimilarTailCollectionReleases = (): DiscogsRelease[] => {
     throw new Error("E2E collection missing album one");
   }
 
-  const peerGenres = sourceRelease.basic_information.genres ?? ["Rock"];
-  const peerStyles = sourceRelease.basic_information.styles ?? ["Indie Rock"];
+  return {
+    sourceRelease,
+    peerGenres: sourceRelease.basic_information.genres ?? ["Rock"],
+    peerStyles: sourceRelease.basic_information.styles ?? ["Indie Rock"],
+  };
+};
+
+export const E2E_SIMILAR_MODAL_PEER_DISCOGS_ID_START = 900_100;
+export const E2E_SIMILAR_MODAL_PEER_COUNT = 55;
+
+export const e2eSimilarModalPeerTitle = (index: number) =>
+  `Similar Modal Peer ${String(index).padStart(2, "0")}`;
+
+export const buildE2eSimilarModalShuffleCollectionReleases =
+  (): DiscogsRelease[] => {
+    const collection = buildE2eCollectionReleases();
+    const { sourceRelease, peerGenres, peerStyles } =
+      getE2eSimilarPeerTagsFromAlbumOne(collection);
+    const otherReleases = collection.filter(
+      (release) => release.basic_information.id !== E2E_DISCOGS_RELEASE_ID_ONE,
+    );
+
+    const similarPeers = Array.from(
+      { length: E2E_SIMILAR_MODAL_PEER_COUNT },
+      (_, index) =>
+        releaseFactory.build({
+          instance_id: `e2e-similar-modal-peer-${index}`,
+          date_added: sourceRelease.date_added,
+          rating: 4,
+          notes: [],
+          basic_information: basicInformationFactory.build({
+            id: E2E_SIMILAR_MODAL_PEER_DISCOGS_ID_START + index,
+            title: e2eSimilarModalPeerTitle(index),
+            year: 2020,
+            styles: peerStyles,
+            genres: peerGenres,
+            master_id: 8_000 + index,
+            artists: [
+              artistFactory.build({
+                id: 8_000 + index,
+                name: `Modal Peer Artist ${index}`,
+              }),
+            ],
+            labels: [],
+            thumb: E2E_THUMB_IMAGE,
+            cover_image: E2E_COVER_IMAGE,
+            resource_url: `https://api.discogs.com/releases/${E2E_SIMILAR_MODAL_PEER_DISCOGS_ID_START + index}`,
+            uri: `https://www.discogs.com/release/${E2E_SIMILAR_MODAL_PEER_DISCOGS_ID_START + index}`,
+          }),
+        }),
+    );
+
+    return [sourceRelease, ...similarPeers, ...otherReleases];
+  };
+
+export const buildE2eSimilarTailCollectionReleases = (): DiscogsRelease[] => {
+  const collection = buildE2eCollectionReleases();
+  const { peerGenres, peerStyles } =
+    getE2eSimilarPeerTagsFromAlbumOne(collection);
 
   return collection.map((release) => {
     if (release.basic_information.id === E2E_DISCOGS_RELEASE_ID_ONE) {

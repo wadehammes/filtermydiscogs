@@ -21,6 +21,7 @@ run = [
   "pnpm handbook:check",
   "pnpm test:ci",
   "pnpm knip:ci",
+  "pnpm fallow:audit:ci",
   "pnpm test:e2e:smoke:ci",
 ]
 
