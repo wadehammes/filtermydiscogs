@@ -15,7 +15,7 @@ import { useFilterViews } from "src/hooks/useFilterViews.hook";
 import BookmarkIcon from "src/styles/icons/bookmark-solid.svg";
 import BookmarkOutlineIcon from "src/styles/icons/bookmark-thin.svg";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
-import Chevron from "src/styles/icons/chevron-right-thin.svg";
+import { ExpandChevronThinIcon } from "src/styles/icons/ExpandChevronThinIcon.component";
 import styles from "./FilterViewsMenu.module.css";
 
 export interface FilterViewsMenuProps {
@@ -190,7 +190,7 @@ export const FilterViewsMenu = ({
                   </span>
                 }
                 labelClassName={styles.menuTriggerLabel}
-                addon={<Chevron />}
+                addon={<ExpandChevronThinIcon />}
                 addonClassName={styles.chevronIcon}
                 aria-label={
                   matchingView

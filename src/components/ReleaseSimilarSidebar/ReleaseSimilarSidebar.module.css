@@ -22,7 +22,7 @@
     background: var(--background);
     border: 1px solid var(--border);
     border-radius: var(--radius-card);
-    overflow: hidden;
+    overflow: visible;
     padding-inline: 0;
   }
 }
@@ -78,6 +78,7 @@
 }
 
 .sidebarActions {
+  border-bottom: 1px solid var(--border);
   width: 100%;
 }
 
@@ -91,6 +92,13 @@
   }
 }
 
+.sidebarActionsInlineSticky {
+  background: var(--background);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
 .sidebarActions .sidebarActionControl {
   align-items: stretch;
   background: var(--muted);
@@ -98,6 +106,13 @@
   border-radius: 0;
   border-top: 1px solid var(--border);
   width: 100%;
+}
+
+.sidebarAside .sidebarActions .sidebarActionControl,
+.sidebarInline .sidebarActions .sidebarActionControl {
+  @media (width >= 768px) {
+    border-top: none;
+  }
 }
 
 .sidebarActions .similarCountTooltipRoot {
@@ -165,6 +180,11 @@
   }
 }
 
+.sidebarInline .sidebarActions .segmentIcon {
+  height: 1.125rem;
+  width: 1.125rem;
+}
+
 .similarPageSegment {
   --similar-page-of-ch: 3ch;
 
@@ -197,8 +217,15 @@
 }
 
 .sidebarActions .pageNavSegment {
+  align-items: center;
   flex: 0 0 auto;
-  padding: var(--space-2) var(--space-2);
+  justify-content: center;
+  line-height: 0;
+  padding: var(--space-2);
+
+  .segmentIcon {
+    margin: 0;
+  }
 }
 
 .pageNavSegmentDisabled {
@@ -214,23 +241,44 @@
   cursor: not-allowed;
 }
 
-.pageChevronPrevious {
-  transform: translateZ(0) rotate(180deg);
-}
-
 .sidebarActions .pageNavPrevButton {
   border-inline-start: none;
 }
 
-.pageNavPrevButton {
-  &:hover:not(:disabled) > .segmentIcon,
-  &:focus-visible:not(:disabled) > .segmentIcon {
-    transform: translateZ(0) rotate(180deg) scale(1.1);
+.sidebarInline .sidebarActions .sidebarActionControl {
+  min-height: var(--touch-target-min);
+}
 
-    @media (prefers-reduced-motion: reduce) {
-      transform: translateZ(0) rotate(180deg);
+.sidebarInline .sidebarActions .pageNavSegment {
+  appearance: none;
+  display: grid;
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  padding: 0;
+  place-items: center;
+
+  .segmentIcon {
+    display: grid;
+    line-height: 0;
+    place-items: center;
+    transform: none;
+
+    svg {
+      display: block;
+      height: 1.125rem;
+      width: 1.125rem;
     }
   }
+}
+
+.sidebarAside .sidebarActions :is(.similarCountSegment, .similarPageSegment) {
+  align-items: center;
+}
+
+.sidebarInline .sidebarActions :is(.similarCountSegment, .similarPageSegment) {
+  align-items: center;
+  min-height: var(--touch-target-min);
+  padding-inline: var(--space-3);
 }
 
 .releasesList {
@@ -261,6 +309,10 @@
   @media (width >= 768px) {
     padding: var(--space-3) var(--space-4) var(--space-4);
   }
+}
+
+.sidebarInline .releasesListInline {
+  padding-top: var(--space-3);
 }
 
 .loadingState {

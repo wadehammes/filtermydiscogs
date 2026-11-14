@@ -1,19 +1,31 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useEffect } from "react";
+import { type ComponentType, Suspense, useEffect } from "react";
 import { isProtectedAppRoute } from "src/constants/protectedRoutes";
 import { useAuth } from "src/context/auth.context";
 import { useAuthenticatedGatePathname } from "src/hooks/useAuthenticatedGatePathname.hook";
 import { useIsClient } from "src/hooks/useIsClient.hook";
 
-const AuthenticatedProvidersLazy = dynamic(
-  () =>
-    import("src/components/AuthenticatedProviders").then(
-      (mod) => mod.AuthenticatedProviders,
-    ),
-  { ssr: false },
-);
+type AuthenticatedProvidersComponent = ComponentType<{
+  children: React.ReactNode;
+}>;
+
+let authenticatedProvidersLoad:
+  | Promise<AuthenticatedProvidersComponent>
+  | undefined;
+
+const loadAuthenticatedProviders =
+  (): Promise<AuthenticatedProvidersComponent> => {
+    authenticatedProvidersLoad ??= import(
+      "src/components/AuthenticatedProviders"
+    ).then((mod) => mod.AuthenticatedProviders);
+    return authenticatedProvidersLoad;
+  };
+
+const AuthenticatedProvidersLazy = dynamic(loadAuthenticatedProviders, {
+  ssr: false,
+});
 
 interface AuthenticatedProvidersGateProps {
   children: React.ReactNode;
@@ -31,7 +43,7 @@ const AuthenticatedProvidersGateInner = ({
 
   useEffect(() => {
     if (shouldWrapAuthenticatedProviders) {
-      void import("src/components/AuthenticatedProviders");
+      void loadAuthenticatedProviders();
     }
   }, [shouldWrapAuthenticatedProviders]);
 

@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { CollectionSortControlsJoin } from "src/components/CollectionSortControls/CollectionSortControls.component";
 import collectionSortStyles from "src/components/CollectionSortControls/CollectionSortControls.module.css";
 import BookmarkIcon from "src/styles/icons/bookmark-thin.svg";
-import ChevronIcon from "src/styles/icons/chevron-right-thin.svg";
+import ChevronDownThin from "src/styles/icons/chevron-down-thin.svg";
 import SearchIcon from "src/styles/icons/search-thin.svg";
 import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import filtersBarStyles from "./FiltersBar.module.css";
@@ -33,7 +33,7 @@ export const FiltersBarSkeleton = () => {
             </span>
             <div className={classNames(styles.viewsLine, pulseSurface)} />
             <span className={styles.chevron}>
-              <ChevronIcon />
+              <ChevronDownThin />
             </span>
           </div>
           <div className={styles.searchShell} aria-hidden>
@@ -58,7 +58,7 @@ export const FiltersBarSkeleton = () => {
                   )}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>
@@ -72,7 +72,7 @@ export const FiltersBarSkeleton = () => {
                   className={classNames(styles.placeholderLine, pulseSurface)}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>
@@ -91,7 +91,7 @@ export const FiltersBarSkeleton = () => {
                   )}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>
@@ -105,7 +105,7 @@ export const FiltersBarSkeleton = () => {
                   className={classNames(styles.placeholderLine, pulseSurface)}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>
@@ -124,7 +124,7 @@ export const FiltersBarSkeleton = () => {
                   )}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>
@@ -138,7 +138,7 @@ export const FiltersBarSkeleton = () => {
                   className={classNames(styles.placeholderLine, pulseSurface)}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>
@@ -161,7 +161,7 @@ export const FiltersBarSkeleton = () => {
                   )}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>
@@ -179,7 +179,7 @@ export const FiltersBarSkeleton = () => {
                   )}
                 />
                 <span className={styles.chevron}>
-                  <ChevronIcon />
+                  <ChevronDownThin />
                 </span>
               </div>
             </div>

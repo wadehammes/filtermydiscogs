@@ -5,7 +5,7 @@ import type {
   CollectionSortSecondary,
   SortValues,
 } from "src/constants/sortValues";
-import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
+import ChevronRightThin from "src/styles/icons/chevron-right-thin.svg";
 import {
   getPrimarySortSelectOptions,
   getThenBySortSelectOptions,
@@ -23,7 +23,7 @@ export const CollectionSortControlsJoin = () => (
     data-testid="fmdCollectionSortJoin"
     aria-hidden
   >
-    <ChevronRightThinIcon className={styles.sortJoinChevron} />
+    <ChevronRightThin className={styles.sortJoinChevron} />
   </div>
 );
 

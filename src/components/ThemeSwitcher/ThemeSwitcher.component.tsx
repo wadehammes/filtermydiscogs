@@ -12,7 +12,7 @@ import Select from "src/components/Select/Select.component";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useTheme } from "src/hooks/useTheme.hook";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
-import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
+import ChevronRightThin from "src/styles/icons/chevron-right-thin.svg";
 import Moon from "src/styles/icons/moon-thin.svg";
 import Sun from "src/styles/icons/sun-thin.svg";
 import type { StoredTheme } from "src/types/userPreferences.types";
@@ -70,7 +70,7 @@ export const ThemeSwitcher = ({
         <Menu.SubmenuTrigger className={inlinePopoverMenuStyles.item}>
           <span className={styles.submenuLabel}>Theme</span>
           <span className={styles.submenuValue}>{getLabel()}</span>
-          <ChevronRightThinIcon className={styles.submenuChevron} />
+          <ChevronRightThin className={styles.submenuChevron} />
         </Menu.SubmenuTrigger>
         <InlinePopoverMenu.Panel
           popupClassName={styles.submenuPopup}

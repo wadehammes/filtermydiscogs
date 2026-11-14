@@ -10,6 +10,7 @@ describe("PlaylistShareControls", () => {
   });
 
   it("when playlist detail is still loading, disables the public link switch", () => {
+    po.mockActivePlaylistPending();
     po.renderPlaylistShareControls();
 
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();

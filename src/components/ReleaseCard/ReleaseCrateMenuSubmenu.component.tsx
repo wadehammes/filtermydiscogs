@@ -10,7 +10,7 @@ import {
   ReleaseCrateMenuPanelContent,
   type ReleaseCrateMenuPanelContentProps,
 } from "src/components/ReleaseCard/ReleaseCrateMenuPanelContent.component";
-import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
+import ChevronRightThin from "src/styles/icons/chevron-right-thin.svg";
 import CratesIcon from "src/styles/icons/crates-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleaseCrateMenu.module.css";
@@ -34,10 +34,7 @@ export const ReleaseCrateMenuSubmenuTrigger = ({
       <CratesIcon />
     </span>
     <span className={submenuStyles.triggerLabel}>Crates</span>
-    <ChevronRightThinIcon
-      className={submenuStyles.triggerChevron}
-      aria-hidden
-    />
+    <ChevronRightThin className={submenuStyles.triggerChevron} aria-hidden />
   </Menu.SubmenuTrigger>
 );
 

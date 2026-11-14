@@ -7,7 +7,7 @@ import {
   inlinePopoverMenuStyles,
 } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
-import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
+import ChevronRightThin from "src/styles/icons/chevron-right-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import { PlaylistThinIcon } from "src/styles/icons/PlaylistThinIcon.component";
 import PlusIcon from "src/styles/icons/plus-thin.svg";
@@ -148,6 +148,6 @@ export const ReleasePlaylistPickerSubmenuTrigger = ({
       <PlaylistThinIcon />
     </span>
     <span className={styles.submenuLabel}>{submenuLabel}</span>
-    <ChevronRightThinIcon className={styles.submenuChevron} aria-hidden />
+    <ChevronRightThin className={styles.submenuChevron} aria-hidden />
   </Menu.SubmenuTrigger>
 );

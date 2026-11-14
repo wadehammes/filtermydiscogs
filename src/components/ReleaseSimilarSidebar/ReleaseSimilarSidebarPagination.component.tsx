@@ -11,7 +11,8 @@ import {
   RELEASE_SIMILAR_PAGE_NEXT_ARIA_LABEL,
   RELEASE_SIMILAR_PAGE_PREV_ARIA_LABEL,
 } from "src/constants/releaseSimilarSidebar.constants";
-import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
+import ChevronLeftThin from "src/styles/icons/chevron-left-thin.svg";
+import ChevronRightThin from "src/styles/icons/chevron-right-thin.svg";
 import styles from "./ReleaseSimilarSidebar.module.css";
 import { ReleaseSimilarSidebarCountSegment } from "./ReleaseSimilarSidebarCountSegment.component";
 
@@ -60,16 +61,13 @@ export const ReleaseSimilarSidebarPagination = ({
                 [styles.pageNavSegmentDisabled]: !canGoSimilarPagePrev,
               },
             )}
-            iconClassName={classNames(
-              styles.segmentIcon,
-              styles.pageChevronPrevious,
-            )}
+            iconClassName={styles.segmentIcon}
             data-testid="fmdReleaseSimilarSidebarPrev"
             aria-label={RELEASE_SIMILAR_PAGE_PREV_ARIA_LABEL}
             disabled={!canGoSimilarPagePrev}
             onClick={onSimilarPagePrev}
           >
-            <ChevronRightThinIcon aria-hidden />
+            <ChevronLeftThin />
           </IconButton>
           <span
             className={classNames(
@@ -104,7 +102,7 @@ export const ReleaseSimilarSidebarPagination = ({
             disabled={!canGoSimilarPageNext}
             onClick={onSimilarPageNext}
           >
-            <ChevronRightThinIcon aria-hidden />
+            <ChevronRightThin />
           </IconButton>
         </>
       ) : null}

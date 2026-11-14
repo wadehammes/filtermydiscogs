@@ -7,7 +7,10 @@ import {
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
 import { playlistDetailFactory } from "src/tests/factories/PlaylistDetail.factory";
-import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
+import {
+  mockApiResponse,
+  mockPendingApiResponse,
+} from "src/tests/mocks/mockApiResponse";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { ReleasePlaybackTestTree } from "src/tests/utils/releasePlaybackTestTree";
 import {
@@ -44,6 +47,10 @@ export class PlaylistShareControlsPageObject extends BasePageObject {
   ) {
     mockApiResponse(true, mockApi.playlist, playlist, playlistsApiError);
     return playlist;
+  }
+
+  mockActivePlaylistPending() {
+    mockPendingApiResponse(mockApi.playlist);
   }
 
   private playlistShareControlsElement() {
