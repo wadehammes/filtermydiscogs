@@ -32,6 +32,12 @@
     { "file": "src/hooks/useCollectionCacheReady.hook.ts", "exports": ["*"] },
     { "file": "src/utils/collectionCacheSync.ts", "exports": ["*"] }
   ],
+  // CI: scripts/fallow-audit-ci.sh (pnpm fallow:audit:ci) — exit 1 only when a worsened finding has effective_severity error.
+  // Local pr-prep: pnpm fallow:audit — default gate new-only (introduced findings can fail).
+  "audit": {
+    "gate": "new-only",
+    "worsened": "warn"
+  },
   "rules": {
     "duplicate-export": "warn"
   },
@@ -47,6 +53,7 @@
     "src/tests/mocks/mockNextRouter.mock.ts",
     "src/lib/__mocks__/api-helpers.ts",
     "src/styles/stylelint-custom-properties.css",
+    "src/styles/modules/base-ui-tooltip.module.css",
     "src/styles/modules/action-icon-hover.module.css",
     "src/styles/modules/action-indicator-dot.module.css",
     "src/styles/modules/badge.module.css",

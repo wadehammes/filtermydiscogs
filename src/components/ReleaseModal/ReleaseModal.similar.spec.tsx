@@ -28,6 +28,28 @@ const buildSimilarReleasesFixture = () => {
   return { sourceRelease, similarRelease };
 };
 
+const buildShuffleSimilarReleasesFixture = () => {
+  const sourceRelease = releaseFactory.withStyles(["Techno", "Ambient"], {
+    instance_id: "source-instance",
+    basic_information: {
+      genres: ["Electronic"],
+      master_id: 100,
+      title: "Source Album",
+    },
+  });
+  const similarReleases = Array.from({ length: 60 }, (_, index) =>
+    releaseFactory.withStyles(["Techno", "House"], {
+      instance_id: `similar-${index}`,
+      basic_information: {
+        master_id: 200 + index,
+        title: `Peer ${String(index).padStart(2, "0")}`,
+      },
+    }),
+  );
+
+  return { sourceRelease, similarReleases };
+};
+
 const expectSimilarSidebar = async () => {
   await waitFor(() => {
     expect(screen.getByTestId("fmdReleaseSimilarSidebar")).toBeInTheDocument();
@@ -107,6 +129,34 @@ describe("ReleaseModal similar sidebar", () => {
     expect(
       dialog.querySelector('[class*="splitContent"][class*="modalMain"]'),
     ).not.toBeNull();
+  });
+
+  it("shuffles the similar list when the dice control is clicked", async () => {
+    const user = userEvent.setup();
+    const { sourceRelease, similarReleases } =
+      buildShuffleSimilarReleasesFixture();
+
+    po.mockAllReleases([sourceRelease, ...similarReleases]);
+    po.renderReleaseModal({ release: sourceRelease });
+
+    await expectSimilarSidebar();
+
+    const getVisibleSimilarTitles = () =>
+      within(screen.getByTestId("fmdReleaseSimilarSidebar"))
+        .getAllByRole("button", { name: /^Open .+ details$/ })
+        .map((button) => button.textContent?.trim() ?? "");
+
+    const titlesBeforeShuffle = getVisibleSimilarTitles();
+
+    await user.click(
+      screen.getByRole("button", { name: "Shuffle similar releases" }),
+    );
+
+    await waitFor(() => {
+      expect(getVisibleSimilarTitles().join("|")).not.toBe(
+        titlesBeforeShuffle.join("|"),
+      );
+    });
   });
 
   it("shows crate-style loading in the sidebar until the collection has fully loaded", async () => {

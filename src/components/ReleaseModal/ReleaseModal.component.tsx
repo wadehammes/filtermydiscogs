@@ -21,8 +21,14 @@ export const ReleaseModal = ({
   onClose,
   onReleaseClick,
 }: ReleaseModalProps) => {
-  const { similarReleases, isSimilarLoading, canHaveSimilar } =
-    useSimilarReleasesInCollection(release, isOpen);
+  const {
+    similarReleases,
+    totalSimilarMatchCount,
+    isSimilarLoading,
+    canHaveSimilar,
+    canShuffleSimilarReleases,
+    shuffleSimilarReleases,
+  } = useSimilarReleasesInCollection(release, isOpen);
   const showSimilarSection =
     canHaveSimilar && (isSimilarLoading || similarReleases.length > 0);
   const isDesktop = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY);
@@ -33,10 +39,14 @@ export const ReleaseModal = ({
     return null;
   }
 
-  const similarSidebarProps = {
+  const similarSidebarShellProps = {
     similarReleases,
-    isLoading: isSimilarLoading,
-    ...definedProps({ onReleaseClick }),
+    totalSimilarMatchCount,
+    canShuffleSimilarReleases,
+    ...definedProps({
+      onReleaseClick,
+      onShuffleSimilarReleases: shuffleSimilarReleases,
+    }),
   };
 
   return (
@@ -54,7 +64,11 @@ export const ReleaseModal = ({
       }
       aside={
         showAsideSimilar ? (
-          <ReleaseSimilarSidebar variant="aside" {...similarSidebarProps} />
+          <ReleaseSimilarSidebar
+            variant="aside"
+            isLoading={isSimilarLoading}
+            {...similarSidebarShellProps}
+          />
         ) : undefined
       }
       toolbar={
@@ -78,11 +92,16 @@ export const ReleaseModal = ({
       <ReleaseModalBody
         release={release}
         isOpen={isOpen}
-        {...definedProps({
-          similarReleases: showInlineSimilar ? similarReleases : undefined,
-          isSimilarLoading: showInlineSimilar ? isSimilarLoading : undefined,
-          onReleaseClick: showInlineSimilar ? onReleaseClick : undefined,
-        })}
+        {...definedProps(
+          showInlineSimilar
+            ? {
+                ...similarSidebarShellProps,
+                isSimilarLoading,
+              }
+            : {
+                onReleaseClick,
+              },
+        )}
       />
     </ScrollModal>
   );

@@ -80,8 +80,7 @@ export const buildE2eCollectionReleases = (): DiscogsRelease[] => {
   ];
 };
 
-export const buildE2eSimilarTailCollectionReleases = (): DiscogsRelease[] => {
-  const collection = buildE2eCollectionReleases();
+const getE2eSimilarPeerTagsFromAlbumOne = (collection: DiscogsRelease[]) => {
   const sourceRelease = collection.find(
     (release) => release.basic_information.id === E2E_DISCOGS_RELEASE_ID_ONE,
   );
@@ -90,8 +89,57 @@ export const buildE2eSimilarTailCollectionReleases = (): DiscogsRelease[] => {
     throw new Error("E2E collection missing album one");
   }
 
-  const peerGenres = sourceRelease.basic_information.genres ?? ["Rock"];
-  const peerStyles = sourceRelease.basic_information.styles ?? ["Indie Rock"];
+  return {
+    sourceRelease,
+    peerGenres: sourceRelease.basic_information.genres ?? ["Rock"],
+    peerStyles: sourceRelease.basic_information.styles ?? ["Indie Rock"],
+  };
+};
+
+export const buildE2eSimilarModalShuffleCollectionReleases =
+  (): DiscogsRelease[] => {
+    const collection = buildE2eCollectionReleases();
+    const { sourceRelease, peerGenres, peerStyles } =
+      getE2eSimilarPeerTagsFromAlbumOne(collection);
+    const otherReleases = collection.filter(
+      (release) => release.basic_information.id !== E2E_DISCOGS_RELEASE_ID_ONE,
+    );
+
+    const similarPeers = Array.from({ length: 55 }, (_, index) =>
+      releaseFactory.build({
+        instance_id: `e2e-similar-modal-peer-${index}`,
+        date_added: sourceRelease.date_added,
+        rating: 4,
+        notes: [],
+        basic_information: basicInformationFactory.build({
+          id: 900_100 + index,
+          title: `Similar Modal Peer ${String(index).padStart(2, "0")}`,
+          year: 2020,
+          styles: peerStyles,
+          genres: peerGenres,
+          master_id: 8_000 + index,
+          artists: [
+            artistFactory.build({
+              id: 8_000 + index,
+              name: `Modal Peer Artist ${index}`,
+            }),
+          ],
+          labels: [],
+          thumb: E2E_THUMB_IMAGE,
+          cover_image: E2E_COVER_IMAGE,
+          resource_url: `https://api.discogs.com/releases/${900_100 + index}`,
+          uri: `https://www.discogs.com/release/${900_100 + index}`,
+        }),
+      }),
+    );
+
+    return [sourceRelease, ...similarPeers, ...otherReleases];
+  };
+
+export const buildE2eSimilarTailCollectionReleases = (): DiscogsRelease[] => {
+  const collection = buildE2eCollectionReleases();
+  const { peerGenres, peerStyles } =
+    getE2eSimilarPeerTagsFromAlbumOne(collection);
 
   return collection.map((release) => {
     if (release.basic_information.id === E2E_DISCOGS_RELEASE_ID_ONE) {
