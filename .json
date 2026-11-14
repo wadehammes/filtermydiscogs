@@ -1,20 +1,38 @@
 {
   "trunk": "staging",
-  "currentBranch": "11-13-align-code-to-handbook",
+  "currentBranch": "playlists-ga/remove-flag-plumbing",
   "branches": [
     {
-      "name": "11-13-align-code-to-handbook",
-      "head": "4f59bf13213750923428db480d187d547161f2a4",
-      "base": "b659cda84bf9bfd2d61cb8fb8a0732ebe8884847",
+      "name": "playlists-ga/defaults-on",
+      "base": "c0ae4e30e1095042771106686bb564feccc3f690",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false
+    },
+    {
+      "name": "playlists-ga/remove-beta-banner",
+      "base": "ebed6c3f1e5b733807c1d3ba54360e607841f1b6",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false
+    },
+    {
+      "name": "playlists-ga/remove-flag-gates",
+      "base": "6a3e698b0eaeb32a6faeb3d0a3797b47bb160a1d",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false
+    },
+    {
+      "name": "playlists-ga/remove-flag-plumbing",
+      "base": "16b02da51c6e53cc1dd84838a5b7e6dbbe41a090",
       "isCurrent": true,
       "isMerged": false,
       "isQueued": false,
-      "needsRebase": false,
-      "pr": {
-        "number": 1310,
-        "url": "https://github.com/wadehammes/filtermydiscogs/pull/1310",
-        "state": "OPEN"
-      }
+      "needsRebase": false
     }
   ]
 }

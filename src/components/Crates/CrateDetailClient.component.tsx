@@ -9,7 +9,6 @@ import {
 import { CrateDrawerDialogs } from "src/components/CrateDrawerDialogs/CrateDrawerDialogs.component";
 import { CrateReleaseListToolbar } from "src/components/CrateReleaseListToolbar/CrateReleaseListToolbar.component";
 import { CrateSetNotesScratchpad } from "src/components/CrateSetNotesScratchpad/CrateSetNotesScratchpad.component";
-import { CrateLayoutBetaBanner } from "src/components/Crates/CrateLayoutBetaBanner.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
@@ -155,7 +154,6 @@ const CrateDetailClientContent = ({ crateId }: CrateDetailClientProps) => {
     <CollectionPlaybackPageShell
       currentPage="crates"
       hideFilters
-      subheader={<CrateLayoutBetaBanner />}
       overlays={
         <ReleaseModalLazyOverlay
           release={selectedRelease}

@@ -4,7 +4,6 @@ import { type ReactNode, useCallback } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PlaylistDrawerProvider } from "src/components/PlaylistDrawer/PlaylistDrawer.context";
-import { PlaylistDrawerBetaBanner } from "src/components/PlaylistDrawerBetaBanner/PlaylistDrawerBetaBanner.component";
 import { PlaylistDrawerFooter } from "src/components/PlaylistDrawerFooter/PlaylistDrawerFooter.component";
 import { PlaylistDrawerTracks } from "src/components/PlaylistDrawerTracks/PlaylistDrawerTracks.component";
 import { PlaylistSelector } from "src/components/PlaylistSelector/PlaylistSelector.component";
@@ -25,7 +24,6 @@ export interface PlaylistDrawerProps {
   onActivePlaylistIdChange: (playlistId: string | null) => void;
   lastPlayedPlaylistId?: string | null;
   onAfterPlaylistCreate?: (playlistId: string) => void;
-  onSubmitBugReport?: () => void;
 }
 
 interface PlaylistDrawerMobileProps {
@@ -33,7 +31,6 @@ interface PlaylistDrawerMobileProps {
   aboveMiniPlayer: boolean;
   playlistSelector: ReactNode;
   onClose: () => void;
-  onSubmitBugReport?: () => void;
 }
 
 const PlaylistDrawerMobile = ({
@@ -41,7 +38,6 @@ const PlaylistDrawerMobile = ({
   aboveMiniPlayer,
   playlistSelector,
   onClose,
-  onSubmitBugReport,
 }: PlaylistDrawerMobileProps) => (
   <BottomDrawer
     isOpen={isOpen}
@@ -51,15 +47,7 @@ const PlaylistDrawerMobile = ({
     closeButtonAriaLabel="Close playlist drawer"
     contentClassName={styles.mobileDrawerContentFlushTop}
     dataAttribute="data-collection-side-panel-open"
-    headerContent={
-      <div className={styles.mobileDrawerHeaderStack}>
-        <PlaylistDrawerBetaBanner
-          inDrawerHeader
-          {...definedProps({ onSubmitBugReport })}
-        />
-        {playlistSelector}
-      </div>
-    }
+    headerContent={playlistSelector}
     footer={<PlaylistDrawerFooter />}
     aboveMiniPlayer={aboveMiniPlayer}
   >
@@ -71,12 +59,10 @@ const PlaylistDrawerMobile = ({
 
 interface PlaylistDrawerDesktopProps {
   playlistSelector: ReactNode;
-  onSubmitBugReport?: () => void;
 }
 
 const PlaylistDrawerDesktop = ({
   playlistSelector,
-  onSubmitBugReport,
 }: PlaylistDrawerDesktopProps) => (
   <div
     className={styles.drawer}
@@ -88,7 +74,6 @@ const PlaylistDrawerDesktop = ({
       escapeStackingContext
       popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
     >
-      <PlaylistDrawerBetaBanner {...definedProps({ onSubmitBugReport })} />
       <div className={styles.header}>{playlistSelector}</div>
       <div className={styles.content}>
         <PlaylistDrawerTracks />
@@ -106,7 +91,6 @@ export const PlaylistDrawer = ({
   onActivePlaylistIdChange,
   lastPlayedPlaylistId = null,
   onAfterPlaylistCreate,
-  onSubmitBugReport,
 }: PlaylistDrawerProps) => {
   const { toggleDrawer } = useCrate();
   const isMobile = useMediaQuery(BELOW_DESKTOP_LAYOUT_MEDIA_QUERY);
@@ -154,13 +138,9 @@ export const PlaylistDrawer = ({
           aboveMiniPlayer={aboveMiniPlayer}
           playlistSelector={playlistSelector}
           onClose={toggleDrawer}
-          {...definedProps({ onSubmitBugReport })}
         />
       ) : (
-        <PlaylistDrawerDesktop
-          playlistSelector={playlistSelector}
-          {...definedProps({ onSubmitBugReport })}
-        />
+        <PlaylistDrawerDesktop playlistSelector={playlistSelector} />
       )}
     </PlaylistDrawerProvider>
   );
