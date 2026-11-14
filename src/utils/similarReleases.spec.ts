@@ -1,10 +1,14 @@
 import { describe, expect, it } from "@jest/globals";
 import { artistFactory } from "src/tests/factories/Artist.factory";
 import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
+import { formatFactory } from "src/tests/factories/Format.factory";
 import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsBasicInformation } from "src/types";
-import { getSimilarReleases } from "src/utils/similarReleases";
+import {
+  getSimilarReleases,
+  getSimilarReleasesModalPage,
+} from "src/utils/similarReleases";
 
 describe("getSimilarReleases", () => {
   const sourceArtist = artistFactory.build({ name: "Source Artist" });
@@ -324,7 +328,10 @@ describe("getSimilarReleases", () => {
     });
 
     expect(results).toHaveLength(1);
-    expect(results[0]?.instance_id).toBe("duplicate-master-a");
+    expect(results[0]?.basic_information.master_id).toBe(301);
+    expect(["duplicate-master-a", "duplicate-master-b"]).toContain(
+      results[0]?.instance_id,
+    );
   });
 
   it("returns empty when the source has no genre or style tags", () => {
@@ -395,6 +402,80 @@ describe("getSimilarReleases", () => {
     expect(results[0]?.instance_id).toBe("other-artist-match");
   });
 
+  it("prefers shared primary format when tag overlap is equal", () => {
+    const sharedFormatMatch = releaseFactory.withStyles(["Techno"], {
+      instance_id: "shared-format-match",
+      basic_information: {
+        master_id: 511,
+        title: "Vinyl Match",
+        year: 2018,
+        formats: [formatFactory.build({ name: "Vinyl" })],
+      },
+    });
+    const otherFormatMatch = releaseFactory.withStyles(["Techno"], {
+      instance_id: "other-format-match",
+      basic_information: {
+        master_id: 512,
+        title: "CD Match",
+        year: 2018,
+        formats: [formatFactory.build({ name: "CD" })],
+      },
+    });
+    const sourceWithVinyl = releaseFactory.build({
+      instance_id: "source-with-vinyl",
+      basic_information: buildSourceLikeBasicInformation({
+        formats: [formatFactory.build({ name: "Vinyl" })],
+      }),
+    });
+
+    const results = getSimilarReleases({
+      releases: [sourceWithVinyl, otherFormatMatch, sharedFormatMatch],
+      sourceRelease: sourceWithVinyl,
+      limit: 1,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("shared-format-match");
+  });
+
+  it("prefers more shared style and genre tags when scores are close", () => {
+    const otherArtist = artistFactory.build({ id: 99, name: "Other Artist" });
+    const sharedTagOverlapRelease = releaseFactory.withStyles(
+      ["Techno", "Ambient", "Dub Techno"],
+      {
+        instance_id: "denser-tag-match",
+        basic_information: {
+          genres: ["Electronic"],
+          master_id: 521,
+          title: "Denser Tag Match",
+          year: 2018,
+          artists: [otherArtist],
+          formats: [formatFactory.build({ name: "Vinyl" })],
+        },
+      },
+    );
+    const lighterTagMatch = releaseFactory.withStyles(["Techno"], {
+      instance_id: "lighter-tag-match",
+      basic_information: {
+        genres: ["Electronic"],
+        master_id: 522,
+        title: "Lighter Tag Match",
+        year: 2018,
+        artists: [otherArtist],
+        formats: [formatFactory.build({ name: "Vinyl" })],
+      },
+    });
+
+    const results = getSimilarReleases({
+      releases: [sourceRelease, lighterTagMatch, sharedTagOverlapRelease],
+      sourceRelease,
+      limit: 1,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.instance_id).toBe("denser-tag-match");
+  });
+
   it("prefers shared label id matches when tag overlap is equal", () => {
     const sharedLabelById = releaseFactory.withStyles(["Techno"], {
       instance_id: "shared-label-by-id",
@@ -455,5 +536,53 @@ describe("getSimilarReleases", () => {
 
     expect(results).toHaveLength(1);
     expect(results[0]?.instance_id).toBe("strong-match");
+  });
+
+  it("when the modal page index advances, returns the next batch from the scored pool", () => {
+    const peers = Array.from({ length: 12 }, (_, index) =>
+      releaseFactory.withStyles(["Techno", "Ambient"], {
+        instance_id: `peer-${index}`,
+        basic_information: {
+          master_id: 300 + index,
+          title: `Peer ${index}`,
+        },
+      }),
+    );
+    const releases = [sourceRelease, ...peers];
+    const batchLimit = 5;
+
+    const firstPage = getSimilarReleasesModalPage({
+      releases,
+      sourceRelease,
+      batchLimit,
+      pageIndex: 0,
+    });
+    const secondPage = getSimilarReleasesModalPage({
+      releases,
+      sourceRelease,
+      batchLimit,
+      pageIndex: 1,
+    });
+
+    const total = getSimilarReleases({
+      releases,
+      sourceRelease,
+      limit: releases.length,
+    }).length;
+    const firstBatch = getSimilarReleases({
+      releases,
+      sourceRelease,
+      limit: batchLimit,
+    });
+
+    expect(firstPage.totalMatchCount).toBe(total);
+    expect(firstPage.pageCount).toBe(3);
+    expect(firstPage.batch.map((release) => release.instance_id)).toEqual(
+      firstBatch.map((release) => release.instance_id),
+    );
+    expect(secondPage.batch).toHaveLength(5);
+    expect(secondPage.batch.map((release) => release.instance_id)).not.toEqual(
+      firstPage.batch.map((release) => release.instance_id),
+    );
   });
 });

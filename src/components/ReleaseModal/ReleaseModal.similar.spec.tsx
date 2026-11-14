@@ -28,6 +28,28 @@ const buildSimilarReleasesFixture = () => {
   return { sourceRelease, similarRelease };
 };
 
+const buildPaginatedSimilarReleasesFixture = () => {
+  const sourceRelease = releaseFactory.withStyles(["Techno", "Ambient"], {
+    instance_id: "source-instance",
+    basic_information: {
+      genres: ["Electronic"],
+      master_id: 100,
+      title: "Source Album",
+    },
+  });
+  const similarReleases = Array.from({ length: 60 }, (_, index) =>
+    releaseFactory.withStyles(["Techno", "House"], {
+      instance_id: `similar-${index}`,
+      basic_information: {
+        master_id: 200 + index,
+        title: `Peer ${String(index).padStart(2, "0")}`,
+      },
+    }),
+  );
+
+  return { sourceRelease, similarReleases };
+};
+
 const expectSimilarSidebar = async () => {
   await waitFor(() => {
     expect(screen.getByTestId("fmdReleaseSimilarSidebar")).toBeInTheDocument();
@@ -107,6 +129,45 @@ describe("ReleaseModal similar sidebar", () => {
     expect(
       dialog.querySelector('[class*="splitContent"][class*="modalMain"]'),
     ).not.toBeNull();
+  });
+
+  it("advances the similar list when the next page control is clicked", async () => {
+    const user = userEvent.setup();
+    const { sourceRelease, similarReleases } =
+      buildPaginatedSimilarReleasesFixture();
+
+    po.mockAllReleases([sourceRelease, ...similarReleases]);
+    po.renderReleaseModal({ release: sourceRelease });
+
+    await expectSimilarSidebar();
+
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarCount"),
+    ).toHaveTextContent(/similar$/);
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarPage"),
+    ).toHaveTextContent("1 of 2");
+
+    const getVisibleSimilarTitles = () =>
+      within(screen.getByTestId("fmdReleaseSimilarSidebar"))
+        .getAllByRole("button", { name: /^Open .+ details$/ })
+        .map((button) => button.textContent?.trim() ?? "");
+
+    const titlesBeforeNextPage = getVisibleSimilarTitles();
+
+    await user.click(
+      screen.getByRole("button", { name: "Next similar releases page" }),
+    );
+
+    await waitFor(() => {
+      expect(getVisibleSimilarTitles().join("|")).not.toBe(
+        titlesBeforeNextPage.join("|"),
+      );
+    });
+
+    expect(
+      screen.getByTestId("fmdReleaseSimilarSidebarPage"),
+    ).toHaveTextContent("2 of 2");
   });
 
   it("shows crate-style loading in the sidebar until the collection has fully loaded", async () => {

@@ -1,3 +1,4 @@
+import { collectionViewCookieAttributeSuffix } from "src/constants/collectionViewCookie.constants";
 import {
   VIEW_STATE_COOKIE_NAME,
   VIEW_STATE_STORAGE_KEY,
@@ -7,8 +8,7 @@ import {
   parseViewStateJson,
   type ViewMode,
 } from "src/types/view.types";
-
-export const VIEW_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+import { assignBrowserDocumentCookie } from "src/utils/browserDocumentCookie";
 
 const isViewMode = (value: string | null | undefined): value is ViewMode =>
   value === "card" || value === "list" || value === "random";
@@ -17,12 +17,11 @@ export const parseCollectionViewCookie = (
   value: string | undefined,
 ): ViewMode | undefined => (isViewMode(value) ? value : undefined);
 
-export const syncCollectionViewCookie = (view: ViewMode) => {
-  if (typeof document === "undefined") {
-    return;
-  }
+export const formatCollectionViewCookie = (view: ViewMode): string =>
+  `${VIEW_STATE_COOKIE_NAME}=${view}${collectionViewCookieAttributeSuffix}`;
 
-  document.cookie = `${VIEW_STATE_COOKIE_NAME}=${view}; path=/; max-age=${VIEW_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+export const syncCollectionViewCookie = (view: ViewMode) => {
+  assignBrowserDocumentCookie(formatCollectionViewCookie(view));
 };
 
 export const readInitialCollectionViewMode = (): ViewMode => {

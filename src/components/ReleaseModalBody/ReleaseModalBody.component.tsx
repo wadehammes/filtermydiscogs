@@ -16,7 +16,14 @@ interface ReleaseModalBodyProps {
   release: DiscogsRelease;
   isOpen: boolean;
   similarReleases?: DiscogsRelease[];
+  totalSimilarMatchCount?: number;
   isSimilarLoading?: boolean;
+  similarPageCount?: number;
+  similarPageIndex?: number;
+  canGoSimilarPagePrev?: boolean;
+  canGoSimilarPageNext?: boolean;
+  onSimilarPagePrev?: () => void;
+  onSimilarPageNext?: () => void;
   onReleaseClick?: (instanceId: string) => void;
 }
 
@@ -24,7 +31,14 @@ export const ReleaseModalBody = ({
   release,
   isOpen,
   similarReleases,
+  totalSimilarMatchCount,
   isSimilarLoading,
+  similarPageCount,
+  similarPageIndex,
+  canGoSimilarPagePrev,
+  canGoSimilarPageNext,
+  onSimilarPagePrev,
+  onSimilarPageNext,
   onReleaseClick,
 }: ReleaseModalBodyProps) => {
   const playback = useReleaseModalPlayback({ release, isOpen });
@@ -71,7 +85,16 @@ export const ReleaseModalBody = ({
             variant="inline"
             similarReleases={similarReleases}
             isLoading={isSimilarLoading ?? false}
-            {...definedProps({ onReleaseClick })}
+            {...definedProps({
+              totalSimilarMatchCount,
+              similarPageCount,
+              similarPageIndex,
+              canGoSimilarPagePrev,
+              canGoSimilarPageNext,
+              onReleaseClick,
+              onSimilarPagePrev,
+              onSimilarPageNext,
+            })}
           />
         ) : null}
       </div>

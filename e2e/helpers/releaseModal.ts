@@ -74,3 +74,17 @@ export const closeReleaseModal = async (page: Page) => {
     timeout: 15_000,
   });
 };
+
+export const openSimilarReleaseFromModal = async (
+  page: Page,
+  similarTitle: string,
+) => {
+  const releaseDetailLoaded = waitForReleaseDetailFetch(page);
+
+  await page
+    .getByRole("button", { name: `Open ${similarTitle} details` })
+    .click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await releaseDetailLoaded;
+  await expectReleaseModalShowsE2eTracklist(page, similarTitle);
+};

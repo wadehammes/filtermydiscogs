@@ -1,16 +1,21 @@
-import { useDeferredValue, useMemo } from "react";
-import { RELEASE_MODAL_SIMILAR_LIMIT } from "src/constants/collection";
+import { useDeferredValue, useEffect, useMemo, useRef } from "react";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import type { DiscogsRelease } from "src/types";
-import { getSimilarReleases } from "src/utils/similarReleases";
+import { releaseHasSimilarMatchTags } from "src/utils/similarReleases";
+import {
+  getModalSimilarReleasesBatch,
+  getModalSimilarReleasesPool,
+  getSimilarReleasesSidebarLoading,
+  isDeferredSimilarAnchorReady,
+} from "./useSimilarReleasesInCollection.utils";
+import {
+  persistSimilarPageIndexForAnchor,
+  useSimilarReleasesPageState,
+} from "./useSimilarReleasesPageState.hook";
 
-const releaseCanHaveSimilarMatches = (release: DiscogsRelease): boolean => {
-  const { genres, styles } = release.basic_information;
-
-  return (genres?.length ?? 0) > 0 || (styles?.length ?? 0) > 0;
-};
+const EMPTY_SIMILAR_BATCH: DiscogsRelease[] = [];
 
 export const useSimilarReleasesInCollection = (
   release: DiscogsRelease | null,
@@ -29,38 +34,85 @@ export const useSimilarReleasesInCollection = (
     isFetchingNextPage,
   });
 
-  const canHaveSimilar = release
-    ? releaseCanHaveSimilarMatches(release)
-    : false;
+  const canHaveSimilar = release ? releaseHasSimilarMatchTags(release) : false;
+
+  const deferredAnchorRelease = isDeferredSimilarAnchorReady(
+    deferredSimilarSourceKey,
+    release,
+    isCollectionLoading,
+  )
+    ? release
+    : null;
+
+  const similarModalPool = useMemo(() => {
+    if (!deferredAnchorRelease) {
+      return null;
+    }
+
+    return getModalSimilarReleasesPool({
+      release: deferredAnchorRelease,
+      releasesForSimilar,
+    });
+  }, [deferredAnchorRelease, releasesForSimilar]);
+
+  const similarPageCount = similarModalPool?.pageCount ?? 0;
+  const totalSimilarMatchCount = similarModalPool?.totalMatchCount ?? 0;
+
+  const { similarPageIndex, goSimilarPagePrev, goSimilarPageNext } =
+    useSimilarReleasesPageState(
+      deferredSimilarSourceKey,
+      similarSourceKey,
+      allReleases.length,
+      similarPageCount,
+    );
+
+  const releaseInstanceId = release ? String(release.instance_id) : "";
+  const similarPageIndexRef = useRef(similarPageIndex);
+  similarPageIndexRef.current = similarPageIndex;
+
+  useEffect(() => {
+    const anchorInstanceId = releaseInstanceId;
+
+    return () => {
+      persistSimilarPageIndexForAnchor(
+        anchorInstanceId,
+        similarPageIndexRef.current,
+      );
+    };
+  }, [releaseInstanceId]);
 
   const similarReleases = useMemo(() => {
-    if (!deferredSimilarSourceKey || isCollectionLoading) {
-      return [];
+    if (!similarModalPool) {
+      return EMPTY_SIMILAR_BATCH;
     }
 
-    if (!release || String(release.instance_id) !== deferredSimilarSourceKey) {
-      return [];
-    }
+    return getModalSimilarReleasesBatch(similarModalPool, similarPageIndex);
+  }, [similarModalPool, similarPageIndex]);
 
-    return getSimilarReleases({
-      releases: releasesForSimilar,
-      sourceRelease: release,
-      limit: RELEASE_MODAL_SIMILAR_LIMIT,
-    });
-  }, [
-    deferredSimilarSourceKey,
-    isCollectionLoading,
+  const canGoSimilarPagePrev = similarPageIndex > 0;
+  const canGoSimilarPageNext = similarPageIndex < similarPageCount - 1;
+
+  const isSimilarLoading = getSimilarReleasesSidebarLoading({
+    enabled,
     release,
+    canHaveSimilar,
+    isCollectionLoading,
+    similarSourceKey,
+    deferredSimilarSourceKey,
     releasesForSimilar,
-  ]);
-
-  const isSimilarLoading = Boolean(
-    enabled && release && canHaveSimilar && isCollectionLoading,
-  );
+    allReleases,
+  });
 
   return {
     similarReleases,
+    totalSimilarMatchCount,
+    similarPageCount,
+    similarPageIndex,
     isSimilarLoading,
     canHaveSimilar,
+    canGoSimilarPagePrev,
+    canGoSimilarPageNext,
+    goSimilarPagePrev,
+    goSimilarPageNext,
   };
 };

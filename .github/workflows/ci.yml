@@ -56,6 +56,8 @@ jobs:
         run: pnpm test:ci
       - name: Run Knip
         run: pnpm knip:ci
+      - name: Fallow audit (worsened-only)
+        run: pnpm fallow:audit:ci
 
   e2e-smoke:
     name: E2E smoke

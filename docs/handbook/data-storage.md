@@ -9,6 +9,7 @@ Where user and session data lives, what **Clear all data** removes, and which **
 | **Postgres (Prisma)** | `User`, crates, playlists, `UserTrack`, analytics events | Durable account data scoped by Discogs identity |
 | **OAuth cookies** | HttpOnly session cookies (see [discogs.md](discogs.md)) | Discogs session; verified on API routes |
 | **localStorage** | Keys in [`storageKeys.ts`](../../src/constants/storageKeys.ts) | Theme, filters, view, analytics consent, table layout, legacy keys |
+| **sessionStorage** | [`SIMILAR_PAGE_INDEX_SESSION_KEY`](../../src/constants/storageKeys.ts) (`fmd:similar-page-index-by-anchor`) | JSON map of release-modal anchor **`instance_id`** → similar sidebar page index; cleared on modal **`handleCloseModal`**, **`clearClientStoredData`**, and full client clear; Playwright **`installClearClientStorage`** may preserve this key across navigations |
 | **IndexedDB** | [`COLLECTION_CACHE_DB_NAME`](../../src/constants/storageKeys.ts) | Collection cache for faster re-login ([`CollectionCachePrepGate`](../../src/components/CollectionCachePrepGate/CollectionCachePrepGate.component.tsx)) |
 | **Legacy local crate** | Pre-migration localStorage (see crate migration) | Migrated via **`POST /api/crates/migrate`** |
 

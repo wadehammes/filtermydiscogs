@@ -7,11 +7,9 @@ import { ReleaseSimilarSidebar } from "src/components/ReleaseSimilarSidebar/Rele
 import { ReleaseSummaryHero } from "src/components/ReleaseSummaryHero/ReleaseSummaryHero.component";
 import { ReleaseSummaryHeroToolbar } from "src/components/ReleaseSummaryHeroToolbar/ReleaseSummaryHeroToolbar.component";
 import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
-import { DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
-import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { definedProps } from "src/utils/definedProps";
 import type { ReleaseModalProps } from "./ReleaseModal.types";
-import { useSimilarReleasesInCollection } from "./useSimilarReleasesInCollection.hook";
+import { useReleaseModalSimilarSection } from "./useReleaseModalSimilarSection.hook";
 
 export type { ReleaseModalProps } from "./ReleaseModal.types";
 
@@ -21,23 +19,17 @@ export const ReleaseModal = ({
   onClose,
   onReleaseClick,
 }: ReleaseModalProps) => {
-  const { similarReleases, isSimilarLoading, canHaveSimilar } =
-    useSimilarReleasesInCollection(release, isOpen);
-  const showSimilarSection =
-    canHaveSimilar && (isSimilarLoading || similarReleases.length > 0);
-  const isDesktop = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY);
-  const showAsideSimilar = showSimilarSection && isDesktop;
-  const showInlineSimilar = showSimilarSection && !isDesktop;
+  const {
+    showSimilarSection,
+    showAsideSimilar,
+    showInlineSimilar,
+    isSimilarLoading,
+    similarSidebarShellProps,
+  } = useReleaseModalSimilarSection(release, isOpen, onReleaseClick);
 
   if (!(isOpen && release)) {
     return null;
   }
-
-  const similarSidebarProps = {
-    similarReleases,
-    isLoading: isSimilarLoading,
-    ...definedProps({ onReleaseClick }),
-  };
 
   return (
     <ScrollModal
@@ -54,7 +46,11 @@ export const ReleaseModal = ({
       }
       aside={
         showAsideSimilar ? (
-          <ReleaseSimilarSidebar variant="aside" {...similarSidebarProps} />
+          <ReleaseSimilarSidebar
+            variant="aside"
+            isLoading={isSimilarLoading}
+            {...similarSidebarShellProps}
+          />
         ) : undefined
       }
       toolbar={
@@ -78,11 +74,16 @@ export const ReleaseModal = ({
       <ReleaseModalBody
         release={release}
         isOpen={isOpen}
-        {...definedProps({
-          similarReleases: showInlineSimilar ? similarReleases : undefined,
-          isSimilarLoading: showInlineSimilar ? isSimilarLoading : undefined,
-          onReleaseClick: showInlineSimilar ? onReleaseClick : undefined,
-        })}
+        {...definedProps(
+          showInlineSimilar
+            ? {
+                ...similarSidebarShellProps,
+                isSimilarLoading,
+              }
+            : {
+                onReleaseClick,
+              },
+        )}
       />
     </ScrollModal>
   );

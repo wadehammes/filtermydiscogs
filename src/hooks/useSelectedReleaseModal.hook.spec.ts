@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition } from "react";
 import { api } from "src/api/urls";
+import { clearSimilarReleasesPageIndexByAnchor } from "src/components/ReleaseModal/useSimilarReleasesPageState.hook";
 import {
   useLocalSelectedReleaseModal,
   usePublicSelectedReleaseModal,
@@ -16,6 +17,13 @@ import { parseReleaseId } from "src/utils/releaseNotes";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
+
+jest.mock(
+  "src/components/ReleaseModal/useSimilarReleasesPageState.hook",
+  () => ({
+    clearSimilarReleasesPageIndexByAnchor: jest.fn(),
+  }),
+);
 
 jest.mock("react", () => {
   const actual = jest.requireActual<typeof import("react")>("react");
@@ -120,6 +128,27 @@ describe("useSelectedReleaseModal", () => {
 
     expect(mockStartTransition.mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(mockReplace).toHaveBeenCalled();
+  });
+
+  it("when the modal closes, clears similar sidebar page index memory", () => {
+    const releases = releaseFactory.buildList(1);
+    const mockRouter = createMockAppRouter({ push: jest.fn() });
+
+    mockUseRouter.mockReturnValue(mockRouter);
+
+    const { result } = renderHookWithTestProviders(() =>
+      useSelectedReleaseModal({ fallbackReleases: releases }),
+    );
+
+    act(() => {
+      result.current.handleReleaseClick(String(releases[0]?.instance_id));
+    });
+
+    act(() => {
+      result.current.handleCloseModal();
+    });
+
+    expect(clearSimilarReleasesPageIndexByAnchor).toHaveBeenCalledTimes(1);
   });
 
   it("opens optimistically before the router updates search params", () => {
@@ -387,6 +416,7 @@ describe("useSelectedReleaseModal", () => {
 
     rerender();
 
+    expect(clearSimilarReleasesPageIndexByAnchor).toHaveBeenCalled();
     expect(mockReplace.mock.calls[0]?.[0]).toBe("/releases");
     expect(result.current.selectedReleaseId).toBeNull();
   });

@@ -67,7 +67,8 @@
     "fallow:health": "fallow health --score",
     "fallow:health:full": "fallow health",
     "fallow:dupes": "fallow dupes",
-    "fallow:audit": "fallow audit --changed-since origin/staging"
+    "fallow:audit": "fallow audit --changed-since origin/staging",
+    "fallow:audit:ci": "bash scripts/fallow-audit-ci.sh origin/staging"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

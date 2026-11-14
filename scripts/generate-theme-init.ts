@@ -1,5 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { collectionViewCookieAttributeSuffix } from "../src/constants/collectionViewCookie.constants.ts";
 import {
   VIEW_STATE_COOKIE_NAME,
   VIEW_STATE_STORAGE_KEY,
@@ -8,8 +9,6 @@ import {
   PALETTE_THEMES,
   SYSTEM_DARK_PALETTE,
 } from "../src/utils/themeAppearance.ts";
-
-const VIEW_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 const paletteThemesLiteral = PALETTE_THEMES.map(
   (theme) => `      "${theme}",`,
@@ -59,7 +58,7 @@ ${paletteThemesLiteral}
               "data-collection-view",
               currentView,
             );
-            document.cookie = "${VIEW_STATE_COOKIE_NAME}=" + currentView + "; path=/; max-age=${VIEW_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax";
+            document.cookie = "${VIEW_STATE_COOKIE_NAME}=" + currentView + "${collectionViewCookieAttributeSuffix}";
           }
         } catch (_viewError) {}
       }

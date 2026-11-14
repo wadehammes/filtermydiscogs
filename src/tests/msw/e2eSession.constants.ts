@@ -4,6 +4,7 @@ export const E2E_DISCOGS_RELEASE_ID_ONE = 900_001;
 export const E2E_DISCOGS_RELEASE_ID_TWO = 900_002;
 export const E2E_DISCOGS_RELEASE_ID_THREE = 900_003;
 export const E2E_ALBUM_ONE = "E2E Album One";
+export const E2E_ALBUM_ONE_INSTANCE_ID = "e2e-release-1";
 export const E2E_ALBUM_TWO = "E2E Album Two";
 export const E2E_ALBUM_THREE = "E2E Album Three";
 export const E2E_DEFAULT_CRATE_ID = "crate-1";

@@ -13,5 +13,7 @@ export const RELEASES_TABLE_LAYOUT_STORAGE_KEY =
   "filtermydiscogs_releases_table_layout";
 export const COLLECTION_ITEM_COUNTS_STORAGE_KEY =
   "filtermydiscogs_collection_item_counts";
+export const SIMILAR_PAGE_INDEX_SESSION_KEY =
+  "fmd:similar-page-index-by-anchor";
 export const COLLECTION_CACHE_DB_NAME = "filtermydiscogs";
 export const COLLECTION_CACHE_STORE_NAME = "collection_cache";

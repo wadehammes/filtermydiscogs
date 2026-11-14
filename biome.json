@@ -154,6 +154,19 @@
       "formatter": {
         "enabled": false
       }
+    },
+    {
+      "includes": [
+        "src/utils/browserDocumentCookie.ts",
+        "public/theme-init.js"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noDocumentCookie": "off"
+          }
+        }
+      }
     }
   ]
 }

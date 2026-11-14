@@ -29,7 +29,7 @@ Use [`.cursor/skills/sentry/SKILL.md`](./.cursor/skills/sentry/SKILL.md) and [pl
 <!-- fallow:setup-hooks:start -->
 ## Fallow (ad-hoc analysis)
 
-**CI dead-code gate:** [`knip.json`](./knip.json) / `pnpm knip:ci` (see [platform.md](docs/handbook/platform.md)). **Fallow** is optional codebase intelligence for agents and local deep dives ([`.fallowrc.jsonc`](./.fallowrc.jsonc), `pnpm fallow:*`). No commit/push hooks are installed in this repo.
+**CI dead-code gate:** [`knip.json`](./knip.json) / `pnpm knip:ci` (see [platform.md](docs/handbook/platform.md)). **Fallow** in CI: `pnpm fallow:audit:ci` fails only on **worsened** complexity at **error** severity vs the base ref; local **`pnpm fallow:audit`** / **`mise run pr-prep`** still use **new-only** (introduced findings can fail). No commit/push hooks are installed in this repo.
 
 Before deleting “unused” code or dependencies, or before large refactors, use the task map below. For changed-file review, `fallow audit --changed-since origin/staging` (`pnpm fallow:audit`) is advisory unless you opt into stricter gating.
 

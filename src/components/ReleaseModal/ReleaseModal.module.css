@@ -17,7 +17,8 @@
   min-height: 0;
 
   @media (width >= 1024px) {
-    --scroll-modal-max-width: 68rem;
+    --scroll-modal-aside-width: 22rem;
+    --scroll-modal-max-width: 70rem;
   }
 }
 
