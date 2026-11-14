@@ -97,7 +97,7 @@ describe("getPublicCrateIdsForStaticGeneration", () => {
     mockFindMany.mockResolvedValue([
       { id: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" },
       { id: "ffffffff-1111-2222-3333-444444444444" },
-    ]);
+    ] as Awaited<ReturnType<typeof mockFindMany>>);
 
     await expect(getPublicCrateIdsForStaticGeneration(2)).resolves.toEqual([
       "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
