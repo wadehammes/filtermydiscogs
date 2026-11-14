@@ -3,7 +3,7 @@ export type FeatureFlags = {
 };
 
 export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
-  playlists: false,
+  playlists: true,
 };
 
 export type FeatureFlagKey = keyof FeatureFlags;
