@@ -21,7 +21,6 @@ interface ReleasesHeaderProps {
   sidePanel: CollectionSidePanelMode;
   isSidePanelOpen: boolean;
   onSelectSidePanel: (panel: CollectionSidePanelMode) => void;
-  playlistsEnabled?: boolean;
   deferSidePanelHighlight?: boolean;
 }
 
@@ -36,7 +35,6 @@ export const ReleasesHeader = ({
   sidePanel,
   isSidePanelOpen,
   onSelectSidePanel,
-  playlistsEnabled = true,
   deferSidePanelHighlight = false,
 }: ReleasesHeaderProps) => {
   const [isStuck, setIsStuck] = useState(false);
@@ -111,7 +109,6 @@ export const ReleasesHeader = ({
           sidePanel={sidePanel}
           isDrawerOpen={isSidePanelOpen}
           onSelectSidePanel={onSelectSidePanel}
-          playlistsEnabled={playlistsEnabled}
           deferSegmentHighlight={deferSidePanelHighlight}
         />
       </div>

@@ -23,7 +23,6 @@ import {
 } from "src/analytics/productAnalyticsEvents";
 import { useAuth } from "src/context/auth.context";
 import type { CrateActions, CrateState } from "src/context/crate.context.types";
-import { useFeatureFlag } from "src/context/featureFlags.context";
 import {
   useAddReleaseToCrateMutation,
   useClearAllPackedInCrateMutation,
@@ -90,7 +89,6 @@ export const useCrateProvider = (): {
   const canLoadCrates =
     isAuthenticated && !!userId && !rateLimited && !isCheckingAuth;
 
-  const playlistsEnabled = useFeatureFlag("playlists");
   const { data: userPreferences, isPending: isUserPreferencesPending } =
     useUserPreferencesQuery({
       userId,
@@ -191,12 +189,8 @@ export const useCrateProvider = (): {
       return;
     }
 
-    const preferredPanel = userPreferences.defaultCollectionSidePanel;
-    const panelToApply =
-      preferredPanel === "playlists" && !playlistsEnabled
-        ? "crates"
-        : preferredPanel;
-    const applyKey = `${userId}:${playlistsEnabled}:${preferredPanel}:${panelToApply}`;
+    const panelToApply = userPreferences.defaultCollectionSidePanel;
+    const applyKey = `${userId}:${panelToApply}`;
 
     if (sidePanelDefaultAppliedKeyRef.current === applyKey) {
       return;
@@ -204,7 +198,7 @@ export const useCrateProvider = (): {
 
     applySidePanelDefault(panelToApply);
     sidePanelDefaultAppliedKeyRef.current = applyKey;
-  }, [applySidePanelDefault, playlistsEnabled, userId, userPreferences]);
+  }, [applySidePanelDefault, userId, userPreferences]);
 
   useEffect(() => {
     if (!userId || crates.length === 0) {

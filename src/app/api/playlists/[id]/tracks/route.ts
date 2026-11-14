@@ -8,7 +8,6 @@ import {
   removeTrackFromPlaylist,
   reorderPlaylistTracks,
 } from "src/lib/playlist.server";
-import { requirePlaylistsFeatureEnabled } from "src/lib/playlistsFeatureGuard.server";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { revalidatePublicPlaylistShareWhenPublic } from "src/lib/public-share-cache.server";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
@@ -23,11 +22,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(
       request,
       true,
@@ -79,11 +73,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(
       request,
       true,
@@ -126,11 +115,6 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const featureError = await requirePlaylistsFeatureEnabled();
-    if (featureError) {
-      return featureError;
-    }
-
     const verified = await getVerifiedUserFromRequestWithRateLimit(
       request,
       true,

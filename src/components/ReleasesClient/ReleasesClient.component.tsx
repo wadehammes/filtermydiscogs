@@ -12,11 +12,9 @@ import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModa
 import { RELEASES_WORKSPACE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useAuth } from "src/context/auth.context";
 import { useCrate } from "src/context/crate.context";
-import { useFeatureFlag } from "src/context/featureFlags.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { usePlaylistsQuery } from "src/hooks/queries/usePlaylistsQuery";
-import type { CollectionSidePanelMode } from "src/hooks/useCrateDrawer.hook";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
@@ -50,10 +48,9 @@ const ReleasesClientContent = () => {
   const {
     state: { userId },
   } = useAuth();
-  const playlistsEnabled = useFeatureFlag("playlists");
   const { data: playlistsData } = usePlaylistsQuery({
     userId,
-    enabled: playlistsEnabled,
+    enabled: Boolean(userId),
   });
   const playlists = playlistsData ?? EMPTY_PLAYLIST_SUMMARIES;
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
@@ -64,11 +61,6 @@ const ReleasesClientContent = () => {
   const lastPlayedPlaylistId = userId ? readLastPlayedPlaylistId(userId) : null;
 
   useEffect(() => {
-    if (!playlistsEnabled) {
-      setActivePlaylistId(null);
-      return;
-    }
-
     if (!userId) {
       hydratedPlaylistUserRef.current = null;
       setActivePlaylistId(null);
@@ -102,24 +94,7 @@ const ReleasesClientContent = () => {
         lastPlayedPlaylistId: readLastPlayedPlaylistId(userId),
       });
     });
-  }, [playlists, playlistsEnabled, userId]);
-
-  useEffect(() => {
-    if (!playlistsEnabled && sidePanel === "playlists") {
-      selectSidePanel("crates");
-    }
-  }, [playlistsEnabled, selectSidePanel, sidePanel]);
-
-  const handleSelectSidePanel = useCallback(
-    (panel: CollectionSidePanelMode) => {
-      if (panel === "playlists" && !playlistsEnabled) {
-        return;
-      }
-
-      selectSidePanel(panel);
-    },
-    [playlistsEnabled, selectSidePanel],
-  );
+  }, [playlists, userId]);
 
   const handleActivePlaylistIdChange = useCallback(
     (playlistId: string | null) => {
@@ -212,8 +187,7 @@ const ReleasesClientContent = () => {
             {isMobile &&
             (sidePanel === "crates"
               ? activeCrateId
-              : playlistsEnabled &&
-                (activePlaylistId || playlists.length > 0)) ? (
+              : activePlaylistId || playlists.length > 0) ? (
               <button
                 type="button"
                 className={styles.crateFab}
@@ -282,8 +256,7 @@ const ReleasesClientContent = () => {
                   onRandomClick={handleRandomClick}
                   sidePanel={sidePanel}
                   isSidePanelOpen={isDrawerOpen}
-                  onSelectSidePanel={handleSelectSidePanel}
-                  playlistsEnabled={playlistsEnabled}
+                  onSelectSidePanel={selectSidePanel}
                   deferSidePanelHighlight={isSidePanelDefaultPending}
                 />
               ) : null}
@@ -324,8 +297,7 @@ const ReleasesClientContent = () => {
 
             <div className={styles.sidebar}>
               <Activity mode={isDrawerOpen ? "visible" : "hidden"}>
-                {isSidePanelDefaultPending ? null : sidePanel === "crates" ||
-                  !playlistsEnabled ? (
+                {isSidePanelDefaultPending ? null : sidePanel === "crates" ? (
                   <CrateDrawer
                     isOpen={isDrawerOpen}
                     onReleaseClick={handleReleaseClick}

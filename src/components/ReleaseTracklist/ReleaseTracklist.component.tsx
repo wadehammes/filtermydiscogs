@@ -8,7 +8,6 @@ import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicat
 import { ReleaseTracklistAddAllMenu } from "src/components/ReleaseTracklistAddAllMenu/ReleaseTracklistAddAllMenu.component";
 import { ReleaseTrackRowMenu } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenu.component";
 import { RELEASE_TRACKLIST_LABEL } from "src/constants/accessibilityLabels.constants";
-import { useFeatureFlag } from "src/context/featureFlags.context";
 import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
@@ -81,7 +80,6 @@ export const ReleaseTracklist = ({
   hasUserYoutubeOverride,
   alwaysShowTrackRowMenu = false,
 }: ReleaseTracklistProps) => {
-  const playlistsEnabled = useFeatureFlag("playlists");
   const addAllPlaylistMetadata = useMemo(() => {
     if (!getPlaylistTrackMetadata) {
       return [];
@@ -102,8 +100,7 @@ export const ReleaseTracklist = ({
   const hasQueueAdd = onTrackQueue !== undefined;
   const hasQueueRemove = onTrackUnqueue !== undefined;
   const hasYoutubeEdit = onEditTrackYoutube !== undefined;
-  const hasPlaylistAdd =
-    playlistsEnabled && getPlaylistTrackMetadata !== undefined;
+  const hasPlaylistAdd = getPlaylistTrackMetadata !== undefined;
   const hasAnyRowMenuAction =
     hasYoutubeEdit || hasQueueAdd || hasQueueRemove || hasPlaylistAdd;
   const showTrackActionsColumn =
@@ -326,9 +323,7 @@ export const ReleaseTracklist = ({
                 onAddAllToQueue={onAddAllToQueue}
                 trackMetadataList={addAllPlaylistMetadata}
                 releaseTitle={releaseTitle}
-                showPlaylistSubmenu={
-                  playlistsEnabled && getPlaylistTrackMetadata !== undefined
-                }
+                showPlaylistSubmenu={getPlaylistTrackMetadata !== undefined}
                 useOverlayStack={useAddAllMenuOverlayStack}
               />
             ) : null}
