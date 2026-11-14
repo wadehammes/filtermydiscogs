@@ -12,7 +12,7 @@ import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.con
 import { useAuth } from "src/context/auth.context";
 import { runSubmitBugReport } from "src/lib/sentry/runSubmitBugReport.client";
 import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
-import Chevron from "src/styles/icons/chevron-right-thin.svg";
+import { ExpandChevronThinIcon } from "src/styles/icons/ExpandChevronThinIcon.component";
 import { buildDiscogsAvatarProxyUrl } from "src/utils/discogsAvatarUrl";
 import styles from "./UserActions.module.css";
 
@@ -84,7 +84,7 @@ export const UserActions = ({
             )}
             <span className={styles.username}>{username}</span>
             <span className={styles.chevronIcon} aria-hidden>
-              <Chevron />
+              <ExpandChevronThinIcon />
             </span>
           </Menu.Trigger>
           <InlinePopoverMenu.Panel

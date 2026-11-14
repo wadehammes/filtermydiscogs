@@ -11,7 +11,7 @@ import {
   usePortaledOverlayContainer,
 } from "src/components/OverlayStack/OverlayStack.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
-import { ChevronRightThinIcon } from "src/styles/icons/ChevronRightThinIcon.component";
+import { ExpandChevronThinIcon } from "src/styles/icons/ExpandChevronThinIcon.component";
 import { definedProps } from "src/utils/definedProps";
 import {
   applyFilterValueChange,
@@ -133,7 +133,7 @@ const AutocompleteSelectComponent = ({
 
   const triggerIcon = (
     <span className={styles.icon}>
-      <ChevronRightThinIcon />
+      <ExpandChevronThinIcon />
     </span>
   );
 

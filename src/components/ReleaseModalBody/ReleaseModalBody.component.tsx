@@ -43,7 +43,6 @@ export const ReleaseModalBody = ({
 }: ReleaseModalBodyProps) => {
   const playback = useReleaseModalPlayback({ release, isOpen });
   const { isLoading, isError, releaseDetailError, refetch } = playback;
-
   return (
     <ReleaseNotesEditorProvider
       key={String(release.instance_id)}

@@ -59,13 +59,16 @@ export const ScrollModal = ({
           ) : null}
           <div className={styles.splitShell}>
             <div className={styles.splitMain}>
-              <div className={styles.header}>{header}</div>
+              <div className={styles.header} data-fmd-scroll-modal-header>
+                {header}
+              </div>
               <div
                 className={classNames(
                   styles.content,
                   styles.splitContent,
                   contentClassName,
                 )}
+                data-fmd-scroll-modal-content
               >
                 {children}
               </div>
@@ -77,8 +80,13 @@ export const ScrollModal = ({
         </div>
       ) : (
         <>
-          <div className={styles.header}>{header}</div>
-          <div className={classNames(styles.content, contentClassName)}>
+          <div className={styles.header} data-fmd-scroll-modal-header>
+            {header}
+          </div>
+          <div
+            className={classNames(styles.content, contentClassName)}
+            data-fmd-scroll-modal-content
+          >
             {children}
           </div>
         </>
