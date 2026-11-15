@@ -109,9 +109,7 @@ describe("hydratePublicPlaylistReleases", () => {
 
     const hydrated = await hydratePublicPlaylistReleases({
       tracks,
-      crateSnapshotsByInstanceId: new Map([
-        ["instance-9001", snapshot],
-      ]),
+      crateSnapshotsByInstanceId: new Map([["instance-9001", snapshot]]),
     });
 
     expect(mockFetchDiscogsReleaseRecord).not.toHaveBeenCalled();
