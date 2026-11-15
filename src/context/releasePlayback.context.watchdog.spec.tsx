@@ -40,13 +40,7 @@ jest.mock("src/api/urls");
 jest.mock("src/utils/similarReleaseQueue", () => ({
   fetchPlayableQueuesForSimilarReleases: jest.fn(),
 }));
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-  loadAndPlayYoutubeVideo: jest.fn(),
-  loadYoutubeVideoById: jest.fn(),
-  refreshYoutubeEmbedPlayerLayout: jest.fn(),
-  requestYoutubeEmbedPlaybackSync: jest.fn(),
-}));
+jest.mock("src/utils/postYoutubePlayerCommand");
 jest.mock("src/utils/playbackSkippedTrackToast", () => ({
   appendPlaybackSkipAndSchedule: jest.fn(),
   resetPlaybackSkipLogToast: jest.fn(),
@@ -1895,6 +1889,7 @@ describe("ReleasePlaybackProvider — embed watchdog", () => {
 
     await waitFor(() => {
       expect(result.current.playback.isQueueBuilding).toBe(true);
+      expect(result.current.playback.tracks.length).toBeGreaterThan(0);
     });
 
     act(() => {
@@ -1907,7 +1902,7 @@ describe("ReleasePlaybackProvider — embed watchdog", () => {
       });
     });
 
-    act(() => {
+    await act(async () => {
       resolveSimilarFetch([
         [
           createQueueItem({

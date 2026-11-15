@@ -2,7 +2,6 @@ import type { NetworkFixture } from "@msw/playwright";
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { HttpResponse, http } from "msw";
-import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { buildE2eSimilarTailCollectionReleases } from "src/tests/msw/e2eCollectionData";
 import { createE2eCollectionPageHandler } from "src/tests/msw/e2eCollectionHandlers";
@@ -14,6 +13,7 @@ import {
   E2E_DISCOGS_RELEASE_ID_THREE,
   E2E_DISCOGS_RELEASE_ID_TWO,
 } from "src/tests/msw/e2eSession.constants";
+import { expectE2eNowPlayingShowsPauseControl } from "./embedTransportSync";
 
 const E2E_SIMILAR_TAIL_PEER_RELEASE_IDS = new Set([
   String(E2E_DISCOGS_RELEASE_ID_TWO),
@@ -73,16 +73,7 @@ export const expectE2eSimilarQueueBuildingThenIdle = async (
   });
 };
 
-export const expectE2eNowPlayingShowsPauseControl = async (page: Page) => {
-  const nowPlaying = page.getByRole("region", {
-    name: NOW_PLAYING_REGION_LABEL,
-  });
-
-  await expect(nowPlaying).toBeVisible({ timeout: 15_000 });
-  await expect(nowPlaying.getByRole("button", { name: "Pause" })).toBeVisible({
-    timeout: 15_000,
-  });
-};
+export { expectE2eNowPlayingShowsPauseControl };
 
 export const stubE2eDelayedDiscogsReleaseBatch = (
   network: NetworkFixture,

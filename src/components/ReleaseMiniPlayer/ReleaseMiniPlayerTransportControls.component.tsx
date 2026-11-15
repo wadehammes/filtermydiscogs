@@ -14,6 +14,7 @@ import VideoIcon from "src/styles/icons/video-thin.svg";
 import styles from "./ReleaseMiniPlayer.module.css";
 
 interface ReleaseMiniPlayerTransportControlsProps {
+  volumeControl?: ReactNode;
   isMobileLayout: boolean;
   crateToggleButton: ReactNode;
   isQueueOpen: boolean;
@@ -32,6 +33,7 @@ interface ReleaseMiniPlayerTransportControlsProps {
 }
 
 export const ReleaseMiniPlayerTransportControls = ({
+  volumeControl,
   isMobileLayout,
   crateToggleButton,
   isQueueOpen,
@@ -47,67 +49,72 @@ export const ReleaseMiniPlayerTransportControls = ({
   onPlayPrevious,
   onTogglePlayback,
   onPlayNext,
-}: ReleaseMiniPlayerTransportControlsProps) => (
-  <div className={styles.controls}>
-    {isMobileLayout ? crateToggleButton : null}
-    <IconButton
-      variant="queue"
-      className={classNames(styles.controlButton, styles.queueButton, {
-        [styles.queueButtonActive]: isQueueOpen,
-      })}
-      iconClassName={styles.controlIcon}
-      addon={queueButtonAddon}
-      onClick={onQueueToggle}
-      aria-expanded={isQueueOpen}
-      aria-label={queueButtonAriaLabel}
-      title="Playback queue"
-    >
-      <ListThinIcon />
-    </IconButton>
-    {isPlaybackReady ? (
+}: ReleaseMiniPlayerTransportControlsProps) => {
+  const playPauseLabel = isPaused ? "Play" : "Pause";
+
+  return (
+    <div className={styles.controls}>
+      {isMobileLayout ? crateToggleButton : null}
+      {volumeControl}
       <IconButton
-        className={classNames(styles.controlButton, {
-          [styles.videoButtonActive]: isVideoPanelExpanded,
+        variant="queue"
+        className={classNames(styles.controlButton, styles.queueButton, {
+          [styles.queueButtonActive]: isQueueOpen,
         })}
         iconClassName={styles.controlIcon}
-        onClick={onVideoToggle}
-        aria-expanded={isVideoPanelExpanded}
-        aria-controls="release-playback-video-panel"
-        aria-label={isVideoPanelExpanded ? "Hide video" : "Show video"}
-        title={isVideoPanelExpanded ? "Hide video" : "Show video"}
+        addon={queueButtonAddon}
+        onClick={onQueueToggle}
+        aria-expanded={isQueueOpen}
+        aria-label={queueButtonAriaLabel}
+        title="Playback queue"
       >
-        <VideoIcon />
+        <ListThinIcon />
       </IconButton>
-    ) : null}
-    <IconButton
-      className={styles.controlButton}
-      iconClassName={styles.controlIcon}
-      onClick={onPlayPrevious}
-      disabled={!hasPrevious}
-      aria-label="Previous track"
-      title="Previous track"
-    >
-      <TransportSkipPreviousIcon />
-    </IconButton>
-    <IconButton
-      className={styles.controlButton}
-      iconClassName={styles.controlIcon}
-      onClick={onTogglePlayback}
-      disabled={!isPlaybackReady}
-      aria-label={isPaused ? "Play" : "Pause"}
-      title={isPaused ? "Play" : "Pause"}
-    >
-      {isPaused ? <PlayIcon /> : <PauseIcon />}
-    </IconButton>
-    <IconButton
-      className={styles.controlButton}
-      iconClassName={styles.controlIcon}
-      onClick={onPlayNext}
-      disabled={!hasNext}
-      aria-label="Next track"
-      title="Next track"
-    >
-      <TransportSkipNextIcon />
-    </IconButton>
-  </div>
-);
+      {isPlaybackReady ? (
+        <IconButton
+          className={classNames(styles.controlButton, {
+            [styles.videoButtonActive]: isVideoPanelExpanded,
+          })}
+          iconClassName={styles.controlIcon}
+          onClick={onVideoToggle}
+          aria-expanded={isVideoPanelExpanded}
+          aria-controls="release-playback-video-panel"
+          aria-label={isVideoPanelExpanded ? "Hide video" : "Show video"}
+          title={isVideoPanelExpanded ? "Hide video" : "Show video"}
+        >
+          <VideoIcon />
+        </IconButton>
+      ) : null}
+      <IconButton
+        className={styles.controlButton}
+        iconClassName={styles.controlIcon}
+        onClick={onPlayPrevious}
+        disabled={!hasPrevious}
+        aria-label="Previous track"
+        title="Previous track"
+      >
+        <TransportSkipPreviousIcon />
+      </IconButton>
+      <IconButton
+        className={styles.controlButton}
+        iconClassName={styles.controlIcon}
+        onClick={onTogglePlayback}
+        disabled={!isPlaybackReady}
+        aria-label={playPauseLabel}
+        title={playPauseLabel}
+      >
+        {isPaused ? <PlayIcon /> : <PauseIcon />}
+      </IconButton>
+      <IconButton
+        className={styles.controlButton}
+        iconClassName={styles.controlIcon}
+        onClick={onPlayNext}
+        disabled={!hasNext}
+        aria-label="Next track"
+        title="Next track"
+      >
+        <TransportSkipNextIcon />
+      </IconButton>
+    </div>
+  );
+};

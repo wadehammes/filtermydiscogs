@@ -6,6 +6,7 @@ import {
   isE2eHarnessMockVideoId,
   resolveE2eEmbedMockModeForVideoId,
 } from "src/constants/e2eEmbedMock.constants";
+import { PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS } from "src/utils/playbackEmbedStartWatchdog";
 
 describe("e2eEmbedMock.constants", () => {
   it("maps reserved mock video ids to embed modes", () => {
@@ -62,6 +63,12 @@ describe("e2eEmbedMock.constants", () => {
     expect(delayedParams.get("mode")).toBe("delayed");
     expect(delayedParams.get("delayMs")).toBe(
       String(E2E_EMBED_MOCK_DELAYED_PLAYING_MS),
+    );
+  });
+
+  it("keeps the delayed mock past the fastest embed watchdog", () => {
+    expect(E2E_EMBED_MOCK_DELAYED_PLAYING_MS).toBeGreaterThan(
+      PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS + 500,
     );
   });
 });

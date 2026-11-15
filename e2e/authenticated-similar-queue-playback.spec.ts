@@ -2,7 +2,10 @@ import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.cons
 import { E2E_EMBED_MOCK_VIDEO_IDS } from "src/constants/e2eEmbedMock.constants";
 import { e2eTrackPlayButtonLabel } from "src/tests/msw/e2eReleaseDetailData";
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
-import { isE2eSmokeSuite } from "./e2eSuite.constants";
+import {
+  E2E_TAG_DESKTOP_ONLY,
+  E2E_TAG_FULL_SUITE,
+} from "./e2eProjectTags.constants";
 import { expect, test } from "./fixtures/msw.fixture";
 import {
   E2E_WATCHDOG_SKIP_REASON,
@@ -31,10 +34,8 @@ test.describe("authenticated similar queue tail (MSW)", () => {
   test.describe.configure({ timeout: 120_000 });
 
   test("does not watchdog-skip confirmed playback while similar tail batch is loading", {
-    tag: "@desktop-only",
+    tag: [E2E_TAG_DESKTOP_ONLY, E2E_TAG_FULL_SUITE],
   }, async ({ page, network }) => {
-    test.skip(isE2eSmokeSuite(), "long watchdog settle window — full E2E only");
-
     enableE2eExtendQueueWithSimilarReleases(network);
     stubE2eCollectionWithSimilarTailPeers(network);
     stubE2eDelayedDiscogsReleaseBatch(network, E2E_SIMILAR_TAIL_BATCH_DELAY_MS);
@@ -81,10 +82,8 @@ test.describe("authenticated similar queue tail (MSW)", () => {
   });
 
   test("does not watchdog-skip after mock embed confirms before similar batch response returns", {
-    tag: "@desktop-only",
+    tag: [E2E_TAG_DESKTOP_ONLY, E2E_TAG_FULL_SUITE],
   }, async ({ page, network }) => {
-    test.skip(isE2eSmokeSuite(), "long watchdog settle window — full E2E only");
-
     enableE2eExtendQueueWithSimilarReleases(network);
     stubE2eCollectionWithSimilarTailPeers(network);
     stubE2eDelayedDiscogsReleaseBatch(network, E2E_SIMILAR_TAIL_BATCH_DELAY_MS);

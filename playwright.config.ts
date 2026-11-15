@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import {
   E2E_TAG_DESKTOP_ONLY_GREP,
   E2E_TAG_MOBILE_ONLY_GREP,
+  E2E_TAG_SMOKE_GREP_INVERT,
 } from "./e2e/e2eProjectTags.constants";
 import { E2E_SMOKE_SPEC_FILES } from "./e2e/smokeSpecs.constants";
 import { RESPONSIVE_VIEWPORT_PRESETS } from "./src/constants/layoutMediaQueries";
@@ -16,7 +17,9 @@ const isSmokeSuite = process.env.E2E_SMOKE === "1";
 const chromiumProject = {
   name: "chromium",
   use: { ...devices["Desktop Chrome"] },
-  grepInvert: E2E_TAG_MOBILE_ONLY_GREP,
+  grepInvert: isSmokeSuite
+    ? E2E_TAG_SMOKE_GREP_INVERT
+    : E2E_TAG_MOBILE_ONLY_GREP,
 };
 
 const responsiveProjects = [
@@ -43,6 +46,7 @@ const e2eWebServerEnv = {
   ...process.env,
   ...E2E_FEATURE_FLAG_ENV,
   NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED: "1",
+  __NEXT_DISABLE_DEV_OVERLAY_UX: "1",
   NODE_OPTIONS: "",
   DISCOGS_CONSUMER_KEY:
     process.env.DISCOGS_CONSUMER_KEY ??
@@ -59,7 +63,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCi,
   retries: isCi ? 1 : 0,
-  workers: isCi ? (isSmokeSuite ? 4 : 1) : undefined,
+  workers: isSmokeSuite ? 4 : isCi ? 1 : undefined,
   reporter: "list",
   use: {
     baseURL,

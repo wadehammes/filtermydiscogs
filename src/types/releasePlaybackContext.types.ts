@@ -1,5 +1,6 @@
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
+import type { PlaybackEmbedProgress } from "src/utils/playbackEmbedProgress";
 
 export interface StartPlaybackParams {
   release: DiscogsRelease;
@@ -66,6 +67,7 @@ export interface ReleasePlaybackState {
   isQueueBuilding: boolean;
   isPlaybackVideoLoading: boolean;
   isPlaybackVideoTransitionPending: boolean;
+  isPlaybackDockMuted: boolean;
 }
 
 export interface ReleasePlaybackActions {
@@ -90,7 +92,14 @@ export interface ReleasePlaybackActions {
   clearQueue: () => void;
   replaceUpcomingQueue: (queue: PlaybackQueueItem[]) => void;
   stopPlayback: () => void;
+  seekPlayback: (seconds: number) => void;
+  setPlaybackVolume: (volume: number) => void;
+  togglePlaybackMute: () => void;
 }
+
+export type ReleasePlaybackEmbedProgressState = {
+  embedProgress: PlaybackEmbedProgress | null;
+};
 
 export type ReleasePlaybackContextValue = ReleasePlaybackState &
   ReleasePlaybackActions;

@@ -27,6 +27,7 @@ if [ "$INCLUDE_WORKTREE" = "1" ]; then
     {
       git diff --name-only HEAD 2>/dev/null || true
       git diff --name-only --cached HEAD 2>/dev/null || true
+      git ls-files --others --exclude-standard 2>/dev/null || true
     } | grep -v '^$' || true
   )"
   if [ -n "$worktree_changed" ]; then
@@ -170,7 +171,7 @@ list_release_playback_context_specs() {
 
 hook_alternate_specs() {
   case "$1" in
-    src/hooks/useReleasePlaybackProvider.hook.ts)
+    src/hooks/useReleasePlaybackProvider.hook.ts|src/hooks/useReleasePlaybackProviderImpl.hook.ts)
       list_release_playback_context_specs
       printf '%s\n' \
         src/utils/playbackEmbedSession.spec.ts \

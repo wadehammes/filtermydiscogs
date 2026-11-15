@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/browser.fixture";
 
 test.describe("theme init", () => {
   test("uses dark when the OS prefers dark on the landing page", async ({

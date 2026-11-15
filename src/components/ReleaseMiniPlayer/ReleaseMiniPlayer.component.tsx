@@ -2,11 +2,13 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { Activity, type ReactNode, useEffect, useState } from "react";
+import { Activity, useEffect, useState } from "react";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
 import { ReleaseMiniPlayerAddToMenu } from "src/components/ReleaseMiniPlayer/ReleaseMiniPlayerAddToMenu.component";
+import { ReleaseMiniPlayerDigScrub } from "src/components/ReleaseMiniPlayerDigControls/ReleaseMiniPlayerDigScrub.component";
+import { ReleaseMiniPlayerVolumePopover } from "src/components/ReleaseMiniPlayerDigControls/ReleaseMiniPlayerVolumePopover.component";
 import { ReleasePlaybackVideoPanel } from "src/components/ReleasePlaybackVideoPanel/ReleasePlaybackVideoPanel.component";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.constants";
@@ -21,8 +23,10 @@ import { buildUserTrackMetadataBody } from "src/utils/buildUserTrackMetadataBody
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { formatArtistNames } from "src/utils/releaseDisplay";
+import { buildReleaseMiniPlayerQueueButton } from "./buildReleaseMiniPlayerQueueButton";
 import styles from "./ReleaseMiniPlayer.module.css";
 import { ReleaseMiniPlayerMarquee } from "./ReleaseMiniPlayerMarquee.component";
+import { ReleaseMiniPlayerReleaseMetaRow } from "./ReleaseMiniPlayerReleaseMetaRow.component";
 import { ReleaseMiniPlayerTransportControls } from "./ReleaseMiniPlayerTransportControls.component";
 import { useReleaseMiniPlayerVideoPanelState } from "./useReleaseMiniPlayerVideoPanelState.hook";
 
@@ -75,8 +79,6 @@ export const ReleaseMiniPlayer = ({
   const { isVideoPanelExpanded, handleVideoToggle } =
     useReleaseMiniPlayerVideoPanelState({
       isMiniPlayerVisible,
-      isPlaybackReady,
-      shouldAutoplayEmbed,
       isPlaying,
       filtersDrawerOpen,
       crateDrawerOpen,
@@ -97,31 +99,11 @@ export const ReleaseMiniPlayer = ({
     return null;
   }
 
-  let queueButtonAriaLabel = "Open playback queue";
-
-  if (isQueueBuilding) {
-    queueButtonAriaLabel = "Open playback queue, building";
-  } else if (queue.length > 0) {
-    queueButtonAriaLabel = `Open playback queue, ${queue.length} tracks`;
-  }
-
-  let queueButtonAddon: ReactNode;
-
-  if (isQueueBuilding) {
-    queueButtonAddon = (
-      <span className={styles.queueCount}>
-        <Spinner
-          size="xs"
-          className={styles.queueCountSpinner}
-          aria-label="Building playback queue"
-        />
-      </span>
-    );
-  } else if (queue.length > 0) {
-    queueButtonAddon = (
-      <span className={styles.queueCount}>{queue.length}</span>
-    );
-  }
+  const { ariaLabel: queueButtonAriaLabel, addon: queueButtonAddon } =
+    buildReleaseMiniPlayerQueueButton({
+      isQueueBuilding,
+      queueLength: queue.length,
+    });
 
   const artistNames =
     activePlaybackArtist?.trim() || formatArtistNames(release);
@@ -251,27 +233,29 @@ export const ReleaseMiniPlayer = ({
             <div className={styles.releaseArea}>
               <div className={styles.metaRow}>
                 {!isMobileLayout ? addToMenu : null}
-                {onReleaseClick ? (
-                  <button
-                    type="button"
-                    className={styles.openReleaseButton}
-                    onClick={openRelease}
-                    aria-label={`Open ${release.basic_information.title}`}
-                    title="Open release details"
-                    {...definedProps(prefetchPointerProps ?? {})}
-                  >
-                    {cover}
-                    <div className={styles.metaLines}>{metaLines}</div>
-                  </button>
-                ) : (
-                  <div className={styles.releaseInfo}>
-                    {cover}
-                    <div className={styles.metaLines}>{metaLines}</div>
-                  </div>
-                )}
+                <ReleaseMiniPlayerReleaseMetaRow
+                  {...definedProps({
+                    onReleaseClick,
+                    prefetchPointerProps: prefetchPointerProps ?? undefined,
+                  })}
+                  openRelease={openRelease}
+                  releaseTitle={release.basic_information.title}
+                  cover={cover}
+                  metaLines={metaLines}
+                />
               </div>
             </div>
+            {isPlaybackReady && playbackVideoId ? (
+              <ReleaseMiniPlayerDigScrub disabled={isPlaybackVideoLoading} />
+            ) : null}
             <ReleaseMiniPlayerTransportControls
+              volumeControl={
+                isPlaybackReady && playbackVideoId ? (
+                  <ReleaseMiniPlayerVolumePopover
+                    disabled={isPlaybackVideoLoading}
+                  />
+                ) : null
+              }
               isMobileLayout={isMobileLayout}
               crateToggleButton={addToMenu}
               isQueueOpen={isQueueOpen}

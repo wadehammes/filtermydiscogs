@@ -1,9 +1,10 @@
 import { defineNetworkFixture, type NetworkFixture } from "@msw/playwright";
-import { test as base, expect } from "@playwright/test";
 import type { RequestHandler, UnhandledFrameHandle } from "msw";
 import { HttpNetworkFrame } from "msw/experimental";
 import { createAuthenticatedE2eHandlers } from "src/tests/msw/createAuthenticatedE2eHandlers";
 import { installClearClientStorage } from "../helpers/clearClientStorage";
+import { installHideNextDevOverlay } from "../helpers/hideNextDevOverlay";
+import { test as base, expect } from "./browser.fixture";
 
 type MswFixtures = {
   handlers: RequestHandler[];
@@ -40,6 +41,7 @@ const onUnhandledApiFrame: UnhandledFrameHandle = ({ frame, defaults }) => {
 
 export const test = base.extend<MswFixtures>({
   context: async ({ context }, use) => {
+    await installHideNextDevOverlay(context);
     await installClearClientStorage(context);
     await use(context);
   },

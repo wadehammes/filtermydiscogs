@@ -37,6 +37,7 @@ const idlePlaybackState: ReleasePlaybackState = {
   isQueueBuilding: false,
   isPlaybackVideoLoading: false,
   isPlaybackVideoTransitionPending: false,
+  isPlaybackDockMuted: false,
 };
 
 const idlePlaybackActions: ReleasePlaybackActions = {
@@ -59,12 +60,16 @@ const idlePlaybackActions: ReleasePlaybackActions = {
   clearQueue: () => undefined,
   replaceUpcomingQueue: () => undefined,
   stopPlayback: () => undefined,
+  seekPlayback: () => undefined,
+  setPlaybackVolume: () => undefined,
+  togglePlaybackMute: () => undefined,
 };
 
 jest.mock("src/hooks/useReleasePlaybackProvider.hook", () => ({
   useReleasePlaybackProvider: jest.fn(() => ({
     stateValue: idlePlaybackState,
     actionsValue: idlePlaybackActions,
+    embedProgressValue: { embedProgress: null },
     queue: [],
     isMiniPlayerVisible: false,
   })),

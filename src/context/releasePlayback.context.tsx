@@ -3,6 +3,7 @@
 import { useContext, useMemo } from "react";
 import {
   ReleasePlaybackActionsContext,
+  ReleasePlaybackEmbedProgressContext,
   ReleasePlaybackQueueContext,
   ReleasePlaybackStateContext,
   ReleasePlaybackVisibilityContext,
@@ -11,6 +12,7 @@ import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
   ReleasePlaybackActions,
   ReleasePlaybackContextValue,
+  ReleasePlaybackEmbedProgressState,
 } from "src/types/releasePlaybackContext.types";
 import { useReleasePlaybackState } from "./useReleasePlaybackState.hook";
 
@@ -102,3 +104,16 @@ export const useReleasePlayback = (): ReleasePlaybackContextValue => {
 
 export const useHasReleasePlaybackProvider = (): boolean =>
   useContext(ReleasePlaybackStateContext) !== undefined;
+
+export const useReleasePlaybackEmbedProgressState =
+  (): ReleasePlaybackEmbedProgressState => {
+    const context = useContext(ReleasePlaybackEmbedProgressContext);
+
+    if (!context) {
+      throw new Error(
+        "useReleasePlaybackEmbedProgressState must be used within ReleasePlaybackProvider",
+      );
+    }
+
+    return context;
+  };

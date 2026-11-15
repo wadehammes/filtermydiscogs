@@ -48,10 +48,8 @@ import {
   nextEmbedTrackSwitchGraceUntil,
   shouldNotifyEmbedPlaybackEnded,
 } from "src/utils/releasePlaybackEmbedTiming";
-import {
-  shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace,
-  shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden,
-} from "src/utils/releasePlaybackHiddenTabTransport";
+import { shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace } from "src/utils/releasePlaybackHiddenTabTransport";
+import { applyYoutubeEmbedPlayerStateChange } from "src/utils/releasePlaybackYoutubeEmbedPlayerState";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
 import { creditTrackListenOnEmbedEndedForActiveItem } from "src/utils/userTrackRecording";
 
@@ -78,10 +76,7 @@ import {
   parseYoutubeInfoDelivery,
   parseYoutubePlayerErrorFromMessage,
   parseYoutubePlayerStateFromMessage,
-  YOUTUBE_PLAYER_STATE_CUED,
-  YOUTUBE_PLAYER_STATE_ENDED,
-  YOUTUBE_PLAYER_STATE_PAUSED,
-  YOUTUBE_PLAYER_STATE_PLAYING,
+  type YoutubeInfoDelivery,
 } from "src/utils/youtubeIframeEvents";
 
 export interface ReleasePlaybackYoutubeEmbedRefs {
@@ -133,6 +128,7 @@ interface UseReleasePlaybackYoutubeEmbedParams {
   onYoutubeEmbedPlayerReady?: () => void;
   onEmbedTransportPaused?: () => void;
   onImperativeEmbedLoadStarted?: () => void;
+  onEmbedInfoDelivery?: (info: YoutubeInfoDelivery) => void;
   userYoutubeOverridesRef: RefObject<Map<string, string>>;
 }
 
@@ -161,6 +157,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
   onYoutubeEmbedPlayerReady,
   onEmbedTransportPaused,
   onImperativeEmbedLoadStarted,
+  onEmbedInfoDelivery,
   userYoutubeOverridesRef,
 }: UseReleasePlaybackYoutubeEmbedParams) => {
   const {
@@ -523,78 +520,22 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
   const handleYoutubeEmbedPlayerState = useCallback(
     (playerState: number) => {
-      if (playerState === YOUTUBE_PLAYER_STATE_ENDED) {
-        notifyEmbedPlaybackEnded();
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_PAUSED &&
-        isPlayingRef.current &&
-        !isPausedRef.current
-      ) {
-        if (isWithinTrackSwitchGrace()) {
-          postYoutubePlayerCommand({
-            iframe: playbackIframeRef.current,
-            command: "playVideo",
-          });
-          return;
-        }
-
-        if (
-          shouldIgnoreYoutubeEmbedPausedWhileDocumentHidden({
-            visibilityState: document.visibilityState,
-            isWithinTrackSwitchGrace: isWithinTrackSwitchGrace(),
-            isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
-            hasPlaybackVideoTransitionTarget:
-              playbackVideoTransitionTargetIdRef.current !== null,
-          })
-        ) {
-          return;
-        }
-
-        pendingPlayFromGestureRef.current = false;
-        clearPlayFromGestureRetries();
-        onEmbedTransportPaused?.();
-        dispatchSession({ type: "PAUSE" });
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_PLAYING &&
-        isPlayingRef.current &&
-        isPausedRef.current
-      ) {
-        dispatchSession({ type: "RESUME" });
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_PLAYING &&
-        isPlayingRef.current &&
-        !isPausedRef.current
-      ) {
-        if (!isPlaybackVideoUiLoadingRef.current) {
-          completeEmbedPlaybackHandshake();
-        } else {
-          tryConfirmAudibleEmbedPlayback({
-            playerState: YOUTUBE_PLAYER_STATE_PLAYING,
-          });
-        }
-
-        return;
-      }
-
-      if (
-        playerState === YOUTUBE_PLAYER_STATE_CUED &&
-        isPlayingRef.current &&
-        !isPausedRef.current &&
-        pendingPlayFromGestureRef.current
-      ) {
-        postYoutubePlayerCommand({
-          iframe: playbackIframeRef.current,
-          command: "playVideo",
-        });
-      }
+      applyYoutubeEmbedPlayerStateChange({
+        playerState,
+        clearPlayFromGestureRetries,
+        completeEmbedPlaybackHandshake,
+        dispatchSession,
+        isPausedRef,
+        isPlaybackVideoUiLoadingRef,
+        isPlayingRef,
+        isWithinTrackSwitchGrace,
+        notifyEmbedPlaybackEnded,
+        ...definedProps({ onEmbedTransportPaused }),
+        pendingPlayFromGestureRef,
+        playbackIframeRef,
+        playbackVideoTransitionTargetIdRef,
+        tryConfirmAudibleEmbedPlayback,
+      });
     },
     [
       clearPlayFromGestureRetries,
@@ -883,6 +824,8 @@ export const useReleasePlaybackYoutubeEmbed = ({
           return;
         }
 
+        onEmbedInfoDelivery?.(infoDelivery);
+
         const previousCurrentTime = lastInfoDeliveryCurrentTimeRef.current;
 
         if (infoDelivery.currentTime !== undefined) {
@@ -925,6 +868,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     lastInfoDeliveryCurrentTimeRef,
     notifyEmbedPlaybackEnded,
     onYoutubeEmbedPlaybackError,
+    onEmbedInfoDelivery,
     onYoutubeEmbedPlayerReady,
     playbackIframeRef,
     isPlaybackVideoUiLoadingRef,

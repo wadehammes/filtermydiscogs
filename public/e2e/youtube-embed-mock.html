@@ -25,9 +25,12 @@
         window.parent.postMessage(JSON.stringify(payload), "*");
       };
 
+      const MOCK_DURATION_SECONDS = 212;
+
       let playbackStarted = false;
       let transportPaused = false;
       let playingIntervalId = null;
+      let playbackTimeSeconds = 1;
 
       const clearPlayingInterval = () => {
         if (playingIntervalId !== null) {
@@ -45,8 +48,8 @@
           event: "infoDelivery",
           info: {
             playerState: YOUTUBE_PLAYER_STATE_PLAYING,
-            currentTime: 1,
-            duration: 212,
+            currentTime: playbackTimeSeconds,
+            duration: MOCK_DURATION_SECONDS,
           },
         });
         post({ event: "onStateChange", info: YOUTUBE_PLAYER_STATE_PLAYING });
@@ -59,11 +62,22 @@
           event: "infoDelivery",
           info: {
             playerState: YOUTUBE_PLAYER_STATE_PAUSED,
-            currentTime: 1.2,
-            duration: 212,
+            currentTime: playbackTimeSeconds,
+            duration: MOCK_DURATION_SECONDS,
           },
         });
         post({ event: "onStateChange", info: YOUTUBE_PLAYER_STATE_PAUSED });
+      };
+
+      const seekPlaybackTo = (seconds) => {
+        const next = Number(seconds);
+
+        if (!Number.isFinite(next)) {
+          return;
+        }
+
+        playbackTimeSeconds = Math.max(0, next);
+        emitPlaying();
       };
 
       const emitError = () => {
@@ -140,6 +154,20 @@
         if (data.func === "playVideo") {
           transportPaused = false;
           startPlaybackSignals();
+          return;
+        }
+
+        if (data.func === "seekTo") {
+          const args = Array.isArray(data.args) ? data.args : [];
+          seekPlaybackTo(args[0]);
+          return;
+        }
+
+        if (
+          data.func === "setVolume" ||
+          data.func === "mute" ||
+          data.func === "unMute"
+        ) {
           return;
         }
 

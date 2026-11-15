@@ -1,0 +1,69 @@
+.root {
+  --playback-dock-slider-size: 0.25rem;
+  --playback-dock-slider-thumb-size: 0.75rem;
+
+  align-items: center;
+  display: flex;
+  min-width: 0;
+  width: 100%;
+}
+
+.control {
+  align-items: center;
+  display: flex;
+  height: calc(var(--playback-dock-slider-thumb-size) + var(--space-2));
+  position: relative;
+  touch-action: none;
+  width: 100%;
+}
+
+.track {
+  background: color-mix(in srgb, var(--muted-foreground) 28%, transparent);
+  border-radius: var(--radius-full);
+  flex: 1;
+  height: var(--playback-dock-slider-size);
+  position: relative;
+}
+
+.indicator {
+  background: var(--primary);
+  border-radius: var(--radius-full);
+  height: 100%;
+  position: absolute;
+}
+
+.thumb {
+  background: var(--foreground);
+  border: 2px solid var(--card);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+  box-sizing: border-box;
+  height: var(--playback-dock-slider-thumb-size);
+  width: var(--playback-dock-slider-thumb-size);
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.rootVertical {
+  height: 6.5rem;
+  width: auto;
+
+  & .control {
+    flex-direction: column;
+    height: 100%;
+    width: calc(var(--playback-dock-slider-thumb-size) + var(--space-2));
+  }
+
+  & .track {
+    flex: 1;
+    height: auto;
+    width: var(--playback-dock-slider-size);
+  }
+
+  & .indicator {
+    width: 100%;
+  }
+}

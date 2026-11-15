@@ -10,6 +10,8 @@ import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
   requestYoutubeEmbedPlaybackSync,
+  setYoutubeEmbedVolume,
+  unmuteYoutubeEmbed,
 } from "src/utils/postYoutubePlayerCommand";
 import { postYoutubePlayerCommand } from "src/utils/releasePlayback";
 import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
@@ -20,13 +22,7 @@ jest.mock("src/api/urls");
 jest.mock("src/utils/similarReleaseQueue", () => ({
   fetchPlayableQueuesForSimilarReleases: jest.fn(),
 }));
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-  loadAndPlayYoutubeVideo: jest.fn(),
-  loadYoutubeVideoById: jest.fn(),
-  refreshYoutubeEmbedPlayerLayout: jest.fn(),
-  requestYoutubeEmbedPlaybackSync: jest.fn(),
-}));
+jest.mock("src/utils/postYoutubePlayerCommand");
 jest.mock("src/utils/playbackSkippedTrackToast", () => ({
   appendPlaybackSkipAndSchedule: jest.fn(),
   resetPlaybackSkipLogToast: jest.fn(),
@@ -58,6 +54,12 @@ const mockAppendPlaybackSkipAndSchedule = jest.mocked(
   appendPlaybackSkipAndSchedule,
 );
 const _mockReportPlaybackSkipToSentry = jest.mocked(reportPlaybackSkipToSentry);
+const mockUnmuteYoutubeEmbed = unmuteYoutubeEmbed as jest.Mock<
+  typeof unmuteYoutubeEmbed
+>;
+const mockSetYoutubeEmbedVolume = setYoutubeEmbedVolume as jest.Mock<
+  typeof setYoutubeEmbedVolume
+>;
 
 import {
   collectionRelease,
@@ -588,5 +590,28 @@ describe("ReleasePlaybackProvider — queue advance", () => {
     expect(result.current.shouldAutoplayEmbed).toBe(true);
     expect(result.current.isPaused).toBe(false);
     expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
+  });
+
+  it("unmutes the embed and applies dock volume when the playback iframe registers", () => {
+    const iframe = {
+      contentWindow: { postMessage: jest.fn() },
+    } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    expect(mockUnmuteYoutubeEmbed).toHaveBeenCalledWith(iframe);
+    expect(mockSetYoutubeEmbedVolume).toHaveBeenCalledWith(
+      expect.objectContaining({ iframe }),
+    );
   });
 });
