@@ -55,4 +55,34 @@ describe("getPublicCommunityStats", () => {
       totalTrackPlays: 42,
     });
   });
+
+  it("returns null on query failure and retries on the next call", async () => {
+    const row = {
+      totalCrates: BigInt(1),
+      totalPublicCrates: BigInt(0),
+      totalPlaylists: BigInt(0),
+      totalPublicPlaylists: BigInt(0),
+      totalReleases: BigInt(0),
+      totalTracksSaved: BigInt(0),
+      totalCollectors: BigInt(1),
+      totalTrackPlays: BigInt(0),
+    };
+
+    mockQueryRaw
+      .mockRejectedValueOnce(new Error("connection refused"))
+      .mockResolvedValueOnce([row]);
+
+    await expect(getPublicCommunityStats()).resolves.toBeNull();
+    await expect(getPublicCommunityStats()).resolves.toEqual({
+      totalCrates: 1,
+      totalPublicCrates: 0,
+      totalPlaylists: 0,
+      totalPublicPlaylists: 0,
+      totalReleases: 0,
+      totalTracksSaved: 0,
+      totalCollectors: 1,
+      totalTrackPlays: 0,
+    });
+    expect(mockQueryRaw).toHaveBeenCalledTimes(2);
+  });
 });

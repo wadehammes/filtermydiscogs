@@ -54,18 +54,23 @@ const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
   };
 };
 
-export const getPublicCommunityStats =
-  async (): Promise<PublicCommunityStats | null> => {
+const getCachedPublicCommunityStats =
+  async (): Promise<PublicCommunityStats> => {
     "use cache";
     cacheLife({ revalidate: 60 });
     cacheTag(PUBLIC_COMMUNITY_STATS_CACHE_TAG);
 
+    return fetchPublicCommunityStats();
+  };
+
+export const getPublicCommunityStats =
+  async (): Promise<PublicCommunityStats | null> => {
     if (!readRuntimeDatabaseUrlFromEnv()) {
       return null;
     }
 
     try {
-      return await fetchPublicCommunityStats();
+      return await getCachedPublicCommunityStats();
     } catch {
       return null;
     }
