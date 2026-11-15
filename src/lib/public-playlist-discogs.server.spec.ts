@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX } from "src/constants/publicPlaylist.constants";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
@@ -92,6 +93,91 @@ describe("hydratePublicPlaylistReleases", () => {
     );
     expect(hydrated[0]?.basic_information.cover_image).toBe(
       "https://i.discogs.com/fetched.jpg",
+    );
+  });
+
+  it("when crate snapshots exist for every track instance, does not call Discogs", async () => {
+    const snapshot = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-9001",
+    });
+    const tracks = [
+      playlistTrackRowFactory.opening({
+        instance_id: "instance-9001",
+        discogs_release_id: snapshot.basic_information.id ?? 900001,
+      }),
+    ];
+
+    const hydrated = await hydratePublicPlaylistReleases({
+      tracks,
+      crateSnapshotsByInstanceId: new Map([
+        ["instance-9001", snapshot],
+      ]),
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).not.toHaveBeenCalled();
+    expect(hydrated).toEqual([snapshot]);
+  });
+
+  it("when only some instances lack crate snapshots, fetches missing release ids only", async () => {
+    const snapshot = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-a",
+    });
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 202,
+      title: "Fetched for B",
+    });
+
+    mockFetchDiscogsReleaseRecord.mockResolvedValue(detail);
+
+    const tracks = [
+      playlistTrackRowFactory.opening({
+        instance_id: "instance-a",
+        discogs_release_id: snapshot.basic_information.id ?? 101,
+      }),
+      playlistTrackRowFactory.build({
+        instance_id: "instance-b",
+        discogs_release_id: 202,
+      }),
+    ];
+
+    const hydrated = await hydratePublicPlaylistReleases({
+      tracks,
+      crateSnapshotsByInstanceId: new Map([["instance-a", snapshot]]),
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(1);
+    expect(hydrated).toHaveLength(2);
+    expect(hydrated[0]?.instance_id).toBe("instance-a");
+    expect(hydrated[1]?.basic_information.title).toBe("Fetched for B");
+  });
+
+  it("when more unique release ids need fetch than the SSR cap, fetches only the first cap in track order", async () => {
+    mockFetchDiscogsReleaseRecord.mockImplementation(
+      async (params: { releaseUrl: string }) => {
+        const id = params.releaseUrl.split("/").pop() ?? "";
+        return discogsReleaseJsonFactory.withTracklistAndVideos({
+          id: Number(id),
+          title: `Release ${id}`,
+        });
+      },
+    );
+
+    const tracks = Array.from(
+      { length: PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX + 2 },
+      (_, index) =>
+        playlistTrackRowFactory.build({
+          instance_id: `instance-${index}`,
+          discogs_release_id: 1000 + index,
+        }),
+    );
+
+    await hydratePublicPlaylistReleases({
+      tracks,
+      crateSnapshotsByInstanceId: new Map(),
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(
+      PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX,
     );
   });
 

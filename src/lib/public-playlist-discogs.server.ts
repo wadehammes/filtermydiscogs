@@ -1,5 +1,6 @@
 import "server-only";
 
+import { PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX } from "src/constants/publicPlaylist.constants";
 import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
 import { toPublicPlaylistReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
@@ -49,12 +50,42 @@ export const hydratePublicPlaylistReleases = async ({
   }
 
   const detailByReleaseId = new Map<number, DiscogsReleaseDetail>();
-  const uniqueReleaseIds = [...new Set(releaseIdByInstanceId.values())];
+  const releaseIdsToFetchOrdered: string[] = [];
+  const seenReleaseIds = new Set<string>();
 
-  const releasesById = await fetchDiscogsReleaseRecordsSequential({
-    releaseIds: uniqueReleaseIds.map(String),
-    useAuthenticatedSession: false,
-  });
+  for (const instanceId of instanceIds) {
+    if (crateSnapshotsByInstanceId.has(instanceId)) {
+      continue;
+    }
+
+    const releaseId = releaseIdByInstanceId.get(instanceId);
+
+    if (releaseId === undefined) {
+      continue;
+    }
+
+    const releaseIdKey = String(releaseId);
+
+    if (seenReleaseIds.has(releaseIdKey)) {
+      continue;
+    }
+
+    seenReleaseIds.add(releaseIdKey);
+    releaseIdsToFetchOrdered.push(releaseIdKey);
+  }
+
+  const cappedReleaseIds = releaseIdsToFetchOrdered.slice(
+    0,
+    PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX,
+  );
+
+  const releasesById =
+    cappedReleaseIds.length > 0
+      ? await fetchDiscogsReleaseRecordsSequential({
+          releaseIds: cappedReleaseIds,
+          useAuthenticatedSession: false,
+        })
+      : {};
 
   for (const [releaseId, detail] of Object.entries(releasesById)) {
     detailByReleaseId.set(Number(releaseId), detail);
