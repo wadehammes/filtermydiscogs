@@ -57,7 +57,7 @@ const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
 export const getPublicCommunityStats =
   async (): Promise<PublicCommunityStats | null> => {
     "use cache";
-    cacheLife({ revalidate: 300 });
+    cacheLife({ revalidate: 60 });
     cacheTag(PUBLIC_COMMUNITY_STATS_CACHE_TAG);
 
     if (!readRuntimeDatabaseUrlFromEnv()) {
