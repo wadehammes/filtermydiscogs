@@ -7,6 +7,7 @@ import {
   MAX_DISCOGS_IMAGE_URL_LENGTH,
   resolveImageProxyFetchTarget,
 } from "src/lib/discogs-image-proxy-url";
+import { buildImageProxyCorsHeaders } from "src/lib/image-proxy-cors.server";
 import {
   checkIpRateLimit,
   IMAGE_PROXY_RATE_LIMIT_CONFIG,
@@ -179,9 +180,7 @@ export async function GET(request: NextRequest) {
           "Content-Type": contentType,
           "Cache-Control":
             "public, max-age=86400, stale-while-revalidate=172800",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET",
-          "Access-Control-Allow-Headers": "Content-Type",
+          ...buildImageProxyCorsHeaders(request),
         },
       });
     } catch (sharpError) {
@@ -194,9 +193,7 @@ export async function GET(request: NextRequest) {
         headers: {
           "Content-Type": originalContentType,
           "Cache-Control": "public, max-age=86400",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET",
-          "Access-Control-Allow-Headers": "Content-Type",
+          ...buildImageProxyCorsHeaders(request),
         },
       });
     }
