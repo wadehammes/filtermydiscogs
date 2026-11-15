@@ -79,7 +79,9 @@ beforeAll(async () => {
   mockGetOptionalVerifiedUserFromRequest = jest.mocked(
     authRequest.getOptionalVerifiedUserFromRequest,
   );
-  mockHasActiveDiscogsSession = jest.mocked(authRequest.hasActiveDiscogsSession);
+  mockHasActiveDiscogsSession = jest.mocked(
+    authRequest.hasActiveDiscogsSession,
+  );
   mockValidateProductAnalyticsBatch = jest.mocked(
     productAnalytics.validateProductAnalyticsBatch,
   );
