@@ -35,7 +35,8 @@ const listCratePreviewReleaseRows = async ({
       WHERE user_id = ${userId}
         AND crate_id IN (${Prisma.join(crateIds)})
     ) ranked
-  WHERE row_num <= ${rowLimitPerCrate}
+    WHERE row_num <= ${rowLimitPerCrate}
+    ORDER BY crate_id ASC, row_num ASC
   `;
 
 export const fetchCratePreviewThumbs = async ({
