@@ -3,6 +3,11 @@ import { getReleaseImageUrl } from "src/utils/helpers";
 
 export const CRATE_HUB_PREVIEW_COUNT = 3;
 
+export const CRATE_HUB_PREVIEW_ROW_LIMIT = Math.max(
+  CRATE_HUB_PREVIEW_COUNT * 4,
+  CRATE_HUB_PREVIEW_COUNT,
+);
+
 export const extractPreviewThumbUrl = (releaseData: unknown): string => {
   const release = releaseData as DiscogsRelease;
   const basic = release?.basic_information;

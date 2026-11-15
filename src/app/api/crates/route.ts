@@ -30,34 +30,34 @@ export async function GET(request: NextRequest) {
     });
 
     // Get total count for pagination
-    const total = await prisma.crate.count({
-      where: { user_id: userIdNum },
-    });
-
-    // Get crates for the user with release counts (paginated)
-    const crates = await prisma.crate.findMany({
-      where: { user_id: userIdNum },
-      orderBy: [{ is_default: "desc" }, { name: "asc" }],
-      skip,
-      take,
-      select: {
-        user_id: true,
-        id: true,
-        name: true,
-        username: true,
-        is_default: true,
-        private: true,
-        packed_enabled: true,
-        notes: true,
-        created_at: true,
-        updated_at: true,
-        _count: {
-          select: {
-            releases: true,
+    const [total, crates] = await Promise.all([
+      prisma.crate.count({
+        where: { user_id: userIdNum },
+      }),
+      prisma.crate.findMany({
+        where: { user_id: userIdNum },
+        orderBy: [{ is_default: "desc" }, { name: "asc" }],
+        skip,
+        take,
+        select: {
+          user_id: true,
+          id: true,
+          name: true,
+          username: true,
+          is_default: true,
+          private: true,
+          packed_enabled: true,
+          notes: true,
+          created_at: true,
+          updated_at: true,
+          _count: {
+            select: {
+              releases: true,
+            },
           },
         },
-      },
-    });
+      }),
+    ]);
 
     // If no crates exist and we're on the first page, create a default crate
     if (crates.length === 0 && page === 1 && total === 0) {
