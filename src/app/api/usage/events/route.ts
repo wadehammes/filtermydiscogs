@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import {
-  getDisplayIdentityFromCookies,
-  getOptionalVerifiedUserFromRequest,
+  getVerifiedUserFromRequest,
   hasActiveDiscogsSession,
 } from "src/lib/auth-request";
 import {
@@ -59,15 +58,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const displayIdentity = getDisplayIdentityFromCookies(request);
-  let userId = displayIdentity?.userId ?? null;
+  let userId: number | null = null;
 
-  if (userId === null && hasActiveDiscogsSession(request)) {
-    try {
-      const user = await getOptionalVerifiedUserFromRequest(request);
-      userId = user?.userId ?? null;
-    } catch {
-      userId = null;
+  if (hasActiveDiscogsSession(request)) {
+    const verified = await getVerifiedUserFromRequest(request, {
+      allowStale: true,
+      reportVerificationFailures: false,
+    });
+
+    if ("user" in verified) {
+      userId = verified.user.userId;
     }
   }
 

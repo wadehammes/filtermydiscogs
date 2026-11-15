@@ -6,7 +6,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { publicPlaylistInfoFactory } from "src/tests/factories/PublicPlaylistInfo.factory";
 import { publicPlaylistResponseFactory } from "src/tests/factories/PublicPlaylistResponse.factory";
 import { publicPlaylistRowFactory } from "src/tests/factories/PublicPlaylistRow.factory";
@@ -18,6 +18,8 @@ jest.mock("src/lib/ip-rate-limit", () => ({
 
 jest.mock("src/lib/auth-request", () => ({
   getOptionalVerifiedUserFromRequest: jest.fn(),
+  getReadOnlyVerifiedUserFromRequest: jest.fn(),
+  hasActiveDiscogsSession: jest.fn(() => false),
 }));
 
 jest.mock("src/lib/public-playlist-query.server", () => ({
@@ -57,6 +59,9 @@ let mockLoadPublicPlaylist: jest.MockedFunction<
 let mockGetOptionalVerifiedUser: jest.MockedFunction<
   AuthModule["getOptionalVerifiedUserFromRequest"]
 >;
+let mockGetReadOnlyVerifiedUser: jest.MockedFunction<
+  AuthModule["getReadOnlyVerifiedUserFromRequest"]
+>;
 
 beforeAll(async () => {
   const [routeModule, queryModule, loadModule, authModule] = await Promise.all([
@@ -72,12 +77,18 @@ beforeAll(async () => {
   mockGetOptionalVerifiedUser = jest.mocked(
     authModule.getOptionalVerifiedUserFromRequest,
   );
+  mockGetReadOnlyVerifiedUser = jest.mocked(
+    authModule.getReadOnlyVerifiedUserFromRequest,
+  );
 });
 
 describe("GET /api/playlists/public/[id]", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetOptionalVerifiedUser.mockResolvedValue(null);
+    mockGetReadOnlyVerifiedUser.mockResolvedValue({
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    });
   });
 
   it("returns 400 for an invalid playlist id", async () => {
@@ -141,6 +152,9 @@ describe("GET /api/playlists/public/[id]", () => {
     mockGetOptionalVerifiedUser.mockResolvedValue({
       userId: 42,
       username: "owner",
+    });
+    mockGetReadOnlyVerifiedUser.mockResolvedValue({
+      user: { userId: 42, username: "owner" },
     });
     mockLoadPublicPlaylist.mockResolvedValue(
       publicPlaylistResponseFactory.build({

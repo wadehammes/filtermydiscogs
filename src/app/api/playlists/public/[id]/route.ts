@@ -1,7 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
-import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
+import {
+  getOptionalVerifiedUserFromRequest,
+  getReadOnlyVerifiedUserFromRequest,
+  hasActiveDiscogsSession,
+} from "src/lib/auth-request";
 import { isValidCrateId } from "src/lib/crate-id";
 import { prisma } from "src/lib/db";
 import {
@@ -53,9 +57,19 @@ export async function GET(
     }
 
     const viewer = await getOptionalVerifiedUserFromRequest(request);
-    const isOwner = viewer?.userId === playlistRow.user_id;
+    let verifiedOwnerUsername: string | null = null;
 
-    if (!playlistRow.username && isOwner && viewer?.username) {
+    if (hasActiveDiscogsSession(request)) {
+      const verified = await getReadOnlyVerifiedUserFromRequest(request);
+
+      if ("user" in verified && verified.user.userId === playlistRow.user_id) {
+        verifiedOwnerUsername = verified.user.username;
+      }
+    }
+
+    const isOwner = verifiedOwnerUsername != null;
+
+    if (!playlistRow.username && isOwner && verifiedOwnerUsername) {
       await prisma.playlist.update({
         where: {
           user_id_id: {
@@ -64,7 +78,7 @@ export async function GET(
           },
         },
         data: {
-          username: viewer.username,
+          username: verifiedOwnerUsername,
         },
       });
     }
@@ -78,8 +92,8 @@ export async function GET(
       );
     }
 
-    if (isOwner && viewer?.username && !payload.playlist.username) {
-      payload.playlist.username = viewer.username;
+    if (isOwner && verifiedOwnerUsername && !payload.playlist.username) {
+      payload.playlist.username = verifiedOwnerUsername;
     }
 
     let anonymousVoterId = readPublicPlaylistAnonymousVoterId(request);

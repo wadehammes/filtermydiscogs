@@ -11,8 +11,7 @@ import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsU
 import { PRODUCT_ANALYTICS_INGEST_PATH } from "src/types/productAnalytics.types";
 
 jest.mock("src/lib/auth-request", () => ({
-  getDisplayIdentityFromCookies: jest.fn(),
-  getOptionalVerifiedUserFromRequest: jest.fn(),
+  getVerifiedUserFromRequest: jest.fn(),
   hasActiveDiscogsSession: jest.fn(),
 }));
 
@@ -31,11 +30,8 @@ type AuthRequestModule = typeof import("src/lib/auth-request");
 type ProductAnalyticsModule = typeof import("src/lib/product-analytics.server");
 
 let POST: RouteModule["POST"];
-let mockGetDisplayIdentityFromCookies: jest.MockedFunction<
-  AuthRequestModule["getDisplayIdentityFromCookies"]
->;
-let mockGetOptionalVerifiedUserFromRequest: jest.MockedFunction<
-  AuthRequestModule["getOptionalVerifiedUserFromRequest"]
+let mockGetVerifiedUserFromRequest: jest.MockedFunction<
+  AuthRequestModule["getVerifiedUserFromRequest"]
 >;
 let mockHasActiveDiscogsSession: jest.MockedFunction<
   AuthRequestModule["hasActiveDiscogsSession"]
@@ -73,11 +69,8 @@ beforeAll(async () => {
   ]);
 
   POST = routeModule.POST;
-  mockGetDisplayIdentityFromCookies = jest.mocked(
-    authRequest.getDisplayIdentityFromCookies,
-  );
-  mockGetOptionalVerifiedUserFromRequest = jest.mocked(
-    authRequest.getOptionalVerifiedUserFromRequest,
+  mockGetVerifiedUserFromRequest = jest.mocked(
+    authRequest.getVerifiedUserFromRequest,
   );
   mockHasActiveDiscogsSession = jest.mocked(
     authRequest.hasActiveDiscogsSession,
@@ -96,9 +89,7 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockGetDisplayIdentityFromCookies.mockReturnValue(null);
     mockHasActiveDiscogsSession.mockReturnValue(false);
-    mockGetOptionalVerifiedUserFromRequest.mockResolvedValue(null);
     mockValidateProductAnalyticsBatch.mockReturnValue({ events: sampleEvents });
     mockInsertProductAnalyticsEvents.mockResolvedValue(undefined);
   });
@@ -114,7 +105,7 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
       sampleEvents,
       null,
     );
-    expect(mockGetOptionalVerifiedUserFromRequest).not.toHaveBeenCalled();
+    expect(mockGetVerifiedUserFromRequest).not.toHaveBeenCalled();
   });
 
   it("accepts text/plain JSON payloads", async () => {
@@ -129,10 +120,11 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
     );
   });
 
-  it("stores events with user id from display cookies without optional verify", async () => {
-    mockGetDisplayIdentityFromCookies.mockReturnValue(
-      verifiedDiscogsUserFactory.build({ userId: 42, username: "diggr" }),
-    );
+  it("ignores unverified display cookies when attributing analytics user id", async () => {
+    mockHasActiveDiscogsSession.mockReturnValue(true);
+    mockGetVerifiedUserFromRequest.mockResolvedValue({
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    });
 
     const response = await POST(
       createPostRequest(JSON.stringify({ events: sampleEvents })),
@@ -141,37 +133,34 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
     expect(response.status).toBe(200);
     expect(mockInsertProductAnalyticsEvents).toHaveBeenCalledWith(
       sampleEvents,
-      42,
+      null,
     );
-    expect(mockGetOptionalVerifiedUserFromRequest).not.toHaveBeenCalled();
+    expect(mockGetVerifiedUserFromRequest).toHaveBeenCalledTimes(1);
   });
 
-  it("falls back to optional verify when session is active but display cookies are missing", async () => {
+  it("stores events with OAuth-verified user id when session is active", async () => {
     mockHasActiveDiscogsSession.mockReturnValue(true);
-    mockGetOptionalVerifiedUserFromRequest.mockResolvedValue(
-      verifiedDiscogsUserFactory.build({ userId: 99, username: "vera" }),
-    );
+    mockGetVerifiedUserFromRequest.mockResolvedValue({
+      user: verifiedDiscogsUserFactory.build({ userId: 99, username: "vera" }),
+    });
 
     const response = await POST(
       createPostRequest(JSON.stringify({ events: sampleEvents })),
     );
 
     expect(response.status).toBe(200);
-    expect(mockGetOptionalVerifiedUserFromRequest).toHaveBeenCalledTimes(1);
+    expect(mockGetVerifiedUserFromRequest).toHaveBeenCalledTimes(1);
     expect(mockInsertProductAnalyticsEvents).toHaveBeenCalledWith(
       sampleEvents,
       99,
     );
   });
 
-  it("stores events with null user id when optional verification fails", async () => {
+  it("stores events with null user id when OAuth verification fails", async () => {
     mockHasActiveDiscogsSession.mockReturnValue(true);
-    mockGetOptionalVerifiedUserFromRequest.mockRejectedValue(
-      Object.assign(
-        new Error("You must authenticate to access this resource."),
-        { status: 401 },
-      ),
-    );
+    mockGetVerifiedUserFromRequest.mockResolvedValue({
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    });
 
     const response = await POST(
       createPostRequest(JSON.stringify({ events: sampleEvents })),

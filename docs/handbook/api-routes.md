@@ -7,7 +7,8 @@ How **App Router** APIs are organized for agents: **auth tiers**, the **`api.*` 
 | Tier | Helper | Typical routes |
 | ---- | ------ | -------------- |
 | **Public read** | None or IP rate limit only | `GET /api/crates/public/[id]`, `GET /api/playlists/public/[id]`, `GET /api/build-version`, public OG routes |
-| **Optional session** | `getOptionalVerifiedUserFromRequest` | `POST /api/usage/events`, some playlist engagement (`/view`, `/play`) |
+| **Optional session** | `getOptionalVerifiedUserFromRequest` | Some playlist engagement (`/view`, `/play`) |
+| **Optional session + verified writes** | `getVerifiedUserFromRequest` (`allowStale`) for persisted **`user_id`**; `getOptionalVerifiedUserFromRequest` for UI-only | `POST /api/usage/events` |
 | **Verified Discogs session** | `getVerifiedUserFromRequest` / **`getVerifiedUserFromRequestWithRateLimit`** | Crate/playlist mutations, prefs, release proxy, dashboard, tracks |
 | **Admin** | `verifyAdminFromRequest` (`ADMIN_USER_ID`) | `/api/admin/*`, `GET /api/crates/health` |
 | **Cron / secret** | `Authorization: Bearer CRON_SECRET` | `GET /api/cron/product-analytics` |
