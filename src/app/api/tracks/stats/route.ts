@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import {
   createErrorResponse,
-  getVerifiedUserFromRequestWithRateLimit,
+  getReadOnlyVerifiedUserFromRequestWithRateLimit,
 } from "src/lib/api-helpers";
 import { privateRouteJson } from "src/lib/private-route-response";
 import { fetchUserTrackStats } from "src/lib/user-track.server";
@@ -9,10 +9,8 @@ import { userTrackStatsQuerySchema } from "src/lib/validation/userTrack.schemas"
 
 export const GET = async (request: NextRequest) => {
   try {
-    const verified = await getVerifiedUserFromRequestWithRateLimit(
-      request,
-      true,
-    );
+    const verified =
+      await getReadOnlyVerifiedUserFromRequestWithRateLimit(request);
 
     if ("error" in verified) {
       return verified.error;
