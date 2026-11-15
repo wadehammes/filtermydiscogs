@@ -42,6 +42,9 @@
 .DS_Store
 /.pnpm-store
 
+# gh-stack local metadata (never commit — often ends up as root `.json`)
+/.json
+
 # debug
 npm-debug.log*
 yarn-debug.log*
