@@ -49,12 +49,37 @@ export const hydratePublicPlaylistReleases = async ({
   }
 
   const detailByReleaseId = new Map<number, DiscogsReleaseDetail>();
-  const uniqueReleaseIds = [...new Set(releaseIdByInstanceId.values())];
+  const releaseIdsToFetchOrdered: string[] = [];
+  const seenReleaseIds = new Set<string>();
 
-  const releasesById = await fetchDiscogsReleaseRecordsSequential({
-    releaseIds: uniqueReleaseIds.map(String),
-    useAuthenticatedSession: false,
-  });
+  for (const instanceId of instanceIds) {
+    if (crateSnapshotsByInstanceId.has(instanceId)) {
+      continue;
+    }
+
+    const releaseId = releaseIdByInstanceId.get(instanceId);
+
+    if (releaseId === undefined) {
+      continue;
+    }
+
+    const releaseIdKey = String(releaseId);
+
+    if (seenReleaseIds.has(releaseIdKey)) {
+      continue;
+    }
+
+    seenReleaseIds.add(releaseIdKey);
+    releaseIdsToFetchOrdered.push(releaseIdKey);
+  }
+
+  const releasesById =
+    releaseIdsToFetchOrdered.length > 0
+      ? await fetchDiscogsReleaseRecordsSequential({
+          releaseIds: releaseIdsToFetchOrdered,
+          useAuthenticatedSession: false,
+        })
+      : {};
 
   for (const [releaseId, detail] of Object.entries(releasesById)) {
     detailByReleaseId.set(Number(releaseId), detail);

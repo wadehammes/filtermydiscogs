@@ -95,6 +95,86 @@ describe("hydratePublicPlaylistReleases", () => {
     );
   });
 
+  it("when crate snapshots exist for every track instance, does not call Discogs", async () => {
+    const snapshot = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-9001",
+    });
+    const tracks = [
+      playlistTrackRowFactory.opening({
+        instance_id: "instance-9001",
+        discogs_release_id: snapshot.basic_information.id ?? 900001,
+      }),
+    ];
+
+    const hydrated = await hydratePublicPlaylistReleases({
+      tracks,
+      crateSnapshotsByInstanceId: new Map([["instance-9001", snapshot]]),
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).not.toHaveBeenCalled();
+    expect(hydrated).toEqual([snapshot]);
+  });
+
+  it("when only some instances lack crate snapshots, fetches missing release ids only", async () => {
+    const snapshot = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-a",
+    });
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 202,
+      title: "Fetched for B",
+    });
+
+    mockFetchDiscogsReleaseRecord.mockResolvedValue(detail);
+
+    const tracks = [
+      playlistTrackRowFactory.opening({
+        instance_id: "instance-a",
+        discogs_release_id: snapshot.basic_information.id ?? 101,
+      }),
+      playlistTrackRowFactory.build({
+        instance_id: "instance-b",
+        discogs_release_id: 202,
+      }),
+    ];
+
+    const hydrated = await hydratePublicPlaylistReleases({
+      tracks,
+      crateSnapshotsByInstanceId: new Map([["instance-a", snapshot]]),
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(1);
+    expect(hydrated).toHaveLength(2);
+    expect(hydrated[0]?.instance_id).toBe("instance-a");
+    expect(hydrated[1]?.basic_information.title).toBe("Fetched for B");
+  });
+
+  it("when many unique release ids need fetch, fetches each id in track order", async () => {
+    mockFetchDiscogsReleaseRecord.mockImplementation(
+      async (params: { releaseUrl: string }) => {
+        const id = params.releaseUrl.split("/").pop() ?? "";
+        return discogsReleaseJsonFactory.withTracklistAndVideos({
+          id: Number(id),
+          title: `Release ${id}`,
+        });
+      },
+    );
+
+    const trackCount = 10;
+    const tracks = Array.from({ length: trackCount }, (_, index) =>
+      playlistTrackRowFactory.build({
+        instance_id: `instance-${index}`,
+        discogs_release_id: 1000 + index,
+      }),
+    );
+
+    await hydratePublicPlaylistReleases({
+      tracks,
+      crateSnapshotsByInstanceId: new Map(),
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(trackCount);
+  });
+
   it("when multiple unique release ids are needed, fetches them sequentially through the Discogs throttle", async () => {
     let inflight = 0;
     let maxInflight = 0;
