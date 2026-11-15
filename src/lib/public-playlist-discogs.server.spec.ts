@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX } from "src/constants/publicPlaylist.constants";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
@@ -149,7 +148,7 @@ describe("hydratePublicPlaylistReleases", () => {
     expect(hydrated[1]?.basic_information.title).toBe("Fetched for B");
   });
 
-  it("when more unique release ids need fetch than the SSR cap, fetches only the first cap in track order", async () => {
+  it("when many unique release ids need fetch, fetches each id in track order", async () => {
     mockFetchDiscogsReleaseRecord.mockImplementation(
       async (params: { releaseUrl: string }) => {
         const id = params.releaseUrl.split("/").pop() ?? "";
@@ -160,13 +159,12 @@ describe("hydratePublicPlaylistReleases", () => {
       },
     );
 
-    const tracks = Array.from(
-      { length: PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX + 2 },
-      (_, index) =>
-        playlistTrackRowFactory.build({
-          instance_id: `instance-${index}`,
-          discogs_release_id: 1000 + index,
-        }),
+    const trackCount = 10;
+    const tracks = Array.from({ length: trackCount }, (_, index) =>
+      playlistTrackRowFactory.build({
+        instance_id: `instance-${index}`,
+        discogs_release_id: 1000 + index,
+      }),
     );
 
     await hydratePublicPlaylistReleases({
@@ -174,9 +172,7 @@ describe("hydratePublicPlaylistReleases", () => {
       crateSnapshotsByInstanceId: new Map(),
     });
 
-    expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(
-      PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX,
-    );
+    expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(trackCount);
   });
 
   it("when multiple unique release ids are needed, fetches them sequentially through the Discogs throttle", async () => {

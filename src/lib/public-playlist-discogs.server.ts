@@ -1,6 +1,5 @@
 import "server-only";
 
-import { PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX } from "src/constants/publicPlaylist.constants";
 import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
 import { toPublicPlaylistReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
@@ -74,15 +73,10 @@ export const hydratePublicPlaylistReleases = async ({
     releaseIdsToFetchOrdered.push(releaseIdKey);
   }
 
-  const cappedReleaseIds = releaseIdsToFetchOrdered.slice(
-    0,
-    PUBLIC_PLAYLIST_SSR_DISCOGS_RELEASE_FETCH_MAX,
-  );
-
   const releasesById =
-    cappedReleaseIds.length > 0
+    releaseIdsToFetchOrdered.length > 0
       ? await fetchDiscogsReleaseRecordsSequential({
-          releaseIds: cappedReleaseIds,
+          releaseIds: releaseIdsToFetchOrdered,
           useAuthenticatedSession: false,
         })
       : {};
