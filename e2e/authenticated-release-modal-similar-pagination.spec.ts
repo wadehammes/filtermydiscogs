@@ -59,8 +59,6 @@ test.describe("authenticated release modal similar pagination (MSW)", () => {
   test("restores the similar page when reopening the anchor instance after a similar release", async ({
     page,
   }) => {
-    const similarPeerOnPageTwo = "Similar Modal Peer 50";
-
     await openReleaseModalByTitle(page, E2E_ALBUM_ONE);
 
     const sidebar = page.getByTestId("fmdReleaseSimilarSidebar");
@@ -76,6 +74,19 @@ test.describe("authenticated release modal similar pagination (MSW)", () => {
     await expect(page.getByTestId("fmdReleaseSimilarSidebarPage")).toHaveText(
       "2 of 2",
     );
+
+    const pageTwoPeer = sidebar
+      .getByRole("button", { name: /^Open .+ details$/ })
+      .first();
+    await expect(pageTwoPeer).toBeVisible();
+    const pageTwoPeerLabel = await pageTwoPeer.getAttribute("aria-label");
+    const similarPeerOnPageTwo = pageTwoPeerLabel
+      ?.replace(/^Open /, "")
+      .replace(/ details$/, "");
+
+    if (!similarPeerOnPageTwo) {
+      throw new Error("Similar sidebar page 2 did not expose a peer title");
+    }
 
     await openSimilarReleaseFromModal(page, similarPeerOnPageTwo);
 

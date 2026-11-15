@@ -17,13 +17,7 @@ import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlayback
 import { HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS } from "src/utils/youtubeIframeEvents";
 import { act, renderHook } from "test-utils";
 
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-  loadAndPlayYoutubeVideo: jest.fn(),
-  loadYoutubeVideoById: jest.fn(),
-  refreshYoutubeEmbedPlayerLayout: jest.fn(),
-  requestYoutubeEmbedPlaybackSync: jest.fn(),
-}));
+jest.mock("src/utils/postYoutubePlayerCommand");
 
 const mockRequestYoutubeEmbedPlaybackSync = jest.mocked(
   jest.requireMock<typeof import("src/utils/postYoutubePlayerCommand")>(
@@ -61,6 +55,7 @@ const buildHarness = ({
   isPlaybackVideoUiLoading = false,
   onYoutubeEmbedPlaybackError,
   onEmbedPlaybackConfirmed,
+  onEmbedInfoDelivery,
   onYoutubeEmbedPlayerReady,
 }: {
   embedPlaybackConfirmed?: boolean;
@@ -70,6 +65,10 @@ const buildHarness = ({
   isPlaybackVideoUiLoading?: boolean;
   onYoutubeEmbedPlaybackError?: (errorCode: number) => void;
   onEmbedPlaybackConfirmed?: () => void;
+  onEmbedInfoDelivery?: (info: {
+    currentTime?: number;
+    playerState?: number;
+  }) => void;
   onYoutubeEmbedPlayerReady?: () => void;
 } = {}) => {
   const queryClient = createTestQueryClient();
@@ -166,6 +165,7 @@ const buildHarness = ({
         ...definedProps({
           onYoutubeEmbedPlaybackError,
           onEmbedPlaybackConfirmed,
+          onEmbedInfoDelivery,
           onYoutubeEmbedPlayerReady,
         }),
       }),
@@ -336,6 +336,24 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(setIsPlaybackEmbedMounted).toHaveBeenCalledWith(true);
     expect(iframe.contentWindow?.postMessage).toHaveBeenCalled();
+  });
+
+  it("forwards infoDelivery payloads to onEmbedInfoDelivery", () => {
+    const onEmbedInfoDelivery = jest.fn();
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { playbackIframeRef } = buildHarness({ onEmbedInfoDelivery });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+
+    dispatchYoutubeInfoDelivery({
+      contentWindow,
+      currentTime: 12,
+      playerState: 1,
+    });
+
+    expect(onEmbedInfoDelivery).toHaveBeenCalledWith(
+      expect.objectContaining({ currentTime: 12, playerState: 1 }),
+    );
   });
 
   it("forwards YouTube onError messages to the playback error handler", () => {

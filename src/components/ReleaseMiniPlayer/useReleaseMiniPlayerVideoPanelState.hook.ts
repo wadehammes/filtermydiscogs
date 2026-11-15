@@ -2,15 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { trackPlaybackVideoOpened } from "src/analytics/productAnalyticsEvents";
-import {
-  hasSeenPlaybackVideoIntro,
-  markPlaybackVideoIntroSeen,
-} from "src/utils/playbackVideoIntroStorage";
+import { markPlaybackVideoIntroSeen } from "src/utils/playbackVideoIntroStorage";
 
 interface UseReleaseMiniPlayerVideoPanelStateParams {
   isMiniPlayerVisible: boolean;
-  isPlaybackReady: boolean;
-  shouldAutoplayEmbed: boolean;
   isPlaying: boolean;
   filtersDrawerOpen: boolean;
   crateDrawerOpen: boolean;
@@ -19,8 +14,6 @@ interface UseReleaseMiniPlayerVideoPanelStateParams {
 
 export const useReleaseMiniPlayerVideoPanelState = ({
   isMiniPlayerVisible,
-  isPlaybackReady,
-  shouldAutoplayEmbed,
   isPlaying,
   filtersDrawerOpen,
   crateDrawerOpen,
@@ -29,10 +22,6 @@ export const useReleaseMiniPlayerVideoPanelState = ({
   const [videoPanelOverride, setVideoPanelOverride] = useState<
     null | "open" | "closed"
   >(null);
-  const [latchedIntroExpand, setLatchedIntroExpand] = useState(false);
-  const [autoplayExpandActive, setAutoplayExpandActive] = useState(false);
-  const previousShouldExpandForAutoplayRef = useRef(false);
-  const previousDrawerForcedCollapsedRef = useRef(false);
   const previousVideoPanelExpandedRef = useRef(false);
 
   useEffect(() => {
@@ -41,76 +30,22 @@ export const useReleaseMiniPlayerVideoPanelState = ({
     }
 
     setVideoPanelOverride(null);
-    setLatchedIntroExpand(false);
-    setAutoplayExpandActive(false);
-    previousShouldExpandForAutoplayRef.current = false;
-    previousDrawerForcedCollapsedRef.current = false;
     previousVideoPanelExpandedRef.current = false;
   }, [isMiniPlayerVisible]);
 
   const drawerForcedCollapsed = filtersDrawerOpen || crateDrawerOpen;
-  const shouldExpandForAutoplay = isPlaybackReady && shouldAutoplayEmbed;
-
-  useEffect(() => {
-    const autoplayExpandStarted =
-      shouldExpandForAutoplay && !previousShouldExpandForAutoplayRef.current;
-    const drawerForcedCollapseStarted =
-      drawerForcedCollapsed && !previousDrawerForcedCollapsedRef.current;
-
-    previousShouldExpandForAutoplayRef.current = shouldExpandForAutoplay;
-    previousDrawerForcedCollapsedRef.current = drawerForcedCollapsed;
-
-    if (!shouldExpandForAutoplay) {
-      setAutoplayExpandActive(false);
-      return;
-    }
-
-    if (autoplayExpandStarted) {
-      setAutoplayExpandActive(true);
-      return;
-    }
-
-    if (drawerForcedCollapseStarted && autoplayExpandActive) {
-      setAutoplayExpandActive(false);
-    }
-  }, [autoplayExpandActive, drawerForcedCollapsed, shouldExpandForAutoplay]);
-
-  useEffect(() => {
-    if (!(isPlaybackReady && !hasSeenPlaybackVideoIntro())) {
-      return;
-    }
-
-    setLatchedIntroExpand(true);
-    markPlaybackVideoIntroSeen();
-  }, [isPlaybackReady]);
 
   const isVideoPanelExpanded =
-    videoPanelOverride === "closed"
-      ? false
-      : videoPanelOverride === "open"
-        ? true
-        : autoplayExpandActive
-          ? true
-          : !drawerForcedCollapsed && latchedIntroExpand;
+    videoPanelOverride === "open" && !drawerForcedCollapsed;
 
   useEffect(() => {
     const wasExpanded = previousVideoPanelExpandedRef.current;
     previousVideoPanelExpandedRef.current = isVideoPanelExpanded;
 
-    if (
-      !wasExpanded &&
-      isVideoPanelExpanded &&
-      shouldAutoplayEmbed &&
-      isPlaying
-    ) {
+    if (!wasExpanded && isVideoPanelExpanded && isPlaying) {
       resumePlaybackFromGesture();
     }
-  }, [
-    isPlaying,
-    isVideoPanelExpanded,
-    resumePlaybackFromGesture,
-    shouldAutoplayEmbed,
-  ]);
+  }, [isPlaying, isVideoPanelExpanded, resumePlaybackFromGesture]);
 
   const handleVideoToggle = useCallback(() => {
     markPlaybackVideoIntroSeen();

@@ -8,7 +8,11 @@ type YoutubeIframeFunc =
   | "loadVideoById"
   | "setSize"
   | "getCurrentTime"
-  | "getDuration";
+  | "getDuration"
+  | "seekTo"
+  | "setVolume"
+  | "mute"
+  | "unMute";
 
 export const YOUTUBE_EMBED_PLAYER_WIDTH = 640;
 export const YOUTUBE_EMBED_PLAYER_HEIGHT = 360;
@@ -105,4 +109,40 @@ export const loadAndPlayYoutubeVideo = ({
 }): void => {
   loadYoutubeVideoById({ iframe, videoId, startSeconds });
   postYoutubePlayerCommand({ iframe, command: "playVideo" });
+};
+
+export const seekYoutubeEmbed = ({
+  iframe,
+  seconds,
+}: {
+  iframe: HTMLIFrameElement | null;
+  seconds: number;
+}): void => {
+  postYoutubeIframeCommand({
+    iframe,
+    func: "seekTo",
+    args: [seconds, true],
+  });
+};
+
+export const setYoutubeEmbedVolume = ({
+  iframe,
+  volume,
+}: {
+  iframe: HTMLIFrameElement | null;
+  volume: number;
+}): void => {
+  postYoutubeIframeCommand({
+    iframe,
+    func: "setVolume",
+    args: [volume],
+  });
+};
+
+export const muteYoutubeEmbed = (iframe: HTMLIFrameElement | null): void => {
+  postYoutubeIframeCommand({ iframe, func: "mute" });
+};
+
+export const unmuteYoutubeEmbed = (iframe: HTMLIFrameElement | null): void => {
+  postYoutubeIframeCommand({ iframe, func: "unMute" });
 };

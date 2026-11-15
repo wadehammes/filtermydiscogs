@@ -4,9 +4,7 @@ import { useReleasePlaybackPlayFromGesture } from "src/hooks/useReleasePlaybackP
 import { postYoutubePlayerCommand } from "src/utils/postYoutubePlayerCommand";
 import { renderHook } from "test-utils";
 
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-}));
+jest.mock("src/utils/postYoutubePlayerCommand");
 
 const mockPostYoutubePlayerCommand = jest.mocked(postYoutubePlayerCommand);
 

@@ -22,13 +22,7 @@ jest.mock("src/api/urls");
 jest.mock("src/utils/similarReleaseQueue", () => ({
   fetchPlayableQueuesForSimilarReleases: jest.fn(),
 }));
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-  loadAndPlayYoutubeVideo: jest.fn(),
-  loadYoutubeVideoById: jest.fn(),
-  refreshYoutubeEmbedPlayerLayout: jest.fn(),
-  requestYoutubeEmbedPlaybackSync: jest.fn(),
-}));
+jest.mock("src/utils/postYoutubePlayerCommand");
 jest.mock("src/utils/playbackSkippedTrackToast", () => ({
   appendPlaybackSkipAndSchedule: jest.fn(),
   resetPlaybackSkipLogToast: jest.fn(),

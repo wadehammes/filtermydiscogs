@@ -19,13 +19,7 @@ import type {
 } from "src/utils/postYoutubePlayerCommand";
 import { render, screen } from "test-utils";
 
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-  loadAndPlayYoutubeVideo: jest.fn(),
-  loadYoutubeVideoById: jest.fn(),
-  refreshYoutubeEmbedPlayerLayout: jest.fn(),
-  requestYoutubeEmbedPlaybackSync: jest.fn(),
-}));
+jest.mock("src/utils/postYoutubePlayerCommand");
 
 const mockLoadAndPlayYoutubeVideo = getMockedExport<
   typeof loadAndPlayYoutubeVideo

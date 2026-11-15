@@ -4,8 +4,10 @@ import {
   E2E_ALBUM_THREE,
   E2E_ALBUM_TWO,
 } from "src/tests/msw/e2eSession.constants";
-import { E2E_TAG_DESKTOP_ONLY } from "./e2eProjectTags.constants";
-import { isE2eSmokeSuite } from "./e2eSuite.constants";
+import {
+  E2E_TAG_DESKTOP_ONLY,
+  E2E_TAG_FULL_SUITE,
+} from "./e2eProjectTags.constants";
 import { test } from "./fixtures/msw.fixture";
 import {
   E2E_WATCHDOG_SKIP_REASON,
@@ -56,10 +58,8 @@ test.describe("authenticated manual queue playback (MSW)", () => {
   });
 
   test("after manual curation with slow album-one release detail, keeps the active track and does not watchdog-skip", {
-    tag: E2E_TAG_DESKTOP_ONLY,
+    tag: [E2E_TAG_DESKTOP_ONLY, E2E_TAG_FULL_SUITE],
   }, async ({ page, network }) => {
-    test.skip(isE2eSmokeSuite(), "long watchdog settle window — full E2E only");
-
     stubE2eDelayedAlbumOneReleaseDetail(
       network,
       2_500,

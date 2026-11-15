@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { TrackStatsRecorder } from "src/components/TrackStatsRecorder/TrackStatsRecorder.component";
 import {
   ReleasePlaybackActionsContext,
+  ReleasePlaybackEmbedProgressContext,
   ReleasePlaybackQueueContext,
   ReleasePlaybackStateContext,
   ReleasePlaybackVisibilityContext,
@@ -17,20 +18,29 @@ interface ReleasePlaybackProviderProps {
 export const ReleasePlaybackProvider = ({
   children,
 }: ReleasePlaybackProviderProps) => {
-  const { actionsValue, isMiniPlayerVisible, queue, stateValue } =
-    useReleasePlaybackProvider();
+  const {
+    actionsValue,
+    embedProgressValue,
+    isMiniPlayerVisible,
+    queue,
+    stateValue,
+  } = useReleasePlaybackProvider();
 
   return (
     <ReleasePlaybackStateContext.Provider value={stateValue}>
       <ReleasePlaybackActionsContext.Provider value={actionsValue}>
-        <ReleasePlaybackQueueContext.Provider value={queue}>
-          <ReleasePlaybackVisibilityContext.Provider
-            value={isMiniPlayerVisible}
-          >
-            <TrackStatsRecorder />
-            {children}
-          </ReleasePlaybackVisibilityContext.Provider>
-        </ReleasePlaybackQueueContext.Provider>
+        <ReleasePlaybackEmbedProgressContext.Provider
+          value={embedProgressValue}
+        >
+          <ReleasePlaybackQueueContext.Provider value={queue}>
+            <ReleasePlaybackVisibilityContext.Provider
+              value={isMiniPlayerVisible}
+            >
+              <TrackStatsRecorder />
+              {children}
+            </ReleasePlaybackVisibilityContext.Provider>
+          </ReleasePlaybackQueueContext.Provider>
+        </ReleasePlaybackEmbedProgressContext.Provider>
       </ReleasePlaybackActionsContext.Provider>
     </ReleasePlaybackStateContext.Provider>
   );

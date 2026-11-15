@@ -4,6 +4,7 @@ import { createContext } from "react";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type {
   ReleasePlaybackActions,
+  ReleasePlaybackEmbedProgressState,
   ReleasePlaybackState,
 } from "src/types/releasePlaybackContext.types";
 
@@ -20,3 +21,7 @@ export const ReleasePlaybackQueueContext = createContext<
 >(undefined);
 
 export const ReleasePlaybackVisibilityContext = createContext(false);
+
+export const ReleasePlaybackEmbedProgressContext = createContext<
+  ReleasePlaybackEmbedProgressState | undefined
+>(undefined);

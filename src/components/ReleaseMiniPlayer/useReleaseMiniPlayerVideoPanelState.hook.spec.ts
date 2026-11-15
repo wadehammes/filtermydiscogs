@@ -12,8 +12,6 @@ const renderVideoPanelState = (
   renderHook(() =>
     useReleaseMiniPlayerVideoPanelState({
       isMiniPlayerVisible: true,
-      isPlaybackReady: true,
-      shouldAutoplayEmbed: true,
       isPlaying: true,
       filtersDrawerOpen: false,
       crateDrawerOpen: false,
@@ -27,61 +25,57 @@ describe("useReleaseMiniPlayerVideoPanelState", () => {
     resumePlaybackFromGesture.mockClear();
   });
 
-  it.each([
-    { drawer: "crate drawer", crateDrawerOpen: true, filtersDrawerOpen: false },
-    {
-      drawer: "filters drawer",
-      crateDrawerOpen: false,
-      filtersDrawerOpen: true,
-    },
-  ])(
-    "auto-expands when autoplay playback is ready even while the $drawer is open",
-    ({ crateDrawerOpen, filtersDrawerOpen }) => {
-      const { result } = renderVideoPanelState({
-        crateDrawerOpen,
-        filtersDrawerOpen,
-      });
-
-      expect(result.current.isVideoPanelExpanded).toBe(true);
-    },
-  );
-
-  it("collapses the panel when the filters drawer opens during non-autoplay playback", () => {
-    const { result, rerender } = renderHook(
-      (props: { filtersDrawerOpen: boolean; shouldAutoplayEmbed: boolean }) =>
-        useReleaseMiniPlayerVideoPanelState({
-          isMiniPlayerVisible: true,
-          isPlaybackReady: true,
-          shouldAutoplayEmbed: props.shouldAutoplayEmbed,
-          isPlaying: true,
-          filtersDrawerOpen: props.filtersDrawerOpen,
-          crateDrawerOpen: false,
-          resumePlaybackFromGesture,
-        }),
-      {
-        initialProps: {
-          filtersDrawerOpen: false,
-          shouldAutoplayEmbed: true,
-        },
-      },
-    );
-
-    expect(result.current.isVideoPanelExpanded).toBe(true);
-
-    act(() => {
-      rerender({ filtersDrawerOpen: true, shouldAutoplayEmbed: false });
-    });
+  it("when playback becomes ready, keeps the video panel collapsed until the listener opens it", () => {
+    const { result } = renderVideoPanelState();
 
     expect(result.current.isVideoPanelExpanded).toBe(false);
   });
 
-  it("does not auto-expand after the listener manually collapsed the video panel", () => {
+  it("when the listener toggles the video control, expands and collapses the panel", () => {
     const { result } = renderVideoPanelState();
 
     act(() => {
       result.current.handleVideoToggle();
     });
 
+    expect(result.current.isVideoPanelExpanded).toBe(true);
+
+    act(() => {
+      result.current.handleVideoToggle();
+    });
+
     expect(result.current.isVideoPanelExpanded).toBe(false);
+  });
+
+  it("when the filters drawer opens while the panel is expanded, collapses until the drawer closes", () => {
+    const { result, rerender } = renderHook(
+      (props: { filtersDrawerOpen: boolean }) =>
+        useReleaseMiniPlayerVideoPanelState({
+          isMiniPlayerVisible: true,
+          isPlaying: true,
+          filtersDrawerOpen: props.filtersDrawerOpen,
+          crateDrawerOpen: false,
+          resumePlaybackFromGesture,
+        }),
+      { initialProps: { filtersDrawerOpen: false } },
+    );
+
+    act(() => {
+      result.current.handleVideoToggle();
+    });
+
+    expect(result.current.isVideoPanelExpanded).toBe(true);
+
+    act(() => {
+      rerender({ filtersDrawerOpen: true });
+    });
+
+    expect(result.current.isVideoPanelExpanded).toBe(false);
+
+    act(() => {
+      rerender({ filtersDrawerOpen: false });
+    });
+
+    expect(result.current.isVideoPanelExpanded).toBe(true);
   });
 });

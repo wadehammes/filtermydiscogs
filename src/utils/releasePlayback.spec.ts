@@ -21,6 +21,8 @@ import {
   previewVideoToTrack,
   refreshYoutubeEmbedPlayerLayout,
   resolvePlayableTrackAtPosition,
+  seekYoutubeEmbed,
+  setYoutubeEmbedVolume,
 } from "./releasePlayback";
 
 describe("getReleasePreviewVideos", () => {
@@ -299,6 +301,42 @@ describe("postYoutubePlayerCommand", () => {
     expect(() => {
       postYoutubePlayerCommand({ iframe: null, command: "pauseVideo" });
     }).not.toThrow();
+  });
+
+  it("when seeking playback, posts seekTo with allowSeekAhead", () => {
+    const postMessage = jest.fn();
+    const iframe = {
+      contentWindow: { postMessage },
+    } as unknown as HTMLIFrameElement;
+
+    seekYoutubeEmbed({ iframe, seconds: 42 });
+
+    expect(postMessage).toHaveBeenCalledWith(
+      JSON.stringify({
+        event: "command",
+        func: "seekTo",
+        args: [42, true],
+      }),
+      "*",
+    );
+  });
+
+  it("when setting embed volume, posts setVolume with 0 through 100", () => {
+    const postMessage = jest.fn();
+    const iframe = {
+      contentWindow: { postMessage },
+    } as unknown as HTMLIFrameElement;
+
+    setYoutubeEmbedVolume({ iframe, volume: 70 });
+
+    expect(postMessage).toHaveBeenCalledWith(
+      JSON.stringify({
+        event: "command",
+        func: "setVolume",
+        args: [70],
+      }),
+      "*",
+    );
   });
 });
 

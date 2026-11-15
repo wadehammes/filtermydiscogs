@@ -48,7 +48,7 @@
   @media (width >= 768px) {
     align-items: center;
     flex-direction: row;
-    gap: var(--space-3);
+    gap: var(--space-4);
     padding-left: var(--space-5);
     padding-right: var(--space-5);
   }
@@ -69,13 +69,18 @@
 
 .releaseArea {
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
+  max-width: 100%;
   min-width: 0;
   width: 100%;
 
   @media (width >= 768px) {
-    flex: 1;
+    flex: 0 1 auto;
     justify-content: flex-start;
+    max-width: min(38%, 22rem);
+    padding-inline-end: var(--space-3);
+    width: auto;
   }
 }
 
@@ -88,7 +93,6 @@
   width: 100%;
 
   @media (width >= 768px) {
-    flex: 1;
     gap: var(--space-4);
     justify-content: flex-start;
     width: auto;
@@ -304,6 +308,7 @@
   align-self: center;
   display: flex;
   flex-shrink: 0;
+  flex-wrap: wrap;
   gap: var(--space-2);
   justify-content: center;
   max-width: 100%;
@@ -311,6 +316,7 @@
 
   @media (width >= 768px) {
     align-self: auto;
+    flex-wrap: nowrap;
     gap: var(--space-1);
     justify-content: flex-start;
     width: auto;

@@ -142,6 +142,10 @@ const startPlaybackAndWaitForPlayer = async (
   });
 };
 
+const showDockVideo = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole("button", { name: "Show video" }));
+};
+
 describe("ReleaseMiniPlayer", () => {
   beforeEach(() => {
     po = new ReleaseMiniPlayerPageObject();
@@ -175,7 +179,7 @@ describe("ReleaseMiniPlayer", () => {
     });
   });
 
-  it("renders the dock and visible iframe when autoplay playback is active", async () => {
+  it("renders the dock and hidden iframe when autoplay playback is active", async () => {
     const user = userEvent.setup();
 
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
@@ -188,12 +192,12 @@ describe("ReleaseMiniPlayer", () => {
     );
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
-      "visible",
+      "hidden",
     );
     expect(screen.getByText(trackALabel)).toBeInTheDocument();
   });
 
-  it("expands the dock video panel the first time playback becomes ready", async () => {
+  it("keeps the dock video panel collapsed when playback becomes ready", async () => {
     localStorage.clear();
     const user = userEvent.setup();
 
@@ -201,22 +205,21 @@ describe("ReleaseMiniPlayer", () => {
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
-
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      "data-video-expanded",
+    );
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
-      "visible",
+      "hidden",
     );
+    expect(localStorage.getItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY)).toBeNull();
+
+    await showDockVideo(user);
+
     expect(localStorage.getItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY)).toBe("true");
   });
 
-  it("auto-expands the dock video panel when autoplay playback starts", async () => {
-    localStorage.clear();
+  it("keeps the dock video panel collapsed when autoplay starts on desktop", async () => {
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: true });
     const user = userEvent.setup();
@@ -225,21 +228,16 @@ describe("ReleaseMiniPlayer", () => {
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
-
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      "data-video-expanded",
+    );
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
-      "visible",
+      "hidden",
     );
   });
 
-  it("auto-expands the dock video panel on mobile when autoplay playback starts", async () => {
-    localStorage.clear();
+  it("keeps the dock video panel collapsed when autoplay starts on mobile", async () => {
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
@@ -248,21 +246,16 @@ describe("ReleaseMiniPlayer", () => {
 
     await startPlaybackAndWaitForPlayer(user);
 
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
-
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      "data-video-expanded",
+    );
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
-      "visible",
+      "hidden",
     );
   });
 
-  it("auto-expands the dock video panel when the first add to an empty queue starts autoplay playback", async () => {
-    localStorage.clear();
+  it("keeps the dock video panel collapsed when empty-queue add starts autoplay", async () => {
     markPlaybackVideoIntroSeen();
     setupMockMatchMedia({ desktop: false });
     document.body.setAttribute("data-collection-side-panel-open", "true");
@@ -281,16 +274,12 @@ describe("ReleaseMiniPlayer", () => {
       expect(screen.getByTestId("fmdReleaseMiniPlayer")).toBeInTheDocument();
     });
 
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
-
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      "data-video-expanded",
+    );
     expect(screen.getByTestId("fmdPersistentYoutubeIframe")).toHaveAttribute(
       "data-variant",
-      "visible",
+      "hidden",
     );
 
     document.body.removeAttribute("data-collection-side-panel-open");
@@ -302,6 +291,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
+    await showDockVideo(user);
 
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const embedSrc = iframe.getAttribute("src");
@@ -346,13 +336,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
+    await showDockVideo(user);
 
     expect(
       screen.getByTestId("fmdReleasePlaybackVideoPanelHandle"),
@@ -378,13 +362,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
+    await showDockVideo(user);
 
     expect(
       screen.getByTestId("fmdReleasePlaybackVideoPanel"),
@@ -413,13 +391,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
+    await showDockVideo(user);
 
     document.body.insertAdjacentHTML(
       "beforeend",
@@ -442,13 +414,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
+    await showDockVideo(user);
 
     document.body.insertAdjacentHTML(
       "beforeend",
@@ -464,7 +430,7 @@ describe("ReleaseMiniPlayer", () => {
     document.querySelector("[data-filters-drawer-open]")?.remove();
   });
 
-  it("re-opens the mobile video panel while the filters drawer stays open", async () => {
+  it("re-opens the mobile video panel after the filters drawer closes", async () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
@@ -485,12 +451,18 @@ describe("ReleaseMiniPlayer", () => {
 
     await user.click(screen.getByRole("button", { name: "Show video" }));
 
-    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
       "data-video-expanded",
-      "true",
     );
 
     document.querySelector("[data-filters-drawer-open]")?.remove();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
+        "data-video-expanded",
+        "true",
+      );
+    });
   });
 
   it("loads the next video via postMessage when advancing tracks with the panel visible", async () => {
@@ -499,6 +471,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
+    await showDockVideo(user);
 
     const iframe = screen.getByTestId("fmdPersistentYoutubeIframe");
     const initialSrc = iframe.getAttribute("src");
@@ -550,9 +523,6 @@ describe("ReleaseMiniPlayer", () => {
     const initialSrc = iframe.getAttribute("src");
 
     expect(initialSrc).toContain("te2jJncBVG4");
-
-    await user.click(screen.getByRole("button", { name: "Hide video" }));
-
     expect(iframe).toHaveAttribute("data-variant", "hidden");
 
     await waitFor(() => {
@@ -587,9 +557,6 @@ describe("ReleaseMiniPlayer", () => {
     const initialSrc = iframe.getAttribute("src");
 
     expect(initialSrc).toContain("te2jJncBVG4");
-
-    await user.click(screen.getByRole("button", { name: "Hide video" }));
-
     expect(iframe).toHaveAttribute("data-variant", "hidden");
 
     await waitFor(() => {
@@ -682,13 +649,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
+    await showDockVideo(user);
 
     await waitFor(() => {
       expect(
@@ -888,13 +849,7 @@ describe("ReleaseMiniPlayer", () => {
     render(<PlaybackStarter />, { wrapper: po.createWrapper() });
 
     await startPlaybackAndWaitForPlayer(user);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
+    await showDockVideo(user);
 
     await user.click(
       screen.getByRole("button", { name: /Open playback queue/ }),

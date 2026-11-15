@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
 import { ABOUT_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { SITE_TAGLINE } from "src/constants/siteMetadata";
+import { expect, test } from "./fixtures/browser.fixture";
 import { expectLoginLanding } from "./helpers/authenticatedExpectations";
 
 test.describe("public routes", () => {

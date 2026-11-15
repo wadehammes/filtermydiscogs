@@ -4,6 +4,7 @@ import {
   ANALYTICS_CONSENT_STORAGE_KEY,
   COLLECTION_ITEM_COUNTS_STORAGE_KEY,
   LEGACY_COMMUNITY_RATINGS_STORAGE_KEY,
+  PLAYBACK_DOCK_VOLUME_STORAGE_KEY,
   RELEASES_TABLE_LAYOUT_STORAGE_KEY,
   SELECTED_RELEASES_STORAGE_KEY,
   THEME_STORAGE_KEY,
@@ -51,6 +52,7 @@ describe("clearClientStoredData", () => {
     localStorage.setItem(FILTERS_STORAGE_KEY, "{}");
     localStorage.setItem(RELEASE_PLAYBACK_STORAGE_KEY, "{}");
     localStorage.setItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY, "true");
+    localStorage.setItem(PLAYBACK_DOCK_VOLUME_STORAGE_KEY, "60");
     localStorage.setItem(LEGACY_COMMUNITY_RATINGS_STORAGE_KEY, "{}");
     localStorage.setItem(PERSIST_FILTERS_STORAGE_KEY, "false");
     localStorage.setItem(
@@ -69,6 +71,7 @@ describe("clearClientStoredData", () => {
     expect(localStorage.getItem(FILTERS_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(RELEASE_PLAYBACK_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(PLAYBACK_VIDEO_INTRO_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(PLAYBACK_DOCK_VOLUME_STORAGE_KEY)).toBeNull();
     expect(
       localStorage.getItem(LEGACY_COMMUNITY_RATINGS_STORAGE_KEY),
     ).toBeNull();

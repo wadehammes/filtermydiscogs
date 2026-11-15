@@ -275,6 +275,8 @@ export {
   loadYoutubeVideoById,
   postYoutubePlayerCommand,
   refreshYoutubeEmbedPlayerLayout,
+  seekYoutubeEmbed,
+  setYoutubeEmbedVolume,
 } from "./postYoutubePlayerCommand";
 
 export const findPlayableTrackIndex = ({

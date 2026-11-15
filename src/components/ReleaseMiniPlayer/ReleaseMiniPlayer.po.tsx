@@ -37,13 +37,7 @@ import { loadAndPlayYoutubeVideo } from "src/utils/releasePlayback";
 import { render } from "test-utils";
 
 jest.mock("src/api/urls");
-jest.mock("src/utils/postYoutubePlayerCommand", () => ({
-  postYoutubePlayerCommand: jest.fn(),
-  loadAndPlayYoutubeVideo: jest.fn(),
-  loadYoutubeVideoById: jest.fn(),
-  refreshYoutubeEmbedPlayerLayout: jest.fn(),
-  requestYoutubeEmbedPlaybackSync: jest.fn(),
-}));
+jest.mock("src/utils/postYoutubePlayerCommand");
 
 const mockApi = jest.mocked(api);
 const mockLoadAndPlayYoutubeVideo = jest.mocked(loadAndPlayYoutubeVideo);
