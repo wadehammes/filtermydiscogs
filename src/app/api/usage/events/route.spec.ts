@@ -7,10 +7,11 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 import { PRODUCT_ANALYTICS_INGEST_PATH } from "src/types/productAnalytics.types";
 
 jest.mock("src/lib/auth-request", () => ({
-  getOptionalVerifiedUserFromRequest: jest.fn(),
+  getDisplayIdentityFromCookies: jest.fn(),
 }));
 
 jest.mock("src/lib/ip-rate-limit", () => ({
@@ -28,8 +29,8 @@ type AuthRequestModule = typeof import("src/lib/auth-request");
 type ProductAnalyticsModule = typeof import("src/lib/product-analytics.server");
 
 let POST: RouteModule["POST"];
-let mockGetOptionalVerifiedUserFromRequest: jest.MockedFunction<
-  AuthRequestModule["getOptionalVerifiedUserFromRequest"]
+let mockGetDisplayIdentityFromCookies: jest.MockedFunction<
+  AuthRequestModule["getDisplayIdentityFromCookies"]
 >;
 let mockValidateProductAnalyticsBatch: jest.MockedFunction<
   ProductAnalyticsModule["validateProductAnalyticsBatch"]
@@ -64,8 +65,8 @@ beforeAll(async () => {
   ]);
 
   POST = routeModule.POST;
-  mockGetOptionalVerifiedUserFromRequest = jest.mocked(
-    authRequest.getOptionalVerifiedUserFromRequest,
+  mockGetDisplayIdentityFromCookies = jest.mocked(
+    authRequest.getDisplayIdentityFromCookies,
   );
   mockValidateProductAnalyticsBatch = jest.mocked(
     productAnalytics.validateProductAnalyticsBatch,
@@ -81,7 +82,7 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
-    mockGetOptionalVerifiedUserFromRequest.mockResolvedValue(null);
+    mockGetDisplayIdentityFromCookies.mockReturnValue(null);
     mockValidateProductAnalyticsBatch.mockReturnValue({ events: sampleEvents });
     mockInsertProductAnalyticsEvents.mockResolvedValue(undefined);
   });
@@ -111,14 +112,9 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
     );
   });
 
-  it("stores events when optional identity verification fails", async () => {
-    mockGetOptionalVerifiedUserFromRequest.mockRejectedValue(
-      Object.assign(
-        new Error("You must authenticate to access this resource."),
-        {
-          status: 401,
-        },
-      ),
+  it("stores events with user id from display cookies", async () => {
+    mockGetDisplayIdentityFromCookies.mockReturnValue(
+      verifiedDiscogsUserFactory.build({ userId: 42, username: "diggr" }),
     );
 
     const response = await POST(
@@ -128,7 +124,7 @@ describe(`POST ${PRODUCT_ANALYTICS_INGEST_PATH}`, () => {
     expect(response.status).toBe(200);
     expect(mockInsertProductAnalyticsEvents).toHaveBeenCalledWith(
       sampleEvents,
-      null,
+      42,
     );
   });
 

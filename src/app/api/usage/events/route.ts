@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
-import { getOptionalVerifiedUserFromRequest } from "src/lib/auth-request";
+import { getDisplayIdentityFromCookies } from "src/lib/auth-request";
 import {
   ANALYTICS_EVENTS_RATE_LIMIT_CONFIG,
   checkIpRateLimit,
@@ -55,13 +55,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  let userId: number | null = null;
-  try {
-    const user = await getOptionalVerifiedUserFromRequest(request);
-    userId = user?.userId ?? null;
-  } catch {
-    userId = null;
-  }
+  const displayIdentity = getDisplayIdentityFromCookies(request);
+  const userId = displayIdentity?.userId ?? null;
 
   try {
     await insertProductAnalyticsEvents(validation.events, userId);
