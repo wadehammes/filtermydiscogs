@@ -68,7 +68,7 @@
   flex-direction: column;
   gap: var(--space-3);
   min-height: min(
-    42dvh,
+    48dvh,
     calc(
       100dvh -
       var(--sticky-header-total-height) -

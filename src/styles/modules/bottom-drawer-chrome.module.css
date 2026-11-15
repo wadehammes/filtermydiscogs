@@ -19,9 +19,15 @@
 }
 
 .drawerpanel {
-  border: 1px solid var(--border);
   border-bottom: none;
+  border-inline: none;
+  border-top: 1px solid var(--border);
   box-shadow: none;
+
+  @media (width >= 768px) {
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
 }
 
 .drawercontentflush {

@@ -38,6 +38,10 @@
     var(--button-height-md) +
     var(--space-4)
   );
+  --bottom-drawer-mobile-top-inset: calc(
+    env(safe-area-inset-top, 0px) +
+    var(--space-8)
+  );
   --bottom-drawer-top-inset: calc(
     var(--sticky-header-height) +
     env(safe-area-inset-top, 0px)
@@ -50,10 +54,10 @@
   isolation: isolate;
   left: 0;
   max-height: min(
-    84dvh,
+    90svh,
     calc(
-      100dvh -
-      var(--bottom-drawer-top-inset) -
+      100svh -
+      var(--bottom-drawer-mobile-top-inset) -
       var(--bottom-drawer-bottom-inset)
     )
   );
@@ -80,12 +84,11 @@
 
   &.drawerShellWithFloatingClose {
     max-height: min(
-      84dvh,
+      90svh,
       calc(
-        100dvh -
-        var(--bottom-drawer-top-inset) -
-        var(--bottom-drawer-bottom-inset) -
-        var(--bottom-drawer-floating-close-offset)
+        100svh -
+        var(--bottom-drawer-mobile-top-inset) -
+        var(--bottom-drawer-bottom-inset)
       )
     );
     padding-top: var(--bottom-drawer-floating-close-offset);
@@ -110,26 +113,28 @@
     );
 
     bottom: var(--bottom-drawer-bottom-inset);
-    max-height: calc(
-      100dvh -
-      var(--bottom-drawer-top-inset) -
-      var(--bottom-drawer-bottom-inset)
+    max-height: min(
+      90svh,
+      calc(
+        100svh -
+        var(--bottom-drawer-mobile-top-inset) -
+        var(--bottom-drawer-bottom-inset)
+      )
     );
     z-index: calc(var(--z-9-playback-dock) - 1);
 
-    &.drawerShellWithFloatingClose {
+    @media (width >= 768px) {
       max-height: calc(
         100dvh -
         var(--bottom-drawer-top-inset) -
-        var(--bottom-drawer-bottom-inset) -
-        var(--bottom-drawer-floating-close-offset)
+        var(--bottom-drawer-bottom-inset)
       );
     }
   }
 
   &.behindMiniPlayer {
     bottom: 0;
-    max-height: 84svh;
+    max-height: 90svh;
     padding-bottom: var(--release-mini-player-stack-offset, 0);
     z-index: var(--z-2-sticky);
 
