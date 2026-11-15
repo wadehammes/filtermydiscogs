@@ -8,11 +8,14 @@ import {
   getIpRateLimitResponse,
   PUBLIC_CRATE_RATE_LIMIT_CONFIG,
 } from "src/lib/ip-rate-limit";
-import { attachViewerVotesToPlaylistTracks } from "src/lib/playlist-track-vote.server";
+import {
+  attachViewerVotesToPlaylistTracks,
+  mergeAnonymousPlaylistVoterVotes,
+} from "src/lib/playlist-track-vote.server";
 import { loadPublicPlaylist } from "src/lib/public-playlist-load.server";
 import { findPublicPlaylistById } from "src/lib/public-playlist-query.server";
 import {
-  buildPlaylistTrackVoterKey,
+  buildPlaylistTrackVoterLookupKeys,
   readPublicPlaylistAnonymousVoterId,
   setPublicPlaylistAnonymousVoterCookie,
 } from "src/lib/public-playlist-voter.server";
@@ -88,7 +91,16 @@ export async function GET(
     }
 
     if (!isOwner) {
-      const voterKey = buildPlaylistTrackVoterKey(
+      if (viewer?.userId && anonymousVoterId) {
+        await mergeAnonymousPlaylistVoterVotes(
+          playlistRow.user_id,
+          playlistRow.id,
+          viewer.userId,
+          anonymousVoterId,
+        );
+      }
+
+      const voterKeys = buildPlaylistTrackVoterLookupKeys(
         viewer?.userId,
         anonymousVoterId,
       );
@@ -96,7 +108,7 @@ export async function GET(
         playlistRow.user_id,
         playlistRow.id,
         payload.tracks,
-        voterKey,
+        voterKeys.length > 0 ? voterKeys : null,
       );
     }
 
