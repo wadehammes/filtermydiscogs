@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
 jest.mock("next/cache", () => ({
-  unstable_cache: (fn: () => Promise<unknown>) => fn,
+  cacheLife: jest.fn(),
+  cacheTag: jest.fn(),
 }));
 
 jest.mock("src/lib/db", () => ({
@@ -19,6 +20,7 @@ describe("getPublicCommunityStats", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     process.env.DATABASE_URL = "postgres://test";
+    process.env.POSTGRES_URL = "postgres://test";
 
     const [serverModule, db] = await Promise.all([
       import("src/lib/public-stats.server"),
@@ -52,5 +54,35 @@ describe("getPublicCommunityStats", () => {
       totalCollectors: 4,
       totalTrackPlays: 42,
     });
+  });
+
+  it("returns null on query failure and retries on the next call", async () => {
+    const row = {
+      totalCrates: BigInt(1),
+      totalPublicCrates: BigInt(0),
+      totalPlaylists: BigInt(0),
+      totalPublicPlaylists: BigInt(0),
+      totalReleases: BigInt(0),
+      totalTracksSaved: BigInt(0),
+      totalCollectors: BigInt(1),
+      totalTrackPlays: BigInt(0),
+    };
+
+    mockQueryRaw
+      .mockRejectedValueOnce(new Error("connection refused"))
+      .mockResolvedValueOnce([row]);
+
+    await expect(getPublicCommunityStats()).resolves.toBeNull();
+    await expect(getPublicCommunityStats()).resolves.toEqual({
+      totalCrates: 1,
+      totalPublicCrates: 0,
+      totalPlaylists: 0,
+      totalPublicPlaylists: 0,
+      totalReleases: 0,
+      totalTracksSaved: 0,
+      totalCollectors: 1,
+      totalTrackPlays: 0,
+    });
+    expect(mockQueryRaw).toHaveBeenCalledTimes(2);
   });
 });
