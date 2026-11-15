@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
-import { getDisplayIdentityFromCookies } from "src/lib/auth-request";
+import {
+  getDisplayIdentityFromCookies,
+  getOptionalVerifiedUserFromRequest,
+  hasActiveDiscogsSession,
+} from "src/lib/auth-request";
 import {
   ANALYTICS_EVENTS_RATE_LIMIT_CONFIG,
   checkIpRateLimit,
@@ -56,7 +60,16 @@ export async function POST(request: NextRequest) {
   }
 
   const displayIdentity = getDisplayIdentityFromCookies(request);
-  const userId = displayIdentity?.userId ?? null;
+  let userId = displayIdentity?.userId ?? null;
+
+  if (userId === null && hasActiveDiscogsSession(request)) {
+    try {
+      const user = await getOptionalVerifiedUserFromRequest(request);
+      userId = user?.userId ?? null;
+    } catch {
+      userId = null;
+    }
+  }
 
   try {
     await insertProductAnalyticsEvents(validation.events, userId);
