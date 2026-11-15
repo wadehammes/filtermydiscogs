@@ -118,45 +118,60 @@ export const recordPublicPlaylistTrackVote = async (
     };
   }
 
-  const existing = await prisma.playlistTrackVote.findUnique({
-    where: {
-      user_id_playlist_id_track_key_voter_key: {
-        user_id: playlist.user_id,
-        playlist_id: playlist.id,
-        track_key: input.trackKey,
-        voter_key: input.voterKey,
-      },
-    },
-    select: { vote: true },
-  });
-
-  const previousVote = (existing?.vote ??
-    null) as PlaylistTrackVoteDirection | null;
-  const nextVote = resolvePlaylistTrackVoteToggle(
-    input.requestedVote,
-    previousVote,
-  );
-
-  const countsBefore = mapPlaylistTrackVoteCounts(trackRow);
-  const { upIncrement, downIncrement } =
-    computePlaylistTrackVoteCountIncrements(
-      { ...countsBefore, viewerVote: previousVote },
-      input.requestedVote,
-    );
-  const countDelta: {
-    up_count?: { increment: number };
-    down_count?: { increment: number };
-  } = {};
-
-  if (upIncrement !== 0) {
-    countDelta.up_count = { increment: upIncrement };
-  }
-
-  if (downIncrement !== 0) {
-    countDelta.down_count = { increment: downIncrement };
-  }
-
   const updated = await prisma.$transaction(async (tx) => {
+    const trackRowInTx = await tx.playlistTrack.findUnique({
+      where: {
+        user_id_playlist_id_track_key: {
+          user_id: playlist.user_id,
+          playlist_id: playlist.id,
+          track_key: input.trackKey,
+        },
+      },
+      select: { up_count: true, down_count: true },
+    });
+
+    if (!trackRowInTx) {
+      return null;
+    }
+
+    const existing = await tx.playlistTrackVote.findUnique({
+      where: {
+        user_id_playlist_id_track_key_voter_key: {
+          user_id: playlist.user_id,
+          playlist_id: playlist.id,
+          track_key: input.trackKey,
+          voter_key: input.voterKey,
+        },
+      },
+      select: { vote: true },
+    });
+
+    const previousVote = (existing?.vote ??
+      null) as PlaylistTrackVoteDirection | null;
+    const nextVote = resolvePlaylistTrackVoteToggle(
+      input.requestedVote,
+      previousVote,
+    );
+
+    const countsBefore = mapPlaylistTrackVoteCounts(trackRowInTx);
+    const { upIncrement, downIncrement } =
+      computePlaylistTrackVoteCountIncrements(
+        { ...countsBefore, viewerVote: previousVote },
+        input.requestedVote,
+      );
+    const countDelta: {
+      up_count?: { increment: number };
+      down_count?: { increment: number };
+    } = {};
+
+    if (upIncrement !== 0) {
+      countDelta.up_count = { increment: upIncrement };
+    }
+
+    if (downIncrement !== 0) {
+      countDelta.down_count = { increment: downIncrement };
+    }
+
     if (nextVote === null && existing) {
       await tx.playlistTrackVote.delete({
         where: {
@@ -189,26 +204,34 @@ export const recordPublicPlaylistTrackVote = async (
       });
     }
 
-    if (Object.keys(countDelta).length > 0) {
-      return tx.playlistTrack.update({
-        where: {
-          user_id_playlist_id_track_key: {
-            user_id: playlist.user_id,
-            playlist_id: playlist.id,
-            track_key: input.trackKey,
-          },
-        },
-        data: countDelta,
-        select: { up_count: true, down_count: true },
-      });
-    }
+    const updatedTrack =
+      Object.keys(countDelta).length > 0
+        ? await tx.playlistTrack.update({
+            where: {
+              user_id_playlist_id_track_key: {
+                user_id: playlist.user_id,
+                playlist_id: playlist.id,
+                track_key: input.trackKey,
+              },
+            },
+            data: countDelta,
+            select: { up_count: true, down_count: true },
+          })
+        : trackRowInTx;
 
-    return trackRow;
+    return {
+      counts: updatedTrack,
+      viewerVote: nextVote,
+    };
   });
+
+  if (!updated) {
+    return null;
+  }
 
   return {
     track_key: input.trackKey,
-    ...mapPlaylistTrackVoteCounts(updated),
-    viewerVote: nextVote,
+    ...mapPlaylistTrackVoteCounts(updated.counts),
+    viewerVote: updated.viewerVote,
   };
 };

@@ -45,13 +45,16 @@ let mockPlaylistTrackVoteFindUnique: jest.Mock<
 let mockTransaction: ReturnType<typeof mockPrismaInteractiveTransaction>;
 
 const createVoteTransactionClient = (
+  voteCounts: PlaylistTrackVoteCountsRow,
   updatedCounts: PlaylistTrackVoteCountsRow,
 ) => ({
   playlistTrackVote: {
+    findUnique: jest.fn(async () => null),
     upsert: jest.fn(async () => ({})),
     delete: jest.fn(async () => ({})),
   },
   playlistTrack: {
+    findUnique: jest.fn(async () => voteCounts),
     update: jest.fn(async () => updatedCounts),
   },
 });
@@ -103,6 +106,53 @@ describe("playlist-track-vote.server", () => {
     expect(mockTransaction).not.toHaveBeenCalled();
   });
 
+  it("loads the prior vote inside the transaction before applying count deltas", async () => {
+    const playlist = publicPlaylistRowFactory.build({ user_id: 100 });
+    const voteCounts = playlistTrackVoteCountsRowFactory.build({
+      up_count: 1,
+      down_count: 0,
+    });
+    const updatedCounts = playlistTrackVoteCountsRowFactory.build({
+      up_count: 0,
+      down_count: 0,
+    });
+    mockFindPublicPlaylistById.mockResolvedValue(playlist);
+    mockPlaylistTrackFindUnique.mockResolvedValue(voteCounts);
+    const txVoteFindUnique = jest.fn(async () => ({
+      vote: PLAYLIST_TRACK_VOTE_UP,
+    }));
+    mockTransaction.mockImplementation(async (callback) => {
+      if (typeof callback !== "function") {
+        throw new Error("Expected interactive transaction callback");
+      }
+
+      const tx = {
+        playlistTrackVote: {
+          findUnique: txVoteFindUnique,
+          upsert: jest.fn(async () => ({})),
+          delete: jest.fn(async () => ({})),
+        },
+        playlistTrack: {
+          findUnique: jest.fn(async () => voteCounts),
+          update: jest.fn(async () => updatedCounts),
+        },
+      };
+
+      return callback(tx as unknown as Prisma.TransactionClient);
+    });
+
+    await recordPublicPlaylistTrackVote({
+      playlistId: playlist.id,
+      trackKey: "1:A1",
+      requestedVote: PLAYLIST_TRACK_VOTE_UP,
+      voterKey: "anon:abc",
+    });
+
+    expect(mockPlaylistTrackVoteFindUnique).not.toHaveBeenCalled();
+    expect(txVoteFindUnique).toHaveBeenCalledTimes(1);
+    expect(mockTransaction).toHaveBeenCalled();
+  });
+
   it("creates an up vote and increments up_count for visitors", async () => {
     const playlist = publicPlaylistRowFactory.build({ user_id: 100 });
     const voteCounts = playlistTrackVoteCountsRowFactory.build({
@@ -121,7 +171,7 @@ describe("playlist-track-vote.server", () => {
         throw new Error("Expected interactive transaction callback");
       }
 
-      const tx = createVoteTransactionClient(updatedCounts);
+      const tx = createVoteTransactionClient(voteCounts, updatedCounts);
 
       return callback(tx as unknown as Prisma.TransactionClient);
     });
