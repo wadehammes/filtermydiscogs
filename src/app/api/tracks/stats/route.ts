@@ -9,10 +9,7 @@ import { userTrackStatsQuerySchema } from "src/lib/validation/userTrack.schemas"
 
 export const GET = async (request: NextRequest) => {
   try {
-    const verified = await getVerifiedUserFromRequestWithRateLimit(
-      request,
-      true,
-    );
+    const verified = await getVerifiedUserFromRequestWithRateLimit(request);
 
     if ("error" in verified) {
       return verified.error;

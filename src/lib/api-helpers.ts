@@ -1,5 +1,6 @@
 import type { NextRequest, NextResponse } from "next/server";
 import {
+  getReadOnlyVerifiedUserFromRequest,
   getVerifiedUserFromRequest,
   type VerifiedDiscogsUser,
 } from "src/lib/auth-request";
@@ -123,6 +124,28 @@ export const getVerifiedUserFromRequestWithRateLimit = async (
   const rateLimitError = checkRateLimitWithResponse(
     verified.user.userId,
     isWriteOperation,
+  );
+  if (rateLimitError) {
+    return { error: rateLimitError };
+  }
+
+  return verified;
+};
+
+export const getReadOnlyVerifiedUserFromRequestWithRateLimit = async (
+  request: NextRequest,
+): Promise<
+  | { user: VerifiedDiscogsUser; error?: never }
+  | { user?: never; error: NextResponse }
+> => {
+  const verified = await getReadOnlyVerifiedUserFromRequest(request);
+  if ("error" in verified) {
+    return verified;
+  }
+
+  const rateLimitError = checkRateLimitWithResponse(
+    verified.user.userId,
+    false,
   );
   if (rateLimitError) {
     return { error: rateLimitError };
