@@ -77,6 +77,7 @@ export const POST = async (
       requestedVote: body.vote,
       voterKey,
       viewerUserId: viewer?.userId ?? null,
+      anonymousVoterId: anonymousVoterId ?? null,
     });
 
     if (!result) {

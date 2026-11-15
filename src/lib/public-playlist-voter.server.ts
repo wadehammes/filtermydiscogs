@@ -20,6 +20,28 @@ export const buildPlaylistTrackVoterKey = (
   return null;
 };
 
+export const buildPlaylistTrackVoterLookupKeys = (
+  viewerUserId: number | null | undefined,
+  anonymousVoterId: string | null | undefined,
+): string[] => {
+  const keys: string[] = [];
+  const userKey = buildPlaylistTrackVoterKey(viewerUserId, null);
+
+  if (userKey) {
+    keys.push(userKey);
+  }
+
+  const trimmedAnon = anonymousVoterId?.trim();
+
+  if (viewerUserId != null && trimmedAnon) {
+    keys.push(`anon:${trimmedAnon}`);
+  } else if (!userKey && trimmedAnon) {
+    keys.push(`anon:${trimmedAnon}`);
+  }
+
+  return keys;
+};
+
 export const readPublicPlaylistAnonymousVoterId = (
   request: NextRequest,
 ): string | null =>

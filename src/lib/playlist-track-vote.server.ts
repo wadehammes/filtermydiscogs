@@ -1,3 +1,7 @@
+import {
+  PLAYLIST_TRACK_VOTE_DOWN,
+  PLAYLIST_TRACK_VOTE_UP,
+} from "src/constants/playlistTrackVote.constants";
 import { prisma } from "src/lib/db";
 import { isPublicPlaylistOwnerViewer } from "src/lib/playlist-public-viewer.server";
 import { findPublicPlaylistById } from "src/lib/public-playlist-query.server";
@@ -27,16 +31,16 @@ export const attachViewerVotesToPlaylistTracks = async (
   ownerUserId: number,
   playlistId: string,
   tracks: PlaylistTrackRow[],
-  voterKey: string | null,
+  voterKeys: string[] | null,
 ): Promise<PlaylistTrackRow[]> => {
-  if (!voterKey || tracks.length === 0) {
+  if (!voterKeys?.length || tracks.length === 0) {
     return tracks;
   }
 
   const votes = await listViewerVotesForPlaylist(
     ownerUserId,
     playlistId,
-    voterKey,
+    voterKeys,
     tracks.map((track) => track.track_key),
   );
 
@@ -49,7 +53,7 @@ export const attachViewerVotesToPlaylistTracks = async (
 const listViewerVotesForPlaylist = async (
   ownerUserId: number,
   playlistId: string,
-  voterKey: string,
+  voterKeys: string[],
   trackKeys: string[],
 ): Promise<Map<string, PlaylistTrackVoteDirection>> => {
   if (trackKeys.length === 0) {
@@ -60,15 +64,118 @@ const listViewerVotesForPlaylist = async (
     where: {
       user_id: ownerUserId,
       playlist_id: playlistId,
-      voter_key: voterKey,
+      voter_key: { in: voterKeys },
       track_key: { in: trackKeys },
     },
-    select: { track_key: true, vote: true },
+    select: { track_key: true, vote: true, voter_key: true },
   });
 
-  return new Map(
-    rows.map((row) => [row.track_key, row.vote as PlaylistTrackVoteDirection]),
-  );
+  const votes = new Map<string, PlaylistTrackVoteDirection>();
+
+  for (const row of rows) {
+    const vote = row.vote as PlaylistTrackVoteDirection;
+    const existing = votes.get(row.track_key);
+
+    if (!existing || row.voter_key.startsWith("user:")) {
+      votes.set(row.track_key, vote);
+    }
+  }
+
+  return votes;
+};
+
+export const mergeAnonymousPlaylistVoterVotes = async (
+  ownerUserId: number,
+  playlistId: string,
+  viewerUserId: number,
+  anonymousVoterId: string,
+): Promise<void> => {
+  const trimmedAnon = anonymousVoterId.trim();
+
+  if (!trimmedAnon) {
+    return;
+  }
+
+  const anonKey = `anon:${trimmedAnon}`;
+  const userKey = `user:${viewerUserId}`;
+
+  await prisma.$transaction(async (tx) => {
+    const anonVotes = await tx.playlistTrackVote.findMany({
+      where: {
+        user_id: ownerUserId,
+        playlist_id: playlistId,
+        voter_key: anonKey,
+      },
+      select: { track_key: true, vote: true },
+    });
+
+    if (anonVotes.length === 0) {
+      return;
+    }
+
+    const userVotes = await tx.playlistTrackVote.findMany({
+      where: {
+        user_id: ownerUserId,
+        playlist_id: playlistId,
+        voter_key: userKey,
+        track_key: { in: anonVotes.map((vote) => vote.track_key) },
+      },
+      select: { track_key: true },
+    });
+    const userVoteTracks = new Set(userVotes.map((vote) => vote.track_key));
+
+    for (const anonVote of anonVotes) {
+      if (!userVoteTracks.has(anonVote.track_key)) {
+        await tx.playlistTrackVote.update({
+          where: {
+            user_id_playlist_id_track_key_voter_key: {
+              user_id: ownerUserId,
+              playlist_id: playlistId,
+              track_key: anonVote.track_key,
+              voter_key: anonKey,
+            },
+          },
+          data: { voter_key: userKey },
+        });
+        continue;
+      }
+
+      await tx.playlistTrackVote.delete({
+        where: {
+          user_id_playlist_id_track_key_voter_key: {
+            user_id: ownerUserId,
+            playlist_id: playlistId,
+            track_key: anonVote.track_key,
+            voter_key: anonKey,
+          },
+        },
+      });
+
+      const countDelta: {
+        up_count?: { decrement: number };
+        down_count?: { decrement: number };
+      } = {};
+
+      if (anonVote.vote === PLAYLIST_TRACK_VOTE_UP) {
+        countDelta.up_count = { decrement: 1 };
+      } else if (anonVote.vote === PLAYLIST_TRACK_VOTE_DOWN) {
+        countDelta.down_count = { decrement: 1 };
+      }
+
+      if (Object.keys(countDelta).length > 0) {
+        await tx.playlistTrack.update({
+          where: {
+            user_id_playlist_id_track_key: {
+              user_id: ownerUserId,
+              playlist_id: playlistId,
+              track_key: anonVote.track_key,
+            },
+          },
+          data: countDelta,
+        });
+      }
+    }
+  });
 };
 
 export type RecordPublicPlaylistTrackVoteInput = {
@@ -77,6 +184,7 @@ export type RecordPublicPlaylistTrackVoteInput = {
   requestedVote: PlaylistTrackVoteDirection;
   voterKey: string;
   viewerUserId?: number | null;
+  anonymousVoterId?: string | null;
 };
 
 export type RecordPublicPlaylistTrackVoteResult = {
@@ -116,6 +224,15 @@ export const recordPublicPlaylistTrackVote = async (
       ...mapPlaylistTrackVoteCounts(trackRow),
       viewerVote: null,
     };
+  }
+
+  if (input.viewerUserId != null && input.anonymousVoterId?.trim()) {
+    await mergeAnonymousPlaylistVoterVotes(
+      playlist.user_id,
+      playlist.id,
+      input.viewerUserId,
+      input.anonymousVoterId,
+    );
   }
 
   const updated = await prisma.$transaction(async (tx) => {
