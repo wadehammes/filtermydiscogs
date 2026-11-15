@@ -28,7 +28,7 @@ export default function MosaicControls({
   onDownload,
 }: MosaicControlsProps) {
   return (
-    <div className={styles.controls}>
+    <div className={styles.controls} translate="no">
       <div className={styles.controlsLeft}>
         <div className={styles.controlGroup}>
           <Select
