@@ -15,7 +15,7 @@ jest.mock("src/lib/user-track.server", () => ({
 
 jest.mock("src/lib/api-helpers", () => ({
   createErrorResponse: jest.fn(),
-  getReadOnlyVerifiedUserFromRequestWithRateLimit: jest.fn(),
+  getVerifiedUserFromRequestWithRateLimit: jest.fn(),
 }));
 
 type RouteModule = typeof import("src/app/api/tracks/stats/route");
@@ -24,7 +24,7 @@ type UserTrackServerModule = typeof import("src/lib/user-track.server");
 
 let GET: RouteModule["GET"];
 let mockGetVerifiedUser: jest.MockedFunction<
-  ApiHelpersModule["getReadOnlyVerifiedUserFromRequestWithRateLimit"]
+  ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
 let mockFetchUserTrackStats: jest.MockedFunction<
   UserTrackServerModule["fetchUserTrackStats"]
@@ -43,7 +43,7 @@ beforeAll(async () => {
 
   GET = routeModule.GET;
   mockGetVerifiedUser = jest.mocked(
-    apiHelpers.getReadOnlyVerifiedUserFromRequestWithRateLimit,
+    apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
   mockFetchUserTrackStats = jest.mocked(userTrackServer.fetchUserTrackStats);
 });
