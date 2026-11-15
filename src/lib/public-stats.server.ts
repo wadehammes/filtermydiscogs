@@ -1,6 +1,9 @@
-import { unstable_cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { readRuntimeDatabaseUrlFromEnv } from "src/lib/databaseUrlEnv";
 import { prisma } from "src/lib/db";
 import type { PublicCommunityStats } from "src/types/public-stats.types";
+
+export const PUBLIC_COMMUNITY_STATS_CACHE_TAG = "public-community-stats";
 
 type PublicCommunityStatsRow = {
   totalCrates: bigint;
@@ -51,23 +54,18 @@ const fetchPublicCommunityStats = async (): Promise<PublicCommunityStats> => {
   };
 };
 
-const getCachedPublicCommunityStats = unstable_cache(
-  fetchPublicCommunityStats,
-  ["public-community-stats"],
-  {
-    revalidate: 300,
-    tags: ["public-community-stats"],
-  },
-);
-
 export const getPublicCommunityStats =
   async (): Promise<PublicCommunityStats | null> => {
-    if (!process.env.DATABASE_URL) {
+    "use cache";
+    cacheLife({ revalidate: 300 });
+    cacheTag(PUBLIC_COMMUNITY_STATS_CACHE_TAG);
+
+    if (!readRuntimeDatabaseUrlFromEnv()) {
       return null;
     }
 
     try {
-      return await getCachedPublicCommunityStats();
+      return await fetchPublicCommunityStats();
     } catch {
       return null;
     }

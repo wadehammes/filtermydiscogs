@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
 jest.mock("next/cache", () => ({
-  unstable_cache: (fn: () => Promise<unknown>) => fn,
+  cacheLife: jest.fn(),
+  cacheTag: jest.fn(),
 }));
 
 jest.mock("src/lib/db", () => ({
@@ -19,6 +20,7 @@ describe("getPublicCommunityStats", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     process.env.DATABASE_URL = "postgres://test";
+    process.env.POSTGRES_URL = "postgres://test";
 
     const [serverModule, db] = await Promise.all([
       import("src/lib/public-stats.server"),

@@ -1,0 +1,22 @@
+{
+  "trunk": "staging",
+  "currentBranch": "perf/collection-discogs-read-path",
+  "branches": [
+    {
+      "name": "perf/public-playlist-ssr-discogs",
+      "base": "30ad958276bb840665e8537d4c7c60ac81437b77",
+      "isCurrent": false,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false
+    },
+    {
+      "name": "perf/collection-discogs-read-path",
+      "base": "5abd9fdc5789489b65cba9acba24e0743327b8a5",
+      "isCurrent": true,
+      "isMerged": false,
+      "isQueued": false,
+      "needsRebase": false
+    }
+  ]
+}
