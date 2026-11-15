@@ -4,7 +4,7 @@ import { getReleaseImageUrl } from "src/utils/helpers";
 export const CRATE_HUB_PREVIEW_COUNT = 3;
 
 export const CRATE_HUB_PREVIEW_ROW_LIMIT = Math.max(
-  CRATE_HUB_PREVIEW_COUNT * 4,
+  CRATE_HUB_PREVIEW_COUNT * 16,
   CRATE_HUB_PREVIEW_COUNT,
 );
 
@@ -53,7 +53,13 @@ export const groupPreviewThumbsByCrateId = (
       continue;
     }
 
-    existing.push(extractPreviewThumbUrl(row.release_data));
+    const url = extractPreviewThumbUrl(row.release_data);
+
+    if (!url || url.startsWith("data:")) {
+      continue;
+    }
+
+    existing.push(url);
     byCrate.set(row.crate_id, existing);
   }
 
