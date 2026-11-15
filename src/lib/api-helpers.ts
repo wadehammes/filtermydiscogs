@@ -143,7 +143,10 @@ export const getReadOnlyVerifiedUserFromRequestWithRateLimit = async (
     return verified;
   }
 
-  const rateLimitError = checkRateLimitWithResponse(verified.user.userId, false);
+  const rateLimitError = checkRateLimitWithResponse(
+    verified.user.userId,
+    false,
+  );
   if (rateLimitError) {
     return { error: rateLimitError };
   }
