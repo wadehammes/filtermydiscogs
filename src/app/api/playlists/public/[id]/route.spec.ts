@@ -153,6 +153,8 @@ describe("GET /api/playlists/public/[id]", () => {
       userId: 42,
       username: "owner",
     });
+    const authModule = await import("src/lib/auth-request");
+    jest.mocked(authModule.hasActiveDiscogsSession).mockReturnValue(true);
     mockGetReadOnlyVerifiedUser.mockResolvedValue({
       user: { userId: 42, username: "owner" },
     });
