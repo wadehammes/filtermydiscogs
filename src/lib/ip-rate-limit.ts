@@ -60,6 +60,19 @@ export const PUBLIC_CRATE_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   ),
 };
 
+export const DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
+  maxRequests: parseInt(
+    process.env.DISCOGS_RELEASE_PROXY_RATE_LIMIT_MAX || "120",
+    10,
+  ),
+  windowMs: parseInt(
+    process.env.DISCOGS_RELEASE_PROXY_RATE_LIMIT_WINDOW ||
+      process.env.IP_RATE_LIMIT_WINDOW ||
+      "60000",
+    10,
+  ),
+};
+
 export const PUBLIC_PLAYLIST_ENGAGEMENT_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   maxRequests: parseInt(
     process.env.PUBLIC_PLAYLIST_ENGAGEMENT_RATE_LIMIT_MAX || "60",

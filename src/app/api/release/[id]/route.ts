@@ -6,6 +6,10 @@ import {
   isDiscogsThrottleQueueError,
 } from "src/lib/discogs-api-error";
 import { fetchDiscogsReleaseRecord } from "src/lib/fetchDiscogsReleaseRecord.server";
+import {
+  DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG,
+  getIpRateLimitResponse,
+} from "src/lib/ip-rate-limit";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { definedProps } from "src/utils/definedProps";
 
@@ -19,6 +23,15 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const rateLimitResponse = getIpRateLimitResponse(
+    request,
+    DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG,
+  );
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const { id: releaseId } = await params;
 
