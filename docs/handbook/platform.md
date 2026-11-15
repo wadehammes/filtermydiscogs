@@ -136,6 +136,8 @@ Keep **`github/gh-stack` v0.3.0+** (`gh extension upgrade stack` or **`st upgrad
 
 **Agents:** Plan layers **before** coding (foundation → tests → follow-ups). Commit **one concern per branch**; use **`st bottom`** / **`st up`** to move between layers. Prefer **`st`** over raw **`gh stack`** so local workflows match maintainer scripts. Non-interactive automation must pass flags documented in **`st cheatsheet`** (e.g. **`st ss --auto`**, **`st view --json`**, **`st print-stack-list -c`** for review paste; **`-S`** only when the stack page exists).
 
+**Local stack metadata:** gh-stack may write repo-local JSON (sometimes a root **`.json`** file). It is **not** product config — **[`.gitignore`](../../.gitignore)** ignores **`/.json`**; never commit stack state with application changes.
+
 ## mise
 
 [mise.toml](../../mise.toml) adds project tasks and env on top of [`.tool-versions`](../../.tool-versions) (Node + pnpm).
