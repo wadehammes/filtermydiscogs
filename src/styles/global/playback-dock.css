@@ -25,13 +25,15 @@ html:has([data-global-playback-dock]),
   --workspace-fab-bottom: var(--space-3);
   --release-mini-player-cover-size: 1.75rem;
   --release-mini-player-control-size: 2.5rem;
+  --release-mini-player-scrub-row: 0px;
   --release-mini-player-bar-height: calc(
     var(--release-mini-player-cover-size) +
     var(--release-mini-player-control-size) +
     var(--space-2) *
     2 +
     var(--space-3) +
-    4px
+    4px +
+    var(--release-mini-player-scrub-row)
   );
   --release-mini-player-bar-offset: calc(
     var(--release-mini-player-bar-height) +
@@ -43,6 +45,14 @@ html:has([data-global-playback-dock]),
     var(--release-mini-player-video-panel-offset)
   );
 
+  &:has([data-testid="fmdReleaseMiniPlayerDigScrub"]) {
+    --release-mini-player-scrub-row: calc(
+      var(--playback-dock-slider-thumb-size, 0.75rem) +
+      var(--space-2) *
+      2
+    );
+  }
+
   &:has([data-video-expanded="true"]) {
     --release-mini-player-video-panel-offset: calc(2rem + 100vw * 9 / 16);
 
@@ -53,6 +63,11 @@ html:has([data-global-playback-dock]),
 
   @media (width >= 768px) {
     --release-mini-player-control-size: 2rem;
+
+    &:has([data-testid="fmdReleaseMiniPlayerDigScrub"]) {
+      --release-mini-player-scrub-row: 0px;
+    }
+
     --release-mini-player-bar-height: calc(
       max(
         var(--release-mini-player-cover-size),
