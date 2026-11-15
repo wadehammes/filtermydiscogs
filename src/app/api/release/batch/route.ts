@@ -2,6 +2,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
+import {
+  DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG,
+  getIpRateLimitResponse,
+} from "src/lib/ip-rate-limit";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { releaseBatchBodySchema } from "src/lib/validation/release.schemas";
 
@@ -11,6 +15,15 @@ const PUBLIC_RELEASE_CACHE =
   "public, max-age=3600, stale-while-revalidate=7200";
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = getIpRateLimitResponse(
+    request,
+    DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG,
+  );
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const parsedBody = await parseRequestBody(request, releaseBatchBodySchema);
 
