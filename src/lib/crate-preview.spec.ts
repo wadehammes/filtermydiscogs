@@ -30,6 +30,22 @@ describe("crate-preview", () => {
     );
   });
 
+  it("groupPreviewThumbsByCrateId skips non-image rows until it collects three thumbs per crate", () => {
+    const rows = [
+      buildPreviewRow("crate-a", ""),
+      buildPreviewRow("crate-a", "data:image/png;base64,x"),
+      buildPreviewRow("crate-a", "https://example.com/a1.jpg"),
+      buildPreviewRow("crate-a", "https://example.com/a2.jpg"),
+      buildPreviewRow("crate-a", "https://example.com/a3.jpg"),
+    ];
+
+    expect(groupPreviewThumbsByCrateId(rows).get("crate-a")).toEqual([
+      "https://example.com/a1.jpg",
+      "https://example.com/a2.jpg",
+      "https://example.com/a3.jpg",
+    ]);
+  });
+
   it("groupPreviewThumbsByCrateId keeps the first three ordered releases per crate", () => {
     const rows = [
       buildPreviewRow("crate-a", "https://example.com/a1.jpg"),
