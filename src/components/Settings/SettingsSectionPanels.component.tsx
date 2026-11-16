@@ -213,8 +213,9 @@ export const SettingsFiltersPanel = ({
       <div className={styles.panelBlock}>
         <h3 className={styles.panelBlockTitle}>Saved views</h3>
         <p className={styles.sectionDescription}>
-          Named filter snapshots you can apply from the Views menu on Releases.
-          Save new views from that menu while browsing your collection.
+          Named filter snapshots you can apply from the Views menu on
+          Collection. Save new views from that menu while browsing your
+          collection.
         </p>
         {filterViews.length === 0 ? (
           <p className={styles.sectionDescription}>No saved views yet.</p>

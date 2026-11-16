@@ -12,9 +12,9 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Sorting & views**: Primary sort (label, artist, title, date added, year, rating, …) plus optional **Then by** tie-breaker; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
 - **In-app playback**: Mini player and queue while you browse; per-track **YouTube** links when Discogs has no embed; optional similar-release queue tail in Settings; listen counts on tracklists and play/listen stats on the dashboard
-- **Playlists**: Cross-release track lists from the Releases side panel; reorder, play, share a public link (listeners can play without signing in); **Add all to…** from tracklists; on public playlist and public release listen pages, listeners can **Report** a wrong YouTube embed (same Sentry flow as unavailable-embed skips)
+- **Playlists**: Cross-release track lists from the Collection side panel; reorder, play, share a public link (listeners can play without signing in); **Add all to…** from tracklists; on public playlist and public release listen pages, listeners can **Report** a wrong YouTube embed (same Sentry flow as unavailable-embed skips)
 - **Public release listen**: Open **`/release/{discogsReleaseId}`** to hear a release without signing in (shareable link, like public crates and playlists)
-- **Crates**: Stage picks from Releases in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
+- **Crates**: Stage picks from Collection in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
 - **Collection insights**: Dashboard milestones, style evolution, growth and artist/label charts, most-crated releases, on-this-day adds, weekly recap, and On repeat
 - **Mosaic generator**: Cover grids from your collection, crates, or playlists; export JPEG or PNG
 - **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, clear data
@@ -126,9 +126,9 @@ The app will be available at `http://localhost:6767`.
 ## Usage
 
 1. Click **Connect with Discogs** on the home page and authorize the app
-2. Browse **Releases** — narrow by genre, format, and year (filter lists update as the grid shrinks); search, sort, or try random view; open release details; preview tracks; queue or playlist from track menus; **Add all to…** from the tracklist toolbar; set per-track YouTube links when needed
-3. On **Releases**, use the side panel — **Crates** or **Playlists** — stage albums into crates or add tracks to playlists while you browse
-4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Releases
+2. Browse **Collection** — narrow by genre, format, and year (filter lists update as the grid shrinks); search, sort, or try random view; open release details; preview tracks; queue or playlist from track menus; **Add all to…** from the tracklist toolbar; set per-track YouTube links when needed
+3. On **Collection**, use the side panel — **Crates** or **Playlists** — stage albums into crates or add tracks to playlists while you browse
+4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Collection
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
 6. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu
 
@@ -137,7 +137,7 @@ The app will be available at `http://localhost:6767`.
 | Path             | Purpose                                                                  |
 | ---------------- | ------------------------------------------------------------------------ |
 | `/`              | Public landing / login                                                   |
-| `/releases`      | Browse, filter, sort collection; crates/playlists side panel             |
+| `/collection`    | Browse, filter, sort collection; crates/playlists side panel             |
 | `/crates`        | Crate hub (your crates)                                                  |
 | `/crates/[id]`   | Owner crate workspace                                                    |
 | `/crate/[id]`    | Public shared crate (no login)                                           |

@@ -11,11 +11,11 @@ describe("releaseModalUrl", () => {
 
     expect(
       buildPathWithReleaseInstance({
-        pathname: "/releases",
+        pathname: "/collection",
         searchParams,
         instanceId: "12345",
       }),
-    ).toBe("/releases?auth=success&genre=House&instance=12345");
+    ).toBe("/collection?auth=success&genre=House&instance=12345");
   });
 
   it("buildPathWithReleaseInstance removes instance param when cleared", () => {
@@ -23,11 +23,11 @@ describe("releaseModalUrl", () => {
 
     expect(
       buildPathWithReleaseInstance({
-        pathname: "/releases",
+        pathname: "/collection",
         searchParams,
         instanceId: null,
       }),
-    ).toBe("/releases?genre=House");
+    ).toBe("/collection?genre=House");
   });
 
   it("parseReleaseInstanceFromSearchParams reads the instance param", () => {

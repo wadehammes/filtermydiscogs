@@ -33,13 +33,13 @@ describe("EmptyState", () => {
   it("renders optional children and custom test id", () => {
     po.renderEmptyState({
       title: "No crates yet",
-      children: <a href="/releases">Go to Releases</a>,
+      children: <a href="/collection">Go to Collection</a>,
       testId: "fmdCustomEmptyState",
     });
 
     expect(screen.getByTestId("fmdCustomEmptyState")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Go to Releases" }),
-    ).toHaveAttribute("href", "/releases");
+      screen.getByRole("link", { name: "Go to Collection" }),
+    ).toHaveAttribute("href", "/collection");
   });
 });

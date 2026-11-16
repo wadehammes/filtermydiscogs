@@ -48,9 +48,12 @@ type SetMarkerOverviewRow = WindowCountRow & {
   total: number;
 };
 
-type PlaylistOverviewRow = {
+type PlaylistOverviewRow = WindowCountRow & {
   total_playlists: number;
+  public_playlists: number;
   users_with_playlists: number;
+  public_views: number;
+  public_plays: number;
 };
 
 type AccountPreferencesBreakdownRow = {
@@ -139,18 +142,18 @@ const fetchReturningUsersTimeSeries =
         to_char(days.day, 'YYYY-MM-DD') AS date,
         COUNT(*) FILTER (
           WHERE u.created_at < days.day - INTERVAL '7 days'
-            AND u.updated_at >= days.day - INTERVAL '7 days'
-            AND u.updated_at < days.day + INTERVAL '1 day'
+            AND u.last_seen_at >= days.day - INTERVAL '7 days'
+            AND u.last_seen_at < days.day + INTERVAL '1 day'
         )::int AS count_7d,
         COUNT(*) FILTER (
           WHERE u.created_at < days.day - INTERVAL '30 days'
-            AND u.updated_at >= days.day - INTERVAL '30 days'
-            AND u.updated_at < days.day + INTERVAL '1 day'
+            AND u.last_seen_at >= days.day - INTERVAL '30 days'
+            AND u.last_seen_at < days.day + INTERVAL '1 day'
         )::int AS count_30d,
         COUNT(*) FILTER (
           WHERE u.created_at < days.day - INTERVAL '90 days'
-            AND u.updated_at >= days.day - INTERVAL '90 days'
-            AND u.updated_at < days.day + INTERVAL '1 day'
+            AND u.last_seen_at >= days.day - INTERVAL '90 days'
+            AND u.last_seen_at < days.day + INTERVAL '1 day'
         )::int AS count_90d
       FROM days
       CROSS JOIN users u
@@ -185,6 +188,8 @@ export const fetchAdminEngagementStats = async ({
   totalReleases: number;
 }) => {
   const [
+    seenUsersLast7Days,
+    seenUsersLast30Days,
     activeUsersLast7Days,
     activeUsersLast30Days,
     returningUsersLast7Days,
@@ -194,17 +199,23 @@ export const fetchAdminEngagementStats = async ({
     staleAccounts,
     returningUsersTimeSeries,
   ] = await Promise.all([
+    prisma.user.count({
+      where: { last_seen_at: { gte: sevenDaysAgo } },
+    }),
+    prisma.user.count({
+      where: { last_seen_at: { gte: thirtyDaysAgo } },
+    }),
     countDistinctActiveUsers(sevenDaysAgo),
     countDistinctActiveUsers(thirtyDaysAgo),
     prisma.user.count({
       where: {
-        updated_at: { gte: sevenDaysAgo },
+        last_seen_at: { gte: sevenDaysAgo },
         created_at: { lt: sevenDaysAgo },
       },
     }),
     prisma.user.count({
       where: {
-        updated_at: { gte: thirtyDaysAgo },
+        last_seen_at: { gte: thirtyDaysAgo },
         created_at: { lt: thirtyDaysAgo },
       },
     }),
@@ -235,6 +246,10 @@ export const fetchAdminEngagementStats = async ({
   ]);
 
   return {
+    seenUsers: {
+      last7Days: seenUsersLast7Days,
+      last30Days: seenUsersLast30Days,
+    },
     activeUsers: {
       last7Days: activeUsersLast7Days,
       last30Days: activeUsersLast30Days,
@@ -263,6 +278,7 @@ const buildRecentActivityPeriod = ({
   publicCrates,
   setMarkers,
   packedReleases,
+  playlists,
   userTracksActivity,
   window,
 }: {
@@ -275,6 +291,7 @@ const buildRecentActivityPeriod = ({
     ReleaseOverviewRow,
     "packed_last_7d" | "packed_last_30d"
   >;
+  playlists: Pick<PlaylistOverviewRow, "last_7d" | "last_30d">;
   userTracksActivity: AdminStatsUserTrackPlaybackWindow;
   window: "last_7d" | "last_30d";
 }): AdminStatsRecentActivityPeriod => ({
@@ -284,14 +301,13 @@ const buildRecentActivityPeriod = ({
   newPublicCrates: publicCrates[`public_${window}`],
   newSetMarkers: setMarkers[window],
   newPackedReleases: packedReleases[`packed_${window}`],
+  newPlaylists: playlists[window],
   newUserTracks: userTracksActivity.newUserTracks,
   activePlaybackUsers: userTracksActivity.activePlaybackUsers,
 });
 
 const emptyFeatureUsage = (): AdminStats["featureUsage"] => ({
-  totals: { last7Days: 0, last30Days: 0 },
   pageViews: [],
-  events: [],
 });
 
 const mapAnalyticsConsentCounts = (
@@ -320,6 +336,8 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
   const [
     persistFiltersRows,
     analyticsRows,
+    autoPlayRows,
+    similarQueueRows,
     themeRows,
     viewRows,
     sidePanelRows,
@@ -341,6 +359,16 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
           COUNT(*)::int AS count
         FROM users
         GROUP BY 1
+      `,
+    prisma.$queryRaw<Array<{ count: number }>>`
+        SELECT COUNT(*)::int AS count
+        FROM users
+        WHERE COALESCE((preferences->>'autoPlayOnQueueAdd')::boolean, true) = true
+      `,
+    prisma.$queryRaw<Array<{ count: number }>>`
+        SELECT COUNT(*)::int AS count
+        FROM users
+        WHERE COALESCE((preferences->>'extendQueueWithSimilarReleases')::boolean, false) = true
       `,
     prisma.$queryRaw<AccountPreferencesBreakdownRow[]>`
         SELECT
@@ -407,6 +435,8 @@ export const fetchAdminAccountPreferencesStats = async (): Promise<
   return {
     persistFiltersEnabled: persistFiltersRows[0]?.count ?? 0,
     analyticsConsent: mapAnalyticsConsentCounts(analyticsRows),
+    autoPlayOnQueueAddEnabled: autoPlayRows[0]?.count ?? 0,
+    extendQueueWithSimilarReleasesEnabled: similarQueueRows[0]?.count ?? 0,
     themes: themeRows,
     defaultViews: viewRows,
     defaultSidePanels: sidePanelRows,
@@ -481,7 +511,12 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     prisma.$queryRaw<PlaylistOverviewRow[]>`
       SELECT
         COUNT(*)::int AS total_playlists,
-        COUNT(DISTINCT user_id)::int AS users_with_playlists
+        COUNT(*) FILTER (WHERE private = false)::int AS public_playlists,
+        COUNT(DISTINCT user_id)::int AS users_with_playlists,
+        COALESCE(SUM(public_view_count), 0)::int AS public_views,
+        COALESCE(SUM(public_play_count), 0)::int AS public_plays,
+        COUNT(*) FILTER (WHERE created_at >= ${sevenDaysAgo})::int AS last_7d,
+        COUNT(*) FILTER (WHERE created_at >= ${thirtyDaysAgo})::int AS last_30d
       FROM playlists
     `,
     prisma.playlistTrack.count(),
@@ -593,6 +628,9 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         totalPlaylists: playlists.total_playlists,
         totalPlaylistTracks,
         usersWithPlaylists: playlists.users_with_playlists,
+        publicPlaylists: playlists.public_playlists,
+        publicViews: playlists.public_views,
+        publicPlays: playlists.public_plays,
       },
     },
     engagement,
@@ -606,6 +644,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         publicCrates: crates,
         setMarkers,
         packedReleases: releases,
+        playlists,
         userTracksActivity: userTrackStats.playbackActivity.last7Days,
         window: "last_7d",
       }),
@@ -616,6 +655,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
         publicCrates: crates,
         setMarkers,
         packedReleases: releases,
+        playlists,
         userTracksActivity: userTrackStats.playbackActivity.last30Days,
         window: "last_30d",
       }),

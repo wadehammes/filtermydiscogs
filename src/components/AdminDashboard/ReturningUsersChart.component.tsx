@@ -73,9 +73,9 @@ export const ReturningUsersChart = ({
         <div className={styles.chartHeading}>
           <h3 className={styles.chartTitle}>Returning users over time</h3>
           <p className={styles.chartDescription}>
-            Daily rolling count of users who {WINDOW_DESCRIPTIONS[window]} and
-            logged in or synced preferences — not crate edits (see Active
-            users).
+            Accounts that opened the app in this window and{" "}
+            {WINDOW_DESCRIPTIONS[window].toLowerCase()}. Preference saves do not
+            count. Crate edits are in Editing collection.
           </p>
         </div>
         <Select

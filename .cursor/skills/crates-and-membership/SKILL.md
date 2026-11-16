@@ -14,7 +14,7 @@ Handbook: [patterns.md → Crates](../../docs/handbook/patterns.md#crates), [dat
 
 - **`CrateProvider`** + **`useCrateMutations`** → **`api.*`**; UI calls **`useCrate()`** / **`useCrateState()`** / **`useCrateActions()`** — not mutation hooks directly (layout saves via **`updateCrateLayout`**).
 - Add/remove releases: **[`ReleaseCrateMenu`](../../src/components/ReleaseCard/ReleaseCrateMenu.component.tsx)** (not silent one-click toggles everywhere).
-- **Drawer** (`/releases`): [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) — staging; **`useCrateDrawer`**: `isDrawerOpen = userToggled ?? isDesktop`; login → **`resetDrawer()`**.
+- **Drawer** (`/collection`): [`CrateDrawer`](../../src/components/CrateDrawer/CrateDrawer.component.tsx) — staging; **`useCrateDrawer`**: `isDrawerOpen = userToggled ?? isDesktop`; login → **`resetDrawer()`**.
 - **Owner:** `/crates`, `/crates/[id]` — layout markers, DnD **`CrateLayoutList`**, **`PUT …/layout`**.
 
 ## Server

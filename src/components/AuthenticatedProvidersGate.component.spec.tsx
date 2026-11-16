@@ -58,7 +58,7 @@ describe("AuthenticatedProvidersGate", () => {
   });
 
   it("passes children through without the authenticated shell on logged-out protected routes", () => {
-    po.renderAuthenticatedProvidersGate({ pathname: "/releases" });
+    po.renderAuthenticatedProvidersGate({ pathname: "/collection" });
 
     expect(
       screen.queryByTestId(po.authenticatedDynamicTestId),
@@ -68,7 +68,7 @@ describe("AuthenticatedProvidersGate", () => {
 
   it("uses the dynamic authenticated shell when the session is active on protected routes", () => {
     po.renderAuthenticatedProvidersGate({
-      pathname: "/releases",
+      pathname: "/collection",
       authInitialState: testAuthenticatedAuthState,
     });
 
@@ -105,8 +105,8 @@ describe("AuthenticatedProvidersGate", () => {
       .spyOn(window.location, "pathname", "get")
       .mockReturnValue(playlistPath);
 
-    po.setPathname("/releases");
-    po.renderAuthenticatedProvidersGate({ pathname: "/releases" });
+    po.setPathname("/collection");
+    po.renderAuthenticatedProvidersGate({ pathname: "/collection" });
 
     expect(
       screen.queryByTestId(po.authenticatedDynamicTestId),

@@ -82,7 +82,7 @@ describe("product analytics maintenance", () => {
   it("bulk upserts daily rollups for page views and interactions", async () => {
     mockGroupBy
       .mockResolvedValueOnce([
-        { page_path: "/releases", _count: { _all: 12 } },
+        { page_path: "/collection", _count: { _all: 12 } },
       ] as Awaited<
         ReturnType<DbModule["prisma"]["productAnalyticsEvent"]["groupBy"]>
       >)

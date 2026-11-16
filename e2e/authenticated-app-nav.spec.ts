@@ -7,7 +7,7 @@ test.describe("authenticated app navigation (MSW)", () => {
   test("mobile menu reaches mosaic and crates", {
     tag: E2E_TAG_MOBILE_ONLY,
   }, async ({ page }) => {
-    await page.goto("/releases");
+    await page.goto("/collection");
     await expectNotOnLogin(page);
 
     await clickAppNavLink(page, "Mosaic");

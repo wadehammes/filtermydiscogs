@@ -41,6 +41,8 @@ export const getAdminUserLookup = async (
       discogs_user_id: true,
       username: true,
       preferences: true,
+      login_count: true,
+      last_seen_at: true,
       created_at: true,
       updated_at: true,
     },
@@ -77,6 +79,7 @@ export const getAdminUserLookup = async (
     playbackAggregates,
     tracksWithOverrides,
     crates,
+    playlists,
   ] = await Promise.all([
     prisma.crate.count({ where: { user_id: userId } }),
     prisma.crate.count({ where: { user_id: userId, private: false } }),
@@ -148,6 +151,20 @@ export const getAdminUserLookup = async (
       orderBy: { updated_at: "desc" },
       take: 25,
     }),
+    prisma.playlist.findMany({
+      where: { user_id: userId },
+      select: {
+        id: true,
+        name: true,
+        private: true,
+        public_view_count: true,
+        public_play_count: true,
+        updated_at: true,
+        _count: { select: { tracks: true } },
+      },
+      orderBy: { updated_at: "desc" },
+      take: 25,
+    }),
   ]);
 
   return {
@@ -156,12 +173,17 @@ export const getAdminUserLookup = async (
       username: user.username,
       createdAt: user.created_at.toISOString(),
       updatedAt: user.updated_at.toISOString(),
+      lastSeenAt: toIsoString(user.last_seen_at),
+      loginCount: user.login_count,
     },
     preferences: {
       theme: preferences.theme,
       defaultView: preferences.view.currentView,
       defaultCollectionSidePanel: preferences.defaultCollectionSidePanel,
       persistFilters: preferences.persistFilters,
+      autoPlayOnQueueAdd: preferences.autoPlayOnQueueAdd,
+      extendQueueWithSimilarReleases:
+        preferences.extendQueueWithSimilarReleases,
       analyticsConsent: formatAnalyticsConsent(preferences.analyticsConsent),
       savedViewsCount: preferences.filterViews.length,
     },
@@ -206,6 +228,15 @@ export const getAdminUserLookup = async (
       hasNotes: Boolean(crate.notes && crate.notes.trim().length > 0),
       createdAt: crate.created_at.toISOString(),
       updatedAt: crate.updated_at.toISOString(),
+    })),
+    playlists: playlists.map((playlist) => ({
+      id: playlist.id,
+      name: playlist.name,
+      trackCount: playlist._count.tracks,
+      private: playlist.private,
+      publicViewCount: playlist.public_view_count,
+      publicPlayCount: playlist.public_play_count,
+      updatedAt: playlist.updated_at.toISOString(),
     })),
   };
 };

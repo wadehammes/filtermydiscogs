@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
         const identity = verified.user;
 
         const response = privateRouteRedirect(
-          new URL("/releases?auth=success", request.url),
+          new URL("/collection?auth=success", request.url),
         );
 
         syncIdentityCookies(response, identity);
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (isDiscogsVerificationUnavailable(verified.error)) {
-        return privateRouteRedirect(new URL("/releases", request.url));
+        return privateRouteRedirect(new URL("/collection", request.url));
       }
 
       console.log(

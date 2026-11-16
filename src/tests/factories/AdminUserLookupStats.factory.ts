@@ -23,6 +23,8 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         username,
         createdAt,
         updatedAt,
+        lastSeenAt: updatedAt,
+        loginCount: faker.number.int({ min: 1, max: 40 }),
       },
       preferences: {
         theme: faker.helpers.arrayElement(["system", "dark", "light"]),
@@ -32,6 +34,8 @@ class AdminUserLookupStatsFactory extends BaseFactory<
           "playlists",
         ] as const),
         persistFilters: faker.datatype.boolean(),
+        autoPlayOnQueueAdd: faker.datatype.boolean(),
+        extendQueueWithSimilarReleases: faker.datatype.boolean(),
         analyticsConsent: faker.helpers.arrayElement([
           "enabled",
           "disabled",
@@ -71,6 +75,7 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         lastListenedAt: null,
       },
       crates: [],
+      playlists: [],
     } satisfies AdminUserLookupStats;
 
     const factoryBuilt: AdminUserLookupStats = {
@@ -96,12 +101,16 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         username,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-02T00:00:00.000Z",
+        lastSeenAt: "2026-01-02T00:00:00.000Z",
+        loginCount: 1,
       },
       preferences: {
         theme: "dark",
         defaultView: "card",
         defaultCollectionSidePanel: "crates",
         persistFilters: true,
+        autoPlayOnQueueAdd: true,
+        extendQueueWithSimilarReleases: false,
         analyticsConsent: "unset",
         savedViewsCount: 0,
       },
@@ -137,6 +146,7 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         lastListenedAt: null,
       },
       crates: [],
+      playlists: [],
       ...attributes,
     });
   }

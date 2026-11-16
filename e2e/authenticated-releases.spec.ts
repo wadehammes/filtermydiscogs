@@ -33,7 +33,7 @@ test.describe("authenticated releases (MSW)", () => {
     page,
   }) => {
     await gotoReleasesWorkspace(page);
-    await expectAppNavLinkReachable(page, "Releases");
+    await expectAppNavLinkReachable(page, "Collection");
     if (isDesktopAppNavViewport(page.viewportSize())) {
       await expect(
         page.getByRole("group", { name: "Collection view mode" }),

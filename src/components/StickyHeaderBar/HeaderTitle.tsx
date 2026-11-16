@@ -5,7 +5,11 @@ import styles from "./HeaderTitle.module.css";
 
 export const HeaderTitle = () => {
   return (
-    <Link href="/releases" className={styles.titleLink} aria-label={SITE_NAME}>
+    <Link
+      href="/collection"
+      className={styles.titleLink}
+      aria-label={SITE_NAME}
+    >
       <FMDIcon aria-hidden className={styles.icon} />
     </Link>
   );

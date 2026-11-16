@@ -215,6 +215,15 @@ const nextConfig: NextConfig = {
     ],
   },
   trailingSlash: false,
+  async redirects() {
+    return [
+      {
+        source: "/releases",
+        destination: "/collection",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.svg": {

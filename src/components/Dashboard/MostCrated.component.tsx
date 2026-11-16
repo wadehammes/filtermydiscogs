@@ -53,8 +53,8 @@ export const MostCrated = ({
           description="Pack the same record into two crates to see it here."
           className={styles.emptyState}
         >
-          <Link href="/releases" className={styles.emptyStateLink}>
-            Go to Releases
+          <Link href="/collection" className={styles.emptyStateLink}>
+            Go to Collection
           </Link>
         </EmptyState>
       </div>

@@ -150,6 +150,9 @@ export interface AdminStatsPlaylistsOverview {
   totalPlaylists: number;
   totalPlaylistTracks: number;
   usersWithPlaylists: number;
+  publicPlaylists: number;
+  publicViews: number;
+  publicPlays: number;
 }
 
 export interface AdminStatsRecentActivityPeriod {
@@ -159,6 +162,7 @@ export interface AdminStatsRecentActivityPeriod {
   newPublicCrates: number;
   newSetMarkers: number;
   newPackedReleases: number;
+  newPlaylists: number;
   newUserTracks: number;
   activePlaybackUsers: number;
 }
@@ -226,6 +230,8 @@ export interface AdminStatsAccountPreferences {
     disabled: number;
     unset: number;
   };
+  autoPlayOnQueueAddEnabled: number;
+  extendQueueWithSimilarReleasesEnabled: number;
   themes: AdminStatsPreferenceBreakdownRow[];
   defaultViews: AdminStatsPreferenceBreakdownRow[];
   defaultSidePanels: AdminStatsPreferenceBreakdownRow[];
@@ -233,6 +239,10 @@ export interface AdminStatsAccountPreferences {
 }
 
 export interface AdminStatsEngagement {
+  seenUsers: {
+    last7Days: number;
+    last30Days: number;
+  };
   activeUsers: {
     last7Days: number;
     last30Days: number;

@@ -9,12 +9,12 @@ import { expectE2eCollectionLoaded } from "./helpers/authenticatedExpectations";
 import { instantNavOptions } from "./helpers/instantNavOptions";
 
 test.describe("authenticated instant navigation (MSW)", () => {
-  test("Dashboard link shows the app shell immediately from releases", async ({
+  test("Dashboard link shows the app shell immediately from collection", async ({
     page,
     baseURL,
   }) => {
-    await page.goto("/releases");
-    await expect(page).toHaveURL(/\/releases/);
+    await page.goto("/collection");
+    await expect(page).toHaveURL(/\/collection/);
     await expectE2eCollectionLoaded(page);
 
     await instant(
@@ -39,7 +39,7 @@ test.describe("authenticated instant navigation (MSW)", () => {
     );
   });
 
-  test("Releases link shows the collection grid immediately from dashboard", async ({
+  test("Collection link shows the collection grid immediately from dashboard", async ({
     page,
     baseURL,
   }) => {
@@ -51,8 +51,8 @@ test.describe("authenticated instant navigation (MSW)", () => {
     await instant(
       page,
       async () => {
-        await clickAppNavLink(page, "Releases");
-        await expect(page).toHaveURL(/\/releases/);
+        await clickAppNavLink(page, "Collection");
+        await expect(page).toHaveURL(/\/collection/);
         await expectE2eCollectionLoaded(page);
       },
       instantNavOptions(baseURL),

@@ -73,40 +73,40 @@ export const AdminHero = ({
       >
         <dl className={heroStyles.metricsList}>
           <div className={heroStyles.metricItem}>
-            <dt className={heroStyles.metricLabel}>Active users (7d)</dt>
+            <dt className={heroStyles.metricLabel}>Opened the app (7d)</dt>
             <dd className={heroStyles.metricValue}>
+              <TickerNumber
+                active
+                format={formatCommunityStatValue}
+                value={engagement.seenUsers.last7Days}
+              />
+            </dd>
+            <dd className={heroStyles.metricMeta}>
               <TickerNumber
                 active
                 format={formatCommunityStatValue}
                 value={engagement.activeUsers.last7Days}
-              />
-            </dd>
-            <dd className={heroStyles.metricMeta}>
-              <TickerNumber
-                active
-                format={formatCommunityStatValue}
-                value={engagement.returningUsers.last7Days}
               />{" "}
-              returning
+              edited a collection
             </dd>
           </div>
 
           <div className={heroStyles.metricItem}>
-            <dt className={heroStyles.metricLabel}>New releases (7d)</dt>
+            <dt className={heroStyles.metricLabel}>New accounts (7d)</dt>
             <dd className={heroStyles.metricValue}>
               <TickerNumber
                 active
                 format={formatCommunityStatValue}
-                value={last7Days.newReleases}
+                value={last7Days.newUsers}
               />
             </dd>
             <dd className={heroStyles.metricMeta}>
               <TickerNumber
                 active
                 format={formatCommunityStatValue}
-                value={last7Days.newCrates}
+                value={last7Days.newReleases}
               />{" "}
-              new crates
+              releases saved
             </dd>
           </div>
         </dl>

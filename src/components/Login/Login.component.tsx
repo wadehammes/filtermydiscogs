@@ -37,7 +37,7 @@ export const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/releases");
+      router.replace("/collection");
     }
   }, [isAuthenticated, router]);
 

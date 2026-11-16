@@ -91,7 +91,7 @@ test.describe("authenticated release modal similar pagination (MSW)", () => {
     await openSimilarReleaseFromModal(page, similarPeerOnPageTwo);
 
     await page.goto(
-      `/releases?${RELEASE_MODAL_INSTANCE_PARAM}=${E2E_ALBUM_ONE_INSTANCE_ID}`,
+      `/collection?${RELEASE_MODAL_INSTANCE_PARAM}=${E2E_ALBUM_ONE_INSTANCE_ID}`,
     );
     await expectReleaseModalShowsE2eTracklist(page, E2E_ALBUM_ONE);
 

@@ -140,7 +140,7 @@ export const LegalPageContent = () => {
               whether to extend the playback queue with similar releases from
               your collection when up next runs low (opt-in; default off), your
               analytics cookie choice (when set), named saved views from the
-              Views menu on Releases, and, when enabled, saved filter and sort
+              Views menu on Collection, and, when enabled, saved filter and sort
               choices (styles, years, formats, sort order, genre/style, format,
               and release year match mode, and search text). These sync across
               browsers; your full collection is not stored in Postgres.
@@ -287,10 +287,10 @@ export const LegalPageContent = () => {
             <li>
               Saved account preferences on the server: theme, default view (grid
               or table), analytics cookie choice, named saved views from the
-              Views menu on Releases, filter/sort selections when &quot;Remember
-              filter selections&quot; is enabled in Settings, and playback
-              settings (auto-play on queue add and extend queue with similar
-              releases)
+              Views menu on Collection, filter/sort selections when
+              &quot;Remember filter selections&quot; is enabled in Settings, and
+              playback settings (auto-play on queue add and extend queue with
+              similar releases)
             </li>
             <li>
               Product analytics events linked to your account (when analytics

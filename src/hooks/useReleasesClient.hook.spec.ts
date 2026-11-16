@@ -89,8 +89,8 @@ describe("useReleasesClient", () => {
     );
     intersectionObserver = setupIntersectionObserverMock();
     setupMockMatchMedia({ desktop: true });
-    mockUsePathname.mockReturnValue("/releases");
-    applyUrl("/releases");
+    mockUsePathname.mockReturnValue("/collection");
+    applyUrl("/collection");
     mockUseRouter.mockReturnValue(
       createMockAppRouter({
         push: jest.fn((url: string) => {
@@ -237,8 +237,8 @@ describe("useReleasesClient infinite scroll", () => {
     );
     intersectionObserver = setupIntersectionObserverMock();
     setupMockMatchMedia({ desktop: true });
-    mockUsePathname.mockReturnValue("/releases");
-    applyUrl("/releases");
+    mockUsePathname.mockReturnValue("/collection");
+    applyUrl("/collection");
     mockUseRouter.mockReturnValue(
       createMockAppRouter({
         push: jest.fn((url: string) => {
