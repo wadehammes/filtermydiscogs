@@ -12,6 +12,10 @@ import { useReleasePlaybackEmbedProgress } from "src/hooks/useReleasePlaybackEmb
 import type { DiscogsRelease, DiscogsVideo } from "src/types";
 import type { ReleasePlaybackEmbedProgressState } from "src/types/releasePlaybackContext.types";
 import {
+  registerPlaybackDockVolumeRestore,
+  registerPlaybackDockVolumeSilence,
+} from "src/utils/playbackDockVolumeReapply";
+import {
   DEFAULT_PLAYBACK_DOCK_VOLUME,
   readPlaybackDockVolume,
   writePlaybackDockVolume,
@@ -151,12 +155,24 @@ export const useReleasePlaybackDockTransport = ({
       return;
     }
 
-    unmuteYoutubeEmbed(iframe);
     setYoutubeEmbedVolume({
       iframe,
       volume: playbackDockVolumeRef.current,
     });
+    unmuteYoutubeEmbed(iframe);
   }, [playbackIframeRef]);
+
+  useEffect(() => {
+    registerPlaybackDockVolumeRestore(applyPlaybackDockVolumeToEmbed);
+    registerPlaybackDockVolumeSilence(() => {
+      muteYoutubeEmbed(playbackIframeRef.current);
+    });
+
+    return () => {
+      registerPlaybackDockVolumeRestore(() => {});
+      registerPlaybackDockVolumeSilence(() => {});
+    };
+  }, [applyPlaybackDockVolumeToEmbed, playbackIframeRef]);
 
   const registerPlaybackIframe = useCallback(
     (iframe: HTMLIFrameElement | null) => {
@@ -219,6 +235,7 @@ export const useReleasePlaybackDockTransport = ({
   }, [applyPlaybackDockVolumeToEmbed, syncPlaybackDockMuted]);
 
   return {
+    applyPlaybackDockVolumeToEmbed,
     playbackDockMuted,
     registerPlaybackIframe,
     seekPlayback,

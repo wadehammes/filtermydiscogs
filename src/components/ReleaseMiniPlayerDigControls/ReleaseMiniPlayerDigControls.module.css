@@ -130,11 +130,11 @@
   border: none;
   color: var(--muted-foreground);
   cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: var(--font-medium);
+  flex-shrink: 0;
+  height: var(--space-4);
   padding: 0;
-  text-align: center;
   transition: color var(--transition-normal);
+  width: var(--space-4);
 
   &:disabled {
     cursor: not-allowed;

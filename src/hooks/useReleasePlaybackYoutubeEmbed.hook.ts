@@ -15,6 +15,10 @@ import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { definedProps } from "src/utils/definedProps";
 import {
+  beginPlaybackDockVolumeForVideo,
+  commitPlaybackDockVolumeOnPlayerEvent,
+} from "src/utils/playbackDockVolumeReapply";
+import {
   selectShouldAttemptPlayFromGestureDuringHiddenPoll,
   selectShouldRunHiddenTabPlayerStatePoll,
   selectShouldRunVisibleTabAudibleSyncPoll,
@@ -382,6 +386,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       }
 
       markEmbedTrackSwitchGrace();
+      beginPlaybackDockVolumeForVideo(videoId);
 
       if (
         shouldPersistentIframeOwnEmbedLoad({
@@ -817,6 +822,10 @@ export const useReleasePlaybackYoutubeEmbed = ({
       }
 
       const infoDelivery = parseYoutubeInfoDelivery(event.data);
+      commitPlaybackDockVolumeOnPlayerEvent({
+        data: event.data,
+        videoId: embedVideoIdRef.current,
+      });
 
       if (infoDelivery) {
         if (isYoutubeEmbedAtOrPastEnd(infoDelivery)) {
@@ -863,6 +872,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
       window.removeEventListener("message", handleMessage);
     };
   }, [
+    embedVideoIdRef,
     handleYoutubeEmbedPlayerState,
     isWithinTrackSwitchGrace,
     lastInfoDeliveryCurrentTimeRef,

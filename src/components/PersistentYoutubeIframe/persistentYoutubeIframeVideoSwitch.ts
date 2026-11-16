@@ -1,3 +1,5 @@
+import { beginPlaybackDockVolumeForVideo } from "src/utils/playbackDockVolumeReapply";
+
 export const imperativelySyncPersistentYoutubeIframeToVideoId = ({
   iframe,
   targetVideoId,
@@ -39,6 +41,7 @@ export const imperativelySyncPersistentYoutubeIframeToVideoId = ({
   }
 
   notifyPlaybackVideoLoadStarted(targetVideoId);
+  beginPlaybackDockVolumeForVideo(targetVideoId);
   loadAndPlayYoutubeVideo({ iframe, videoId: targetVideoId });
   refreshYoutubeEmbedPlayerLayout({ iframe });
   enableYoutubeIframeListening(iframe);
