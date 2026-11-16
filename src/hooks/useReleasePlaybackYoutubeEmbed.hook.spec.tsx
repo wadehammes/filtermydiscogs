@@ -12,6 +12,11 @@ import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYout
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { definedProps } from "src/utils/definedProps";
+import {
+  registerPlaybackDockVolumeRestore,
+  registerPlaybackDockVolumeSilence,
+  resetPlaybackDockVolumeApplyMemory,
+} from "src/utils/playbackDockVolumeReapply";
 import { PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS } from "src/utils/playbackEmbedSession";
 import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 import { HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS } from "src/utils/youtubeIframeEvents";
@@ -263,6 +268,9 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
   });
 
   afterEach(() => {
+    registerPlaybackDockVolumeRestore(() => {});
+    registerPlaybackDockVolumeSilence(() => {});
+    resetPlaybackDockVolumeApplyMemory();
     setDocumentVisibilityState("visible");
     jest.useRealTimers();
   });
@@ -312,6 +320,44 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     expect(setEmbedVideoId).toHaveBeenCalledWith("next-video-id");
     expect(embedVideoIdRef.current).toBe("next-video-id");
     expect(pendingPlayFromGestureRef.current).toBe(false);
+  });
+
+  it("applies the remembered dock volume on the first playing state change for the current video", () => {
+    const restorePlaybackDockVolume = jest.fn();
+    const silencePlaybackDockVolume = jest.fn();
+    registerPlaybackDockVolumeRestore(restorePlaybackDockVolume);
+    registerPlaybackDockVolumeSilence(silencePlaybackDockVolume);
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const { embedVideoIdRef, playbackIframeRef, result } = buildHarness({
+      isPaused: false,
+    });
+    playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
+
+    result.current.syncEmbedToVideoId("embed-video-id");
+
+    expect(silencePlaybackDockVolume).toHaveBeenCalledTimes(1);
+    expect(restorePlaybackDockVolume).not.toHaveBeenCalled();
+
+    dispatchYoutubeInfoDelivery({
+      contentWindow,
+      currentTime: 4,
+      playerState: 1,
+    });
+
+    expect(silencePlaybackDockVolume).toHaveBeenCalledTimes(2);
+    expect(restorePlaybackDockVolume).not.toHaveBeenCalled();
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(silencePlaybackDockVolume).toHaveBeenCalledTimes(3);
+    expect(restorePlaybackDockVolume).toHaveBeenCalledTimes(1);
+    expect(embedVideoIdRef.current).toBe("embed-video-id");
+
+    dispatchYoutubePlayerState({ contentWindow, playerState: 1 });
+
+    expect(silencePlaybackDockVolume).toHaveBeenCalledTimes(3);
+    expect(restorePlaybackDockVolume).toHaveBeenCalledTimes(1);
   });
 
   it("registerPlaybackIframe clears the iframe ref when the embed unmounts", () => {
