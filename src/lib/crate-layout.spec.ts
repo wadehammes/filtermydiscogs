@@ -13,6 +13,7 @@ import {
   getVisibleCrateLayoutItems,
   insertCrateLayoutMarkerBeforeVisibleIndex,
   mergeReorderedVisibleCrateLayout,
+  reorderCrateDrawerVisibleReleaseDrag,
   reorderCrateLayoutItems,
   reorderCrateLayoutItemsArrayMove,
   reorderCrateLayoutReleaseToVisibleInsertIndex,
@@ -557,5 +558,42 @@ describe("crateLayout", () => {
         marker,
       }).map((item) => getCrateLayoutSortableId(item)),
     ).toEqual(["release:1", "release:2", "marker:split", "release:3"]);
+  });
+});
+
+describe("reorderCrateDrawerVisibleReleaseDrag", () => {
+  it("reorders visible drawer releases in the full layout without moving markers", () => {
+    const fullItems: CrateLayoutItem[] = [
+      buildReleaseItem("1", 1000),
+      {
+        kind: "marker",
+        id: "m1",
+        label: "Break",
+        sort_order: 1500,
+        parent_id: null,
+        accent_key: null,
+      },
+      buildReleaseItem("2", 2000),
+    ];
+
+    const nextItems = reorderCrateDrawerVisibleReleaseDrag({
+      layoutItems: fullItems,
+      hidePackedItems: false,
+      packedEnabled: false,
+      isPacked: () => false,
+      activeSortableId: "release:1",
+      overSortableId: "release:2",
+    });
+
+    expect(nextItems.map((item) => getCrateLayoutSortableId(item))).toEqual([
+      "release:2",
+      "marker:m1",
+      "release:1",
+    ]);
+    expect(nextItems.map((item) => item.sort_order)).toEqual([
+      CRATE_LAYOUT_SORT_STEP,
+      CRATE_LAYOUT_SORT_STEP * 2,
+      CRATE_LAYOUT_SORT_STEP * 3,
+    ]);
   });
 });

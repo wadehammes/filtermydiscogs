@@ -1,0 +1,22 @@
+.itemDragging {
+  opacity: 0.85;
+}
+
+.dragHandle {
+  color: color-mix(in srgb, var(--foreground) 62%, var(--muted-foreground));
+  cursor: grab;
+  touch-action: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--foreground);
+  }
+}
+
+.dragHandleIcon {
+  height: 0.875rem;
+  width: 0.875rem;
+}

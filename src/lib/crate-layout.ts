@@ -535,3 +535,41 @@ export const insertCrateLayoutMarkerBeforeVisibleIndex = ({
   nextItems.splice(fullIndex, 0, marker);
   return nextItems;
 };
+
+export const reorderCrateDrawerVisibleReleaseDrag = ({
+  layoutItems,
+  hidePackedItems,
+  packedEnabled,
+  isPacked,
+  activeSortableId,
+  overSortableId,
+}: {
+  layoutItems: CrateLayoutItem[];
+  hidePackedItems: boolean;
+  packedEnabled: boolean;
+  isPacked: (instanceId: string) => boolean;
+  activeSortableId: string;
+  overSortableId: string;
+}): CrateLayoutItem[] => {
+  const visibleItems = getCrateLayoutReleaseItems(
+    getVisibleCrateLayoutItems({
+      items: layoutItems,
+      hidePackedItems,
+      isPacked,
+      packedEnabled,
+    }),
+  );
+  const reorderedVisible = reorderCrateLayoutItemsArrayMove({
+    items: visibleItems,
+    activeId: activeSortableId,
+    overId: overSortableId,
+  });
+
+  const merged = mergeReorderedVisibleCrateLayout({
+    fullItems: layoutItems,
+    visibleItems,
+    reorderedVisibleItems: reorderedVisible,
+  });
+
+  return assignSequentialCrateLayoutSortOrders(merged);
+};

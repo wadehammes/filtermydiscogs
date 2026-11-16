@@ -52,6 +52,51 @@ describe("CrateDrawerReleases", () => {
     }
   });
 
+  it("shows vertical reorder grips on staged release rows", async () => {
+    po.mockPartiallyPackedCrate();
+
+    po.renderCrateDrawerReleases();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(crateDrawerReleaseUnpacked.basic_information.title),
+      ).toBeInTheDocument();
+    });
+
+    const reorderGrip = screen.getByRole("button", {
+      name: `Reorder ${crateDrawerReleaseUnpacked.basic_information.title}`,
+    });
+    expect(reorderGrip).toBeInTheDocument();
+    expect(reorderGrip).toHaveAttribute("title", "Drag to reorder");
+    expect(
+      screen.getByRole("button", {
+        name: `Reorder ${crateDrawerReleasePacked.basic_information.title}`,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a record bag icon for unpacked gig rows and a check when packed", async () => {
+    po.mockPartiallyPackedCrate();
+
+    po.renderCrateDrawerReleases();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(crateDrawerReleaseUnpacked.basic_information.title),
+      ).toBeInTheDocument();
+    });
+
+    const markPackedButton = screen.getByRole("button", {
+      name: `Mark ${crateDrawerReleaseUnpacked.basic_information.title} as packed for gig`,
+    });
+    const unmarkPackedButton = screen.getByRole("button", {
+      name: `Unmark ${crateDrawerReleasePacked.basic_information.title} as packed for gig`,
+    });
+
+    expect(markPackedButton.querySelectorAll("path").length).toBe(2);
+    expect(unmarkPackedButton.querySelectorAll("path").length).toBe(1);
+  });
+
   it("lists staged releases in layout order without section markers", async () => {
     po.mockCrateResolved(
       crateWithReleasesResponseFactory.withReleaseItems(

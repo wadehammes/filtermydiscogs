@@ -87,31 +87,8 @@
   border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
 }
 
-.listItemDragging {
-  opacity: 0.85;
-}
-
-.dragHandle {
-  color: color-mix(in srgb, var(--foreground) 62%, var(--muted-foreground));
-  cursor: grab;
-  touch-action: none;
-
-  &:active {
-    cursor: grabbing;
-  }
-}
-
-.dragHandleIcon {
-  height: 0.875rem;
-  width: 0.875rem;
-}
-
-.listItemActive .dragHandle {
+.listItemActive .playlistDragGrip {
   color: color-mix(in srgb, var(--foreground) 78%, var(--primary));
-}
-
-.dragHandle:hover:not(:disabled) {
-  color: var(--foreground);
 }
 
 .artworkImage {

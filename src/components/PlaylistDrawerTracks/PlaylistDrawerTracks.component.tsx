@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
@@ -36,11 +37,14 @@ import {
 import { useActivePlaylistDetail } from "src/hooks/useActivePlaylistDetail.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { usePlaylistPlayback } from "src/hooks/usePlaylistPlayback.hook";
+import drawerSortableListStyles from "src/styles/modules/drawer-sortable-list.module.css";
 import type { DiscogsRelease } from "src/types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
 import { writeLastPlayedPlaylistId } from "src/utils/lastPlayedPlaylistStorage";
 import { applyPlaylistTrackOrder } from "src/utils/playlistTrackOrder";
 import styles from "./PlaylistDrawerTracks.module.css";
+
+const playlistTrackDragModifiers = [restrictToVerticalAxis];
 
 const PlaylistDrawerTracksRoot = ({ children }: { children: ReactNode }) => (
   <div className={styles.root} data-testid="fmdPlaylistDrawerTracks">
@@ -211,13 +215,14 @@ export const PlaylistDrawerTracks = () => {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        modifiers={playlistTrackDragModifiers}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
           items={trackKeys}
           strategy={verticalListSortingStrategy}
         >
-          <ul className={styles.trackList}>
+          <ul className={drawerSortableListStyles.list}>
             {visibleTracks.map((track) => (
               <PlaylistDrawerSortableTrackRow
                 key={track.track_key}

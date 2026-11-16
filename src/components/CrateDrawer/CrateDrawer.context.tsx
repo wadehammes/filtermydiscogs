@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, type ReactNode, useContext } from "react";
-import { useCrate } from "src/context/crate.context";
+import { useCrate, useCrateActions } from "src/context/crate.context";
 import { useCurrentView } from "src/hooks/useViewAtoms.hook";
 import { definedProps } from "src/utils/definedProps";
 import { useCrateDrawerState } from "./useCrateDrawerState.hook";
@@ -16,6 +16,7 @@ type CrateDrawerContextValue = ReturnType<typeof useCrateDrawerState> & {
   isPacked: ReturnType<typeof useCrate>["isPacked"];
   removeFromCrate: ReturnType<typeof useCrate>["removeFromCrate"];
   setPacked: ReturnType<typeof useCrate>["setPacked"];
+  updateCrateLayout: ReturnType<typeof useCrateActions>["updateCrateLayout"];
   onReleaseClick?: (instanceId: string) => void;
 };
 
@@ -27,6 +28,7 @@ export const CrateDrawerProvider = ({
 }: CrateDrawerProviderProps) => {
   const drawerState = useCrateDrawerState();
   const { isPacked, removeFromCrate, setPacked } = useCrate();
+  const { updateCrateLayout } = useCrateActions();
   const currentView = useCurrentView();
 
   return (
@@ -37,6 +39,7 @@ export const CrateDrawerProvider = ({
         isPacked,
         removeFromCrate,
         setPacked,
+        updateCrateLayout,
         ...definedProps({ onReleaseClick }),
       }}
     >
