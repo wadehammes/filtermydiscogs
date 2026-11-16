@@ -18,6 +18,13 @@ export interface AdminStatsFeatureUsageRow {
   last30Days: number;
 }
 
+export interface AdminStatsFeatureUsageTotals {
+  last7Days: number;
+  last30Days: number;
+}
+
 export interface AdminStatsFeatureUsage {
+  totals: AdminStatsFeatureUsageTotals;
   pageViews: AdminStatsFeatureUsageRow[];
+  events: AdminStatsFeatureUsageRow[];
 }

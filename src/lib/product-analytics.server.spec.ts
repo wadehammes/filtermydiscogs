@@ -10,9 +10,11 @@ import {
 jest.mock("src/lib/db", () => ({
   prisma: {
     productAnalyticsEvent: {
+      count: jest.fn(),
       groupBy: jest.fn(),
     },
     productAnalyticsDailyRollup: {
+      aggregate: jest.fn(),
       groupBy: jest.fn(),
     },
   },
@@ -21,8 +23,14 @@ jest.mock("src/lib/db", () => ({
 type DbModule = typeof import("src/lib/db");
 
 let fetchAdminFeatureUsageStats: typeof import("src/lib/product-analytics.server")["fetchAdminFeatureUsageStats"];
+let mockEventCount: jest.MockedFunction<
+  DbModule["prisma"]["productAnalyticsEvent"]["count"]
+>;
 let mockEventGroupBy: jest.MockedFunction<
   DbModule["prisma"]["productAnalyticsEvent"]["groupBy"]
+>;
+let mockRollupAggregate: jest.MockedFunction<
+  DbModule["prisma"]["productAnalyticsDailyRollup"]["aggregate"]
 >;
 let mockRollupGroupBy: jest.MockedFunction<
   DbModule["prisma"]["productAnalyticsDailyRollup"]["groupBy"]
@@ -40,10 +48,20 @@ beforeEach(async () => {
 
   fetchAdminFeatureUsageStats =
     productAnalyticsModule.fetchAdminFeatureUsageStats;
+  mockEventCount = jest.mocked(db.prisma.productAnalyticsEvent.count);
   mockEventGroupBy = jest.mocked(db.prisma.productAnalyticsEvent.groupBy);
+  mockRollupAggregate = jest.mocked(
+    db.prisma.productAnalyticsDailyRollup.aggregate,
+  );
   mockRollupGroupBy = jest.mocked(
     db.prisma.productAnalyticsDailyRollup.groupBy,
   );
+  mockRollupAggregate.mockResolvedValue({
+    _sum: { event_count: 0 },
+  } as Awaited<
+    ReturnType<DbModule["prisma"]["productAnalyticsDailyRollup"]["aggregate"]>
+  >);
+  mockEventCount.mockResolvedValue(0);
 });
 
 afterEach(() => {
@@ -57,7 +75,12 @@ describe("fetchAdminFeatureUsageStats", () => {
 
     const stats = await fetchAdminFeatureUsageStats();
 
-    expect(stats).toEqual({ pageViews: [] });
+    expect(stats).toEqual({
+      totals: { last7Days: 0, last30Days: 0 },
+      pageViews: [],
+      events: [],
+    });
+    expect(mockRollupAggregate).toHaveBeenCalledTimes(2);
     expect(mockRollupGroupBy).toHaveBeenCalledTimes(2);
     expect(mockRollupGroupBy.mock.calls[0]?.[0]).toEqual({
       by: ["dimension_key"],
