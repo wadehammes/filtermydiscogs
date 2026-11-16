@@ -16,6 +16,16 @@ describe("ReleasesClient", () => {
     po = new ReleasesClientPageObject();
   });
 
+  it("shows the desktop crate drawer after releases load", async () => {
+    po.renderReleasesClient();
+
+    await waitFor(() => {
+      expect(
+        document.querySelector("[data-crate-drawer-desktop]"),
+      ).toBeVisible();
+    });
+  });
+
   it("renders the collection grid after releases load", async () => {
     po.renderReleasesClient();
 

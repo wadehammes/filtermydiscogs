@@ -10,9 +10,15 @@
 }
 
 .cover {
-  flex: 0 0 7rem;
-  min-height: 7rem;
-  width: 7rem;
+  flex: 0 0 4rem;
+  min-height: 4rem;
+  width: 4rem;
+
+  @media (width > 768px) {
+    flex-basis: 7rem;
+    min-height: 7rem;
+    width: 7rem;
+  }
 }
 
 .content {
@@ -61,7 +67,6 @@
 .notesBlock {
   border-radius: var(--radius-ui);
   height: 2.5rem;
-  margin-top: var(--space-1);
   width: 100%;
 }
 
