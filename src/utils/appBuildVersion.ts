@@ -13,8 +13,6 @@ export const shouldCheckForDeploymentUpdates = (): boolean =>
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production" &&
   getClientAppBuildVersion() !== DEVELOPMENT_BUILD_VERSION;
 
-export const DEPLOYMENT_UPDATE_POLL_INTERVAL_MS = 5 * 60 * 1000;
-
 export const isNewerBuildAvailable = (
   mountedVersion: string,
   latestVersion: string | null,

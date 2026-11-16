@@ -6,6 +6,7 @@ import {
   showDeploymentUpdateToast,
 } from "src/components/DeploymentUpdateToast/deploymentUpdateToast";
 import { useBuildVersionQuery } from "src/hooks/queries/useBuildVersionQuery";
+import { useDeploymentBuildVersionEagerRefetch } from "src/hooks/useDeploymentBuildVersionEagerRefetch.hook";
 import {
   getClientAppBuildVersion,
   isNewerBuildAvailable,
@@ -16,6 +17,7 @@ export const DeploymentUpdateToast = () => {
   const mountedVersionRef = useRef(getClientAppBuildVersion());
   const [updateDetected, setUpdateDetected] = useState(false);
   const pollingEnabled = shouldCheckForDeploymentUpdates() && !updateDetected;
+  useDeploymentBuildVersionEagerRefetch(pollingEnabled);
   const { data } = useBuildVersionQuery({ enabled: pollingEnabled });
 
   useEffect(() => {
