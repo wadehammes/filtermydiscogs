@@ -103,6 +103,28 @@ describe("useSimilarReleasesInCollection.utils", () => {
     ).toBe(true);
   });
 
+  it("getSimilarReleasesSidebarLoading stays true for an empty pool while inputs are unsettled", () => {
+    const collection = [sourceRelease, peerRelease];
+
+    expect(
+      getSimilarReleasesSidebarLoading({
+        enabled: true,
+        release: sourceRelease,
+        canHaveSimilar: true,
+        isCollectionLoading: true,
+        similarSourceKey: "source-instance",
+        deferredSimilarSourceKey: "source-instance",
+        releasesForSimilar: [],
+        allReleases: collection,
+        similarModalPool: {
+          fullPool: [],
+          pageCount: 0,
+          totalMatchCount: 0,
+        },
+      }),
+    ).toBe(true);
+  });
+
   it("getSimilarReleasesSidebarLoading is false when the modal pool is already settled", () => {
     const collection = [sourceRelease, peerRelease];
 

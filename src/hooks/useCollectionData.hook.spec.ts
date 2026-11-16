@@ -184,6 +184,92 @@ describe("useCollectionData", () => {
     });
   });
 
+  it("clears a page fetch error while later collection pages are still loading", async () => {
+    persistCollectionItemCount("testuser", 250);
+    const page1 = collectionFactory.build(
+      {},
+      {
+        page: 1,
+        totalPages: 3,
+        releaseCount: 2,
+        totalItems: 250,
+        username: "testuser",
+      },
+    );
+    page1.pagination.per_page = COLLECTION_PAGE_SIZE;
+    const page2 = collectionFactory.build(
+      {},
+      {
+        page: 2,
+        totalPages: 3,
+        releaseCount: 2,
+        totalItems: 250,
+        username: "testuser",
+      },
+    );
+    page2.pagination.per_page = COLLECTION_PAGE_SIZE;
+    const page3 = collectionFactory.build(
+      {},
+      {
+        page: 3,
+        totalPages: 3,
+        releaseCount: 2,
+        totalItems: 250,
+        username: "testuser",
+      },
+    );
+    page3.pagination.per_page = COLLECTION_PAGE_SIZE;
+    page3.pagination.urls.next = "";
+
+    let releasePage3: (page: typeof page3) => void = () => {};
+    const page3Gate = new Promise<typeof page3>((resolve) => {
+      releasePage3 = resolve;
+    });
+
+    mockFetchDiscogsCollection
+      .mockResolvedValueOnce(page1)
+      .mockRejectedValueOnce(new Error("Failed to fetch collection"))
+      .mockResolvedValueOnce(page2)
+      .mockImplementationOnce(() => page3Gate);
+
+    const { result } = renderFeatureHook(
+      () => {
+        useCollectionData({
+          username: "testuser",
+          isAuthenticated: true,
+        });
+
+        return {
+          error: useCollectionContext().state.error,
+          fetchingCollection: useCollectionContext().state.fetchingCollection,
+          isLoading: useCollectionLoadState().isLoading,
+          releaseCount: useAtomValue(allReleasesAtom).length,
+        };
+      },
+      {
+        authInitialState: testAuthenticatedAuthState,
+        includeCollectionSync: false,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.releaseCount).toBe(4);
+      expect(result.current.fetchingCollection).toBe(true);
+      expect(result.current.isLoading).toBe(true);
+      expect(result.current.error).toBeNull();
+    });
+
+    act(() => {
+      releasePage3(page3);
+    });
+
+    await waitFor(() => {
+      expect(result.current.releaseCount).toBe(6);
+      expect(result.current.fetchingCollection).toBe(false);
+      expect(result.current.error).toBeNull();
+    });
+  });
+
   it("persists the collection to IndexedDB after a fresh full load", async () => {
     const page = buildSinglePageCollection(3);
     mockApiResponse(true, mockFetchDiscogsCollection, page, new Error("fail"));

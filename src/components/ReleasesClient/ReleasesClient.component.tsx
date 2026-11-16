@@ -1,13 +1,11 @@
 "use client";
 
 import classNames from "classnames";
-import { Activity, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
-import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
-import { PlaylistDrawer } from "src/components/PlaylistDrawer/PlaylistDrawer.component";
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { RELEASES_WORKSPACE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useAuth } from "src/context/auth.context";
@@ -15,6 +13,7 @@ import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { usePlaylistsQuery } from "src/hooks/queries/usePlaylistsQuery";
+import { useIsClient } from "src/hooks/useIsClient.hook";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useReleasesClient } from "src/hooks/useReleasesClient.hook";
@@ -25,12 +24,26 @@ import { readLastPlayedPlaylistId } from "src/utils/lastPlayedPlaylistStorage";
 import { resolveActivePlaylistId } from "src/utils/resolveActivePlaylistId";
 import { LoadingTrigger } from "./LoadingTrigger.component";
 import styles from "./ReleasesClient.module.css";
+import {
+  ReleasesCollectionSidePanel,
+  showCollectionSideColumn,
+} from "./ReleasesCollectionSidePanel.component";
 import { ReleasesGrid } from "./ReleasesGrid.component";
 import { ReleasesHeader } from "./ReleasesHeader.component";
 import { ReleasesPageLoading } from "./ReleasesPageLoading.component";
 import { ReleasesSkeleton } from "./ReleasesSkeleton.component";
 
 const EMPTY_PLAYLIST_SUMMARIES: PlaylistSummary[] = [];
+
+const showCollectionLoadError = ({
+  hasError,
+  isFetchingNextPage,
+  isLoading,
+}: {
+  hasError: boolean;
+  isFetchingNextPage: boolean;
+  isLoading: boolean;
+}) => hasError && !isLoading && !isFetchingNextPage;
 
 const ReleasesClientContent = () => {
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
@@ -53,7 +66,13 @@ const ReleasesClientContent = () => {
     enabled: Boolean(userId),
   });
   const playlists = playlistsData ?? EMPTY_PLAYLIST_SUMMARIES;
+  const isClient = useIsClient();
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
+  const showSidePanel = showCollectionSideColumn({
+    isDrawerOpen,
+    isClient,
+    isSidePanelDefaultPending,
+  });
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name;
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
@@ -159,7 +178,13 @@ const ReleasesClientContent = () => {
     return <ReleasesPageLoading />;
   }
 
-  if (hasError) {
+  if (
+    showCollectionLoadError({
+      hasError,
+      isFetchingNextPage,
+      isLoading,
+    })
+  ) {
     return (
       <Page>
         <CollectionPlaybackPageShell
@@ -234,7 +259,7 @@ const ReleasesClientContent = () => {
       >
         <div
           className={classNames(styles.container, {
-            [styles.withSidebar]: isDrawerOpen,
+            [styles.withSidebar]: showSidePanel,
           })}
           data-releases-workspace
         >
@@ -296,25 +321,18 @@ const ReleasesClientContent = () => {
             </main>
 
             <div className={styles.sidebar}>
-              <Activity mode={isDrawerOpen ? "visible" : "hidden"}>
-                {isSidePanelDefaultPending ? null : sidePanel === "crates" ? (
-                  <CrateDrawer
-                    isOpen={isDrawerOpen}
-                    onReleaseClick={handleReleaseClick}
-                    aboveMiniPlayer={isMiniPlayerVisible}
-                  />
-                ) : (
-                  <PlaylistDrawer
-                    isOpen={isDrawerOpen}
-                    onReleaseClick={handleReleaseClick}
-                    aboveMiniPlayer={isMiniPlayerVisible}
-                    activePlaylistId={activePlaylistId}
-                    onActivePlaylistIdChange={handleActivePlaylistIdChange}
-                    lastPlayedPlaylistId={lastPlayedPlaylistId}
-                    onAfterPlaylistCreate={handleAfterPlaylistCreate}
-                  />
-                )}
-              </Activity>
+              <ReleasesCollectionSidePanel
+                isClient={isClient}
+                isDrawerOpen={isDrawerOpen}
+                isSidePanelDefaultPending={isSidePanelDefaultPending}
+                sidePanel={sidePanel}
+                onReleaseClick={handleReleaseClick}
+                aboveMiniPlayer={isMiniPlayerVisible}
+                activePlaylistId={activePlaylistId}
+                onActivePlaylistIdChange={handleActivePlaylistIdChange}
+                lastPlayedPlaylistId={lastPlayedPlaylistId}
+                onAfterPlaylistCreate={handleAfterPlaylistCreate}
+              />
             </div>
           </div>
         </div>

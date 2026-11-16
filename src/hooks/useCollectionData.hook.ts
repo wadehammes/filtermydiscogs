@@ -77,6 +77,7 @@ export const useCollectionData = ({
   const {
     data: collectionData,
     isLoading,
+    isFetching,
     isError,
     error: queryError,
     fetchNextPage,
@@ -234,7 +235,9 @@ export const useCollectionData = ({
       return;
     }
 
-    if (isError) {
+    const collectionFetchInFlight = isFetching || isFetchingNextPage;
+
+    if (isError && !collectionFetchInFlight) {
       dispatchFetchingCollection(false);
       dispatchDiscogsUpstreamOutage(
         isDiscogsUpstreamOutageApiError(queryError),
@@ -256,10 +259,11 @@ export const useCollectionData = ({
         payload: allReleases,
       });
 
+      dispatchError(null);
+
       if (isCollectionFullyLoaded) {
         dispatchFetchingCollection(false);
         dispatchDiscogsUpstreamOutage(false);
-        dispatchError(null);
         setCollectionFiltersActive(true);
       } else {
         dispatchFetchingCollection(true);
@@ -268,8 +272,9 @@ export const useCollectionData = ({
       return;
     }
 
-    if (isLoading || !cacheReady.ready) {
+    if (isLoading || !cacheReady.ready || collectionFetchInFlight) {
       dispatchFetchingCollection(true);
+      dispatchError(null);
       setCollectionFiltersActive(false);
     }
   }, [
@@ -278,6 +283,8 @@ export const useCollectionData = ({
     processedData,
     queryEnabled,
     isError,
+    isFetching,
+    isFetchingNextPage,
     isLoading,
     queryError,
     dispatchCollection,
@@ -317,15 +324,17 @@ export const useCollectionLoadState = () => {
 
   const hasLoadedPages = (query.data?.pages.length ?? 0) > 0;
   const awaitingPrep = !(hasLoadedPages || cacheReady.ready);
+  const releasesFetchInFlight = query.isFetching || query.isFetchingNextPage;
+  const collectionFetchFailed = query.isError && !releasesFetchInFlight;
 
   return {
     isLoading:
       queryEnabled &&
-      !query.isError &&
+      !collectionFetchFailed &&
       (awaitingPrep ||
-        query.isFetchingNextPage ||
+        releasesFetchInFlight ||
         query.hasNextPage ||
-        (!hasLoadedPages && (query.isLoading || query.isFetching))),
+        (!hasLoadedPages && query.isPending)),
     isError: query.isError,
     queryError: query.error,
     hasNextPage: query.hasNextPage,

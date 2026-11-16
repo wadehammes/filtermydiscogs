@@ -68,11 +68,7 @@
 }
 
 .sortJoinChevron {
-  block-size: 0.75rem;
   flex-shrink: 0;
-  inline-size: 0.75rem;
-  max-block-size: 0.75rem;
-  max-inline-size: 0.75rem;
 }
 
 .sortControlsLabeled {

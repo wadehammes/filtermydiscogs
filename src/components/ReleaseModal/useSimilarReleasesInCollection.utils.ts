@@ -76,8 +76,13 @@ export const getSimilarReleasesSidebarLoading = ({
   releasesForSimilar: DiscogsRelease[];
   allReleases: DiscogsRelease[];
   similarModalPool: SimilarReleasesModalPool | null;
-}): boolean =>
-  similarModalPool == null && getSimilarReleasesUnsettled(unsettledParams);
+}): boolean => {
+  if (!getSimilarReleasesUnsettled(unsettledParams)) {
+    return false;
+  }
+
+  return similarModalPool == null || similarModalPool.totalMatchCount === 0;
+};
 
 export const getModalSimilarReleasesPool = ({
   release,

@@ -11,6 +11,7 @@ import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOpera
 import { useCollectionContext } from "src/context/collection.context";
 import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
+import { useIsClient } from "src/hooks/useIsClient.hook";
 import styles from "./FiltersBar.module.css";
 
 interface FiltersBarProps {
@@ -20,6 +21,7 @@ interface FiltersBarProps {
 export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
   "use memo";
   const { state: collectionState } = useCollectionContext();
+  const isClient = useIsClient();
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
 
   const { fetchingCollection, collection, error } = collectionState;
@@ -158,12 +160,14 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
         </OverlayStack>
       </div>
 
-      <Activity mode={isFiltersDrawerOpen ? "visible" : "hidden"}>
-        <FiltersDrawer
-          isOpen={isFiltersDrawerOpen}
-          onClose={closeFiltersDrawer}
-        />
-      </Activity>
+      {isClient ? (
+        <Activity mode={isFiltersDrawerOpen ? "visible" : "hidden"}>
+          <FiltersDrawer
+            isOpen={isFiltersDrawerOpen}
+            onClose={closeFiltersDrawer}
+          />
+        </Activity>
+      ) : null}
     </>
   );
 };

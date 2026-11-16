@@ -271,6 +271,25 @@
   }
 }
 
+.sidebarAside .sidebarActions .pageNavSegment {
+  appearance: none;
+  display: grid;
+  place-items: center;
+
+  .segmentIcon {
+    display: grid;
+    line-height: 0;
+    place-items: center;
+    transform: none;
+
+    svg {
+      display: block;
+      height: 1rem;
+      width: 1rem;
+    }
+  }
+}
+
 .sidebarAside .sidebarActions :is(.similarCountSegment, .similarPageSegment) {
   align-items: center;
 }
