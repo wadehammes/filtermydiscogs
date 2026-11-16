@@ -111,38 +111,61 @@ export const fetchAdminFeatureUsageStats =
     const thirtyDayRollupStart = addUtcDays(startOfToday, -29);
     const rolledUpThrough = { lt: rawSupplementStart };
 
-    const [pageViewsRollup7d, pageViewsRollup30d, rawPageViewsSinceYesterday] =
-      await Promise.all([
-        prisma.productAnalyticsDailyRollup.groupBy({
-          by: ["dimension_key"],
-          where: {
-            dimension_type: "page_path",
-            date: { gte: sevenDayRollupStart, ...rolledUpThrough },
-          },
-          _sum: { event_count: true },
-        }),
-        prisma.productAnalyticsDailyRollup.groupBy({
-          by: ["dimension_key"],
-          where: {
-            dimension_type: "page_path",
-            date: { gte: thirtyDayRollupStart, ...rolledUpThrough },
-          },
-          _sum: { event_count: true },
-        }),
-        prisma.productAnalyticsEvent.groupBy({
-          by: ["page_path"],
-          where: {
-            event: "pageView",
-            page_path: { not: null },
-            created_at: { gte: rawSupplementStart },
-          },
-          _count: { _all: true },
-        }),
-      ]);
+    const [
+      totalRollup7d,
+      totalRollup30d,
+      pageViewsRollup7d,
+      pageViewsRollup30d,
+      rawTotalSinceYesterday,
+      rawPageViewsSinceYesterday,
+    ] = await Promise.all([
+      prisma.productAnalyticsDailyRollup.aggregate({
+        where: { date: { gte: sevenDayRollupStart, ...rolledUpThrough } },
+        _sum: { event_count: true },
+      }),
+      prisma.productAnalyticsDailyRollup.aggregate({
+        where: { date: { gte: thirtyDayRollupStart, ...rolledUpThrough } },
+        _sum: { event_count: true },
+      }),
+      prisma.productAnalyticsDailyRollup.groupBy({
+        by: ["dimension_key"],
+        where: {
+          dimension_type: "page_path",
+          date: { gte: sevenDayRollupStart, ...rolledUpThrough },
+        },
+        _sum: { event_count: true },
+      }),
+      prisma.productAnalyticsDailyRollup.groupBy({
+        by: ["dimension_key"],
+        where: {
+          dimension_type: "page_path",
+          date: { gte: thirtyDayRollupStart, ...rolledUpThrough },
+        },
+        _sum: { event_count: true },
+      }),
+      prisma.productAnalyticsEvent.count({
+        where: { created_at: { gte: rawSupplementStart } },
+      }),
+      prisma.productAnalyticsEvent.groupBy({
+        by: ["page_path"],
+        where: {
+          event: "pageView",
+          page_path: { not: null },
+          created_at: { gte: rawSupplementStart },
+        },
+        _count: { _all: true },
+      }),
+    ]);
 
     const rawPageViewCounts = groupPageViewCounts(rawPageViewsSinceYesterday);
+    const rawSupplementTotal = rawTotalSinceYesterday;
 
     return {
+      totals: {
+        last7Days: (totalRollup7d._sum.event_count ?? 0) + rawSupplementTotal,
+        last30Days: (totalRollup30d._sum.event_count ?? 0) + rawSupplementTotal,
+      },
+      events: [],
       pageViews: buildUsageRows({
         sevenDayCounts: mergeCountMaps(
           groupRollupCounts(pageViewsRollup7d),

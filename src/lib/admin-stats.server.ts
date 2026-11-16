@@ -307,7 +307,9 @@ const buildRecentActivityPeriod = ({
 });
 
 const emptyFeatureUsage = (): AdminStats["featureUsage"] => ({
+  totals: { last7Days: 0, last30Days: 0 },
   pageViews: [],
+  events: [],
 });
 
 const mapAnalyticsConsentCounts = (
