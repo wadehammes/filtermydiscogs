@@ -26,9 +26,9 @@ const PAGE_NAV_ITEMS = [
   },
   {
     page: "releases",
-    href: "/releases",
-    label: "Releases",
-    ariaLabel: "View releases",
+    href: "/collection",
+    label: "Collection",
+    ariaLabel: "View collection",
     Icon: VinylRecord,
   },
   {

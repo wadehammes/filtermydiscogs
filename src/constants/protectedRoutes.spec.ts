@@ -39,11 +39,11 @@ describe("protectedRoutes", () => {
       isPublicShareRoute("/playlist/11111111-2222-3333-4444-555555555555"),
     ).toBe(true);
     expect(isPublicShareRoute("/release/249504")).toBe(true);
-    expect(isPublicShareRoute("/releases")).toBe(false);
+    expect(isPublicShareRoute("/collection")).toBe(false);
   });
 
   it("detects protected app routes without treating public crates as owner crates", () => {
-    expect(isProtectedAppRoute("/releases")).toBe(true);
+    expect(isProtectedAppRoute("/collection")).toBe(true);
     expect(isProtectedAppRoute("/crates/abc")).toBe(true);
     expect(
       isProtectedAppRoute("/crate/ab65c378-fab9-42c0-96bb-c308d413cbbb"),

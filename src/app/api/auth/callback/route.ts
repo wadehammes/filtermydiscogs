@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     });
 
     const response = privateRouteRedirect(
-      new URL("/releases?auth=success", request.url),
+      new URL("/collection?auth=success", request.url),
     );
 
     const secureFlag = process.env.NODE_ENV === "production";

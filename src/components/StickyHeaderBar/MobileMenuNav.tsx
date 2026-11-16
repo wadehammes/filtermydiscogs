@@ -47,19 +47,19 @@ export const MobileMenuNav = ({
 
       {showReleases && (
         <Link
-          href="/releases"
+          href="/collection"
           className={classNames(styles.menuItem, {
             [styles.active]: currentPage === "releases",
             [styles.disabled]: isDisabled,
           })}
-          onClick={(e) => onNavigation(e, "Releases")}
+          onClick={(e) => onNavigation(e, "Collection")}
           aria-disabled={isDisabled}
           tabIndex={isDisabled ? -1 : undefined}
         >
           <span className={styles.menuItemIcon}>
             <VinylRecord />
           </span>
-          <span>Releases</span>
+          <span>Collection</span>
         </Link>
       )}
 

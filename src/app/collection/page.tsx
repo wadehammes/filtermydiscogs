@@ -13,7 +13,7 @@ import {
 import { readSsrCollectionView } from "src/utils/readSsrCollectionView.server";
 
 const baseUrl = getMetadataSiteUrl();
-const title = sitePageTitle("Releases");
+const title = sitePageTitle("Collection");
 const description = PAGE_DESCRIPTIONS.releases;
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description,
-    url: `${baseUrl}/releases`,
+    url: `${baseUrl}/collection`,
     siteName: SITE_NAME,
     type: "website",
     locale: "en-US",

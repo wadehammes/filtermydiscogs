@@ -20,8 +20,8 @@ export const stubE2eCollectionForSimilarModalShuffle = (
 export const gotoReleasesWorkspaceForSimilarModal = async (page: Page) => {
   const releases = buildE2eSimilarModalShuffleCollectionReleases();
 
-  await page.goto("/releases", { waitUntil: "load" });
-  await expect(page).toHaveURL(/\/releases/, { timeout: 60_000 });
+  await page.goto("/collection", { waitUntil: "load" });
+  await expect(page).toHaveURL(/\/collection/, { timeout: 60_000 });
   await expectNotOnLogin(page);
   await expect(
     page.getByRole("status", { name: `Showing ${releases.length} releases` }),

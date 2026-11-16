@@ -10,6 +10,16 @@ export interface AdminUserLookupCrateSummary {
   updatedAt: string;
 }
 
+export interface AdminUserLookupPlaylistSummary {
+  id: string;
+  name: string;
+  trackCount: number;
+  private: boolean;
+  publicViewCount: number;
+  publicPlayCount: number;
+  updatedAt: string;
+}
+
 export interface AdminUserLookupActivity {
   lastCrateUpdateAt: string | null;
   lastReleaseAddedAt: string | null;
@@ -23,6 +33,8 @@ export interface AdminUserLookupPreferences {
   defaultView: string;
   defaultCollectionSidePanel: "crates" | "playlists";
   persistFilters: boolean;
+  autoPlayOnQueueAdd: boolean;
+  extendQueueWithSimilarReleases: boolean;
   analyticsConsent: "enabled" | "disabled" | "unset";
   savedViewsCount: number;
 }
@@ -48,6 +60,8 @@ export interface AdminUserLookupStats {
     username: string;
     createdAt: string;
     updatedAt: string;
+    lastSeenAt: string | null;
+    loginCount: number;
   };
   preferences: AdminUserLookupPreferences;
   totals: {
@@ -65,4 +79,5 @@ export interface AdminUserLookupStats {
   analytics: AdminUserLookupAnalytics;
   playback: AdminUserLookupPlayback;
   crates: AdminUserLookupCrateSummary[];
+  playlists: AdminUserLookupPlaylistSummary[];
 }

@@ -13,7 +13,7 @@ const PAGE_LABELS: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/legal": "Legal",
   "/mosaic": "Mosaic",
-  "/releases": "Releases",
+  "/collection": "Collection",
   "/settings": "Settings",
 };
 

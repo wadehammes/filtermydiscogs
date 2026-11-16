@@ -7,7 +7,7 @@ import {
 } from "src/utils/releaseAlbumCover";
 
 describe("resolveReleaseDisplayImageUrl", () => {
-  it("prefers cover_image like ReleaseCard on /releases", () => {
+  it("prefers cover_image like ReleaseCard on /collection", () => {
     const release = releaseFactory.build({
       basic_information: {
         ...releaseFactory.build().basic_information,

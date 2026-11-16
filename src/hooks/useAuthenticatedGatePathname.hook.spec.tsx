@@ -76,7 +76,7 @@ describe("useAuthenticatedGatePathname", () => {
 
     const { result } = renderHook(() => useAuthenticatedGatePathname(), {
       wrapper: ({ children }) => (
-        <PathnameWrapper pathname="/releases">{children}</PathnameWrapper>
+        <PathnameWrapper pathname="/collection">{children}</PathnameWrapper>
       ),
     });
 
@@ -91,7 +91,7 @@ describe("useAuthenticatedGatePathname", () => {
 
     const { result } = renderHook(() => useAuthenticatedGatePathname(), {
       wrapper: ({ children }) => (
-        <PathnameWrapper pathname="/releases">{children}</PathnameWrapper>
+        <PathnameWrapper pathname="/collection">{children}</PathnameWrapper>
       ),
     });
 
@@ -102,7 +102,7 @@ describe("useAuthenticatedGatePathname", () => {
     const playlistPath = "/playlist/11111111-2222-3333-4444-555555555555";
     pathnameGetter = jest
       .spyOn(window.location, "pathname", "get")
-      .mockReturnValue("/releases");
+      .mockReturnValue("/collection");
 
     const { result } = renderHook(() => useAuthenticatedGatePathname(), {
       wrapper: ({ children }) => (

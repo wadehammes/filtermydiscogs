@@ -36,9 +36,9 @@ describe("productAnalyticsClient", () => {
       event: "pageView",
       category: "navigation",
       action: "pageView",
-      label: "Releases",
-      value: "/releases",
-      page_path: "/releases",
+      label: "Collection",
+      value: "/collection",
+      page_path: "/collection",
     });
 
     expect(mockFetch).not.toHaveBeenCalled();
@@ -97,9 +97,9 @@ describe("productAnalyticsClient", () => {
       event: "pageView",
       category: "navigation",
       action: "pageView",
-      label: "Releases",
-      value: "/releases",
-      page_path: "/releases",
+      label: "Collection",
+      value: "/collection",
+      page_path: "/collection",
     });
 
     flushProductAnalyticsEvents();

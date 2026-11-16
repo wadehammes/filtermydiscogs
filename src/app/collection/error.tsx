@@ -15,7 +15,7 @@ export default function ReleasesError({
 
   return (
     <ErrorFallbackView
-      title="Failed to load releases"
+      title="Failed to load collection"
       message="We couldn't load your collection. Try again in a moment."
       error={error}
       onRetry={handleRetry}

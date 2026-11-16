@@ -24,6 +24,7 @@ export const DashboardSection = ({
       aria-labelledby={`${sectionId}-title`}
       className={classNames(styles.section, className)}
       data-testid="fmdDashboardSection"
+      id={sectionId}
     >
       <header className={styles.header}>
         <h2 className={styles.title} id={`${sectionId}-title`}>

@@ -65,7 +65,7 @@ export class ReleasesClientPageObject extends BasePageObject {
     mockApiResponse(true, mockApi.discogsCollection, page, pageObjectApiError);
   }
 
-  renderReleasesClientUi(initialUrl = "/releases") {
+  renderReleasesClientUi(initialUrl = "/collection") {
     return (
       <AppNavigationTestRoot initialUrl={initialUrl}>
         <ReleasePlaybackProvider>
@@ -75,7 +75,7 @@ export class ReleasesClientPageObject extends BasePageObject {
     );
   }
 
-  renderReleasesClient(initialUrl = "/releases"): RenderResult {
+  renderReleasesClient(initialUrl = "/collection"): RenderResult {
     return render(this.renderReleasesClientUi(initialUrl), {
       authInitialState: testAuthenticatedAuthState,
     });

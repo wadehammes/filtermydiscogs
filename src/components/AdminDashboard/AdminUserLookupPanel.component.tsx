@@ -137,6 +137,14 @@ export const AdminUserLookupPanel = () => {
                   formatTimestamp(data.user.createdAt),
                 )}
                 {renderPreferenceRow(
+                  "Last opened the app",
+                  formatTimestamp(data.user.lastSeenAt),
+                )}
+                {renderPreferenceRow(
+                  "Logins",
+                  formatCommunityStatValue(data.user.loginCount),
+                )}
+                {renderPreferenceRow(
                   "Last account update",
                   formatTimestamp(data.user.updatedAt),
                 )}
@@ -153,58 +161,12 @@ export const AdminUserLookupPanel = () => {
                 value={formatCommunityStatValue(data.totals.releases)}
               />
               <StatCard
-                label="Public crates"
-                value={formatCommunityStatValue(data.totals.publicCrates)}
-              />
-              <StatCard
-                label="Set markers"
-                value={formatCommunityStatValue(data.totals.setMarkers)}
-              />
-              <StatCard
-                label="Gig packing enabled"
-                value={formatCommunityStatValue(
-                  data.totals.packedEnabledCrates,
-                )}
-              />
-              <StatCard
-                label="Crates with notes"
-                value={formatCommunityStatValue(data.totals.cratesWithNotes)}
-              />
-              <StatCard
-                label="Packed albums"
-                value={formatCommunityStatValue(data.totals.packedReleases)}
-              />
-              <StatCard
                 label="Playlists"
                 value={formatCommunityStatValue(data.totals.playlists)}
               />
               <StatCard
-                label="Playlist tracks"
-                value={formatCommunityStatValue(data.totals.playlistTracks)}
-              />
-              <StatCard
-                label="Releases added (7d)"
-                value={formatCommunityStatValue(
-                  data.activity.releasesAddedLast7Days,
-                )}
-              />
-              <StatCard
-                label="Playback track rows"
-                value={formatCommunityStatValue(data.playback.trackRows)}
-              />
-              <StatCard
-                label="Total plays"
+                label="Plays"
                 value={formatCommunityStatValue(data.playback.totalPlays)}
-              />
-              <StatCard
-                label="Total listens"
-                value={formatCommunityStatValue(data.playback.totalListens)}
-              />
-              <StatCard
-                label="YouTube overrides"
-                value={formatCommunityStatValue(
-                  data.playback.tracksWithOverrides,
-                )}
               />
             </StatsGrid>
 
@@ -234,12 +196,64 @@ export const AdminUserLookupPanel = () => {
                     data.preferences.persistFilters ? "On" : "Off",
                   )}
                   {renderPreferenceRow(
+                    "Autoplay on queue add",
+                    data.preferences.autoPlayOnQueueAdd ? "On" : "Off",
+                  )}
+                  {renderPreferenceRow(
+                    "Similar releases in queue",
+                    data.preferences.extendQueueWithSimilarReleases
+                      ? "On"
+                      : "Off",
+                  )}
+                  {renderPreferenceRow(
                     "Saved views",
                     formatCommunityStatValue(data.preferences.savedViewsCount),
                   )}
                   {renderPreferenceRow(
                     "Analytics cookies",
                     ANALYTICS_CONSENT_LABELS[data.preferences.analyticsConsent],
+                  )}
+                </dl>
+              </article>
+
+              <article className={dashboardStyles.panelCard}>
+                <p className={dashboardStyles.panelEyebrow}>Collection</p>
+                <dl className={dashboardStyles.activityList}>
+                  {renderPreferenceRow(
+                    "Public crates",
+                    formatCommunityStatValue(data.totals.publicCrates),
+                  )}
+                  {renderPreferenceRow(
+                    "Gig packing enabled",
+                    formatCommunityStatValue(data.totals.packedEnabledCrates),
+                  )}
+                  {renderPreferenceRow(
+                    "Crates with notes",
+                    formatCommunityStatValue(data.totals.cratesWithNotes),
+                  )}
+                  {renderPreferenceRow(
+                    "Set markers",
+                    formatCommunityStatValue(data.totals.setMarkers),
+                  )}
+                  {renderPreferenceRow(
+                    "Packed albums",
+                    formatCommunityStatValue(data.totals.packedReleases),
+                  )}
+                  {renderPreferenceRow(
+                    "Playlist tracks",
+                    formatCommunityStatValue(data.totals.playlistTracks),
+                  )}
+                  {renderPreferenceRow(
+                    "Releases added (7d)",
+                    formatCommunityStatValue(
+                      data.activity.releasesAddedLast7Days,
+                    ),
+                  )}
+                  {renderPreferenceRow(
+                    "Releases added (30d)",
+                    formatCommunityStatValue(
+                      data.activity.releasesAddedLast30Days,
+                    ),
                   )}
                 </dl>
               </article>
@@ -260,10 +274,24 @@ export const AdminUserLookupPanel = () => {
                     formatTimestamp(data.activity.lastPlaylistUpdateAt),
                   )}
                   {renderPreferenceRow(
-                    "Releases added (30d)",
-                    formatCommunityStatValue(
-                      data.activity.releasesAddedLast30Days,
-                    ),
+                    "Playback track rows",
+                    formatCommunityStatValue(data.playback.trackRows),
+                  )}
+                  {renderPreferenceRow(
+                    "Listens",
+                    formatCommunityStatValue(data.playback.totalListens),
+                  )}
+                  {renderPreferenceRow(
+                    "YouTube overrides",
+                    formatCommunityStatValue(data.playback.tracksWithOverrides),
+                  )}
+                  {renderPreferenceRow(
+                    "Last track play",
+                    formatTimestamp(data.playback.lastPlayedAt),
+                  )}
+                  {renderPreferenceRow(
+                    "Last track listen",
+                    formatTimestamp(data.playback.lastListenedAt),
                   )}
                   {renderPreferenceRow(
                     "Analytics events (7d)",
@@ -276,14 +304,6 @@ export const AdminUserLookupPanel = () => {
                   {renderPreferenceRow(
                     "Analytics events (total)",
                     formatCommunityStatValue(data.analytics.total),
-                  )}
-                  {renderPreferenceRow(
-                    "Last track play",
-                    formatTimestamp(data.playback.lastPlayedAt),
-                  )}
-                  {renderPreferenceRow(
-                    "Last track listen",
-                    formatTimestamp(data.playback.lastListenedAt),
                   )}
                 </dl>
               </article>
@@ -335,6 +355,51 @@ export const AdminUserLookupPanel = () => {
                           </tr>
                         );
                       })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <article className={dashboardStyles.panelCard}>
+              <p className={dashboardStyles.panelEyebrow}>Playlists</p>
+              <div className={styles.cratesTableContainer}>
+                <table className={styles.cratesTable}>
+                  <thead>
+                    <tr>
+                      <th scope="col">Playlist</th>
+                      <th className={styles.cratesMetricCol} scope="col">
+                        Tracks
+                      </th>
+                      <th scope="col">Visibility</th>
+                      <th scope="col">Public reach</th>
+                      <th scope="col">Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.playlists.length === 0 ? (
+                      <tr>
+                        <td className={styles.cratesEmpty} colSpan={5}>
+                          No playlists yet
+                        </td>
+                      </tr>
+                    ) : (
+                      data.playlists.map((playlist) => (
+                        <tr key={playlist.id}>
+                          <td>{playlist.name}</td>
+                          <td className={styles.cratesMetricCol}>
+                            {formatCommunityStatValue(playlist.trackCount)}
+                          </td>
+                          <td>{playlist.private ? "Private" : "Public"}</td>
+                          <td>
+                            {formatCommunityStatValue(playlist.publicViewCount)}{" "}
+                            views ·{" "}
+                            {formatCommunityStatValue(playlist.publicPlayCount)}{" "}
+                            plays
+                          </td>
+                          <td>{formatTimestamp(playlist.updatedAt)}</td>
+                        </tr>
+                      ))
                     )}
                   </tbody>
                 </table>

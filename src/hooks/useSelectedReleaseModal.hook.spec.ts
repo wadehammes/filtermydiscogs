@@ -59,8 +59,8 @@ describe("useSelectedReleaseModal", () => {
       mockApi,
       discogsReleaseJsonFactory.withTracklistAndVideos(),
     );
-    mockUsePathname.mockReturnValue("/releases");
-    applyUrl("/releases");
+    mockUsePathname.mockReturnValue("/collection");
+    applyUrl("/collection");
   });
 
   it("keeps an optimistic open when the URL still has no instance param", () => {
@@ -81,7 +81,7 @@ describe("useSelectedReleaseModal", () => {
     rerender();
 
     act(() => {
-      applyUrl("/releases");
+      applyUrl("/collection");
     });
 
     rerender();
@@ -116,7 +116,7 @@ describe("useSelectedReleaseModal", () => {
 
     expect(mockStartTransition).toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith(
-      `/releases?instance=${releases[0]?.instance_id}`,
+      `/collection?instance=${releases[0]?.instance_id}`,
       { scroll: false },
     );
 
@@ -167,7 +167,7 @@ describe("useSelectedReleaseModal", () => {
     });
 
     expect(mockPush).toHaveBeenCalledWith(
-      `/releases?instance=${releases[0]?.instance_id}`,
+      `/collection?instance=${releases[0]?.instance_id}`,
       { scroll: false },
     );
     expect(result.current.selectedReleaseId).toBe(
@@ -207,7 +207,7 @@ describe("useSelectedReleaseModal", () => {
 
     expect(result.current.selectedReleaseId).toBeNull();
     expect(result.current.selectedRelease).toBeNull();
-    expect(mockReplace).toHaveBeenCalledWith("/releases", { scroll: false });
+    expect(mockReplace).toHaveBeenCalledWith("/collection", { scroll: false });
   });
 
   it("clears the selection after the router removes the instance param", () => {
@@ -243,7 +243,7 @@ describe("useSelectedReleaseModal", () => {
 
     rerender();
 
-    expect(mockReplace).toHaveBeenCalledWith("/releases", { scroll: false });
+    expect(mockReplace).toHaveBeenCalledWith("/collection", { scroll: false });
     expect(result.current.selectedReleaseId).toBeNull();
     expect(result.current.selectedRelease).toBeNull();
   });
@@ -268,7 +268,7 @@ describe("useSelectedReleaseModal", () => {
     rerender();
 
     expect(mockPush.mock.calls[0]?.[0]).toBe(
-      `/releases?instance=${releases[0]?.instance_id}`,
+      `/collection?instance=${releases[0]?.instance_id}`,
     );
     expect(result.current.selectedReleaseId).toBe(
       String(releases[0]?.instance_id),
@@ -307,7 +307,7 @@ describe("useSelectedReleaseModal", () => {
       releases[1]?.instance_id,
     );
     expect(mockPush.mock.calls[1]?.[0]).toBe(
-      `/releases?instance=${releases[1]?.instance_id}`,
+      `/collection?instance=${releases[1]?.instance_id}`,
     );
   });
 
@@ -339,7 +339,7 @@ describe("useSelectedReleaseModal", () => {
     rerender();
 
     expect(mockPush.mock.calls[1]?.[0]).toBe(
-      `/releases?instance=${releases[1]?.instance_id}`,
+      `/collection?instance=${releases[1]?.instance_id}`,
     );
     expect(mockPush).toHaveBeenCalledTimes(2);
     expect(result.current.selectedRelease?.instance_id).toBe(
@@ -375,7 +375,7 @@ describe("useSelectedReleaseModal", () => {
     rerender();
 
     act(() => {
-      applyUrl(`/releases?instance=${releases[0]?.instance_id}`);
+      applyUrl(`/collection?instance=${releases[0]?.instance_id}`);
     });
 
     rerender();
@@ -417,7 +417,7 @@ describe("useSelectedReleaseModal", () => {
     rerender();
 
     expect(clearSimilarReleasesPageIndexByAnchor).toHaveBeenCalled();
-    expect(mockReplace.mock.calls[0]?.[0]).toBe("/releases");
+    expect(mockReplace.mock.calls[0]?.[0]).toBe("/collection");
     expect(result.current.selectedReleaseId).toBeNull();
   });
 
@@ -429,7 +429,7 @@ describe("useSelectedReleaseModal", () => {
     const mockRouter = createMockAppRouter({ replace: mockReplace });
 
     mockUseRouter.mockReturnValue(mockRouter);
-    applyUrl(`/releases?instance=${releases[0]?.instance_id}`);
+    applyUrl(`/collection?instance=${releases[0]?.instance_id}`);
 
     const { result, rerender } = renderHookWithTestProviders(() =>
       useSelectedReleaseModal({ fallbackReleases: releases }),
@@ -441,7 +441,7 @@ describe("useSelectedReleaseModal", () => {
 
     rerender();
 
-    expect(mockReplace.mock.calls[0]?.[0]).toBe("/releases");
+    expect(mockReplace.mock.calls[0]?.[0]).toBe("/collection");
     expect(result.current.selectedReleaseId).toBeNull();
   });
 
@@ -566,7 +566,7 @@ describe("useSelectedReleaseModal", () => {
   it("ignores unknown instance ids in the URL", () => {
     const releases = releaseFactory.buildList(1);
 
-    applyUrl("/releases?instance=unknown");
+    applyUrl("/collection?instance=unknown");
 
     const { result } = renderHookWithTestProviders(() =>
       useSelectedReleaseModal({ fallbackReleases: releases }),

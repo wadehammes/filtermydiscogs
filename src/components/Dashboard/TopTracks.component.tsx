@@ -188,8 +188,8 @@ export const TopTracks = ({ onReleaseClick }: TopTracksProps) => {
         description="Play tracks from your collection to see what you reach for most."
         className={styles.emptyState}
       >
-        <Link href="/releases" className={styles.emptyStateLink}>
-          Go to Releases
+        <Link href="/collection" className={styles.emptyStateLink}>
+          Go to Collection
         </Link>
       </EmptyState>
     );

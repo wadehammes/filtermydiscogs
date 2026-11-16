@@ -19,10 +19,5 @@ export interface AdminStatsFeatureUsageRow {
 }
 
 export interface AdminStatsFeatureUsage {
-  totals: {
-    last7Days: number;
-    last30Days: number;
-  };
   pageViews: AdminStatsFeatureUsageRow[];
-  events: AdminStatsFeatureUsageRow[];
 }

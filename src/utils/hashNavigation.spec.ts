@@ -77,7 +77,7 @@ describe("hashNavigation", () => {
 
     navigateToPathHash({
       href: "/about#support",
-      currentPathname: "/releases",
+      currentPathname: "/collection",
       router,
     });
 

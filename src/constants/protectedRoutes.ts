@@ -1,5 +1,5 @@
 export const PROTECTED_APP_ROUTE_PREFIXES = [
-  "/releases",
+  "/collection",
   "/dashboard",
   "/mosaic",
   "/settings",
