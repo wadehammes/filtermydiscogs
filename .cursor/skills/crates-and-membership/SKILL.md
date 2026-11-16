@@ -24,7 +24,7 @@ Handbook: [patterns.md → Crates](../../docs/handbook/patterns.md#crates), [dat
 
 ## Drawer vs detail
 
-Drawer lists releases in **`sort_order`** **without** section markers; owner page includes markers and full layout tools.
+Drawer lists releases in **`sort_order`** **without** section markers; **grip reorder** updates layout via **`updateCrateLayout`** (vertical-axis **`@dnd-kit`**); owner page includes markers and full layout tools.
 
 ## Sync
 

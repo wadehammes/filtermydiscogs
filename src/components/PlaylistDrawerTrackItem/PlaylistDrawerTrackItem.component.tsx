@@ -12,6 +12,7 @@ import { useReleasePlaybackState } from "src/context/releasePlayback.context";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
+import drawerSortableDragStyles from "src/styles/modules/drawer-sortable-drag.module.css";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 import type { DiscogsRelease } from "src/types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
@@ -90,7 +91,7 @@ export const PlaylistDrawerTrackItem = ({
     <div
       className={classNames(crateItemStyles.listItem, {
         [styles.listItemActive]: isActiveInPlayback,
-        [styles.listItemDragging]: isDragging,
+        [drawerSortableDragStyles.itemDragging]: isDragging,
         [styles.listItemHot]: isHotTrack,
       })}
       data-testid="fmdPlaylistDrawerTrackItem"
@@ -193,10 +194,12 @@ export const PlaylistDrawerTrackItem = ({
                 variant="skip"
                 className={classNames(
                   stackStyles.overlayAction,
-                  styles.dragHandle,
+                  drawerSortableDragStyles.dragHandle,
+                  styles.playlistDragGrip,
                 )}
-                iconClassName={styles.dragHandleIcon}
+                iconClassName={drawerSortableDragStyles.dragHandleIcon}
                 aria-label={`Reorder ${trackLabel}`}
+                title="Drag to reorder"
                 {...(dragHandleAttributes ?? {})}
                 {...(dragHandleListeners ?? {})}
               >

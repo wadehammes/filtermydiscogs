@@ -1,11 +1,14 @@
 "use client";
 
+import type { DraggableAttributes } from "@dnd-kit/core";
 import classNames from "classnames";
 import Image from "next/image";
+import type { Ref } from "react";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import { CrateDrawerReleaseActions } from "src/components/CrateDrawerReleaseActions/CrateDrawerReleaseActions.component";
 import styles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
+import drawerSortableDragStyles from "src/styles/modules/drawer-sortable-drag.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseImageUrl } from "src/utils/helpers";
@@ -20,6 +23,10 @@ interface CrateDrawerReleaseItemProps {
   onReleaseClick?: (instanceId: string) => void;
   onPackedChange: (packed: boolean) => void;
   onRemove: (releaseId: string) => void;
+  setDragHandleRef?: Ref<HTMLButtonElement>;
+  dragHandleAttributes?: DraggableAttributes;
+  dragHandleListeners?: object;
+  isDragging?: boolean;
 }
 
 export const CrateDrawerReleaseItem = ({
@@ -28,6 +35,10 @@ export const CrateDrawerReleaseItem = ({
   onReleaseClick,
   onPackedChange,
   onRemove,
+  setDragHandleRef,
+  dragHandleAttributes,
+  dragHandleListeners,
+  isDragging = false,
 }: CrateDrawerReleaseItemProps) => {
   const { packedEnabled } = useCrateDrawerContext();
   const { basic_information } = release;
@@ -51,6 +62,7 @@ export const CrateDrawerReleaseItem = ({
     <div
       className={classNames(styles.listItem, {
         [styles.listItemFound]: packedEnabled && packed,
+        [drawerSortableDragStyles.itemDragging]: isDragging,
       })}
       data-testid="fmdCrateDrawerReleaseItem"
       {...definedProps(prefetchPointerProps ?? {})}
@@ -91,6 +103,9 @@ export const CrateDrawerReleaseItem = ({
         releaseTitle={basic_information.title}
         onPackedChange={onPackedChange}
         onRemove={() => onRemove(String(release.instance_id))}
+        {...(setDragHandleRef ? { setDragHandleRef } : {})}
+        {...(dragHandleAttributes ? { dragHandleAttributes } : {})}
+        {...(dragHandleListeners ? { dragHandleListeners } : {})}
       />
     </div>
   );

@@ -1,10 +1,13 @@
+import type { DraggableAttributes } from "@dnd-kit/core";
 import classNames from "classnames";
-import type { MouseEvent } from "react";
+import type { MouseEvent, Ref } from "react";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import styles from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.module.css";
+import { CrateReleasePackedToggleIcon } from "src/components/Crates/CrateReleasePackedToggleIcon.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
-import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
+import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
+import drawerSortableDragStyles from "src/styles/modules/drawer-sortable-drag.module.css";
 import stackStyles from "src/styles/modules/vertical-action-stack.module.css";
 
 interface CrateDrawerReleaseActionsProps {
@@ -12,6 +15,9 @@ interface CrateDrawerReleaseActionsProps {
   releaseTitle: string;
   onPackedChange: (packed: boolean) => void;
   onRemove: () => void;
+  setDragHandleRef?: Ref<HTMLButtonElement>;
+  dragHandleAttributes?: DraggableAttributes;
+  dragHandleListeners?: object;
 }
 
 export const CrateDrawerReleaseActions = ({
@@ -19,6 +25,9 @@ export const CrateDrawerReleaseActions = ({
   releaseTitle,
   onPackedChange,
   onRemove,
+  setDragHandleRef,
+  dragHandleAttributes,
+  dragHandleListeners,
 }: CrateDrawerReleaseActionsProps) => {
   const { packedEnabled } = useCrateDrawerContext();
 
@@ -37,6 +46,25 @@ export const CrateDrawerReleaseActions = ({
   return (
     <div className={styles.listItemActions}>
       <div className={stackStyles.overlayActions}>
+        {setDragHandleRef ? (
+          <div className={stackStyles.overlayActionSlot}>
+            <IconButton
+              ref={setDragHandleRef}
+              variant="skip"
+              className={classNames(
+                stackStyles.overlayAction,
+                drawerSortableDragStyles.dragHandle,
+              )}
+              iconClassName={drawerSortableDragStyles.dragHandleIcon}
+              aria-label={`Reorder ${releaseTitle}`}
+              title="Drag to reorder"
+              {...(dragHandleAttributes ?? {})}
+              {...(dragHandleListeners ?? {})}
+            >
+              <GripVerticalIcon />
+            </IconButton>
+          </div>
+        ) : null}
         {packedEnabled ? (
           <div className={stackStyles.overlayActionSlot}>
             <IconButton
@@ -53,7 +81,7 @@ export const CrateDrawerReleaseActions = ({
                 packed ? "Unmark as packed for gig" : "Mark as packed for gig"
               }
             >
-              <CheckThinIcon />
+              <CrateReleasePackedToggleIcon packed={packed} />
             </IconButton>
           </div>
         ) : null}

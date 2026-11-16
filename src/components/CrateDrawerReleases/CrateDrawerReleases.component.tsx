@@ -1,20 +1,31 @@
+"use client";
+
+import { closestCenter, DndContext } from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useMemo } from "react";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
-import { CrateDrawerReleaseItem } from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.component";
+import { CrateDrawerSortableReleaseRow } from "src/components/CrateDrawerReleases/CrateDrawerSortableReleaseRow.component";
+import { useCrateDrawerReleasesDnD } from "src/components/CrateDrawerReleases/useCrateDrawerReleasesDnD.hook";
 import { CrateReleaseListToolbar } from "src/components/CrateReleaseListToolbar/CrateReleaseListToolbar.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import {
   countVisibleCrateReleases,
   getCrateLayoutReleaseItems,
-  getVisibleCrateLayoutItems,
 } from "src/lib/crate-layout";
+import drawerSortableListStyles from "src/styles/modules/drawer-sortable-list.module.css";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./CrateDrawerReleases.module.css";
 
+const crateDrawerReleaseDragModifiers = [restrictToVerticalAxis];
+
 export const CrateDrawerReleases = () => {
   const {
-    currentView,
+    activeCrateId,
     hidePackedItems,
     isLoadingReleases,
     isPacked,
@@ -24,6 +35,8 @@ export const CrateDrawerReleases = () => {
     removeFromCrate,
     selectedReleases,
     setPacked,
+    updateCrateLayout,
+    currentView,
   } = useCrateDrawerContext();
 
   const stagingReleases = useMemo(
@@ -31,16 +44,15 @@ export const CrateDrawerReleases = () => {
     [layoutItems],
   );
 
-  const visibleReleases = useMemo(() => {
-    return getCrateLayoutReleaseItems(
-      getVisibleCrateLayoutItems({
-        items: layoutItems,
-        hidePackedItems,
-        isPacked,
-        packedEnabled,
-      }),
-    );
-  }, [hidePackedItems, isPacked, layoutItems, packedEnabled]);
+  const { handleDragEnd, sensors, sortableIds, visibleLayoutReleases } =
+    useCrateDrawerReleasesDnD({
+      activeCrateId,
+      hidePackedItems,
+      isPacked,
+      layoutItems,
+      packedEnabled,
+      updateCrateLayout,
+    });
 
   if (isLoadingReleases) {
     return (
@@ -76,7 +88,10 @@ export const CrateDrawerReleases = () => {
   const showPackingToolbar = packedEnabled;
 
   return (
-    <div className={styles.releasesSection}>
+    <div
+      className={styles.releasesSection}
+      data-testid="fmdCrateDrawerReleases"
+    >
       {showPackingToolbar ? (
         <div className={styles.packingToolbarSticky}>
           <CrateReleaseListToolbar
@@ -91,19 +106,33 @@ export const CrateDrawerReleases = () => {
           title="All albums packed for your gig."
           className={styles.emptyState}
         />
-      ) : visibleReleases.length > 0 ? (
-        <div className={styles.releasesList}>
-          {visibleReleases.map((item) => (
-            <CrateDrawerReleaseItem
-              key={item.instance_id}
-              release={item.release}
-              packed={packedEnabled ? isPacked(item.instance_id) : false}
-              onPackedChange={(packed) => setPacked(item.instance_id, packed)}
-              onRemove={removeFromCrate}
-              {...definedProps({ onReleaseClick })}
-            />
-          ))}
-        </div>
+      ) : visibleLayoutReleases.length > 0 ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={crateDrawerReleaseDragModifiers}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={sortableIds}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className={drawerSortableListStyles.list}>
+              {visibleLayoutReleases.map((item) => (
+                <CrateDrawerSortableReleaseRow
+                  key={item.instance_id}
+                  release={item.release}
+                  packed={packedEnabled ? isPacked(item.instance_id) : false}
+                  onPackedChange={(packed) =>
+                    setPacked(item.instance_id, packed)
+                  }
+                  onRemove={removeFromCrate}
+                  {...definedProps({ onReleaseClick })}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       ) : null}
     </div>
   );

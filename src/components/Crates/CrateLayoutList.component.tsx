@@ -17,6 +17,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -112,6 +113,8 @@ import { CrateSetMarkerRow } from "./CrateSetMarkerRow.component";
 const crateLayoutListMeasuring = {
   droppable: { strategy: MeasuringStrategy.Always },
 } as const;
+
+const crateLayoutDragModifiers = [restrictToVerticalAxis];
 
 const createCrateLayoutCollisionDetection = (
   sectionBlockSortableIdsByMarkerId: ReadonlyMap<string, ReadonlySet<string>>,
@@ -1493,6 +1496,7 @@ const CrateLayoutListComponent = ({
           sensors={sensors}
           measuring={crateLayoutListMeasuring}
           collisionDetection={collisionDetection}
+          modifiers={crateLayoutDragModifiers}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragCancel={handleDragCancel}

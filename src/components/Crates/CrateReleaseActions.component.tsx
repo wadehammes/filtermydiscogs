@@ -2,8 +2,8 @@
 
 import classNames from "classnames";
 import type { MouseEvent } from "react";
+import { CrateReleasePackedToggleIcon } from "src/components/Crates/CrateReleasePackedToggleIcon.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
-import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
 import styles from "./CrateReleaseActions.module.css";
 
@@ -49,7 +49,7 @@ export const CrateReleaseActions = ({
           }
           title={packed ? "Unmark as packed for gig" : "Mark as packed for gig"}
         >
-          <CheckThinIcon />
+          <CrateReleasePackedToggleIcon packed={packed} />
         </IconButton>
       ) : null}
       <IconButton

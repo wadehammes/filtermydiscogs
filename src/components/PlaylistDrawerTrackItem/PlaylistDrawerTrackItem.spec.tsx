@@ -34,6 +34,15 @@ describe("PlaylistDrawerTrackItem", () => {
     );
   });
 
+  it("shows drag-to-reorder helper text on the reorder grip", () => {
+    po.renderPlaylistDrawerTrackItem({ setDragHandleRef: () => {} });
+
+    expect(screen.getByRole("button", { name: /Reorder / })).toHaveAttribute(
+      "title",
+      "Drag to reorder",
+    );
+  });
+
   it("does not show a playing indicator for a different track", () => {
     const release = releaseFactory.withDisplayDefaults({ instance_id: 9001 });
 
