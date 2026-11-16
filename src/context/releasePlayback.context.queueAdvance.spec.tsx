@@ -4,6 +4,7 @@ import { reportPlaybackSkipToSentry } from "src/lib/sentry/reportPlaybackSkip";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
+import { writePlaybackDockVolume } from "src/utils/playbackDockVolumeStorage";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
 import {
@@ -590,6 +591,54 @@ describe("ReleasePlaybackProvider — queue advance", () => {
     expect(result.current.shouldAutoplayEmbed).toBe(true);
     expect(result.current.isPaused).toBe(false);
     expect(mockLoadAndPlayYoutubeVideo).not.toHaveBeenCalled();
+  });
+
+  it("applies the stored dock volume when the next track starts playing", async () => {
+    writePlaybackDockVolume(35);
+
+    const postMessage = jest.fn();
+    const contentWindow = { postMessage } as unknown as Window;
+    const iframe = { contentWindow } as HTMLIFrameElement;
+
+    const { result } = renderHook(() => useReleasePlayback(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+      result.current.registerPlaybackIframe(iframe);
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockSetYoutubeEmbedVolume.mockClear();
+    mockUnmuteYoutubeEmbed.mockClear();
+
+    act(() => {
+      result.current.playNext();
+    });
+
+    await waitFor(() => {
+      expect(result.current.activeTrackPosition).toBe("B1");
+    });
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow,
+        playerState: 1,
+      });
+    });
+
+    expect(mockUnmuteYoutubeEmbed).toHaveBeenCalledWith(iframe);
+    expect(mockSetYoutubeEmbedVolume).toHaveBeenCalledWith({
+      iframe,
+      volume: 35,
+    });
   });
 
   it("unmutes the embed and applies dock volume when the playback iframe registers", () => {

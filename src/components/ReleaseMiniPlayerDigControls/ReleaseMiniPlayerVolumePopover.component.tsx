@@ -89,14 +89,16 @@ export const ReleaseMiniPlayerVolumePopover = ({
               testId="fmdPlaybackDockVolumeSlider"
               value={isPlaybackDockMuted ? 0 : volume}
             />
-            <button
-              type="button"
+            <IconButton
+              aria-label={isPlaybackDockMuted ? "Unmute" : "Mute"}
               className={styles.volumeMuteAction}
               disabled={disabled}
+              iconClassName={styles.volumeIcon}
               onClick={handleMuteToggle}
+              title={isPlaybackDockMuted ? "Unmute" : "Mute"}
             >
-              {isPlaybackDockMuted ? "Unmute" : "Mute"}
-            </button>
+              {isPlaybackDockMuted ? <VolumeMuteIcon /> : <VolumeIcon />}
+            </IconButton>
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

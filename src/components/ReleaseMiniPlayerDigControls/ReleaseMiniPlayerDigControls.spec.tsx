@@ -136,6 +136,9 @@ describe("ReleaseMiniPlayerVolumePopover", () => {
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Mute" })).toBeInTheDocument();
     });
+    expect(screen.getByRole("button", { name: "Mute" })).not.toHaveTextContent(
+      "Mute",
+    );
 
     await user.click(screen.getByRole("button", { name: "Mute" }));
 
