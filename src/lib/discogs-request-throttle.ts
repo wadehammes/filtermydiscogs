@@ -95,17 +95,10 @@ const runThrottleJob = async <T>(job: ThrottleJob<T>): Promise<void> => {
       }
     });
 
-    if (queueWaitMs > 0 || rateLimitWaitMs > 0) {
-      recordDiscogsThrottleTelemetry({
-        caller: job.caller,
-        queueWaitMs,
-        rateLimitWaitMs,
-        timedOut: false,
-      });
-    }
-
     job.resolve(result);
   } catch (error) {
+    job.reject(error);
+  } finally {
     if (queueWaitMs > 0 || rateLimitWaitMs > 0) {
       recordDiscogsThrottleTelemetry({
         caller: job.caller,
@@ -114,8 +107,6 @@ const runThrottleJob = async <T>(job: ThrottleJob<T>): Promise<void> => {
         timedOut: false,
       });
     }
-
-    job.reject(error);
   }
 };
 

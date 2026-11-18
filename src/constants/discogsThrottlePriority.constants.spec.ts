@@ -15,5 +15,15 @@ describe("discogsThrottlePriority.constants", () => {
     expect(
       resolveDiscogsThrottlePriority(DISCOGS_THROTTLE_CALLERS.apiRelease),
     ).toBe("interactive");
+    expect(
+      resolveDiscogsThrottlePriority(DISCOGS_THROTTLE_CALLERS.apiReleaseBatch),
+    ).toBe("interactive");
+    expect(
+      resolveDiscogsThrottlePriority(DISCOGS_THROTTLE_CALLERS.publicReleasePage),
+    ).toBe("interactive");
+  });
+
+  it("treats unknown and missing callers as background priority", () => {
+    expect(resolveDiscogsThrottlePriority(undefined)).toBe("background");
   });
 });
