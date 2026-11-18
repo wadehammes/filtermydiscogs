@@ -1,9 +1,10 @@
 import "server-only";
 
 import * as Sentry from "@sentry/nextjs";
+import type { DiscogsThrottleCaller } from "src/constants/discogsThrottleCaller.constants";
 
 export type DiscogsThrottleTelemetry = {
-  caller: string | undefined;
+  caller: DiscogsThrottleCaller | undefined;
   queueWaitMs: number;
   rateLimitWaitMs: number;
   timedOut: boolean;
