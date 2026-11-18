@@ -140,6 +140,8 @@ Populated by **`GET /api/cron/product-analytics`** ([`product-analytics-maintena
 | `user_id`, `playlist_id`, `track_key` | Composite PK; **`track_key`** FK → **`UserTrack`** **`ON DELETE CASCADE`** |
 | `sort_order`                          | Order within the playlist (DnD in **`PlaylistDrawerTracks`**)              |
 
+**`PlaylistReleaseSnapshot`** — per-playlist **`release_data` JSON** keyed by collection **`instance_id`** (same validation shape as **`CrateRelease`**). [`loadPlaylistReleaseSnapshots`](../../src/lib/playlist-release-snapshot.server.ts) merges with owner **`crate_releases`** rows in [`loadPublicPlaylist`](../../src/lib/public-playlist-load.server.ts) so public SSR can skip Discogs when either source has art/tracklist. After a **public** playlist load hydrates releases, [`persistPlaylistReleaseSnapshots`](../../src/lib/playlist-release-snapshot.server.ts) upserts snapshots in the background (lazy backfill for existing shares).
+
 Adding the same track twice: **dedupe** by **`track_key`** per playlist (reject or no-op on second add).
 
 **API / UI stack:** migration → playlist CRUD routes → **`api.*`** + React Query → **`ReleaseTrackRowMenu`** “Add to playlist” → **`/collection`** side panel (**`CollectionSidePanelToggle`**, **`PlaylistDrawer`** with **`useReorderPlaylistTracksMutation`**). Optional later: **`PlaybackQueueDrawer`** “Save queue as playlist”.

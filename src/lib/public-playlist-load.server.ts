@@ -1,6 +1,10 @@
 import { backfillPlaylistTrackDiscogsReleaseIds } from "src/lib/backfill-user-track-discogs-release-id-search.server";
 import { prisma } from "src/lib/db";
 import { mapPlaylistEngagementCounts } from "src/lib/playlist-engagement.server";
+import {
+  loadPlaylistReleaseSnapshots,
+  persistPlaylistReleaseSnapshots,
+} from "src/lib/playlist-release-snapshot.server";
 import { mapPlaylistTrackRow } from "src/lib/playlist-track-map.server";
 import { hydratePublicPlaylistReleases } from "src/lib/public-playlist-discogs.server";
 import {
@@ -12,6 +16,7 @@ import {
   toPublicPlaylistReleaseSnapshot,
   validateReleaseDataForStorage,
 } from "src/lib/release-data-validation";
+import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 import type { DiscogsRelease } from "src/types";
 import type {
   PlaylistTrackRow,
@@ -104,13 +109,20 @@ export const loadPublicPlaylist = async (
 
   let tracks: PlaylistTrackRow[] = trackRows.map(mapPlaylistTrackRow);
   const instanceIds = [...new Set(tracks.map((track) => track.instance_id))];
-  const crateSnapshots = await loadOwnerReleaseSnapshots(
-    playlist.user_id,
-    instanceIds,
-  );
+  const [crateSnapshots, playlistSnapshots] = await Promise.all([
+    loadOwnerReleaseSnapshots(playlist.user_id, instanceIds),
+    loadPlaylistReleaseSnapshots({
+      userId: playlist.user_id,
+      playlistId: playlist.id,
+      instanceIds,
+    }),
+  ]);
   const crateSnapshotsByInstanceId = new Map(
     crateSnapshots.map((release) => [String(release.instance_id), release]),
   );
+  for (const [instanceId, snapshot] of playlistSnapshots) {
+    crateSnapshotsByInstanceId.set(instanceId, snapshot);
+  }
   tracks = await backfillPlaylistTrackDiscogsReleaseIds({
     userId: playlist.user_id,
     tracks,
@@ -120,6 +132,20 @@ export const loadPublicPlaylist = async (
     tracks,
     crateSnapshotsByInstanceId,
   });
+
+  if (playlist.private === false && releases.length > 0) {
+    void persistPlaylistReleaseSnapshots({
+      userId: playlist.user_id,
+      playlistId: playlist.id,
+      releases,
+    }).catch((error: unknown) => {
+      reportInfrastructureFailure("public_playlist", error, {
+        operation: "persist_playlist_release_snapshots",
+        playlistId: playlist.id,
+      });
+    });
+  }
+
   const releaseByInstanceId = new Map(
     releases.map((release) => [String(release.instance_id), release]),
   );

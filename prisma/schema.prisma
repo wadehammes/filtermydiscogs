@@ -44,8 +44,9 @@ model Playlist {
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
 
-  user   User            @relation(fields: [user_id], references: [discogs_user_id], onDelete: Cascade)
-  tracks PlaylistTrack[]
+  user      User                       @relation(fields: [user_id], references: [discogs_user_id], onDelete: Cascade)
+  tracks    PlaylistTrack[]
+  snapshots PlaylistReleaseSnapshot[]
 
   @@id([user_id, id])
   @@index([user_id])
@@ -68,6 +69,20 @@ model PlaylistTrack {
   @@id([user_id, playlist_id, track_key])
   @@index([user_id, playlist_id, sort_order])
   @@map("playlist_tracks")
+}
+
+model PlaylistReleaseSnapshot {
+  user_id      Int
+  playlist_id  String
+  instance_id  String
+  release_data Json
+  updated_at   DateTime @updatedAt
+
+  playlist Playlist @relation(fields: [user_id, playlist_id], references: [user_id, id], onDelete: Cascade)
+
+  @@id([user_id, playlist_id, instance_id])
+  @@index([user_id, playlist_id])
+  @@map("playlist_release_snapshots")
 }
 
 model PlaylistTrackVote {
