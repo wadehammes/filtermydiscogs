@@ -5,7 +5,8 @@ export const DISCOGS_THROTTLE_PRIORITY_VALUES = {
   background: 0,
 } as const;
 
-export type DiscogsThrottlePriority = keyof typeof DISCOGS_THROTTLE_PRIORITY_VALUES;
+export type DiscogsThrottlePriority =
+  keyof typeof DISCOGS_THROTTLE_PRIORITY_VALUES;
 
 export const resolveDiscogsThrottlePriority = (
   caller: DiscogsThrottleCaller | undefined,
