@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { DiscogsThrottleCaller } from "src/constants/discogsThrottleCaller.constants";
+import { runWithDiscogsThrottleCaller } from "src/lib/discogs-throttle-caller";
 import { fetchDiscogsReleaseRecord } from "src/lib/fetchDiscogsReleaseRecord.server";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
 import { definedProps } from "src/utils/definedProps";
@@ -12,14 +14,15 @@ export interface FetchDiscogsReleaseRecordsSequentialParams {
   useAuthenticatedSession: boolean;
   accessToken?: string | undefined;
   accessTokenSecret?: string | undefined;
+  throttleCaller?: DiscogsThrottleCaller | undefined;
 }
 
-export const fetchDiscogsReleaseRecordsSequential = async ({
+const fetchDiscogsReleaseRecordsSequentialInner = async ({
   releaseIds,
   useAuthenticatedSession,
   accessToken,
   accessTokenSecret,
-}: FetchDiscogsReleaseRecordsSequentialParams): Promise<
+}: Omit<FetchDiscogsReleaseRecordsSequentialParams, "throttleCaller">): Promise<
   Record<string, DiscogsReleaseDetail>
 > => {
   const uniqueIds = [...new Set(releaseIds)];
@@ -42,4 +45,18 @@ export const fetchDiscogsReleaseRecordsSequential = async ({
   }
 
   return releases;
+};
+
+export const fetchDiscogsReleaseRecordsSequential = async (
+  params: FetchDiscogsReleaseRecordsSequentialParams,
+): Promise<Record<string, DiscogsReleaseDetail>> => {
+  const { throttleCaller, ...rest } = params;
+
+  if (throttleCaller) {
+    return runWithDiscogsThrottleCaller(throttleCaller, () =>
+      fetchDiscogsReleaseRecordsSequentialInner(rest),
+    );
+  }
+
+  return fetchDiscogsReleaseRecordsSequentialInner(rest);
 };

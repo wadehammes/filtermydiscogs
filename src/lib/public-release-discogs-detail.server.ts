@@ -2,6 +2,7 @@ import "server-only";
 
 import { connection } from "next/server";
 import { cache } from "react";
+import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import {
   getDiscogsApiErrorStatus,
   isDiscogsFetchTimeoutError,
@@ -25,6 +26,7 @@ const loadPublicReleaseDiscogsDetailUncached = async (
     const payloadUnknown = await fetchDiscogsReleaseRecord({
       releaseUrl,
       useAuthenticatedSession: false,
+      throttleCaller: DISCOGS_THROTTLE_CALLERS.publicReleasePage,
     });
     const detail = payloadUnknown as DiscogsReleaseDetail;
     const title = typeof detail.title === "string" ? detail.title.trim() : "";

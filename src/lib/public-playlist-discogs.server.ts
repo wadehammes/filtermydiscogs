@@ -1,5 +1,6 @@
 import "server-only";
 
+import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
 import { toPublicPlaylistReleaseSnapshot } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
@@ -78,6 +79,7 @@ export const hydratePublicPlaylistReleases = async ({
       ? await fetchDiscogsReleaseRecordsSequential({
           releaseIds: releaseIdsToFetchOrdered,
           useAuthenticatedSession: false,
+          throttleCaller: DISCOGS_THROTTLE_CALLERS.publicPlaylistHydrate,
         })
       : {};
 

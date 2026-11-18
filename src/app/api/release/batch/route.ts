@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
       useAuthenticatedSession,
       accessToken,
       accessTokenSecret,
+      throttleCaller: DISCOGS_THROTTLE_CALLERS.apiReleaseBatch,
     });
 
     return NextResponse.json(
