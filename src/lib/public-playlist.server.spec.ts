@@ -198,7 +198,9 @@ describe("getPublicPlaylistForPage", () => {
     await expect(
       getPublicPlaylistForPage(payload.playlist.id),
     ).resolves.toEqual(payload);
-    expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(payload.playlist.id);
+    expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(payload.playlist.id, {
+      discogsHydration: "snapshotsOnly",
+    });
   });
 });
 
@@ -241,6 +243,9 @@ describe("getPublicPlaylistForOg", () => {
       coverThumbUrls: payload.mosaicThumbUrls.slice(0, 4),
       trackCount: payload.tracks.length,
       updatedAt: payload.playlist.updated_at,
+    });
+    expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(payload.playlist.id, {
+      discogsHydration: "snapshotsOnly",
     });
   });
 

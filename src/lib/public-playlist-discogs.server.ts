@@ -16,6 +16,34 @@ export const buildCollectionReleaseFromDiscogsDetail = (
   instanceId: string,
 ): DiscogsRelease => buildDiscogsReleaseFromDetail(detail, instanceId);
 
+export const buildPublicPlaylistReleasesFromSnapshots = ({
+  tracks,
+  snapshotsByInstanceId,
+}: {
+  tracks: PlaylistTrackRow[];
+  snapshotsByInstanceId: Map<string, DiscogsRelease>;
+}): DiscogsRelease[] => {
+  const releases: DiscogsRelease[] = [];
+  const seenInstanceIds = new Set<string>();
+
+  for (const track of tracks) {
+    const instanceId = String(track.instance_id);
+
+    if (seenInstanceIds.has(instanceId)) {
+      continue;
+    }
+
+    seenInstanceIds.add(instanceId);
+    const snapshot = snapshotsByInstanceId.get(instanceId);
+
+    if (snapshot) {
+      releases.push(snapshot);
+    }
+  }
+
+  return releases;
+};
+
 export const hydratePublicPlaylistReleases = async ({
   tracks,
   crateSnapshotsByInstanceId,
