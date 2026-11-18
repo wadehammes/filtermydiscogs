@@ -18,22 +18,42 @@ jest.mock("src/lib/public-playlist-query.server", () => ({
   findPublicPlaylistById: jest.fn(),
 }));
 
-jest.mock("src/lib/public-playlist-discogs.server", () => {
-  const actual = jest.requireActual(
-    "src/lib/public-playlist-discogs.server",
-  ) as typeof import("src/lib/public-playlist-discogs.server");
+jest.mock("src/lib/public-playlist-discogs.server", () => ({
+  buildPublicPlaylistReleasesFromSnapshots: ({
+    tracks,
+    snapshotsByInstanceId,
+  }: {
+    tracks: { instance_id: string }[];
+    snapshotsByInstanceId: Map<string, unknown>;
+  }) => {
+    const releases: unknown[] = [];
+    const seenInstanceIds = new Set<string>();
 
-  return {
-    ...actual,
-    hydratePublicPlaylistReleases: jest.fn(
-      async ({
-        crateSnapshotsByInstanceId,
-      }: {
-        crateSnapshotsByInstanceId: Map<string, unknown>;
-      }) => [...crateSnapshotsByInstanceId.values()],
-    ),
-  };
-});
+    for (const track of tracks) {
+      const instanceId = String(track.instance_id);
+
+      if (seenInstanceIds.has(instanceId)) {
+        continue;
+      }
+
+      seenInstanceIds.add(instanceId);
+      const snapshot = snapshotsByInstanceId.get(instanceId);
+
+      if (snapshot) {
+        releases.push(snapshot);
+      }
+    }
+
+    return releases;
+  },
+  hydratePublicPlaylistReleases: jest.fn(
+    async ({
+      crateSnapshotsByInstanceId,
+    }: {
+      crateSnapshotsByInstanceId: Map<string, unknown>;
+    }) => [...crateSnapshotsByInstanceId.values()],
+  ),
+}));
 
 jest.mock("src/lib/discogs-consumer-search.server", () => ({
   searchDiscogsDatabase: jest

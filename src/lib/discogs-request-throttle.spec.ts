@@ -64,6 +64,65 @@ describe("discogs-request-throttle", () => {
     ).resolves.toBe("nested");
   });
 
+  it("runs interactive waiters before background when the slot frees", async () => {
+    process.env.DISCOGS_MIN_REQUEST_INTERVAL_MS = "1";
+    jest.resetModules();
+
+    const order: string[] = [];
+    const { DISCOGS_THROTTLE_CALLERS } = await import(
+      "src/constants/discogsThrottleCaller.constants"
+    );
+    const { runWithDiscogsThrottleCaller } = await import(
+      "./discogs-throttle-caller"
+    );
+    const { runThrottledDiscogsRequest } = await import(
+      "./discogs-request-throttle"
+    );
+
+    let releaseBlock!: () => void;
+    const blockGate = new Promise<void>((resolve) => {
+      releaseBlock = resolve;
+    });
+
+    const blocking = runWithDiscogsThrottleCaller(
+      DISCOGS_THROTTLE_CALLERS.publicPlaylistHydrate,
+      () =>
+        runThrottledDiscogsRequest(async () => {
+          order.push("block-start");
+          await blockGate;
+          order.push("block-end");
+        }),
+    );
+
+    await Promise.resolve();
+
+    const background = runWithDiscogsThrottleCaller(
+      DISCOGS_THROTTLE_CALLERS.publicPlaylistHydrate,
+      () =>
+        runThrottledDiscogsRequest(async () => {
+          order.push("background");
+        }),
+    );
+
+    const interactive = runWithDiscogsThrottleCaller(
+      DISCOGS_THROTTLE_CALLERS.apiRelease,
+      () =>
+        runThrottledDiscogsRequest(async () => {
+          order.push("interactive");
+        }),
+    );
+
+    releaseBlock();
+    await Promise.all([blocking, background, interactive]);
+
+    expect(order).toEqual([
+      "block-start",
+      "block-end",
+      "interactive",
+      "background",
+    ]);
+  });
+
   it("rejects when waiting on the throttle queue exceeds the timeout", async () => {
     process.env.DISCOGS_THROTTLE_QUEUE_TIMEOUT_MS = "40";
     process.env.DISCOGS_MIN_REQUEST_INTERVAL_MS = "50";
