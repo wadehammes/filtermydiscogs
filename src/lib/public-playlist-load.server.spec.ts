@@ -5,6 +5,7 @@ jest.mock("src/lib/db", () => ({
   prisma: {
     playlistTrack: { findMany: jest.fn() },
     crateRelease: { findMany: jest.fn() },
+    playlistReleaseSnapshot: { findMany: jest.fn(), upsert: jest.fn() },
     userTrack: { update: jest.fn() },
     user: { findUnique: jest.fn() },
     $transaction: jest.fn((operations: Promise<unknown>[]) =>
@@ -48,6 +49,12 @@ let mockPlaylistTrackFindMany: jest.MockedFunction<
 let mockCrateReleaseFindMany: jest.MockedFunction<
   DbModule["prisma"]["crateRelease"]["findMany"]
 >;
+let mockPlaylistReleaseSnapshotFindMany: jest.MockedFunction<
+  DbModule["prisma"]["playlistReleaseSnapshot"]["findMany"]
+>;
+let mockPlaylistReleaseSnapshotUpsert: jest.MockedFunction<
+  DbModule["prisma"]["playlistReleaseSnapshot"]["upsert"]
+>;
 let mockUserFindUnique: jest.MockedFunction<
   DbModule["prisma"]["user"]["findUnique"]
 >;
@@ -71,7 +78,15 @@ describe("loadPublicPlaylist", () => {
     );
     mockPlaylistTrackFindMany = jest.mocked(db.prisma.playlistTrack.findMany);
     mockCrateReleaseFindMany = jest.mocked(db.prisma.crateRelease.findMany);
+    mockPlaylistReleaseSnapshotFindMany = jest.mocked(
+      db.prisma.playlistReleaseSnapshot.findMany,
+    );
+    mockPlaylistReleaseSnapshotUpsert = jest.mocked(
+      db.prisma.playlistReleaseSnapshot.upsert,
+    );
     mockUserFindUnique = jest.mocked(db.prisma.user.findUnique);
+    mockPlaylistReleaseSnapshotFindMany.mockResolvedValue([]);
+    mockPlaylistReleaseSnapshotUpsert.mockResolvedValue({} as never);
   });
 
   it("returns release snapshots keyed by playlist track instance ids", async () => {
@@ -136,6 +151,10 @@ describe("loadPublicPlaylist", () => {
       publicPlayCount: 2,
     });
     expect(payload?.releases[0]).not.toHaveProperty("notes");
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    expect(mockPlaylistReleaseSnapshotUpsert).toHaveBeenCalled();
   });
 
   it("when playlist username is unset, resolves owner username for the payload", async () => {
