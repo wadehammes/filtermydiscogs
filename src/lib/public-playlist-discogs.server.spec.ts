@@ -45,6 +45,32 @@ describe("buildCollectionReleaseFromDiscogsDetail", () => {
   });
 });
 
+describe("buildPublicPlaylistReleasesFromSnapshots", () => {
+  it("returns one release per unique instance id in track order", async () => {
+    const { buildPublicPlaylistReleasesFromSnapshots } = await import(
+      "src/lib/public-playlist-discogs.server"
+    );
+    const release = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-a",
+    });
+    const tracks = [
+      playlistTrackRowFactory.build({ instance_id: "instance-a" }),
+      playlistTrackRowFactory.build({
+        instance_id: "instance-a",
+        track_key: "instance-a:B1",
+        track_position: "B1",
+      }),
+    ];
+
+    const snapshots = buildPublicPlaylistReleasesFromSnapshots({
+      tracks,
+      snapshotsByInstanceId: new Map([["instance-a", release]]),
+    });
+
+    expect(snapshots).toEqual([release]);
+  });
+});
+
 describe("hydratePublicPlaylistReleases", () => {
   beforeEach(async () => {
     jest.clearAllMocks();

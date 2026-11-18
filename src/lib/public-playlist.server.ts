@@ -84,7 +84,9 @@ export async function getPublicPlaylistForOg(playlistId: string): Promise<{
     return null;
   }
 
-  const payload = await loadPublicPlaylist(playlistId);
+  const payload = await loadPublicPlaylist(playlistId, {
+    discogsHydration: "snapshotsOnly",
+  });
   if (!payload) {
     return null;
   }
@@ -166,7 +168,9 @@ export async function getPublicPlaylistForPage(
       return null;
     }
 
-    return await loadPublicPlaylist(playlistId);
+    return await loadPublicPlaylist(playlistId, {
+      discogsHydration: "snapshotsOnly",
+    });
   } catch (error) {
     console.error(
       `Failed to load public playlist for page ${playlistId}:`,
