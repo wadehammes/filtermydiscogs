@@ -3,6 +3,8 @@ import {
   computeDiscogsRateLimitWaitMs,
   getDiscogsRateLimitSnapshot,
 } from "src/lib/discogs-rate-limit";
+import { getDiscogsThrottleCaller } from "src/lib/discogs-throttle-caller";
+import { recordDiscogsThrottleTelemetry } from "src/lib/discogs-throttle-telemetry.server";
 import { DiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
 
 const DEFAULT_MIN_INTERVAL_MS = 1000;
@@ -53,6 +55,9 @@ export const runThrottledDiscogsRequest = <T>(
     return throttleContext.run(true, work);
   }
 
+  const queuedAt = Date.now();
+  const caller = getDiscogsThrottleCaller();
+
   let releaseSlotWait!: () => void;
   const slotAcquired = new Promise<void>((resolve) => {
     releaseSlotWait = resolve;
@@ -67,27 +72,43 @@ export const runThrottledDiscogsRequest = <T>(
       return undefined;
     }
 
-    return throttleContext.run(true, async () => {
-      const now = Date.now();
-      const waitMs = computeDiscogsRateLimitWaitMs({
-        snapshot: getDiscogsRateLimitSnapshot(),
-        lastRequestAt,
-        now,
-        fallbackIntervalMs,
-      });
+    const queueWaitMs = Date.now() - queuedAt;
+    let rateLimitWaitMs = 0;
 
-      if (waitMs > 0) {
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, waitMs);
+    try {
+      return await throttleContext.run(true, async () => {
+        const now = Date.now();
+        const waitMs = computeDiscogsRateLimitWaitMs({
+          snapshot: getDiscogsRateLimitSnapshot(),
+          lastRequestAt,
+          now,
+          fallbackIntervalMs,
+        });
+
+        rateLimitWaitMs = waitMs;
+
+        if (waitMs > 0) {
+          await new Promise<void>((resolve) => {
+            setTimeout(resolve, waitMs);
+          });
+        }
+
+        try {
+          return await work();
+        } finally {
+          lastRequestAt = Date.now();
+        }
+      });
+    } finally {
+      if (queueWaitMs > 0 || rateLimitWaitMs > 0) {
+        recordDiscogsThrottleTelemetry({
+          caller,
+          queueWaitMs,
+          rateLimitWaitMs,
+          timedOut: false,
         });
       }
-
-      try {
-        return await work();
-      } finally {
-        lastRequestAt = Date.now();
-      }
-    });
+    }
   });
 
   chain = scheduled.then(
@@ -115,6 +136,12 @@ export const runThrottledDiscogsRequest = <T>(
     }
 
     if (queueWaitError) {
+      recordDiscogsThrottleTelemetry({
+        caller,
+        queueWaitMs: Date.now() - queuedAt,
+        rateLimitWaitMs: 0,
+        timedOut: true,
+      });
       throw queueWaitError;
     }
 

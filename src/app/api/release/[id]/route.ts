@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import {
   buildDiscogsProxyErrorPayload,
@@ -66,6 +67,7 @@ export async function GET(
     const release = await fetchDiscogsReleaseRecord({
       releaseUrl,
       useAuthenticatedSession,
+      throttleCaller: DISCOGS_THROTTLE_CALLERS.apiRelease,
       ...definedProps({ accessToken, accessTokenSecret }),
     });
 
