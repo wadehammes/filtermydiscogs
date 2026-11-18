@@ -16,6 +16,7 @@ import {
   toPublicPlaylistReleaseSnapshot,
   validateReleaseDataForStorage,
 } from "src/lib/release-data-validation";
+import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 import type { DiscogsRelease } from "src/types";
 import type {
   PlaylistTrackRow,
@@ -138,7 +139,10 @@ export const loadPublicPlaylist = async (
       playlistId: playlist.id,
       releases,
     }).catch((error: unknown) => {
-      console.error("Failed to persist playlist release snapshots:", error);
+      reportInfrastructureFailure("public_playlist", error, {
+        operation: "persist_playlist_release_snapshots",
+        playlistId: playlist.id,
+      });
     });
   }
 

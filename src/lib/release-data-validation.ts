@@ -63,6 +63,17 @@ export const toPublicReleaseSnapshot = (
   };
 };
 
+export const toValidatedPublicPlaylistRelease = (
+  releaseData: unknown,
+): DiscogsRelease | undefined => {
+  const validated = validateReleaseDataForStorage(releaseData);
+  if (!("release" in validated)) {
+    return undefined;
+  }
+
+  return toPublicPlaylistReleaseSnapshot(validated.release);
+};
+
 export const toPublicPlaylistReleaseSnapshot = (
   release: DiscogsRelease,
 ): DiscogsRelease => {

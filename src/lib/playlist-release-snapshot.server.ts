@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "src/lib/db";
 import {
-  toPublicPlaylistReleaseSnapshot,
+  toValidatedPublicPlaylistRelease,
   validateReleaseDataForStorage,
 } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
@@ -35,15 +35,12 @@ export const loadPlaylistReleaseSnapshots = async ({
   });
 
   for (const row of rows) {
-    const validated = validateReleaseDataForStorage(row.release_data);
-    if (!("release" in validated)) {
+    const snapshot = toValidatedPublicPlaylistRelease(row.release_data);
+    if (!snapshot) {
       continue;
     }
 
-    snapshotsByInstanceId.set(
-      row.instance_id,
-      toPublicPlaylistReleaseSnapshot(validated.release),
-    );
+    snapshotsByInstanceId.set(row.instance_id, snapshot);
   }
 
   return snapshotsByInstanceId;
