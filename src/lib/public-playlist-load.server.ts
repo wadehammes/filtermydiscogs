@@ -16,10 +16,7 @@ import {
   type PublicPlaylistRow,
 } from "src/lib/public-playlist-query.server";
 import { resolvePublicShareUsername } from "src/lib/public-share-username.server";
-import {
-  toPublicPlaylistReleaseSnapshot,
-  validateReleaseDataForStorage,
-} from "src/lib/release-data-validation";
+import { toValidatedPublicPlaylistRelease } from "src/lib/release-data-validation";
 import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 import type { DiscogsRelease } from "src/types";
 import type {
@@ -55,15 +52,12 @@ const loadOwnerReleaseSnapshots = async (
       continue;
     }
 
-    const validated = validateReleaseDataForStorage(row.release_data);
-    if (!("release" in validated)) {
+    const snapshot = toValidatedPublicPlaylistRelease(row.release_data);
+    if (!snapshot) {
       continue;
     }
 
-    byInstance.set(
-      row.instance_id,
-      toPublicPlaylistReleaseSnapshot(validated.release),
-    );
+    byInstance.set(row.instance_id, snapshot);
   }
 
   return instanceIds
