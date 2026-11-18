@@ -19,7 +19,9 @@ describe("discogsThrottlePriority.constants", () => {
       resolveDiscogsThrottlePriority(DISCOGS_THROTTLE_CALLERS.apiReleaseBatch),
     ).toBe("interactive");
     expect(
-      resolveDiscogsThrottlePriority(DISCOGS_THROTTLE_CALLERS.publicReleasePage),
+      resolveDiscogsThrottlePriority(
+        DISCOGS_THROTTLE_CALLERS.publicReleasePage,
+      ),
     ).toBe("interactive");
   });
 
