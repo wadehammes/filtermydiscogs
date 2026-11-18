@@ -1,5 +1,9 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import {
+  DISCOGS_THROTTLE_PRIORITY_VALUES,
+  resolveDiscogsThrottlePriority,
+} from "src/constants/discogsThrottlePriority.constants";
+import {
   computeDiscogsRateLimitWaitMs,
   getDiscogsRateLimitSnapshot,
 } from "src/lib/discogs-rate-limit";
@@ -42,7 +46,92 @@ const queueWaitTimeoutMs = parseEnvMs(
 );
 
 let lastRequestAt = 0;
-let chain: Promise<unknown> = Promise.resolve();
+
+type ThrottleJob<T> = {
+  priority: number;
+  queuedAt: number;
+  caller: ReturnType<typeof getDiscogsThrottleCaller>;
+  work: () => Promise<T>;
+  resolve: (value: T) => void;
+  reject: (error: unknown) => void;
+  started: boolean;
+  clearQueueTimeout: () => void;
+};
+
+const pendingJobs: ThrottleJob<unknown>[] = [];
+let pumpPromise: Promise<void> = Promise.resolve();
+
+const compareThrottleJobs = (
+  left: ThrottleJob<unknown>,
+  right: ThrottleJob<unknown>,
+): number => right.priority - left.priority || left.queuedAt - right.queuedAt;
+
+const runThrottleJob = async <T>(job: ThrottleJob<T>): Promise<void> => {
+  const queueWaitMs = Date.now() - job.queuedAt;
+  let rateLimitWaitMs = 0;
+
+  try {
+    const result = await throttleContext.run(true, async () => {
+      const now = Date.now();
+      const waitMs = computeDiscogsRateLimitWaitMs({
+        snapshot: getDiscogsRateLimitSnapshot(),
+        lastRequestAt,
+        now,
+        fallbackIntervalMs,
+      });
+
+      rateLimitWaitMs = waitMs;
+
+      if (waitMs > 0) {
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, waitMs);
+        });
+      }
+
+      try {
+        return await job.work();
+      } finally {
+        lastRequestAt = Date.now();
+      }
+    });
+
+    if (queueWaitMs > 0 || rateLimitWaitMs > 0) {
+      recordDiscogsThrottleTelemetry({
+        caller: job.caller,
+        queueWaitMs,
+        rateLimitWaitMs,
+        timedOut: false,
+      });
+    }
+
+    job.resolve(result);
+  } catch (error) {
+    if (queueWaitMs > 0 || rateLimitWaitMs > 0) {
+      recordDiscogsThrottleTelemetry({
+        caller: job.caller,
+        queueWaitMs,
+        rateLimitWaitMs,
+        timedOut: false,
+      });
+    }
+
+    job.reject(error);
+  }
+};
+
+const pumpThrottleQueue = async (): Promise<void> => {
+  while (pendingJobs.length > 0) {
+    pendingJobs.sort(compareThrottleJobs);
+    const next = pendingJobs.shift() as ThrottleJob<unknown>;
+    next.started = true;
+    next.clearQueueTimeout();
+    await runThrottleJob(next);
+  }
+};
+
+const schedulePump = (): void => {
+  pumpPromise = pumpPromise.then(pumpThrottleQueue, pumpThrottleQueue);
+};
 
 export const runThrottledDiscogsRequest = <T>(
   work: () => Promise<T>,
@@ -57,94 +146,47 @@ export const runThrottledDiscogsRequest = <T>(
 
   const queuedAt = Date.now();
   const caller = getDiscogsThrottleCaller();
+  const priorityKey = resolveDiscogsThrottlePriority(caller);
+  const priority = DISCOGS_THROTTLE_PRIORITY_VALUES[priorityKey];
 
-  let releaseSlotWait!: () => void;
-  const slotAcquired = new Promise<void>((resolve) => {
-    releaseSlotWait = resolve;
-  });
-
-  let abandoned = false;
-
-  const scheduled = chain.then(async () => {
-    releaseSlotWait();
-
-    if (abandoned) {
-      return undefined;
-    }
-
-    const queueWaitMs = Date.now() - queuedAt;
-    let rateLimitWaitMs = 0;
-
-    try {
-      return await throttleContext.run(true, async () => {
-        const now = Date.now();
-        const waitMs = computeDiscogsRateLimitWaitMs({
-          snapshot: getDiscogsRateLimitSnapshot(),
-          lastRequestAt,
-          now,
-          fallbackIntervalMs,
-        });
-
-        rateLimitWaitMs = waitMs;
-
-        if (waitMs > 0) {
-          await new Promise<void>((resolve) => {
-            setTimeout(resolve, waitMs);
-          });
+  return new Promise<T>((resolve, reject) => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const job: ThrottleJob<T> = {
+      priority,
+      queuedAt,
+      caller,
+      work,
+      resolve,
+      reject,
+      started: false,
+      clearQueueTimeout: () => {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+          timeoutId = undefined;
         }
+      },
+    };
 
-        try {
-          return await work();
-        } finally {
-          lastRequestAt = Date.now();
-        }
-      });
-    } finally {
-      if (queueWaitMs > 0 || rateLimitWaitMs > 0) {
-        recordDiscogsThrottleTelemetry({
-          caller,
-          queueWaitMs,
-          rateLimitWaitMs,
-          timedOut: false,
-        });
+    timeoutId = setTimeout(() => {
+      if (job.started) {
+        return;
       }
-    }
-  });
 
-  chain = scheduled.then(
-    () => undefined,
-    () => undefined,
-  );
+      const index = pendingJobs.indexOf(job as ThrottleJob<unknown>);
+      if (index >= 0) {
+        pendingJobs.splice(index, 1);
+      }
 
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  let queueWaitError: DiscogsThrottleQueueError | undefined;
-
-  return (async () => {
-    await Promise.race([
-      slotAcquired,
-      new Promise<void>((resolve) => {
-        timeoutId = setTimeout(() => {
-          abandoned = true;
-          queueWaitError = new DiscogsThrottleQueueError();
-          resolve();
-        }, queueWaitTimeoutMs);
-      }),
-    ]);
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId);
-    }
-
-    if (queueWaitError) {
       recordDiscogsThrottleTelemetry({
         caller,
         queueWaitMs: Date.now() - queuedAt,
         rateLimitWaitMs: 0,
         timedOut: true,
       });
-      throw queueWaitError;
-    }
+      reject(new DiscogsThrottleQueueError());
+    }, queueWaitTimeoutMs);
 
-    return scheduled as Promise<T>;
-  })();
+    pendingJobs.push(job as ThrottleJob<unknown>);
+    schedulePump();
+  });
 };
