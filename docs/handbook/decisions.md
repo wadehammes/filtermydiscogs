@@ -2,6 +2,8 @@
 
 Short **choose-the-right-tool** guide for agents and contributors. When a row points to a chapter, read that chapter before editing—not this page alone.
 
+**Narrative feature docs (decisions + code examples):** [feature-guides/README.md](feature-guides/README.md) — use when you need *why* a flow works the way it does (e.g. public playlist `snapshotsOnly`, playback shells), not just which file to edit.
+
 ## Quick read (agents)
 
 If you only have a few minutes:

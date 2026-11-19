@@ -9,14 +9,15 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 ## How to read this handbook
 
 1. **Orientation** — [architecture.md](architecture.md): stack, folders, and how data gets from Discogs and Postgres to the screen.
-2. **Day-to-day coding** — [conventions.md](conventions.md): TypeScript, React, CSS (Biome + Stylelint), tests (**TDD**, **factories**, flat hook **`describe`** — [Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents)).
-3. **Discogs integration** — [discogs.md](discogs.md): OAuth, API service, username validation, cookies.
-4. **Database** — [database.md](database.md): Prisma schema, crates, route handlers.
-5. **UI structure** — [components.md](components.md): folders, naming, tests.
-6. **App patterns** — [patterns.md](patterns.md): Jotai (filters/view), context providers, React Query, auth flow, public crates.
-7. **Operations** — [platform.md](platform.md): CI, env, `next.config`, security headers.
-8. **Test data** — [factories.md](factories.md): Faker factories for releases, collections, crates.
-9. **Where things live** — [source-layout.md](source-layout.md): `src/app`, `src/components`, hooks, API routes.
+2. **Feature areas (why we built it this way)** — [feature-guides/README.md](feature-guides/README.md): human-readable breakdowns, decisions, and code snapshots per product area.
+3. **Day-to-day coding** — [conventions.md](conventions.md): TypeScript, React, CSS (Biome + Stylelint), tests (**TDD**, **factories**, flat hook **`describe`** — [Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents)).
+4. **Discogs integration** — [discogs.md](discogs.md): OAuth, API service, username validation, cookies.
+5. **Database** — [database.md](database.md): Prisma schema, crates, route handlers.
+6. **UI structure** — [components.md](components.md): folders, naming, tests.
+7. **App patterns** — [patterns.md](patterns.md): Jotai (filters/view), context providers, React Query, auth flow, public crates.
+8. **Operations** — [platform.md](platform.md): CI, env, `next.config`, security headers.
+9. **Test data** — [factories.md](factories.md): Faker factories for releases, collections, crates.
+10. **Where things live** — [source-layout.md](source-layout.md): `src/app`, `src/components`, hooks, API routes.
 
 ## Index of docs
 
@@ -24,6 +25,7 @@ Skim the index, bookmark what you need, and come back when you touch that area. 
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | [glossary.md](glossary.md)                                           | Domain terms: instance vs release, `track_key`, crates vs playlists, auth/session vocabulary.                    |
 | [decisions.md](decisions.md)                                         | **X vs Y** plus **feature playbooks** (filter, API, hook, component, analytics, playback, storage).            |
+| [feature-guides/](feature-guides/README.md)                          | **Narrative feature areas**: rationale, tradeoffs, and code examples ([public sharing](feature-guides/public-sharing.md), [client state](feature-guides/client-state.md), …). |
 | [agent-workflow.md](agent-workflow.md)                               | Agent finish checklist, `pr-prep`, stop hooks, handbook sync.                                               |
 | [architecture.md](architecture.md)                                   | Tech stack, directory map, data flow, key config. Orientation after decisions.                             |
 | [api-routes.md](api-routes.md)                                       | Auth tiers, `api.*` → route map, validation/errors; deep route tables in [database.md](database.md).         |
