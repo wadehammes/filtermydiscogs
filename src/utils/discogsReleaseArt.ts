@@ -124,6 +124,82 @@ export const resolveDiscogsReleaseIdForPlaylistTrack = (
   return parseReleaseId(crateSnapshot);
 };
 
+export const playlistReleaseHasDisplayArt = (
+  release: DiscogsRelease | undefined,
+): boolean => {
+  if (!release) {
+    return false;
+  }
+
+  const thumb = release.basic_information.thumb?.trim() ?? "";
+  const cover = release.basic_information.cover_image?.trim() ?? "";
+
+  return thumb.length > 0 || cover.length > 0;
+};
+
+export const collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration = (
+  tracks: PlaylistTrackRow[],
+  releaseByInstanceId: Map<string, DiscogsRelease>,
+): string[] => {
+  const ids = new Set<string>();
+
+  for (const track of tracks) {
+    const release = releaseByInstanceId.get(String(track.instance_id));
+
+    if (playlistReleaseHasDisplayArt(release)) {
+      continue;
+    }
+
+    const discogsId = resolveDiscogsReleaseIdForPlaylistTrack(track, release);
+
+    if (discogsId !== null) {
+      ids.add(String(discogsId));
+    }
+  }
+
+  return [...ids];
+};
+
+export const buildDiscogsReleaseDetailSeedFromPlaylistRelease = (
+  release: DiscogsRelease,
+): DiscogsReleaseDetail | null => {
+  const releaseId = release.basic_information.id;
+
+  if (releaseId == null || releaseId <= 0) {
+    return null;
+  }
+
+  const thumb = release.basic_information.thumb?.trim() ?? "";
+  const cover = release.basic_information.cover_image?.trim() ?? "";
+
+  if (!(thumb || cover)) {
+    return null;
+  }
+
+  const primaryUri = cover || thumb;
+
+  const seed: DiscogsReleaseDetail = {
+    id: releaseId,
+    uri:
+      release.basic_information.uri ??
+      `https://www.discogs.com/release/${releaseId}`,
+    title: release.basic_information.title,
+    artists: release.basic_information.artists,
+    thumb: thumb || cover,
+    images: [{ type: "primary", uri: primaryUri }],
+  };
+
+  if (Array.isArray(release.tracklist)) {
+    seed.tracklist = release.tracklist;
+  }
+
+  if (Array.isArray(release.videos)) {
+    seed.videos = release.videos;
+  }
+
+  return seed;
+};
+
 export const collectUniquePlaylistDiscogsReleaseIds = (
   tracks: PlaylistTrackRow[],
   releaseByInstanceId: Map<string, DiscogsRelease>,
@@ -153,17 +229,17 @@ export const mergePlaylistReleaseWithDiscogsDetail = (
     return fromDetail;
   }
 
+  const existingThumb = release.basic_information.thumb?.trim() ?? "";
+  const existingCover = release.basic_information.cover_image?.trim() ?? "";
+
   return {
     ...release,
     ...fromDetail,
     basic_information: {
       ...release.basic_information,
       ...fromDetail.basic_information,
-      thumb:
-        fromDetail.basic_information.thumb || release.basic_information.thumb,
-      cover_image:
-        fromDetail.basic_information.cover_image ||
-        release.basic_information.cover_image,
+      thumb: existingThumb || fromDetail.basic_information.thumb,
+      cover_image: existingCover || fromDetail.basic_information.cover_image,
     },
     tracklist: detail.tracklist ?? release.tracklist,
     videos: detail.videos ?? release.videos,

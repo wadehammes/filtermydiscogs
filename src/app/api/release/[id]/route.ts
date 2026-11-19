@@ -1,11 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
-import {
-  buildDiscogsProxyErrorPayload,
-  discogsThrottleQueueResponseInit,
-  isDiscogsThrottleQueueError,
-} from "src/lib/discogs-api-error";
+import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
 import { fetchDiscogsReleaseRecord } from "src/lib/fetchDiscogsReleaseRecord.server";
 import {
   DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG,
@@ -88,12 +84,6 @@ export async function GET(
     });
   } catch (error) {
     rethrowNextInternalError(error);
-    if (isDiscogsThrottleQueueError(error)) {
-      return NextResponse.json(
-        { error: "Discogs request queue is busy; retry shortly" },
-        discogsThrottleQueueResponseInit(error),
-      );
-    }
     const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
       error,
       fallbackMessage: "Failed to fetch release",

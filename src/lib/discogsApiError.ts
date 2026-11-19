@@ -81,6 +81,9 @@ export const DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE =
 const DISCOGS_RATE_LIMIT_MESSAGE =
   "Rate limit exceeded. Please try again in a moment.";
 
+export const DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE =
+  "Discogs request queue is busy; retry shortly";
+
 export const mapDiscogsUpstreamToProxyStatus = (
   upstreamStatus: number | undefined,
   errorMessage: string,
