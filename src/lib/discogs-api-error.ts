@@ -1,8 +1,11 @@
 import {
   type BuildDiscogsProxyErrorPayloadParams,
+  DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE,
   discogsRateLimitResponseInit,
+  discogsThrottleQueueResponseInit,
   getDiscogsApiErrorStatus,
   getDiscogsProxyErrorMessage,
+  isDiscogsThrottleQueueError,
   mapDiscogsUpstreamToProxyStatus,
 } from "src/lib/discogsApiError";
 import { reportApiRouteFailure } from "src/lib/sentry/reportApiRouteFailure";
@@ -10,14 +13,13 @@ import { reportApiRouteFailure } from "src/lib/sentry/reportApiRouteFailure";
 export type { DiscogsApiError } from "src/lib/discogsApiError";
 export {
   DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS,
+  DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE,
   DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE,
   discogsRateLimitResponseInit,
-  discogsThrottleQueueResponseInit,
   getDiscogsApiErrorStatus,
   getDiscogsRateLimitRetryAfterSeconds,
   isDiscogsFetchTimeoutError,
   isDiscogsInvalidTokenStatus,
-  isDiscogsThrottleQueueError,
   mapDiscogsUpstreamToProxyStatus,
   resolveDiscogsVerificationFailureStatus,
 } from "src/lib/discogsApiError";
@@ -30,6 +32,16 @@ export const buildDiscogsProxyErrorPayload = ({
   status: number;
   rateLimitInit?: ReturnType<typeof discogsRateLimitResponseInit>;
 } => {
+  if (isDiscogsThrottleQueueError(error)) {
+    const throttleInit = discogsThrottleQueueResponseInit(error);
+
+    return {
+      body: { error: DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE },
+      status: throttleInit.status,
+      rateLimitInit: { headers: throttleInit.headers },
+    };
+  }
+
   const errorMessage = error instanceof Error ? error.message : fallbackMessage;
   const upstreamStatus = getDiscogsApiErrorStatus(error);
   const status = mapDiscogsUpstreamToProxyStatus(upstreamStatus, errorMessage);

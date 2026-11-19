@@ -4,12 +4,14 @@ import { api } from "src/api/urls";
 import { RELEASE_BATCH_MAX_IDS } from "src/constants/collection";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   chunkDiscogsReleaseIds,
   fetchDiscogsReleaseDetailsIntoCache,
   getUncachedDiscogsReleaseIds,
   normalizeDiscogsReleaseIds,
   readDiscogsReleaseDetailsFromCache,
+  seedDiscogsReleaseDetailCacheFromPlaylistReleases,
 } from "src/utils/discogsReleaseBatchCache";
 
 jest.mock("src/api/urls");
@@ -100,5 +102,25 @@ describe("discogsReleaseBatchCache", () => {
     await fetchDiscogsReleaseDetailsIntoCache(queryClient, ["249504"]);
 
     expect(api.discogsReleaseBatch).not.toHaveBeenCalled();
+  });
+
+  it("when playlist SSR snapshots include art, seeds release detail cache without refetching", () => {
+    const release = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 249504,
+        thumb: "https://i.discogs.com/ssr-thumb.jpg",
+        cover_image: "https://i.discogs.com/ssr-cover.jpg",
+      },
+    });
+
+    seedDiscogsReleaseDetailCacheFromPlaylistReleases(queryClient, [release]);
+
+    expect(
+      readDiscogsReleaseDetailsFromCache(queryClient, ["249504"]).get("249504")
+        ?.thumb,
+    ).toBe("https://i.discogs.com/ssr-thumb.jpg");
+    expect(getUncachedDiscogsReleaseIds(queryClient, ["249504"])).toEqual([]);
   });
 });

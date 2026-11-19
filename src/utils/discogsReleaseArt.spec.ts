@@ -6,6 +6,8 @@ import {
   applyDiscogsDetailImagesToRelease,
   buildPlaylistReleaseFromDiscogsDetail,
   collectUniquePlaylistDiscogsReleaseIds,
+  collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration,
+  mergePlaylistReleaseWithDiscogsDetail,
   resolveDiscogsReleaseDetailCoverUri,
 } from "src/utils/discogsReleaseArt";
 
@@ -43,6 +45,92 @@ describe("collectUniquePlaylistDiscogsReleaseIds", () => {
         new Map([["9001", release]]),
       ),
     ).toEqual(["249504"]);
+  });
+});
+
+describe("collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration", () => {
+  it("when the playlist snapshot already has cover art, does not request Discogs hydration", () => {
+    const track = playlistTrackRowFactory.opening({
+      discogs_release_id: 249504,
+    });
+    const release = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 249504,
+        thumb: "https://i.discogs.com/snapshot-thumb.jpg",
+        cover_image: "https://i.discogs.com/snapshot-cover.jpg",
+      },
+    });
+
+    expect(
+      collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration(
+        [track],
+        new Map([["9001", release]]),
+      ),
+    ).toEqual([]);
+  });
+
+  it("when snapshot art is missing, includes the discogs release id", () => {
+    const track = playlistTrackRowFactory.opening({
+      discogs_release_id: 249504,
+    });
+    const release = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 249504,
+        thumb: "",
+        cover_image: "",
+      },
+    });
+
+    expect(
+      collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration(
+        [track],
+        new Map([["9001", release]]),
+      ),
+    ).toEqual(["249504"]);
+  });
+});
+
+describe("mergePlaylistReleaseWithDiscogsDetail", () => {
+  it("keeps snapshot cover art when Discogs hydration returns different image urls", () => {
+    const track = playlistTrackRowFactory.opening({
+      discogs_release_id: 249504,
+    });
+    const snapshot = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 249504,
+        thumb: "https://i.discogs.com/snapshot-thumb.jpg",
+        cover_image: "https://i.discogs.com/snapshot-cover.jpg",
+      },
+    });
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 249504,
+      thumb: "https://i.discogs.com/fresh-thumb.jpg",
+      images: [
+        {
+          type: "primary",
+          uri: "https://i.discogs.com/fresh-cover.jpg",
+        },
+      ],
+    });
+
+    const merged = mergePlaylistReleaseWithDiscogsDetail(
+      snapshot,
+      detail,
+      track,
+    );
+
+    expect(merged.basic_information.thumb).toBe(
+      "https://i.discogs.com/snapshot-thumb.jpg",
+    );
+    expect(merged.basic_information.cover_image).toBe(
+      "https://i.discogs.com/snapshot-cover.jpg",
+    );
   });
 });
 

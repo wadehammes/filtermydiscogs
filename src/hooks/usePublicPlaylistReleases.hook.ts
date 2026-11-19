@@ -1,15 +1,19 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import type { DiscogsRelease } from "src/types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
 import {
-  collectUniquePlaylistDiscogsReleaseIds,
+  collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration,
   mergePlaylistReleaseWithDiscogsDetail,
   resolveDiscogsReleaseIdForPlaylistTrack,
 } from "src/utils/discogsReleaseArt";
-import { EMPTY_DISCOGS_RELEASE_DETAIL_MAP } from "src/utils/discogsReleaseBatchCache";
+import {
+  EMPTY_DISCOGS_RELEASE_DETAIL_MAP,
+  seedDiscogsReleaseDetailCacheFromPlaylistReleases,
+} from "src/utils/discogsReleaseBatchCache";
 
 export const usePublicPlaylistReleases = ({
   tracks,
@@ -18,6 +22,8 @@ export const usePublicPlaylistReleases = ({
   tracks: PlaylistTrackRow[];
   apiReleases: DiscogsRelease[];
 }) => {
+  const queryClient = useQueryClient();
+
   const apiReleaseByInstanceId = useMemo(() => {
     const map = new Map<string, DiscogsRelease>();
     for (const release of apiReleases) {
@@ -26,9 +32,17 @@ export const usePublicPlaylistReleases = ({
     return map;
   }, [apiReleases]);
 
+  useMemo(() => {
+    seedDiscogsReleaseDetailCacheFromPlaylistReleases(queryClient, apiReleases);
+    return null;
+  }, [apiReleases, queryClient]);
+
   const uniqueDiscogsReleaseIds = useMemo(
     () =>
-      collectUniquePlaylistDiscogsReleaseIds(tracks, apiReleaseByInstanceId),
+      collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration(
+        tracks,
+        apiReleaseByInstanceId,
+      ),
     [apiReleaseByInstanceId, tracks],
   );
 

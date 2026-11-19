@@ -1,7 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
+import { DiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
 import {
   buildDiscogsProxyErrorPayload,
   DISCOGS_RATE_LIMIT_RETRY_AFTER_SECONDS,
+  DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE,
   DISCOGS_UPSTREAM_UNAVAILABLE_MESSAGE,
   getDiscogsRateLimitRetryAfterSeconds,
   mapDiscogsUpstreamToProxyStatus,
@@ -26,6 +28,19 @@ describe("discogs-api-error", () => {
     );
     expect(mapDiscogsUpstreamToProxyStatus(429, "Too many requests")).toBe(429);
     expect(mapDiscogsUpstreamToProxyStatus(undefined, "network")).toBe(500);
+  });
+
+  it("when the Discogs throttle queue times out, returns 503 with Retry-After and no generic 500", () => {
+    expect(
+      buildDiscogsProxyErrorPayload({
+        error: new DiscogsThrottleQueueError(),
+        fallbackMessage: "Failed to fetch collection",
+      }),
+    ).toEqual({
+      body: { error: DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE },
+      status: 503,
+      rateLimitInit: { headers: { "Retry-After": "5" } },
+    });
   });
 
   it("builds proxy error payloads for release-style routes", () => {

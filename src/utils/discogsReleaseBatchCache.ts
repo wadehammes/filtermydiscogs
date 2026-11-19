@@ -2,7 +2,9 @@ import type { QueryClient } from "@tanstack/react-query";
 import { api } from "src/api/urls";
 import { RELEASE_BATCH_MAX_IDS } from "src/constants/collection";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
+import type { DiscogsRelease } from "src/types";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
+import { buildDiscogsReleaseDetailSeedFromPlaylistRelease } from "src/utils/discogsReleaseArt";
 
 export const EMPTY_DISCOGS_RELEASE_DETAIL_MAP = new Map<
   string,
@@ -41,6 +43,39 @@ export const getUncachedDiscogsReleaseIds = (
         discogsReleaseQueryOptions(releaseId).queryKey,
       ) === undefined,
   );
+
+export const seedDiscogsReleaseDetailCacheFromPlaylistReleases = (
+  queryClient: QueryClient,
+  playlistReleases: readonly DiscogsRelease[],
+): void => {
+  const seeds: Record<string, DiscogsReleaseDetail> = {};
+
+  for (const release of playlistReleases) {
+    const detail = buildDiscogsReleaseDetailSeedFromPlaylistRelease(release);
+
+    if (!detail) {
+      continue;
+    }
+
+    const releaseId = String(detail.id);
+
+    if (
+      queryClient.getQueryData(
+        discogsReleaseQueryOptions(releaseId).queryKey,
+      ) !== undefined
+    ) {
+      continue;
+    }
+
+    seeds[releaseId] = detail;
+  }
+
+  if (Object.keys(seeds).length === 0) {
+    return;
+  }
+
+  seedDiscogsReleaseDetailCache(queryClient, seeds);
+};
 
 const seedDiscogsReleaseDetailCache = (
   queryClient: QueryClient,

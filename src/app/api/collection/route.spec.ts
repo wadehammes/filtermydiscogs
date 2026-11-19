@@ -8,6 +8,8 @@ import {
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
+import { DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE } from "src/lib/discogs-api-error";
+import { DiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
 import { authenticatedDiscogsSessionFactory } from "src/tests/factories/AuthenticatedDiscogsSession.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { suppressConsoleError } from "src/tests/utils/suppressConsoleError";
@@ -118,6 +120,18 @@ describe("GET /api/collection", () => {
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({
       error: "Not authenticated",
+    });
+  });
+
+  it("returns 503 with Retry-After when the Discogs throttle queue times out", async () => {
+    mockGetCollection.mockRejectedValue(new DiscogsThrottleQueueError());
+
+    const response = await GET(createRequest());
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("5");
+    await expect(response.json()).resolves.toEqual({
+      error: DISCOGS_THROTTLE_QUEUE_BUSY_MESSAGE,
     });
   });
 

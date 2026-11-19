@@ -69,4 +69,34 @@ describe("usePublicPlaylistReleases", () => {
     expect(mockApi.discogsReleaseBatch).toHaveBeenCalledWith(["249504"]);
     expect(mockApi.discogsRelease).not.toHaveBeenCalled();
   });
+
+  it("when SSR snapshots already include cover art, does not call release batch", async () => {
+    const track = playlistTrackRowFactory.opening({
+      discogs_release_id: 249504,
+    });
+    const apiRelease = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: 249504,
+        thumb: "https://i.discogs.com/ssr-thumb.jpg",
+        cover_image: "https://i.discogs.com/ssr-cover.jpg",
+      },
+    });
+
+    const { result } = renderFeatureHook(() =>
+      usePublicPlaylistReleases({
+        tracks: [track],
+        apiReleases: [apiRelease],
+      }),
+    );
+
+    await waitFor(() => {
+      expect(
+        result.current.releaseByInstanceId.get("9001")?.basic_information.thumb,
+      ).toBe("https://i.discogs.com/ssr-thumb.jpg");
+    });
+
+    expect(mockApi.discogsReleaseBatch).not.toHaveBeenCalled();
+  });
 });

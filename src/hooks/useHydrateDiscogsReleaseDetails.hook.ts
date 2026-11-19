@@ -52,8 +52,14 @@ export const useHydrateDiscogsReleaseDetails = ({
     [normalizedIds, queryClient],
   );
 
+  const placeholderData = useMemo(
+    () => readDiscogsReleaseDetailsFromCache(queryClient, normalizedIds),
+    [normalizedIds, queryClient],
+  );
+
   return useQuery({
     ...options,
     enabled: enabled && normalizedIds.length > 0,
+    ...(placeholderData.size > 0 ? { placeholderData } : {}),
   });
 };
