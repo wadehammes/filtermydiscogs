@@ -81,7 +81,6 @@
 }
 
 .artworkPlaceholder {
-  background: var(--muted);
   border-radius: var(--radius-ui);
   display: block;
   height: 3.5rem;
