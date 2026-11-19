@@ -28,11 +28,9 @@ import type {
 } from "src/types/playlist.types";
 import { formatDate } from "src/utils/dateHelpers";
 import { writeLastPlayedPlaylistId } from "src/utils/lastPlayedPlaylistStorage";
-import {
-  buildPlaylistMosaicThumbUrls,
-  PLAYLIST_HERO_MOSAIC_MAX_TILES,
-} from "src/utils/playlistMosaic";
+import { PLAYLIST_HERO_MOSAIC_MAX_TILES } from "src/utils/playlistMosaic";
 import { orderPlaylistTracks } from "src/utils/playlistPlayback";
+import { resolvePublicPlaylistHeroThumbUrls } from "src/utils/publicPlaylistHeroThumbUrls";
 import { shouldShowPublicPlaylistTrackVotes } from "src/utils/publicPlaylistViewerAccess";
 import styles from "./PublicPlaylist.module.css";
 
@@ -62,20 +60,18 @@ export const PublicPlaylistClient = ({
     apiReleases,
   });
 
-  const coverThumbUrls = useMemo(() => {
-    const heroMaxTiles = PLAYLIST_HERO_MOSAIC_MAX_TILES;
-    const fromTracks = buildPlaylistMosaicThumbUrls({
-      tracks: orderedTracks,
-      releaseByInstanceId,
-      maxTiles: heroMaxTiles,
-    });
-
-    if (fromTracks.length > 0) {
-      return fromTracks;
-    }
-
-    return (data?.mosaicThumbUrls ?? []).slice(0, heroMaxTiles);
-  }, [orderedTracks, releaseByInstanceId, data?.mosaicThumbUrls]);
+  const coverThumbUrls = useMemo(
+    () =>
+      resolvePublicPlaylistHeroThumbUrls({
+        tracks: orderedTracks,
+        releaseByInstanceId,
+        maxTiles: PLAYLIST_HERO_MOSAIC_MAX_TILES,
+        ...(data?.mosaicThumbUrls !== undefined
+          ? { mosaicThumbUrls: data.mosaicThumbUrls }
+          : {}),
+      }),
+    [orderedTracks, releaseByInstanceId, data?.mosaicThumbUrls],
+  );
 
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     usePublicSelectedReleaseModal({ fallbackReleases: releases });
@@ -246,6 +242,23 @@ export const PublicPlaylistClient = ({
     </>
   );
 };
+
+export const PublicPlaylistRouteLoading = () => (
+  <main
+    aria-busy="true"
+    aria-live="polite"
+    data-testid="fmdPublicPlaylistLoading"
+    aria-label={PUBLIC_SHARED_PLAYLIST_MAIN_LABEL}
+  >
+    <PublicSharePlaybackShell>
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <PageLoader message="Loading playlist..." />
+        </div>
+      </div>
+    </PublicSharePlaybackShell>
+  </main>
+);
 
 export const PublicPlaylistPage = ({
   playlistId,

@@ -122,6 +122,37 @@ export const rollbackOptimisticPlaylistTrackVoteInQueryCaches = (
   }
 };
 
+export const publicPlaylistQueryDataEqualsForRender = (
+  current: PublicPlaylistResponse,
+  next: PublicPlaylistResponse,
+): boolean => {
+  if (current.viewerIsOwner !== next.viewerIsOwner) {
+    return false;
+  }
+
+  if ((current.playlist.username ?? "") !== (next.playlist.username ?? "")) {
+    return false;
+  }
+
+  if (current.tracks.length !== next.tracks.length) {
+    return false;
+  }
+
+  return current.tracks.every((track, index) => {
+    const other = next.tracks[index];
+
+    if (!other || track.track_key !== other.track_key) {
+      return false;
+    }
+
+    return (
+      track.viewerVote === other.viewerVote &&
+      track.upCount === other.upCount &&
+      track.downCount === other.downCount
+    );
+  });
+};
+
 export const mergePublicPlaylistResponsePreservingLocalVotes = (
   local: PublicPlaylistResponse,
   server: PublicPlaylistResponse,

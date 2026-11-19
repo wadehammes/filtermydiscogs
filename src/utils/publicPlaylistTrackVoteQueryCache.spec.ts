@@ -2,7 +2,32 @@ import { describe, expect, it } from "@jest/globals";
 import { PLAYLIST_TRACK_VOTE_UP } from "src/constants/playlistTrackVote.constants";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { publicPlaylistResponseFactory } from "src/tests/factories/PublicPlaylistResponse.factory";
-import { mergePublicPlaylistResponsePreservingLocalVotes } from "src/utils/publicPlaylistTrackVoteQueryCache";
+import {
+  mergePublicPlaylistResponsePreservingLocalVotes,
+  publicPlaylistQueryDataEqualsForRender,
+} from "src/utils/publicPlaylistTrackVoteQueryCache";
+
+describe("publicPlaylistQueryDataEqualsForRender", () => {
+  it("when viewer votes and ownership match, reports no render change", () => {
+    const response = publicPlaylistResponseFactory.build({
+      viewerIsOwner: false,
+    });
+
+    expect(
+      publicPlaylistQueryDataEqualsForRender(response, {
+        ...response,
+        playlist: { ...response.playlist, name: "Renamed on server only" },
+      }),
+    ).toBe(true);
+  });
+
+  it("when viewerIsOwner differs, reports a render change", () => {
+    const base = publicPlaylistResponseFactory.build({ viewerIsOwner: false });
+    const next = { ...base, viewerIsOwner: true as const };
+
+    expect(publicPlaylistQueryDataEqualsForRender(base, next)).toBe(false);
+  });
+});
 
 describe("mergePublicPlaylistResponsePreservingLocalVotes", () => {
   it("keeps local vote fields when hydration returns stale counts", () => {

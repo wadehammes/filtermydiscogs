@@ -22,7 +22,26 @@ export const resolvePublicPlaylistViewerIsOwner = (
   }
 
   if (auth.isCheckingAuth) {
-    return true;
+    if (response.viewerIsOwner === true) {
+      return true;
+    }
+
+    if (response.viewerIsOwner === false) {
+      return false;
+    }
+
+    if (auth.isAuthenticated && auth.username) {
+      const playlistUsername = normalizeShareUsername(
+        response.playlist.username,
+      );
+      const viewerUsername = normalizeShareUsername(auth.username);
+
+      if (playlistUsername && viewerUsername) {
+        return playlistUsername === viewerUsername;
+      }
+    }
+
+    return false;
   }
 
   if (auth.isAuthenticated && auth.username) {

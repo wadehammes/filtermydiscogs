@@ -1,7 +1,12 @@
+import crypto from "node:crypto";
 import { beforeEach, describe, expect, it } from "@jest/globals";
 
 jest.mock("src/lib/discogs-fetch", () => ({
   discogsFetch: jest.fn(),
+}));
+
+jest.mock("src/lib/discogs-request-throttle", () => ({
+  runThrottledDiscogsRequest: <T>(work: () => Promise<T>) => work(),
 }));
 
 import { discogsFetch } from "src/lib/discogs-fetch";
@@ -35,7 +40,7 @@ describe("discogsOAuthService", () => {
     });
   });
 
-  it("does not call Math.random when signing OAuth consumer requests", async () => {
+  it("uses crypto.randomInt for OAuth nonces instead of Math.random", async () => {
     mockDiscogsFetch.mockResolvedValue(
       new Response("{}", {
         status: 200,
@@ -43,13 +48,16 @@ describe("discogsOAuthService", () => {
       }),
     );
     const mathRandom = jest.spyOn(Math, "random");
+    const randomInt = jest.spyOn(crypto, "randomInt");
 
     await discogsOAuthService.makeConsumerRequest(
       "https://api.discogs.com/releases/1",
       "GET",
     );
 
+    expect(randomInt).toHaveBeenCalled();
     expect(mathRandom).not.toHaveBeenCalled();
+    randomInt.mockRestore();
     mathRandom.mockRestore();
   });
 

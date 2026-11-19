@@ -134,6 +134,7 @@ describe("GET /api/playlists/public/[id]", () => {
     expect(response.status).toBe(200);
     expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(PUBLIC_PLAYLIST_ID, {
       playlist: playlistRow,
+      discogsHydration: "snapshotsOnly",
     });
     const body = (await response.json()) as {
       playlist: { name: string };
@@ -177,7 +178,46 @@ describe("GET /api/playlists/public/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(mockAttach).not.toHaveBeenCalled();
+    expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(PUBLIC_PLAYLIST_ID, {
+      playlist: playlistRow,
+      discogsHydration: "snapshotsOnly",
+    });
     const body = (await response.json()) as { viewerIsOwner?: boolean };
     expect(body.viewerIsOwner).toBe(true);
+  });
+
+  it("when discogsHydration=full is requested, passes full hydration to the loader", async () => {
+    const playlistRow = publicPlaylistRowFactory.build({
+      id: PUBLIC_PLAYLIST_ID,
+    });
+    mockFindPublicPlaylistById.mockResolvedValue(playlistRow);
+    mockLoadPublicPlaylist.mockResolvedValue(
+      publicPlaylistResponseFactory.build(),
+    );
+
+    const response = await GET(
+      new NextRequest(
+        `http://localhost/api/playlists/public/${PUBLIC_PLAYLIST_ID}?discogsHydration=full`,
+      ),
+      { params: Promise.resolve({ id: PUBLIC_PLAYLIST_ID }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(PUBLIC_PLAYLIST_ID, {
+      playlist: playlistRow,
+      discogsHydration: "full",
+    });
+  });
+
+  it("returns 400 for an invalid discogsHydration query value", async () => {
+    const response = await GET(
+      new NextRequest(
+        `http://localhost/api/playlists/public/${PUBLIC_PLAYLIST_ID}?discogsHydration=invalid`,
+      ),
+      { params: Promise.resolve({ id: PUBLIC_PLAYLIST_ID }) },
+    );
+
+    expect(response.status).toBe(400);
+    expect(mockLoadPublicPlaylist).not.toHaveBeenCalled();
   });
 });

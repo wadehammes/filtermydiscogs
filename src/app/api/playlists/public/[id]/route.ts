@@ -23,6 +23,7 @@ import {
   readPublicPlaylistAnonymousVoterId,
   setPublicPlaylistAnonymousVoterCookie,
 } from "src/lib/public-playlist-voter.server";
+import { publicPlaylistGetQuerySchema } from "src/lib/validation/playlist.schemas";
 
 export async function GET(
   request: NextRequest,
@@ -46,6 +47,19 @@ export async function GET(
         { status: 400 },
       );
     }
+
+    const queryParse = publicPlaylistGetQuerySchema.safeParse({
+      discogsHydration:
+        request.nextUrl.searchParams.get("discogsHydration") ?? undefined,
+    });
+
+    if (!queryParse.success) {
+      const message =
+        queryParse.error.issues[0]?.message ?? "Invalid query parameters";
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+
+    const { discogsHydration } = queryParse.data;
 
     const playlistRow = await findPublicPlaylistById(id);
 
@@ -83,7 +97,10 @@ export async function GET(
       });
     }
 
-    const payload = await loadPublicPlaylist(id, { playlist: playlistRow });
+    const payload = await loadPublicPlaylist(id, {
+      playlist: playlistRow,
+      discogsHydration,
+    });
 
     if (!payload) {
       return NextResponse.json(

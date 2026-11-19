@@ -47,12 +47,28 @@ describe("publicPlaylistViewerAccess", () => {
     expect(resolvePublicPlaylistViewerIsOwner(response, authOwner)).toBe(false);
   });
 
-  it("when auth is still checking, resolvePublicPlaylistViewerIsOwner treats ownership as unresolved and returns true", () => {
+  it("when auth is still checking, resolvePublicPlaylistViewerIsOwner only assumes owner when the API or usernames say so", () => {
     const response = publicPlaylistResponseFactory.build();
 
     expect(resolvePublicPlaylistViewerIsOwner(response, authChecking)).toBe(
-      true,
+      false,
     );
+
+    expect(
+      resolvePublicPlaylistViewerIsOwner(
+        publicPlaylistResponseFactory.build({ viewerIsOwner: true }),
+        authChecking,
+      ),
+    ).toBe(true);
+
+    expect(
+      resolvePublicPlaylistViewerIsOwner(
+        publicPlaylistResponseFactory.build({
+          playlist: publicPlaylistInfoFactory.build({ username: "dj-crate" }),
+        }),
+        { isCheckingAuth: true, isAuthenticated: true, username: "dj-crate" },
+      ),
+    ).toBe(true);
   });
 
   it("when usernames match before hydration, resolvePublicPlaylistViewerIsOwner returns true for the owner", () => {
@@ -87,12 +103,18 @@ describe("publicPlaylistViewerAccess", () => {
     expect(resolvePublicPlaylistViewerIsOwner(response, authOwner)).toBe(true);
   });
 
-  it("when auth is still checking, shouldShowPublicPlaylistTrackVotes hides votes until session resolves", () => {
+  it("when auth is still checking, shouldShowPublicPlaylistTrackVotes keeps guest vote UI stable", () => {
     const response = publicPlaylistResponseFactory.build();
 
     expect(shouldShowPublicPlaylistTrackVotes(response, authChecking)).toBe(
-      false,
+      true,
     );
+    expect(
+      shouldShowPublicPlaylistTrackVotes(
+        publicPlaylistResponseFactory.build({ viewerIsOwner: true }),
+        authChecking,
+      ),
+    ).toBe(false);
     expect(shouldShowPublicPlaylistTrackVotes(response, authGuest)).toBe(true);
   });
 
