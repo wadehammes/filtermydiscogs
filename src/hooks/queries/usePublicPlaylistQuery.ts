@@ -2,7 +2,10 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { api } from "src/api/urls";
 import type { PublicPlaylistResponse } from "src/types/playlist.types";
-import { mergePublicPlaylistResponsePreservingLocalVotes } from "src/utils/publicPlaylistTrackVoteQueryCache";
+import {
+  mergePublicPlaylistResponsePreservingLocalVotes,
+  publicPlaylistQueryDataEqualsForRender,
+} from "src/utils/publicPlaylistTrackVoteQueryCache";
 import { PublicPlaylistQueryKeys } from "./querykeys.constants";
 
 const PUBLIC_PLAYLIST_STALE_MS = 5 * 60 * 1000;
@@ -58,25 +61,54 @@ export const usePublicPlaylistQuery = ({
     }
 
     const queryKey = PublicPlaylistQueryKeys.byId(playlistId);
+    let cancelled = false;
 
-    void (async () => {
-      const localBefore =
-        queryClient.getQueryData<PublicPlaylistResponse>(queryKey);
+    const enrichFromApi = () => {
+      void (async () => {
+        const localBefore =
+          queryClient.getQueryData<PublicPlaylistResponse>(queryKey);
 
-      try {
-        const serverData = await api.publicPlaylist(playlistId);
-        queryClient.setQueryData<PublicPlaylistResponse>(
-          queryKey,
-          (current) => {
-            const base = current ?? localBefore ?? serverData;
-            return mergePublicPlaylistResponsePreservingLocalVotes(
-              base,
-              serverData,
-            );
-          },
-        );
-      } catch {}
-    })();
+        try {
+          const serverData = await api.publicPlaylist(playlistId);
+
+          if (cancelled) {
+            return;
+          }
+
+          queryClient.setQueryData<PublicPlaylistResponse>(
+            queryKey,
+            (current) => {
+              const base = current ?? localBefore ?? serverData;
+              const merged = mergePublicPlaylistResponsePreservingLocalVotes(
+                base,
+                serverData,
+              );
+              const previous = current ?? localBefore;
+
+              if (
+                previous &&
+                publicPlaylistQueryDataEqualsForRender(previous, merged)
+              ) {
+                return previous;
+              }
+
+              return merged;
+            },
+          );
+        } catch {}
+      })();
+    };
+
+    const frame = requestAnimationFrame(() => {
+      if (!cancelled) {
+        enrichFromApi();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+    };
   }, [hasInitialPayload, playlistId, queryClient]);
 
   return query;

@@ -57,3 +57,13 @@ export const removePlaylistTrackBodySchema = z.object({
 export const listPlaylistsQuerySchema = z.object({
   trackKey: z.string().min(1).max(512).optional(),
 });
+
+export const publicPlaylistDiscogsHydrationSchema = z.enum([
+  "full",
+  "snapshotsOnly",
+]);
+
+export const publicPlaylistGetQuerySchema = z.object({
+  discogsHydration:
+    publicPlaylistDiscogsHydrationSchema.default("snapshotsOnly"),
+});

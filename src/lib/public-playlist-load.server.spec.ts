@@ -172,7 +172,9 @@ describe("loadPublicPlaylist", () => {
       },
     ] as never);
 
-    const payload = await loadPublicPlaylist(PLAYLIST_ID);
+    const payload = await loadPublicPlaylist(PLAYLIST_ID, {
+      discogsHydration: "full",
+    });
 
     expect(payload?.tracks[0]?.discogs_release_id).toBe(249504);
     expect(payload?.releases).toHaveLength(1);

@@ -124,7 +124,7 @@ export const loadPublicPlaylist = async (
   for (const [instanceId, snapshot] of playlistSnapshots) {
     crateSnapshotsByInstanceId.set(instanceId, snapshot);
   }
-  const discogsHydration = options?.discogsHydration ?? "full";
+  const discogsHydration = options?.discogsHydration ?? "snapshotsOnly";
 
   if (discogsHydration === "full") {
     tracks = await backfillPlaylistTrackDiscogsReleaseIds({
