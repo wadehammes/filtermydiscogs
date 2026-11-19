@@ -16,6 +16,7 @@ import {
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import PauseIcon from "src/styles/icons/pause-thin.svg";
 import PlayIcon from "src/styles/icons/play-thin.svg";
+import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
@@ -152,7 +153,13 @@ export const PublicPlaylistTrackItem = ({
               sizes="56px"
             />
           ) : (
-            <span className={styles.artworkPlaceholder} aria-hidden />
+            <span
+              className={classNames(
+                skeletonPulseStyles.pulsesurface,
+                styles.artworkPlaceholder,
+              )}
+              aria-hidden
+            />
           )}
         </button>
         {canTriggerPlayback ? (
