@@ -33,11 +33,9 @@ describe("CrateDrawerDialogs", () => {
 
     await user.click(screen.getByRole("button", { name: /^empty$/i }));
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Empty Crate" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/remove all 2 releases from/i)).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toContainOneByRole("heading", { name: "Empty Crate" });
+    expect(dialog).toContainOneByText(/remove all 2 releases from/i);
   });
 
   it("opens the clear packed marks dialog from the packing toolbar", async () => {
@@ -57,10 +55,11 @@ describe("CrateDrawerDialogs", () => {
       screen.getByRole("button", { name: /clear all packed items/i }),
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Clear packed marks" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/releases stay in the crate/i)).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toContainOneByRole("heading", {
+      name: "Clear packed marks",
+    });
+    expect(dialog).toContainOneByText(/releases stay in the crate/i);
   });
 
   it("clears packed marks when confirmed", async () => {
@@ -107,7 +106,7 @@ describe("CrateDrawerDialogs", () => {
     );
     await user.click(screen.getByRole("button", { name: /^cancel$/i }));
 
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(document.body).not.toContainAnyByRole("dialog");
     expect(mockApi.clearAllPackedInCrate).not.toHaveBeenCalled();
   });
 });

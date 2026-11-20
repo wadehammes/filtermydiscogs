@@ -40,16 +40,20 @@ describe("ViewToggle", () => {
   it("highlights active view", () => {
     const { rerender } = po.renderViewToggle({ currentView: "card" });
 
-    const cardButton = screen.getByRole("button", {
-      name: "Switch to card view",
-    });
-    expect(cardButton.className).toContain("active");
+    expect(
+      screen.getByRole("button", { name: "Switch to card view" }),
+    ).toBePressed();
+    expect(
+      screen.getByRole("button", { name: "Switch to list view" }),
+    ).not.toBePressed();
 
     po.rerenderViewToggle(rerender, { currentView: "list" });
-    const listButton = screen.getByRole("button", {
-      name: "Switch to list view",
-    });
-    expect(listButton.className).toContain("active");
+    expect(
+      screen.getByRole("button", { name: "Switch to list view" }),
+    ).toBePressed();
+    expect(
+      screen.getByRole("button", { name: "Switch to card view" }),
+    ).not.toBePressed();
   });
 
   it("calls onViewChange when card view is clicked", async () => {

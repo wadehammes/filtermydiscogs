@@ -55,10 +55,7 @@ describe("CrateDrawerFooter", () => {
     expect(
       screen.getByText(/only you can view this crate/i),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^notes$/i })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+    expect(screen.getByRole("button", { name: /^notes$/i })).not.toBePressed();
     expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).not.toBeVisible();
     expect(
       screen.getByRole("group", { name: "Crate drawer actions" }),
@@ -90,10 +87,7 @@ describe("CrateDrawerFooter", () => {
 
     await user.click(screen.getByRole("button", { name: /^notes$/i }));
 
-    expect(screen.getByRole("button", { name: /^notes$/i })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(screen.getByRole("button", { name: /^notes$/i })).toBePressed();
     expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).toBeVisible();
     expect(
       screen.getByPlaceholderText("Add set notes for this gig"),
@@ -101,10 +95,7 @@ describe("CrateDrawerFooter", () => {
 
     await user.click(screen.getByRole("button", { name: /^notes$/i }));
 
-    expect(screen.getByRole("button", { name: /^notes$/i })).toHaveAttribute(
-      "aria-pressed",
-      "false",
-    );
+    expect(screen.getByRole("button", { name: /^notes$/i })).not.toBePressed();
     expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).not.toBeVisible();
   });
 });

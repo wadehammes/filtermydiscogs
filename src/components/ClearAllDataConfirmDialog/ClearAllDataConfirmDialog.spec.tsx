@@ -14,18 +14,16 @@ describe("ClearAllDataConfirmDialog", () => {
 
   it("does not render when isOpen is false", () => {
     po.renderClearAllDataConfirmDialog({ isOpen: false });
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(document.body).not.toContainAnyByRole("dialog");
   });
 
   it("renders the dialog with a confirmation phrase field when open", () => {
     po.renderClearAllDataConfirmDialog();
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
-    expect(
-      screen.getByRole("textbox", {
-        name: /type delete my account to confirm/i,
-      }),
-    ).toBeInTheDocument();
+    expect(dialog).toContainOneByRole("textbox", {
+      name: /type delete my account to confirm/i,
+    });
   });
 
   it("keeps the confirm action disabled until the exact phrase is entered", async () => {
