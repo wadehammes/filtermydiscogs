@@ -27,10 +27,10 @@ describe("ReleaseModal", () => {
     po.renderReleaseModal();
 
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Never Gonna Give You Up" }),
-    ).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toContainOneByRole("heading", {
+      name: "Never Gonna Give You Up",
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId("fmdReleaseTracklist")).toBeInTheDocument();

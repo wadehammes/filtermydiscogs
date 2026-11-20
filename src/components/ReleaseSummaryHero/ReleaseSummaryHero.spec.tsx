@@ -66,7 +66,7 @@ describe("ReleaseSummaryHero", () => {
     await waitFor(() => {
       expect(
         screen.getByRole("button", { name: "Manage crates" }),
-      ).toHaveAttribute("aria-pressed", "true");
+      ).toBePressed();
     });
 
     await user.click(screen.getByRole("button", { name: "Manage crates" }));

@@ -12,12 +12,14 @@ describe("ConfirmDialog", () => {
 
   it("does not render when isOpen is false", () => {
     po.renderConfirmDialog({ isOpen: false });
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(document.body).not.toContainAnyByRole("dialog");
   });
 
   it("renders when isOpen is true", () => {
     po.renderConfirmDialog();
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toContainOneByText("Confirm Action");
+    expect(dialog).toContainOneByText("Are you sure you want to proceed?");
   });
 
   it("renders component root when open", () => {
@@ -27,14 +29,14 @@ describe("ConfirmDialog", () => {
 
   it("displays title", () => {
     po.renderConfirmDialog();
-    expect(screen.getByText("Confirm Action")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toContainOneByText("Confirm Action");
   });
 
   it("displays message", () => {
     po.renderConfirmDialog();
-    expect(
-      screen.getByText("Are you sure you want to proceed?"),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toContainOneByText(
+      "Are you sure you want to proceed?",
+    );
   });
 
   it("calls onConfirm when confirm button is clicked", async () => {

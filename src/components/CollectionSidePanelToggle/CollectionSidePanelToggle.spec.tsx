@@ -30,10 +30,24 @@ describe("CollectionSidePanelToggle", () => {
 
     expect(
       screen.getByRole("button", { name: "Open crates panel" }),
-    ).toHaveAttribute("aria-pressed", "false");
+    ).not.toBePressed();
     expect(
       screen.getByRole("button", { name: "Open playlists panel" }),
-    ).toHaveAttribute("aria-pressed", "false");
+    ).not.toBePressed();
+  });
+
+  it("highlights the active segment when the drawer is open", () => {
+    po.renderCollectionSidePanelToggle({
+      sidePanel: "crates",
+      isDrawerOpen: true,
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Close crates panel" }),
+    ).toBePressed();
+    expect(
+      screen.getByRole("button", { name: "Open playlists panel" }),
+    ).not.toBePressed();
   });
 
   it("calls onSelectSidePanel when a segment is clicked", async () => {

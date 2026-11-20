@@ -53,7 +53,7 @@ describe("ReleasesTableRowActions", () => {
     await user.click(screen.getByRole("button", { name: "Add release notes" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(document.body).toContainAnyByRole("dialog");
     });
   });
 });

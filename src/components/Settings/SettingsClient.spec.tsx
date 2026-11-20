@@ -55,16 +55,15 @@ describe("SettingsClient", () => {
       screen.getByRole("button", { name: "Clear all stored data" }),
     );
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 2, name: "Clear all stored data" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/delete all stored crates/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("textbox", {
-        name: /type delete my account to confirm/i,
-      }),
-    ).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toContainOneByRole("heading", {
+      level: 2,
+      name: "Clear all stored data",
+    });
+    expect(dialog).toContainOneByText(/delete all stored crates/i);
+    expect(dialog).toContainOneByRole("textbox", {
+      name: /type delete my account to confirm/i,
+    });
   });
 
   it("switches to the appearance panel", async () => {

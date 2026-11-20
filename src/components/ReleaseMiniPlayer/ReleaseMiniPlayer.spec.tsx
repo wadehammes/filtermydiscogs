@@ -962,10 +962,7 @@ describe("ReleaseMiniPlayer", () => {
     await startPlaybackAndWaitForPlayer(user);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Add to" })).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      expect(screen.getByRole("button", { name: "Add to" })).toBePressed();
     });
 
     await user.click(screen.getByRole("button", { name: "Add to" }));

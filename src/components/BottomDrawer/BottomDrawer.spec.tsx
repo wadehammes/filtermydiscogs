@@ -21,14 +21,14 @@ describe("BottomDrawer", () => {
     po.renderBottomDrawer({ isOpen: false });
 
     expect(screen.queryByText("Content")).not.toBeInTheDocument();
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(document.body).not.toContainAnyByRole("dialog");
   });
 
   it("renders when isOpen is true", () => {
     po.renderBottomDrawer();
 
-    expect(screen.getByText("Content")).toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toContainOneByText("Content");
   });
 
   it("renders title when provided", () => {

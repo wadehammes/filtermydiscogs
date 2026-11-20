@@ -44,6 +44,7 @@ export const ViewToggle = ({
             onViewChange("card");
           }}
           aria-label="Switch to card view"
+          aria-pressed={currentView === "card"}
           title="Card view"
         >
           <GridIcon />
@@ -63,6 +64,7 @@ export const ViewToggle = ({
             onViewChange("list");
           }}
           aria-label="Switch to list view"
+          aria-pressed={currentView === "list"}
           title="List view"
         >
           <TableIcon />
@@ -86,6 +88,7 @@ export const ViewToggle = ({
               ? "Get another random release"
               : "Switch to random view"
           }
+          aria-pressed={currentView === "random"}
           title={
             currentView === "random"
               ? "Get another random release"
