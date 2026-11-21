@@ -12,6 +12,7 @@ export interface StartPlaybackParams {
   rebuildAlbumQueue?: boolean;
   youtubeVideoId?: string;
   upcomingQueue?: PlaybackQueueItem[];
+  startQueueItem?: PlaybackQueueItem;
 }
 
 export interface StartReleasePreviewParams {
@@ -37,6 +38,11 @@ export interface RemoveAlbumTracksFromQueueParams {
   release: DiscogsRelease;
   trackPositions: string[];
 }
+
+export type PlaybackQueueAutopopulateSource =
+  | "collection-radio"
+  | "similar-tail"
+  | null;
 
 export interface ReleasePlaybackState {
   release: DiscogsRelease | null;
@@ -65,6 +71,9 @@ export interface ReleasePlaybackState {
   canPlayNext: boolean;
   isLoading: boolean;
   isQueueBuilding: boolean;
+  isSimilarQueueLoading: boolean;
+  isCollectionRadioQueueLoading: boolean;
+  queueAutopopulateSource: PlaybackQueueAutopopulateSource;
   isPlaybackVideoLoading: boolean;
   isPlaybackVideoTransitionPending: boolean;
   isPlaybackDockMuted: boolean;

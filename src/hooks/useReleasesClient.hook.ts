@@ -238,6 +238,7 @@ export const useReleasesClient = ({
     currentView,
 
     infiniteScrollRef,
+    visibleCountResetKey,
 
     selectedReleaseId,
     selectedRelease,

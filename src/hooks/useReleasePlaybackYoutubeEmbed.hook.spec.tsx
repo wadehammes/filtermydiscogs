@@ -8,7 +8,11 @@ import {
 } from "@jest/globals";
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useReleasePlaybackYoutubeEmbed } from "src/hooks/useReleasePlaybackYoutubeEmbed.hook";
+import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
+import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { definedProps } from "src/utils/definedProps";
@@ -17,10 +21,12 @@ import {
   registerPlaybackDockVolumeSilence,
   resetPlaybackDockVolumeApplyMemory,
 } from "src/utils/playbackDockVolumeReapply";
+import { PLAYBACK_EMBED_PROGRESS_THROTTLE_MS } from "src/utils/playbackEmbedProgress";
 import { PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS } from "src/utils/playbackEmbedSession";
+import { createQueueItem } from "src/utils/playbackQueue";
 import { EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS } from "src/utils/releasePlaybackEmbedConfirm";
 import { HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS } from "src/utils/youtubeIframeEvents";
-import { act, renderHook } from "test-utils";
+import { act, renderHook, waitFor } from "test-utils";
 
 jest.mock("src/utils/postYoutubePlayerCommand");
 
@@ -185,10 +191,13 @@ const buildHarness = ({
     isPausedRef,
     isPlayingRef,
     isPlaybackVideoUiLoadingRef,
+    lastSyncedActiveVideoIdRef,
     pendingPlayFromGestureRef,
     playbackIframeRef,
     playbackVideoUiLoadingCycleStartedAtMsRef,
     playbackVideoUiLoadingTargetVideoIdRef,
+    queryClient,
+    releaseRef,
     result,
     setEmbedVideoId,
     setIsPlaybackEmbedMounted,
@@ -275,6 +284,106 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     jest.useRealTimers();
   });
 
+  it("syncEmbedForQueueItem commits lastSyncedActiveVideoId when activating a queue row", () => {
+    const { lastSyncedActiveVideoIdRef, releaseRef, result, setEmbedVideoId } =
+      buildHarness({ isPlaybackEmbedMounted: true });
+    const committedVideoId = "commitVid01";
+    const release = releaseRef.current;
+    Object.assign(release, {
+      tracklist: [
+        discogsTrackFactory.build({
+          position: "A1",
+          title: "First",
+          type_: "track",
+        }),
+      ],
+      videos: [
+        discogsVideoFactory.youtube({
+          uri: `https://www.youtube.com/watch?v=${committedVideoId}`,
+          title: "First",
+        }),
+      ],
+    });
+    const item = createQueueItem({
+      release,
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+
+    result.current.syncEmbedForQueueItem(item);
+
+    expect(lastSyncedActiveVideoIdRef.current).toBe(committedVideoId);
+    expect(setEmbedVideoId).toHaveBeenCalledWith(committedVideoId);
+  });
+
+  it("prefetchQueueItemEmbed warms the embed without advancing lastSyncedActiveVideoId", async () => {
+    jest.useRealTimers();
+    const {
+      embedVideoIdRef,
+      lastSyncedActiveVideoIdRef,
+      queryClient,
+      releaseRef,
+      result,
+      setEmbedVideoId,
+    } = buildHarness({ isPlaybackEmbedMounted: true });
+
+    const release = releaseRef.current;
+    const releaseId = String(release.basic_information.id ?? 1);
+    const playingVideoId = "abc12345678";
+    const prefetchVideoId = "xyz98765432";
+
+    embedVideoIdRef.current = playingVideoId;
+    lastSyncedActiveVideoIdRef.current = playingVideoId;
+
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: Number(releaseId),
+      tracklist: [
+        discogsTrackFactory.build({
+          position: "A1",
+          title: "First",
+          type_: "track",
+        }),
+        discogsTrackFactory.build({
+          position: "A2",
+          title: "Second",
+          type_: "track",
+        }),
+      ],
+      videos: [
+        discogsVideoFactory.youtube({
+          uri: `https://www.youtube.com/watch?v=${playingVideoId}`,
+          title: "First",
+        }),
+        discogsVideoFactory.youtube({
+          uri: `https://www.youtube.com/watch?v=${prefetchVideoId}`,
+          title: "Second",
+        }),
+      ],
+    });
+
+    queryClient.setQueryData(
+      discogsReleaseQueryOptions(releaseId).queryKey,
+      detail,
+    );
+    jest.spyOn(queryClient, "fetchQuery").mockResolvedValue(detail);
+
+    const queueItem = createQueueItem({
+      release,
+      trackPosition: "A2",
+      trackTitle: "Second",
+    });
+
+    act(() => {
+      result.current.prefetchQueueItemEmbed(queueItem);
+    });
+
+    await waitFor(() => {
+      expect(setEmbedVideoId).toHaveBeenCalledWith(prefetchVideoId);
+    });
+
+    expect(lastSyncedActiveVideoIdRef.current).toBe(playingVideoId);
+  });
+
   it("syncEmbedToVideoId updates embed state and requests gesture unlock when no iframe is registered", () => {
     const {
       embedVideoIdRef,
@@ -329,7 +438,12 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
     registerPlaybackDockVolumeSilence(silencePlaybackDockVolume);
     const postMessage = jest.fn();
     const contentWindow = { postMessage } as unknown as Window;
-    const { embedVideoIdRef, playbackIframeRef, result } = buildHarness({
+    const {
+      embedVideoIdRef,
+      pendingPlayFromGestureRef,
+      playbackIframeRef,
+      result,
+    } = buildHarness({
       isPaused: false,
     });
     playbackIframeRef.current = { contentWindow } as HTMLIFrameElement;
@@ -338,6 +452,8 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
 
     expect(silencePlaybackDockVolume).toHaveBeenCalledTimes(1);
     expect(restorePlaybackDockVolume).not.toHaveBeenCalled();
+
+    pendingPlayFromGestureRef.current = false;
 
     dispatchYoutubeInfoDelivery({
       contentWindow,
@@ -917,6 +1033,47 @@ describe("useReleasePlaybackYoutubeEmbed", () => {
       expect(setIntervalSpy).toHaveBeenCalledWith(
         expect.any(Function),
         PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS,
+      );
+    } finally {
+      setIntervalSpy.mockRestore();
+    }
+  });
+
+  it("schedules visible-tab playback progress sync poll while transport is playing", () => {
+    setDocumentVisibilityState("visible");
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    try {
+      buildHarness({
+        embedPlaybackConfirmed: true,
+        isPaused: false,
+        isPlaybackVideoUiLoading: false,
+        isPlaying: true,
+      });
+
+      expect(setIntervalSpy).toHaveBeenCalledWith(
+        expect.any(Function),
+        PLAYBACK_EMBED_PROGRESS_THROTTLE_MS,
+      );
+    } finally {
+      setIntervalSpy.mockRestore();
+    }
+  });
+
+  it("does not schedule visible-tab playback progress sync poll when transport is paused", () => {
+    setDocumentVisibilityState("visible");
+    const setIntervalSpy = jest.spyOn(window, "setInterval");
+
+    try {
+      buildHarness({
+        isPaused: true,
+        isPlaybackVideoUiLoading: false,
+        isPlaying: true,
+      });
+
+      expect(setIntervalSpy).not.toHaveBeenCalledWith(
+        expect.any(Function),
+        PLAYBACK_EMBED_PROGRESS_THROTTLE_MS,
       );
     } finally {
       setIntervalSpy.mockRestore();

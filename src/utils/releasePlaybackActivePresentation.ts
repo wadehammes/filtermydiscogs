@@ -90,6 +90,27 @@ export const resolvePlaybackVideoId = ({
   return activeVideoId ?? embedVideoId;
 };
 
+export const resolveCommittedSessionEmbedVideoId = ({
+  matchedActiveVideoId,
+  lastSyncedActiveVideoId,
+  embedVideoId,
+}: {
+  matchedActiveVideoId: string | null;
+  lastSyncedActiveVideoId: string | null;
+  embedVideoId: string | null;
+}): string | null => {
+  const trimId = (value: string | null | undefined): string | null => {
+    const next = value?.trim();
+    return next ? next : null;
+  };
+
+  return (
+    trimId(matchedActiveVideoId) ??
+    trimId(lastSyncedActiveVideoId) ??
+    trimId(embedVideoId)
+  );
+};
+
 export const resolveNeedsPlaybackVideoSwitch = ({
   preparedEmbedVideoId,
   activeVideoId,
@@ -204,7 +225,14 @@ export const isEmbedAlignedForLoadingPlaybackConfirm = ({
   watchdogVideoId: string | null;
   matchedActiveVideoId?: string | null;
 }): boolean => {
-  const sessionVideoId = matchedActiveVideoId ?? activeVideoId;
+  const loadingTarget = loadingTargetVideoId?.trim() ?? null;
+  const committedEmbed = embedVideoId?.trim() ?? null;
+  const sessionVideoId =
+    loadingTarget !== null &&
+    committedEmbed !== null &&
+    loadingTarget === committedEmbed
+      ? committedEmbed
+      : (matchedActiveVideoId?.trim() ?? activeVideoId?.trim() ?? null);
 
   if (
     doesPlaybackVideoUiLoadingTargetMatch({

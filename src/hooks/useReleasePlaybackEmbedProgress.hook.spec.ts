@@ -53,7 +53,7 @@ describe("useReleasePlaybackEmbedProgress", () => {
 
     expect(result.current.embedProgress).toEqual({
       currentTime: 0,
-      duration: null,
+      duration: 90,
     });
   });
 
@@ -71,7 +71,7 @@ describe("useReleasePlaybackEmbedProgress", () => {
 
     expect(result.current.embedProgress).toEqual({
       currentTime: 0,
-      duration: null,
+      duration: 180,
     });
 
     act(() => {
@@ -81,6 +81,39 @@ describe("useReleasePlaybackEmbedProgress", () => {
 
     expect(result.current.embedProgress).toEqual({
       currentTime: 0.5,
+      duration: 180,
+    });
+  });
+
+  it("when transport resumes after a track reset, releaseStaleEmbedProgressGuard accepts the next infoDelivery", () => {
+    const { result } = renderHook(() => useReleasePlaybackEmbedProgress());
+
+    act(() => {
+      result.current.handleInfoDelivery({ currentTime: 50, duration: 180 });
+      result.current.resetEmbedProgress();
+    });
+
+    act(() => {
+      result.current.handleInfoDelivery({ currentTime: 48, duration: 180 });
+    });
+
+    expect(result.current.embedProgress?.currentTime).toBe(0);
+
+    act(() => {
+      result.current.releaseStaleEmbedProgressGuard();
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(PLAYBACK_EMBED_PROGRESS_THROTTLE_MS);
+      result.current.handleInfoDelivery({
+        currentTime: 12,
+        duration: 180,
+        playerState: 1,
+      });
+    });
+
+    expect(result.current.embedProgress).toEqual({
+      currentTime: 12,
       duration: 180,
     });
   });

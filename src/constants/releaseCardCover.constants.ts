@@ -1,0 +1,2 @@
+export const RELEASE_CARD_COVER_PX = 200;
+export const MOBILE_RELEASE_CARD_COVER_PX = 96;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import {
   useCallback,
   useEffect,
@@ -9,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { collectionRadioActiveAtom } from "src/atoms/collectionRadioPlayback.atoms";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
@@ -406,6 +408,10 @@ export const useReleasePlaybackProviderImpl = (): {
     persistPlaybackSession,
   });
 
+  const collectionRadioActive = useAtomValue(collectionRadioActiveAtom);
+  const collectionRadioActiveRef = useRef(collectionRadioActive);
+  collectionRadioActiveRef.current = collectionRadioActive;
+
   const handleSimilarQueueFetchLifecycle = useCallback(
     (phase: SimilarQueueFetchLifecyclePhase) => {
       if (phase === "start") {
@@ -456,6 +462,7 @@ export const useReleasePlaybackProviderImpl = (): {
         queueManuallyExtendedRef,
         extendQueueWithSimilarReleasesRef,
         similarQueueSuppressedAfterClearRef,
+        collectionRadioActiveRef,
       },
     });
 
@@ -737,11 +744,7 @@ export const useReleasePlaybackProviderImpl = (): {
   const canPlayPrevious = isPlaybackReady && playbackHistory.length > 0;
   const canPlayNext = isPlaybackReady && queue.length > 0;
 
-  const dockEmbed = useReleasePlaybackProviderDockEmbed({
-    release,
-    previewVideo,
-    playbackVideoId,
-  });
+  const dockEmbed = useReleasePlaybackProviderDockEmbed();
 
   const handlePlaybackEnded = useMemo(
     () =>
@@ -839,6 +842,11 @@ export const useReleasePlaybackProviderImpl = (): {
       awaitingResumeGesture: awaitingResumeGestureRef.current,
     });
 
+    const lastInfoDeliveryCurrentTime =
+      lastInfoDeliveryCurrentTimeRef.current ??
+      dockEmbed.embedProgress?.currentTime ??
+      undefined;
+
     const confirmInput = {
       imperativeEmbedLoadStartedAtMs:
         playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
@@ -848,7 +856,7 @@ export const useReleasePlaybackProviderImpl = (): {
       transportSessionActive: playbackIntentActive,
       transportPaused: isPausedRef.current,
       ...definedProps({
-        lastInfoDeliveryCurrentTime: lastInfoDeliveryCurrentTimeRef.current,
+        lastInfoDeliveryCurrentTime,
       }),
     };
 
@@ -880,7 +888,7 @@ export const useReleasePlaybackProviderImpl = (): {
 
     confirmEmbedPlayback();
     return true;
-  }, [confirmEmbedPlayback, isPlaying]);
+  }, [confirmEmbedPlayback, dockEmbed.embedProgress?.currentTime, isPlaying]);
 
   confirmEmbedPlaybackIfAudibleRef.current = confirmEmbedPlaybackIfAudible;
 
@@ -923,6 +931,7 @@ export const useReleasePlaybackProviderImpl = (): {
     resumePlaybackFromGesture,
     recoverPlaybackAfterTabVisible,
     markEmbedTrackSwitchGrace,
+    syncEmbedPlaybackState,
   } = useReleasePlaybackYoutubeEmbed({
     queryClient,
     dispatchSession,
@@ -1288,40 +1297,80 @@ export const useReleasePlaybackProviderImpl = (): {
         return;
       }
 
-      notifyImperativeEmbedLoadStarted();
+      const trimmedResolvedVideoId = resolvedVideoId?.trim() ?? null;
+      const priorWatchdogVideoId =
+        embedWatchdogVideoIdRef.current?.trim() ?? null;
+      const isNewUploadLoad =
+        trimmedResolvedVideoId !== null &&
+        priorWatchdogVideoId !== null &&
+        priorWatchdogVideoId !== trimmedResolvedVideoId;
+      const isFirstUploadLoad =
+        trimmedResolvedVideoId !== null && priorWatchdogVideoId === null;
 
-      if (resolvedVideoId?.trim()) {
-        dispatchEmbedSession({
-          type: "embed/load/started",
-          videoId: resolvedVideoId.trim(),
-          nowMs: Date.now(),
-        });
+      if (isNewUploadLoad) {
+        dockEmbed.resetEmbedProgress();
+        syncEmbedPlaybackState();
       }
 
-      embedWatchdogVideoIdRef.current = resolvedVideoId;
-      embedInitialWatchdogGracePendingRef.current = true;
-      embedWatchdogLoadingRearmCountRef.current = 0;
-      embedWatchdogSyncProbeAttemptedRef.current = false;
+      if (isNewUploadLoad || isFirstUploadLoad) {
+        notifyImperativeEmbedLoadStarted();
 
-      const deferWatchdogForPendingOverrideStats =
-        activeTrackAwaitingStatsOverrideRef.current &&
-        matchedActiveVideoIdRef.current === null;
+        if (trimmedResolvedVideoId) {
+          dispatchEmbedSession({
+            type: "embed/load/started",
+            videoId: trimmedResolvedVideoId,
+            nowMs: Date.now(),
+          });
+        }
 
-      if (
-        !(isPausedRef.current || deferWatchdogForPendingOverrideStats) &&
-        resolvedVideoId?.trim()
-      ) {
-        armEmbedStartWatchdog();
+        embedWatchdogVideoIdRef.current = resolvedVideoId;
+        embedInitialWatchdogGracePendingRef.current = true;
+        embedWatchdogLoadingRearmCountRef.current = 0;
+        embedWatchdogSyncProbeAttemptedRef.current = false;
+
+        const deferWatchdogForPendingOverrideStats =
+          activeTrackAwaitingStatsOverrideRef.current &&
+          matchedActiveVideoIdRef.current === null;
+
+        if (
+          !(isPausedRef.current || deferWatchdogForPendingOverrideStats) &&
+          trimmedResolvedVideoId &&
+          !confirmEmbedPlaybackIfAudible()
+        ) {
+          armEmbedStartWatchdog();
+        }
+      } else {
+        syncEmbedPlaybackState();
+        confirmEmbedPlaybackIfAudible();
+        notifyPlaybackVideoPresentationReady();
+      }
+
+      if (!(isNewUploadLoad || isFirstUploadLoad)) {
+        embedWatchdogVideoIdRef.current = resolvedVideoId;
       }
     },
     [
       armEmbedStartWatchdog,
+      confirmEmbedPlaybackIfAudible,
       dispatchEmbedSession,
+      dockEmbed.resetEmbedProgress,
       notifyImperativeEmbedLoadStarted,
+      notifyPlaybackVideoPresentationReady,
+      syncEmbedPlaybackState,
     ],
   );
 
-  const settleSameUploadQueueAdvance = notifyPlaybackVideoPresentationReady;
+  const settleSameUploadQueueAdvance = useCallback(() => {
+    dockEmbed.releaseStaleEmbedProgressGuard();
+    syncEmbedPlaybackState();
+    confirmEmbedPlaybackIfAudible();
+    notifyPlaybackVideoPresentationReady();
+  }, [
+    confirmEmbedPlaybackIfAudible,
+    dockEmbed.releaseStaleEmbedProgressGuard,
+    notifyPlaybackVideoPresentationReady,
+    syncEmbedPlaybackState,
+  ]);
 
   const prepareQueueAdvancePlayback = useCallback(
     (
@@ -1372,6 +1421,11 @@ export const useReleasePlaybackProviderImpl = (): {
     };
   }, [clearPlayFromGestureRetries]);
 
+  const resetDockEmbedProgress = useCallback(() => {
+    dockEmbed.resetEmbedProgress();
+    syncEmbedPlaybackState();
+  }, [dockEmbed.resetEmbedProgress, syncEmbedPlaybackState]);
+
   const {
     startPlayback,
     startReleasePreview,
@@ -1387,6 +1441,7 @@ export const useReleasePlaybackProviderImpl = (): {
     clearQueue,
     removeAlbumTracksFromQueue,
   } = useReleasePlaybackQueueActions({
+    resetDockEmbedProgress,
     dispatchSession,
     setNowPlayingQueueItem,
     setPlaybackTrackTitleOverride,
@@ -1519,6 +1574,12 @@ export const useReleasePlaybackProviderImpl = (): {
         armEmbedStartWatchdog();
       }
 
+      dockEmbed.releaseStaleEmbedProgressGuard();
+      syncEmbedPlaybackState();
+      window.setTimeout(() => {
+        syncEmbedPlaybackState();
+      }, EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+
       return;
     }
 
@@ -1526,9 +1587,11 @@ export const useReleasePlaybackProviderImpl = (): {
   }, [
     activeTrack,
     armEmbedStartWatchdog,
+    dockEmbed.releaseStaleEmbedProgressGuard,
     isPaused,
     previewVideo,
     release,
+    syncEmbedPlaybackState,
     togglePlaybackBase,
   ]);
 
@@ -1591,6 +1654,9 @@ export const useReleasePlaybackProviderImpl = (): {
       canPlayNext,
       isLoading,
       isQueueBuilding,
+      isSimilarQueueLoading,
+      isCollectionRadioQueueLoading: false,
+      queueAutopopulateSource: null,
       isPlaybackVideoLoading,
       isPlaybackVideoTransitionPending,
       isPlaybackDockMuted: dockTransport.playbackDockMuted,
@@ -1622,6 +1688,7 @@ export const useReleasePlaybackProviderImpl = (): {
       canPlayNext,
       isLoading,
       isQueueBuilding,
+      isSimilarQueueLoading,
       isPlaybackVideoLoading,
       isPlaybackVideoTransitionPending,
       dockTransport.playbackDockMuted,

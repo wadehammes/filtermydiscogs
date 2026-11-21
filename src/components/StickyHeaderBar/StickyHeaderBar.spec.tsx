@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+
+jest.mock(
+  "src/components/CollectionRadioPlayButton/CollectionRadioPlayButton.component",
+);
+
 import { type ReactNode, useLayoutEffect } from "react";
 import { StickyHeaderBarPageObject } from "src/components/StickyHeaderBar/StickyHeaderBar.po";
 import { SortValues } from "src/constants/sortValues";

@@ -156,6 +156,7 @@ const ReleasesClientContent = () => {
     isMobile,
     currentView,
     infiniteScrollRef,
+    visibleCountResetKey,
     isFilterPending,
     selectedRelease,
     handleReleaseClick,
@@ -288,7 +289,7 @@ const ReleasesClientContent = () => {
 
               {hasReleases ? (
                 <div
-                  key={currentView}
+                  key={`${currentView}-${visibleCountResetKey}`}
                   {...definedProps({
                     "aria-busy": isFilterPending ? true : undefined,
                   })}
@@ -303,6 +304,7 @@ const ReleasesClientContent = () => {
                     onRandomClick={handleRandomClick}
                     onReleaseClick={handleReleaseClick}
                     randomRelease={randomRelease}
+                    gridRemountKey={visibleCountResetKey}
                   />
                 </div>
               ) : !allReleasesLoaded ? (

@@ -18,6 +18,7 @@ interface ReleasesGridProps {
   onRandomClick?: () => void;
   onReleaseClick: (instanceId: string) => void;
   randomRelease?: DiscogsRelease | null;
+  gridRemountKey: string;
 }
 
 const ReleasesGridComponent = ({
@@ -29,6 +30,7 @@ const ReleasesGridComponent = ({
   onRandomClick,
   onReleaseClick,
   randomRelease,
+  gridRemountKey,
 }: ReleasesGridProps) => {
   "use memo";
   const { activeCrateInstanceIds } = useCrateState();
@@ -93,7 +95,7 @@ const ReleasesGridComponent = ({
 
         return (
           <div
-            key={release.instance_id}
+            key={`${release.instance_id}-${gridRemountKey}`}
             id={`release-${release.instance_id}`}
             className={styles.releaseItem}
           >
@@ -161,6 +163,7 @@ export const ReleasesGrid = memo(
       prevProps.isMobile === nextProps.isMobile &&
       prevProps.isRandomMode === nextProps.isRandomMode &&
       prevProps.randomRelease === nextProps.randomRelease &&
+      prevProps.gridRemountKey === nextProps.gridRemountKey &&
       prevProps.onExitRandomMode === nextProps.onExitRandomMode &&
       prevProps.onRandomClick === nextProps.onRandomClick &&
       prevProps.onReleaseClick === nextProps.onReleaseClick

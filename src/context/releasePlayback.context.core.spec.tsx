@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
+import { useAtom } from "jotai";
 import type { ReactNode } from "react";
+import { collectionRadioActiveAtom } from "src/atoms/collectionRadioPlayback.atoms";
 import {
   ReleasePlaybackProvider,
   useReleasePlayback,
+  useReleasePlaybackEmbedProgressState,
   useReleasePlaybackState,
 } from "src/context/releasePlayback.context";
 import { useReleasePlaybackState as useReleasePlaybackStateHook } from "src/context/useReleasePlaybackState.hook";
@@ -20,6 +23,7 @@ import {
   TestProviders,
   testAuthenticatedAuthState,
 } from "src/tests/utils/testProviders";
+import { PLAYBACK_EMBED_PROGRESS_THROTTLE_MS } from "src/utils/playbackEmbedProgress";
 import { PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS } from "src/utils/playbackEmbedStartWatchdog";
 import { createQueueItem } from "src/utils/playbackQueue";
 import { appendPlaybackSkipAndSchedule } from "src/utils/playbackSkippedTrackToast";
@@ -84,6 +88,8 @@ import {
   collectionRelease,
   createAuthCheckingWrapper,
   createWrapper,
+  dispatchYoutubeEmbedReady,
+  dispatchYoutubeInfoDelivery,
   dispatchYoutubePlayerState,
   mockApi,
   mockUserPreferencesResponse,
@@ -102,6 +108,13 @@ const PlaybackStateProbe = () => {
       {isPlaying ? "playing" : "idle"}
     </div>
   );
+};
+
+const usePlaybackWithEmbedProgress = () => {
+  const playback = useReleasePlayback();
+  const { embedProgress } = useReleasePlaybackEmbedProgressState();
+
+  return { ...playback, embedProgress };
 };
 
 describe("ReleasePlaybackProvider — queue and session", () => {
@@ -458,13 +471,23 @@ describe("ReleasePlaybackProvider — queue and session", () => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS);
     });
 
-    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalledTimes(1);
+    const expectedProgressPollCalls =
+      1 +
+      PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS / PLAYBACK_EMBED_PROGRESS_THROTTLE_MS;
+
+    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalledTimes(
+      expectedProgressPollCalls,
+    );
+
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
 
     act(() => {
       jest.advanceTimersByTime(PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS);
     });
 
-    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalledTimes(2);
+    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalledTimes(
+      expectedProgressPollCalls,
+    );
 
     jest.useRealTimers();
   });
@@ -683,6 +706,55 @@ describe("ReleasePlaybackProvider — queue and session", () => {
     expect(readPersistedReleasePlayback()).toBeNull();
   });
 
+  it("clears collection radio active chrome when playback starts or stops", async () => {
+    const { result } = renderHook(
+      () => {
+        const playback = useReleasePlayback();
+        const [collectionRadioActive, setCollectionRadioActive] = useAtom(
+          collectionRadioActiveAtom,
+        );
+
+        return {
+          playback,
+          collectionRadioActive,
+          setCollectionRadioActive,
+        };
+      },
+      {
+        wrapper: createWrapper([collectionRelease]),
+      },
+    );
+
+    act(() => {
+      result.current.setCollectionRadioActive(true);
+    });
+
+    expect(result.current.collectionRadioActive).toBe(true);
+
+    act(() => {
+      result.current.playback.startPlayback({
+        release: collectionRelease,
+        trackPosition: "A1",
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.playback.isPlaying).toBe(true);
+    });
+
+    expect(result.current.collectionRadioActive).toBe(false);
+
+    act(() => {
+      result.current.setCollectionRadioActive(true);
+    });
+
+    act(() => {
+      result.current.playback.stopPlayback();
+    });
+
+    expect(result.current.collectionRadioActive).toBe(false);
+  });
+
   it("persists playback state as soon as playback starts", () => {
     const { result } = renderHook(() => useReleasePlayback(), {
       wrapper: createWrapper([collectionRelease]),
@@ -747,6 +819,70 @@ describe("ReleasePlaybackProvider — queue and session", () => {
       expect(result.current.activeTrackPosition).toBe("A1");
       expect(result.current.isPaused).toBe(true);
     });
+  });
+
+  it("when restore rehydrates paused playback, resuming advances dock embed progress", async () => {
+    jest.useFakeTimers();
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+
+    writePersistedReleasePlayback({
+      instanceId: String(collectionRelease.instance_id),
+      trackPosition: "A1",
+    });
+
+    const contentWindow = { postMessage: jest.fn() };
+    const iframe = { contentWindow } as unknown as HTMLIFrameElement;
+
+    const { result } = renderHook(() => usePlaybackWithEmbedProgress(), {
+      wrapper: createWrapper([collectionRelease]),
+    });
+
+    act(() => {
+      result.current.registerPlaybackIframe(iframe);
+      dispatchYoutubeEmbedReady({
+        contentWindow: contentWindow as unknown as Window,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(true);
+      expect(result.current.activeTrackPosition).toBe("A1");
+      expect(result.current.isPlaybackReady).toBe(true);
+    });
+
+    mockRequestYoutubeEmbedPlaybackSync.mockClear();
+
+    act(() => {
+      result.current.togglePlayback();
+    });
+
+    await waitFor(() => {
+      expect(result.current.isPaused).toBe(false);
+    });
+
+    expect(mockRequestYoutubeEmbedPlaybackSync).toHaveBeenCalled();
+
+    act(() => {
+      dispatchYoutubePlayerState({
+        contentWindow: contentWindow as unknown as Window,
+        playerState: 1,
+      });
+      jest.advanceTimersByTime(EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
+      dispatchYoutubeInfoDelivery({
+        contentWindow: contentWindow as unknown as Window,
+        info: { playerState: 1, currentTime: 12.5, duration: 212 },
+      });
+      jest.advanceTimersByTime(PLAYBACK_EMBED_AUDIBLE_SYNC_POLL_MS);
+    });
+
+    await waitFor(() => {
+      expect(result.current.embedProgress?.currentTime).toBeGreaterThan(0);
+    });
+
+    jest.useRealTimers();
   });
 
   it("restores a persisted upcoming queue after refresh", async () => {

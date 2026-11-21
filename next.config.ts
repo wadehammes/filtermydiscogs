@@ -194,6 +194,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "img.discogs.com",
+      },
+      {
+        protocol: "https",
         hostname: "i.ytimg.com",
         pathname: "/vi/**",
       },

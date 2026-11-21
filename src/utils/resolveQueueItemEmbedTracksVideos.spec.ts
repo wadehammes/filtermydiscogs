@@ -7,6 +7,41 @@ import { createQueueItem } from "src/utils/playbackQueue";
 import { resolveQueueItemEmbedTracksVideos } from "src/utils/resolveQueueItemEmbedTracksVideos";
 
 describe("resolveQueueItemEmbedTracksVideos", () => {
+  it("prefers tracklist and videos embedded on the queue release over an empty in-memory session", () => {
+    const release = releaseFactory.build({
+      tracklist: [
+        discogsTrackFactory.build({
+          position: "B",
+          title: "Radio pick",
+          type_: "track",
+        }),
+      ],
+      videos: [
+        discogsVideoFactory.youtube({
+          uri: "https://youtube.com/watch?v=enriched12",
+          title: "Radio pick",
+        }),
+      ],
+    });
+
+    expect(
+      resolveQueueItemEmbedTracksVideos({
+        item: createQueueItem({
+          release,
+          trackPosition: "B",
+          trackTitle: "Radio pick",
+        }),
+        currentRelease: release,
+        currentTracks: [],
+        currentVideos: [],
+        cachedReleaseDetail: null,
+      }),
+    ).toEqual({
+      tracks: release.tracklist,
+      videos: release.videos,
+    });
+  });
+
   it("reuses in-memory tracklist when the queue item matches the active release", () => {
     const release = releaseFactory.build();
     const tracks = [

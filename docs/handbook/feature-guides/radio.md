@@ -1,17 +1,23 @@
 # Collection radio
 
-**Status:** Design locked for v1 — implement as a **single playlist-shaped stack** off `staging`. Supersedes open stacked PRs that touched playback provider embed paths (`#1372`–`#1374`).
+**Status:** v1 implemented — playlist-parity `startPlayback`, minimal provider atom clear on stop/other starts. Supersedes closed stacked PRs `#1372`–`#1374`.
 
 ## User-visible behavior (v1)
 
-On the **desktop collection filters bar** (≥1024px), a **play** control appears when **any collection filter is applied** or a **saved filter view** is active. Pressing play:
+A **play** control appears when **any collection filter is applied** or a **saved filter view** is active — on the **desktop filters bar** (≥1024px) and in the **mobile [`FiltersDrawer`](../../src/components/FiltersDrawer/FiltersDrawer.component.tsx)** footer (opened from the mobile menu). Pressing play:
 
-1. Loads release details for the **filtered, sorted** collection (same order as the grid).
-2. Builds a pool of **YouTube-matched tracks** across those releases.
-3. **Shuffles** the pool.
+1. **Prefetch** release details while the control is visible (filters or saved view active) via **[`useHydrateDiscogsReleaseDetails`](../../src/hooks/useHydrateDiscogsReleaseDetails.hook.ts)** — **one** React Query observer per filtered **release-id set**, batching uncached ids through **`/api/discogsReleaseBatch`** (**[`RELEASE_BATCH_MAX_IDS`](../../src/constants/collection.ts)** per chunk) instead of one HTTP call per release.
+2. Enables **Play** only when every filtered release detail is **cached** (spinner + “Preparing…” until then).
+3. On play, reads cache synchronously, shuffles the YouTube-matched pool, and calls **`startPlayback`** on the same click turn as playlist (no post-fetch gesture gap).
 4. Starts the first track and queues the rest — same UX contract as **playlist play** (progress, embed confirm, queue advance).
 
-While collection radio is **actively playing**, the control shows **pause** and calls **`togglePlayback`**. **Crate radio** (crate drawer footer) is planned later; mirror playlist drawer play when added.
+While collection radio is **actively playing** (`collectionRadioActive` and transport not paused), the control shows **pause** and calls **`togglePlayback`**. When the user pauses from the mini player or the filter-bar control, the button shows **play** again (**Resume collection radio**) but still calls **`togglePlayback`** (does not restart the shuffle). If the user **changes filters** so the sorted filtered **release id set** no longer matches the set captured at **`startCollectionRadio`** (`collectionRadioSessionReleaseIdsKeyAtom` vs current `filteredReleaseIdsKey`), the control switches to **Restart collection radio** — **play** icon, updated tooltip, and **`startCollectionRadio`** on click (new shuffle; replaces the in-progress queue). While stale, pause/resume is not offered on this button (use the mini player to pause). Visual “radio mode” chrome (`playTriggerActive`) follows **`collectionRadioActiveAtom`** until stop, other **`startPlayback`**, or **`clearQueue`** — not transport `isPlaying`. **Prefetch / “Preparing…”** gates **new** starts and restarts; resume stays clickable while details refresh. **Crate radio** (crate drawer footer) is planned later; mirror playlist drawer play when added.
+
+### Entry control (filters bar + mobile drawer)
+
+- **[`CollectionRadioPlayButton`](../../src/components/CollectionRadioPlayButton/)** — end of desktop **[`FiltersBar`](../../src/components/StickyHeaderBar/FiltersBar.tsx)** (`collectionRadioPlayEnd`, icon-only + hover tooltip) and **footer** of **[`FiltersDrawer`](../../src/components/FiltersDrawer/FiltersDrawer.component.tsx)** (`collectionRadioSlot`, **`showLabel`** for visible play/prepare/restart copy on touch); animated conic play/pause trigger, **`aria-pressed`** while radio is actively playing.
+- **Tooltip** — copy from **`COLLECTION_RADIO_PLAY_TOOLTIP`** ([`collectionRadio.constants.ts`](../../src/constants/collectionRadio.constants.ts)); CSS module **hover-only** bubble **below** the trigger (**not** **`:focus-within`** — the button keeps focus after click), **end-aligned** to the button; **`aria-describedby`** exposes the same copy to assistive tech. **`FiltersBar`** keeps **`overflow: visible`** on the desktop filters row/stack and the radio slot.
+- **Preparing vs disabled** — while details prefetch, block clicks with **`aria-disabled="true"`** (and matching styles) but **without** native **`disabled`** so hover still shows the tooltip; use real **`disabled`** only for **building** (`isStarting`) or **zero playable rows**.
 
 ## Model (playlist parity)
 
@@ -19,24 +25,20 @@ Radio is **orchestration only**. It must not add embed, watchdog, or similar-tai
 
 ```text
 useCollectionRadioPlayback
-  → fetchQuery(discogs release detail) per filtered release
-  → shuffle playable rows with resolved youtubeVideoId per row
+  → useQueries(discogs release detail) while filters/view active (memoized id list)
+  → play disabled until every detail query succeeds
+  → buildReleaseDetailsFromQueryCache → shuffle playable rows (release carries tracklist/videos)
   → playback.clearQueue()
-  → playback.startPlayback({
-        release, trackPosition, trackTitle,
-        rebuildAlbumQueue: false,
-        upcomingQueue,
-        youtubeVideoId,  // first track, same as usePlaylistPlayback
-      })
-  → collectionRadioActiveAtom = true   // UI chrome only
+  → playback.startPlayback({ … })   // sync on click, same as usePlaylistPlayback
+  → collectionRadioActiveAtom = true; collectionRadioSessionReleaseIdsKeyAtom = filteredReleaseIdsKey
 ```
 
 | Layer | Role | Non-goals |
 | ----- | ---- | --------- |
-| [`collectionRadioPlayback.ts`](../../src/utils/collectionRadioPlayback.ts) | Visibility, shuffle pool, `youtubeVideoId` on queue rows from Discogs videos | Provider, embed, similar fetch |
+| [`collectionRadioPlayback.ts`](../../src/utils/collectionRadioPlayback.ts) | Visibility, shuffle pool; **`tracklist` / `videos` on each queue `release`** from prefetched detail so `playQueueItem` resolves embed + active track on the click turn (no row-level `youtubeVideoId` override — modal/discogs-match path). **`resolveQueueItemEmbedTracksVideos`** must prefer that enriched embed over an empty same-instance session when resolving the YouTube id. | Provider, embed, similar fetch |
 | [`useCollectionRadioPlayback.hook.ts`](../../src/hooks/useCollectionRadioPlayback.hook.ts) | Fetch, plan, one `startPlayback`, toasts, active atom | `collectionRadioQueueStart`, `preserveCollectionRadio`, provider-only APIs |
 | [`CollectionRadioPlayButton`](../../src/components/CollectionRadioPlayButton/) + [`FiltersBar`](../../src/components/StickyHeaderBar/FiltersBar.tsx) | Entry UI, play/pause when `atom && isPlaying` | Queue or embed logic |
-| **Playback provider (minimal)** | Clear `collectionRadioActiveAtom` on **`stopPlayback`** and on **any** `startPlayback` (modal/playlist clears radio chrome) | `resetPlaybackSkipState` for radio, `activateCollectionRadio` in `startPlayback`, similar fetch lifecycle changes |
+| **Playback provider (minimal)** | **`useCollectionRadioActiveChrome`** inside **`useReleasePlaybackQueueActions`** clears `collectionRadioActiveAtom` on **`stopPlayback`**, **`clearQueue`**, and **any** `startPlayback` (modal/playlist clears radio chrome) | `resetPlaybackSkipState` for radio, `activateCollectionRadio` in `startPlayback`, similar fetch lifecycle changes |
 
 ### Similar-release tail
 
@@ -48,7 +50,7 @@ Optional later: **`fromCollectionRadio`** on rows for drawer copy only; **`maybe
 
 Any radio PR must satisfy these; regression means **revert the radio diff**, not patch embed in place.
 
-- Same **`startPlayback` / `playQueueItem`** path as [`usePlaylistPlayback`](../../src/hooks/usePlaylistPlayback.hook.ts), including **`youtubeVideoId`** on the starting track and on queue items where resolved.
+- Same **`startPlayback` / `playQueueItem`** path as modal collection play: enriched **`release.tracklist` / `release.videos`** from cache, **no** row `youtubeVideoId` override (playlist may still pass overrides where users curated them). Pass the shuffled **`startQueueItem`** into **`startPlayback`** so the first row keeps **`fromCollectionRadio`**. **`resolveQueueItemEmbedTracksVideos`** prefers enriched embed on the queue release over an empty same-instance session. Session **`isSameRelease`** for **`PLAY_QUEUE_ITEM`** follows **`isQueueItemReplayOfActiveSession`** (different track on the same instance is not “same release”), and **`RESOLVE_PENDING_TRACK`** runs before embed loading UI. Curated **`upcomingQueue`** uses **`resetPlaybackSkipState`** only (not **`forceEmbedReloadAfterUnavailableSkip`** — that flag is for skip-recovery **`playNext`**, not playlist/radio queue replace) — **no watchdog changes**.
 - **No** `collectionRadioQueueStart`, **no** radio-only **`resetPlaybackSkipState`**, **no** `similarQueueFetchInFlight` / load-started logic changes for radio.
 - **No** provider ref mirror (`collectionRadioActiveRef`) required for v1 — Jotai atom + optional queue row markers only.
 - **Smoke before merge:** modal track play (scrubber moves, no stuck spinner), playlist start, collection radio start — unchanged embed behavior when radio code is absent from the diff.
@@ -70,10 +72,11 @@ Use **`gh stack`** off **`staging`**; do not revive the old `playback-core` / `f
 
 ## Tests (v1)
 
-- `collectionRadioPlayback.spec.ts` — visibility, shuffle, `youtubeVideoId` on items
+- `collectionRadioPlayback.spec.ts` — visibility, shuffle, enriched release rows
 - `useCollectionRadioPlayback.hook.spec.ts` — multi-release fetch, `clearQueue` + `startPlayback` args (mock playback)
-- `CollectionRadioPlayButton.spec.tsx` — visibility, play, active `aria-pressed` (hook mocked)
-- **No** new provider integration spec for radio unless it asserts **zero** change to embed confirm paths (prefer leaving provider untouched)
+- `CollectionRadioPlayButton.spec.tsx` — visibility, hover tooltip copy, preparing/building spinners, play/pause (playback hook mocked in PO)
+- [`releasePlayback.context.collectionRadio.spec.tsx`](../../src/context/releasePlayback.context.collectionRadio.spec.tsx) — real provider: prior album track → **`clearQueue` + `startPlayback`** with enriched **`startQueueItem` / `upcomingQueue`**; embed progress and no watchdog skip (same band as [`releasePlayback.context.embedConfirm.spec.tsx`](../../src/context/releasePlayback.context.embedConfirm.spec.tsx))
+- `e2e/authenticated-collection-radio-playback.spec.ts` — MSW + mock iframe handoff (`@full-suite`)
 
 ## Related handbook
 

@@ -423,6 +423,43 @@ describe("useReleasesClient infinite scroll", () => {
     });
   });
 
+  it("exposes visibleCountResetKey and updates it when sort changes", async () => {
+    mockApiResponse(
+      true,
+      mockFetchDiscogsCollection,
+      buildSinglePageCollection(releaseFactory.buildList(120)),
+      new Error("fail"),
+    );
+
+    const { result, rerender } = renderFeatureHook(
+      () => useReleasesClientHarness(document.createElement("div")),
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.releaseCount).toBe(120);
+    });
+
+    const resetKeyBefore = result.current.visibleCountResetKey;
+    expect(typeof resetKeyBefore).toBe("string");
+    expect(resetKeyBefore.length).toBeGreaterThan(0);
+
+    act(() => {
+      result.current.filtersDispatch({
+        type: FiltersActionTypes.SetSort,
+        payload: SortValues.AZArtist,
+      });
+    });
+
+    rerender();
+
+    await waitFor(() => {
+      expect(result.current.visibleCountResetKey).not.toBe(resetKeyBefore);
+    });
+  });
+
   it("resets the visible window when then-by sort changes", async () => {
     mockApiResponse(
       true,

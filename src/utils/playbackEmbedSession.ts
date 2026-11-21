@@ -285,6 +285,19 @@ export const selectShouldRunVisibleTabAudibleSyncPoll = (
   !context.embedConfirmed &&
   !context.documentHidden;
 
+export type PlaybackEmbedProgressSyncPollContext = {
+  transportSessionActive: boolean;
+  transportPaused: boolean;
+  documentHidden: boolean;
+};
+
+export const selectShouldRunVisibleTabPlaybackProgressSyncPoll = (
+  context: PlaybackEmbedProgressSyncPollContext,
+): boolean =>
+  context.transportSessionActive &&
+  !context.transportPaused &&
+  !context.documentHidden;
+
 export type PlaybackEmbedSessionState = {
   loadVideoId: string | null;
   loadGeneration: number;
@@ -338,7 +351,6 @@ export const reducePlaybackEmbedSession = (
         return {
           ...state,
           loadStartedAtMs: event.nowMs,
-          embedConfirmed: false,
         };
       }
 

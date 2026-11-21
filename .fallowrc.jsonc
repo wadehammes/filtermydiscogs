@@ -32,8 +32,8 @@
     { "file": "src/hooks/useCollectionCacheReady.hook.ts", "exports": ["*"] },
     { "file": "src/utils/collectionCacheSync.ts", "exports": ["*"] }
   ],
-  // CI: scripts/fallow-audit-ci.sh (pnpm fallow:audit:ci) — `--worsened warn`; exit 1 only on worsened
-  // effective_severity error when growth is not line_count-only. Local pr-prep: pnpm fallow:audit (gate: new-only).
+  // CI: scripts/fallow-audit-ci.sh (pnpm fallow:audit:ci) — advisory (always exit 0); prints worsened complexity.
+  // Local pr-prep: pnpm fallow:audit (gate: new-only).
   "audit": {
     "gate": "new-only",
     "worsened": "warn"

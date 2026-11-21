@@ -25,6 +25,7 @@ export type ReleasesGridRenderProps = {
   onRandomClick?: () => void;
   onReleaseClick?: (instanceId: string) => void;
   randomRelease?: DiscogsRelease | null;
+  gridRemountKey?: string;
 };
 
 export class ReleasesGridPageObject extends BasePageObject {
@@ -50,6 +51,7 @@ export class ReleasesGridPageObject extends BasePageObject {
       onRandomClick,
       onReleaseClick,
       randomRelease = null,
+      gridRemountKey = "po",
     } = overrides;
 
     return (
@@ -63,6 +65,7 @@ export class ReleasesGridPageObject extends BasePageObject {
           onRandomClick={onRandomClick ?? this.onRandomClick}
           onReleaseClick={onReleaseClick ?? this.onReleaseClick}
           randomRelease={randomRelease}
+          gridRemountKey={gridRemountKey}
         />
       </ReleasePlaybackTestTree>
     );

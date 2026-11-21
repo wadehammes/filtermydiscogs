@@ -7,6 +7,7 @@ import {
   selectShouldAttemptPlayFromGestureDuringHiddenPoll,
   selectShouldRunHiddenTabPlayerStatePoll,
   selectShouldRunVisibleTabAudibleSyncPoll,
+  selectShouldRunVisibleTabPlaybackProgressSyncPoll,
   shouldAcceptEmbedPlayingConfirmation,
   tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/playbackEmbedSession";
@@ -137,6 +138,48 @@ describe("playbackEmbedSession", () => {
         documentHidden: false,
       }),
     ).toBe(false);
+  });
+
+  it("polls playback progress sync on a visible tab while transport is playing, including after embed confirm", () => {
+    expect(
+      selectShouldRunVisibleTabPlaybackProgressSyncPoll({
+        transportSessionActive: true,
+        transportPaused: false,
+        documentHidden: false,
+      }),
+    ).toBe(true);
+
+    expect(
+      selectShouldRunVisibleTabPlaybackProgressSyncPoll({
+        transportSessionActive: true,
+        transportPaused: true,
+        documentHidden: false,
+      }),
+    ).toBe(false);
+
+    expect(
+      selectShouldRunVisibleTabPlaybackProgressSyncPoll({
+        transportSessionActive: false,
+        transportPaused: false,
+        documentHidden: false,
+      }),
+    ).toBe(false);
+  });
+
+  it("keeps embed confirmed when the same video posts another load started", () => {
+    const confirmed = reducePlaybackEmbedSession(
+      {
+        ...initialPlaybackEmbedSessionState,
+        loadVideoId: "video-a",
+        embedConfirmed: true,
+        loadGeneration: 1,
+        loadStartedAtMs: 100,
+      },
+      { type: "embed/load/started", videoId: "video-a", nowMs: 200 },
+    );
+
+    expect(confirmed.embedConfirmed).toBe(true);
+    expect(confirmed.loadStartedAtMs).toBe(200);
   });
 
   it("resets confirmation when a new embed load starts for a different video id", () => {
