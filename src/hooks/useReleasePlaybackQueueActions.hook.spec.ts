@@ -27,9 +27,11 @@ import { renderHook } from "test-utils";
 const buildHarness = ({
   sessionQueue = [] as ReturnType<typeof createQueueItem>[],
   tryAutoStartOnEmptyQueue = () => false,
+  clearCollectionRadioActive = jest.fn(),
 }: {
   sessionQueue?: ReturnType<typeof createQueueItem>[];
   tryAutoStartOnEmptyQueue?: (start: () => void) => boolean;
+  clearCollectionRadioActive?: jest.Mock;
 } = {}) => {
   const dispatchSession = jest.fn() as Dispatch<PlaybackSessionAction>;
   const release = releaseFactory.withDisplayDefaults();
@@ -118,6 +120,7 @@ const buildHarness = ({
       playNextRef,
       extendQueueTailRef,
       startPlaybackRef,
+      clearCollectionRadioActive,
       refs: {
         awaitingResumeGestureRef,
         pendingPlayFromGestureRef,
@@ -158,6 +161,7 @@ const buildHarness = ({
     prepareQueueAdvancePlayback,
     setUpcomingQueue,
     updateUpcomingQueue,
+    clearCollectionRadioActive,
   };
 };
 
@@ -717,6 +721,107 @@ describe("useReleasePlaybackQueueActions", () => {
     );
   });
 
+  it("when switching releases with an explicit youtubeVideoId before detail loads, resolves the target track without pending", () => {
+    const currentRelease = releaseFactory.withDisplayDefaults();
+    const nextRelease = releaseFactory.withDisplayDefaults({
+      basic_information: { id: 2002, title: "Next album" },
+      instance_id: "inst-next",
+      tracklist: [
+        discogsTrackFactory.build({
+          position: "A2",
+          title: "Track A2",
+          type_: "track",
+        }),
+      ],
+    });
+    const dispatchSession = jest.fn() as Dispatch<PlaybackSessionAction>;
+    const sharedVideoId = "abc12345678";
+
+    const { result } = renderHook(() =>
+      useReleasePlaybackQueueActions({
+        dispatchSession,
+        setNowPlayingQueueItem: jest.fn(),
+        setPlaybackTrackTitleOverride: jest.fn(),
+        setShouldAutoplayEmbed: jest.fn(),
+        setIsPlaybackEmbedMounted: jest.fn(),
+        setPlaybackVideoTransitionTargetId: jest.fn(),
+        setPlaybackVideoUiLoadingTargetId: jest.fn(),
+        clearPlaybackVideoUiLoading: jest.fn(),
+        resetEmbedSession: jest.fn(),
+        beginPlaybackVideoUiLoading: jest.fn(),
+        markEmbedTrackSwitchGrace: jest.fn(),
+        prepareQueueAdvancePlayback: jest.fn(),
+        settleSameUploadQueueAdvance: jest.fn(),
+        setEmbedVideoId: jest.fn(),
+        clearPlayFromGestureRetries: jest.fn(),
+        syncEmbedToVideoId: jest.fn(),
+        syncEmbedForQueueItem: jest.fn(() => null),
+        prefetchQueueItemEmbed: jest.fn(),
+        setUpcomingQueue: jest.fn(),
+        updateUpcomingQueue: jest.fn(),
+        maybePushCurrentToHistory: jest.fn(),
+        prependCurrentToUpcoming: jest.fn(),
+        tryAutoStartOnEmptyQueue: () => false,
+        extendQueueTail: async () => false,
+        playNextRef: { current: () => {} },
+        extendQueueTailRef: { current: async () => false },
+        startPlaybackRef: { current: () => {} },
+        refs: {
+          awaitingResumeGestureRef: { current: false },
+          pendingPlayFromGestureRef: { current: false },
+          shouldRebuildAlbumQueueRef: { current: false },
+          similarQueueModeRef: { current: createSimilarQueueMode(false) },
+          similarQueueGenerationRef: { current: 0 },
+          extendQueueWithSimilarReleasesRef: { current: false },
+          similarQueueTailToastShownRef: { current: false },
+          queueManuallyExtendedRef: { current: false },
+          similarQueueSuppressedAfterClearRef: { current: false },
+          releaseRef: { current: currentRelease },
+          queueRef: { current: [] },
+          playbackHistoryRef: { current: [] },
+          isPlayingRef: { current: true },
+          isPausedRef: { current: false },
+          releaseDetailIdRef: { current: currentRelease.basic_information.id },
+          tracksRef: {
+            current: [
+              discogsTrackFactory.build({
+                position: "A1",
+                title: "Track A1",
+                type_: "track",
+              }),
+            ],
+          },
+          lastSyncedActiveVideoIdRef: { current: null },
+          matchedActiveVideoIdRef: { current: null },
+          activeVideoIdRef: { current: null },
+          embedVideoIdRef: { current: null },
+          activeTrackPositionRef: { current: "A1" },
+          isReleasePreviewRef: { current: false },
+        },
+      }),
+    );
+
+    result.current.startPlayback({
+      release: nextRelease,
+      trackPosition: "A2",
+      trackTitle: "Track A2",
+      rebuildAlbumQueue: false,
+      youtubeVideoId: sharedVideoId,
+    });
+
+    expect(dispatchSession).toHaveBeenCalledWith({
+      type: "PLAY_QUEUE_ITEM",
+      params: expect.objectContaining({
+        pendingTrackPosition: null,
+      }),
+    });
+    expect(dispatchSession).toHaveBeenCalledWith({
+      type: "RESOLVE_PENDING_TRACK",
+      index: 0,
+      resumeTransport: true,
+    });
+  });
+
   it("playNext passes forceReload to syncEmbedForQueueItem after an unavailable skip advance", () => {
     const release = releaseFactory.withDisplayDefaults();
     const nextItem = createQueueItem({
@@ -1145,6 +1250,30 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(queueManuallyExtendedRef.current).toBe(false);
     expect(similarQueueModeRef.current.enabled).toBe(false);
     expect(similarQueueSuppressedAfterClearRef.current).toBe(true);
+  });
+
+  it("startPlayback clears collection radio active chrome", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const clearCollectionRadioActive = jest.fn();
+    const { result } = buildHarness({ clearCollectionRadioActive });
+
+    result.current.startPlayback({
+      release,
+      trackPosition: "A1",
+      trackTitle: "Track",
+      rebuildAlbumQueue: false,
+    });
+
+    expect(clearCollectionRadioActive).toHaveBeenCalledTimes(1);
+  });
+
+  it("stopPlayback clears collection radio active chrome", () => {
+    const clearCollectionRadioActive = jest.fn();
+    const { result } = buildHarness({ clearCollectionRadioActive });
+
+    result.current.stopPlayback();
+
+    expect(clearCollectionRadioActive).toHaveBeenCalledTimes(1);
   });
 
   it("stopPlayback clears persisted session state and stops transport", () => {

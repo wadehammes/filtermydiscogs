@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
 import {
   useCallback,
   useEffect,
@@ -9,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { collectionRadioActiveAtom } from "src/atoms/collectionRadioPlayback.atoms";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
@@ -1365,6 +1367,11 @@ export const useReleasePlaybackProviderImpl = (): {
     dispatchEmbedSession({ type: "embed/confirm/reset" });
   }, [dispatchEmbedSession]);
 
+  const setCollectionRadioActive = useSetAtom(collectionRadioActiveAtom);
+  const clearCollectionRadioActive = useCallback(() => {
+    setCollectionRadioActive(false);
+  }, [setCollectionRadioActive]);
+
   useEffect(() => {
     return () => {
       clearPlayFromGestureRetries();
@@ -1416,6 +1423,7 @@ export const useReleasePlaybackProviderImpl = (): {
     extendQueueTailRef,
     startPlaybackRef,
     resetPlaybackSkipState,
+    clearCollectionRadioActive,
     forceEmbedReloadAfterUnavailableSkipRef,
     refs: {
       awaitingResumeGestureRef,

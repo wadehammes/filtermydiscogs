@@ -204,7 +204,14 @@ export const isEmbedAlignedForLoadingPlaybackConfirm = ({
   watchdogVideoId: string | null;
   matchedActiveVideoId?: string | null;
 }): boolean => {
-  const sessionVideoId = matchedActiveVideoId ?? activeVideoId;
+  const loadingTarget = loadingTargetVideoId?.trim() ?? null;
+  const committedEmbed = embedVideoId?.trim() ?? null;
+  const sessionVideoId =
+    loadingTarget !== null &&
+    committedEmbed !== null &&
+    loadingTarget === committedEmbed
+      ? committedEmbed
+      : (matchedActiveVideoId?.trim() ?? activeVideoId?.trim() ?? null);
 
   if (
     doesPlaybackVideoUiLoadingTargetMatch({

@@ -224,6 +224,19 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe(true);
   });
 
+  it("isEmbedAlignedForLoadingPlaybackConfirm prefers committed embed id over stale matchedActiveVideoId while loading", () => {
+    expect(
+      isEmbedAlignedForLoadingPlaybackConfirm({
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "next-id",
+        matchedActiveVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(true);
+  });
+
   it("isEmbedAlignedForLoadingPlaybackConfirm prefers matchedActiveVideoId over presentation activeVideoId when embedVideoId is ahead", () => {
     expect(
       isEmbedAlignedForLoadingPlaybackConfirm({

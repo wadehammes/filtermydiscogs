@@ -285,6 +285,10 @@ export const useReleasePlaybackSimilarQueue = ({
       return;
     }
 
+    if (queueRef.current.some((item) => item.fromCollectionRadio === true)) {
+      return;
+    }
+
     if (
       !similarQueueModeRef.current.enabled &&
       extendQueueWithSimilarReleasesRef.current
