@@ -1,0 +1,54 @@
+@property --collection-radio-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes collectionRadioBorderRotate {
+  to {
+    --collection-radio-border-angle: 360deg;
+  }
+}
+
+.gradientRing {
+  animation: collectionRadioBorderRotate 5s linear infinite;
+  background:
+    linear-gradient(var(--background), var(--background)) padding-box,
+    conic-gradient(
+      from var(--collection-radio-border-angle),
+      var(--primary),
+      color-mix(in srgb, var(--link) 70%, var(--primary)),
+      var(--primary)
+    )
+    border-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius-ui);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--primary) 14%, transparent);
+  flex: none;
+}
+
+.playButton {
+  border: none;
+  border-radius: calc(var(--radius-ui) - 2px);
+  height: var(--input-height);
+  min-width: var(--input-height);
+  width: var(--input-height);
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+}
+
+.playIcon {
+  align-items: center;
+  display: flex;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
