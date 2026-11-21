@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import {
   useCallback,
   useEffect,
@@ -9,10 +10,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { collectionRadioSessionAtom } from "src/atoms/collectionRadioPlayback.atoms";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
+import { useCollectionRadioQueue } from "src/hooks/useCollectionRadioQueue.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { usePlaybackTrackYoutubeOverrides } from "src/hooks/usePlaybackTrackYoutubeOverrides.hook";
 import { useReleasePlaybackPendingResolution } from "src/hooks/useReleasePlaybackPendingResolution.hook";
@@ -75,6 +78,10 @@ import {
 } from "src/utils/playbackEmbedUnavailableSkip";
 import { logPlaybackEmbedWatchdogDebug } from "src/utils/playbackEmbedWatchdogDebug";
 import { buildCurrentQueueItem } from "src/utils/playbackQueue";
+import {
+  queueHasSimilarTailItems,
+  resolvePlaybackQueueAutopopulateSource,
+} from "src/utils/playbackQueueAutopopulate";
 import {
   isQueueItemTrackTitlePlaceholder,
   resolvePlaybackPresentationFromQueueItem,
@@ -207,6 +214,7 @@ export const useReleasePlaybackProviderImpl = (): {
   );
   const similarQueueGenerationRef = useRef(0);
   const similarQueueFetchInFlightRef = useRef(false);
+  const collectionRadioFetchInFlightRef = useRef(false);
   const similarQueueTailToastShownRef = useRef(false);
   const queueManuallyExtendedRef = useRef(false);
   const similarQueueSuppressedAfterClearRef = useRef(false);
@@ -437,6 +445,8 @@ export const useReleasePlaybackProviderImpl = (): {
     [],
   );
 
+  const collectionRadioSession = useAtomValue(collectionRadioSessionAtom);
+
   const { extendQueueTail, maybeExtendQueueTail, isSimilarQueueLoading } =
     useReleasePlaybackSimilarQueue({
       queryClient,
@@ -458,6 +468,44 @@ export const useReleasePlaybackProviderImpl = (): {
         similarQueueSuppressedAfterClearRef,
       },
     });
+
+  const {
+    clearCollectionRadioSession,
+    extendCollectionRadioTail,
+    maybeExtendCollectionRadioTail,
+    isCollectionRadioQueueLoading,
+  } = useCollectionRadioQueue({
+    queryClient,
+    collectionRadioSession,
+    updateUpcomingQueue,
+    queueRef,
+    queueManuallyExtendedRef,
+    similarQueueModeRef,
+    collectionRadioFetchInFlightRef,
+    similarQueueSuppressedAfterClearRef,
+    previewVideoRef,
+  });
+
+  const extendQueueTailOrRadio = useCallback(async (): Promise<boolean> => {
+    if (collectionRadioSession) {
+      return extendCollectionRadioTail();
+    }
+
+    return extendQueueTail();
+  }, [collectionRadioSession, extendCollectionRadioTail, extendQueueTail]);
+
+  const maybeExtendQueueTailOrRadio = useCallback(() => {
+    if (collectionRadioSession) {
+      maybeExtendCollectionRadioTail();
+      return;
+    }
+
+    maybeExtendQueueTail();
+  }, [
+    collectionRadioSession,
+    maybeExtendCollectionRadioTail,
+    maybeExtendQueueTail,
+  ]);
 
   const {
     isLoading,
@@ -1411,12 +1459,13 @@ export const useReleasePlaybackProviderImpl = (): {
     maybePushCurrentToHistory,
     prependCurrentToUpcoming,
     tryAutoStartOnEmptyQueue,
-    extendQueueTail,
+    extendQueueTail: extendQueueTailOrRadio,
     playNextRef,
     extendQueueTailRef,
     startPlaybackRef,
     resetPlaybackSkipState,
     forceEmbedReloadAfterUnavailableSkipRef,
+    clearCollectionRadioSession,
     refs: {
       awaitingResumeGestureRef,
       pendingPlayFromGestureRef,
@@ -1460,7 +1509,7 @@ export const useReleasePlaybackProviderImpl = (): {
     isPlaying,
     isReleasePreview,
     extendQueueWithSimilarReleases,
-    maybeExtendQueueTail,
+    maybeExtendQueueTail: maybeExtendQueueTailOrRadio,
     upcomingQueueLength: queue.length,
     allReleasesLength: allReleases.length,
     pendingPreviewVideoUri,
@@ -1557,10 +1606,18 @@ export const useReleasePlaybackProviderImpl = (): {
 
   const isQueueBuilding = resolveIsQueueBuilding({
     isSimilarQueueLoading,
+    isCollectionRadioQueueLoading,
     pendingTrackPosition,
     releaseId,
     isReleaseDetailLoading: isLoading,
     tracksLength: tracks.length,
+  });
+
+  const queueAutopopulateSource = resolvePlaybackQueueAutopopulateSource({
+    collectionRadioActive: collectionRadioSession !== null,
+    isCollectionRadioQueueLoading,
+    isSimilarQueueLoading,
+    queueHasSimilarTailItems: queueHasSimilarTailItems(queue),
   });
 
   const stateValue = useMemo(
@@ -1591,6 +1648,9 @@ export const useReleasePlaybackProviderImpl = (): {
       canPlayNext,
       isLoading,
       isQueueBuilding,
+      isSimilarQueueLoading,
+      isCollectionRadioQueueLoading,
+      queueAutopopulateSource,
       isPlaybackVideoLoading,
       isPlaybackVideoTransitionPending,
       isPlaybackDockMuted: dockTransport.playbackDockMuted,
@@ -1622,6 +1682,9 @@ export const useReleasePlaybackProviderImpl = (): {
       canPlayNext,
       isLoading,
       isQueueBuilding,
+      isSimilarQueueLoading,
+      isCollectionRadioQueueLoading,
+      queueAutopopulateSource,
       isPlaybackVideoLoading,
       isPlaybackVideoTransitionPending,
       dockTransport.playbackDockMuted,

@@ -147,6 +147,19 @@ describe("releasePlaybackPendingResolution", () => {
     ).toBe(true);
   });
 
+  it("resolveIsQueueBuilding is true when collection radio tail is loading", () => {
+    expect(
+      resolveIsQueueBuilding({
+        isSimilarQueueLoading: false,
+        isCollectionRadioQueueLoading: true,
+        pendingTrackPosition: null,
+        releaseId: 1,
+        isReleaseDetailLoading: false,
+        tracksLength: 1,
+      }),
+    ).toBe(true);
+  });
+
   it("resolveIsQueueBuilding is true when similar queue tail is loading", () => {
     expect(
       resolveIsQueueBuilding({

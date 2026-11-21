@@ -62,18 +62,21 @@ export const shouldResetActiveTrackIndex = ({
 
 export const resolveIsQueueBuilding = ({
   isSimilarQueueLoading,
+  isCollectionRadioQueueLoading,
   pendingTrackPosition,
   releaseId,
   isReleaseDetailLoading,
   tracksLength,
 }: {
   isSimilarQueueLoading: boolean;
+  isCollectionRadioQueueLoading?: boolean;
   pendingTrackPosition: string | null;
   releaseId: number | null;
   isReleaseDetailLoading: boolean;
   tracksLength: number;
 }): boolean =>
   isSimilarQueueLoading ||
+  isCollectionRadioQueueLoading === true ||
   (pendingTrackPosition !== null &&
     releaseId !== null &&
     (isReleaseDetailLoading || tracksLength === 0));

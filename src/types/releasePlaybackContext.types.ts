@@ -1,6 +1,7 @@
 import type { DiscogsRelease, DiscogsTrack, DiscogsVideo } from "src/types";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type { PlaybackEmbedProgress } from "src/utils/playbackEmbedProgress";
+import type { PlaybackQueueAutopopulateSource } from "src/utils/playbackQueueAutopopulate";
 
 export interface StartPlaybackParams {
   release: DiscogsRelease;
@@ -65,6 +66,9 @@ export interface ReleasePlaybackState {
   canPlayNext: boolean;
   isLoading: boolean;
   isQueueBuilding: boolean;
+  isSimilarQueueLoading: boolean;
+  isCollectionRadioQueueLoading: boolean;
+  queueAutopopulateSource: PlaybackQueueAutopopulateSource | null;
   isPlaybackVideoLoading: boolean;
   isPlaybackVideoTransitionPending: boolean;
   isPlaybackDockMuted: boolean;

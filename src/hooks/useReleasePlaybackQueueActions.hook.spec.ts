@@ -73,6 +73,7 @@ const buildHarness = ({
     current: async () => false,
   };
   const startPlaybackRef = { current: () => {} };
+  const clearCollectionRadioSession = jest.fn();
 
   const clearPlaybackVideoUiLoading = jest.fn();
   const resetEmbedSession = jest.fn();
@@ -118,6 +119,7 @@ const buildHarness = ({
       playNextRef,
       extendQueueTailRef,
       startPlaybackRef,
+      clearCollectionRadioSession,
       refs: {
         awaitingResumeGestureRef,
         pendingPlayFromGestureRef,
@@ -158,6 +160,7 @@ const buildHarness = ({
     prepareQueueAdvancePlayback,
     setUpcomingQueue,
     updateUpcomingQueue,
+    clearCollectionRadioSession,
   };
 };
 
@@ -1133,6 +1136,7 @@ describe("useReleasePlaybackQueueActions", () => {
     });
     const {
       result,
+      clearCollectionRadioSession,
       queueManuallyExtendedRef,
       setUpcomingQueue,
       similarQueueModeRef,
@@ -1145,6 +1149,7 @@ describe("useReleasePlaybackQueueActions", () => {
     expect(queueManuallyExtendedRef.current).toBe(false);
     expect(similarQueueModeRef.current.enabled).toBe(false);
     expect(similarQueueSuppressedAfterClearRef.current).toBe(true);
+    expect(clearCollectionRadioSession).toHaveBeenCalledTimes(1);
   });
 
   it("stopPlayback clears persisted session state and stops transport", () => {

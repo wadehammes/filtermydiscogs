@@ -138,6 +138,7 @@ interface UseReleasePlaybackQueueActionsParams {
   startPlaybackRef: RefObject<(params: StartPlaybackParams) => void>;
   resetPlaybackSkipState?: () => void;
   forceEmbedReloadAfterUnavailableSkipRef?: RefObject<boolean>;
+  clearCollectionRadioSession?: () => void;
   refs: QueueActionRefs;
 }
 
@@ -171,6 +172,7 @@ export const useReleasePlaybackQueueActions = ({
   startPlaybackRef,
   resetPlaybackSkipState,
   forceEmbedReloadAfterUnavailableSkipRef,
+  clearCollectionRadioSession,
   refs,
 }: UseReleasePlaybackQueueActionsParams) => {
   const {
@@ -470,6 +472,7 @@ export const useReleasePlaybackQueueActions = ({
       youtubeVideoId,
       upcomingQueue,
     }: StartPlaybackParams) => {
+      clearCollectionRadioSession?.();
       similarQueueSuppressedAfterClearRef.current = false;
       dispatchSession({ type: "CLEAR_PREVIEW_PENDING" });
       const item = createQueueItem({
@@ -779,6 +782,7 @@ export const useReleasePlaybackQueueActions = ({
 
   const stopPlayback = useCallback(
     ({ resetSkipLogToast = true }: { resetSkipLogToast?: boolean } = {}) => {
+      clearCollectionRadioSession?.();
       resetUserTrackRecordingSession();
       setNowPlayingQueueItem(null);
       setPlaybackTrackTitleOverride(null);
@@ -826,6 +830,7 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueTailToastShownRef,
       resetPlaybackSkipState,
       setNowPlayingQueueItem,
+      clearCollectionRadioSession,
     ],
   );
 
@@ -908,6 +913,7 @@ export const useReleasePlaybackQueueActions = ({
   startPlaybackRef.current = startPlayback;
 
   const clearQueue = useCallback(() => {
+    clearCollectionRadioSession?.();
     similarQueueSuppressedAfterClearRef.current = true;
     similarQueueModeRef.current = createSimilarQueueMode(false);
     similarQueueGenerationRef.current += 1;
@@ -921,6 +927,7 @@ export const useReleasePlaybackQueueActions = ({
     similarQueueGenerationRef,
     similarQueueModeRef,
     similarQueueSuppressedAfterClearRef,
+    clearCollectionRadioSession,
   ]);
 
   return {
