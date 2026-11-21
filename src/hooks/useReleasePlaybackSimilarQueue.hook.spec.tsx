@@ -261,6 +261,24 @@ describe("useReleasePlaybackSimilarQueue", () => {
     expect(updateUpcomingQueue).not.toHaveBeenCalled();
   });
 
+  it("does not extend the tail while a collection radio track is in up next", () => {
+    const radioItem = createQueueItem({
+      release: catalogSimilarRelease,
+      trackPosition: "A1",
+      trackTitle: "Collection radio track",
+    });
+    radioItem.fromCollectionRadio = true;
+
+    const { result, updateUpcomingQueue } = buildHarness({
+      queue: [radioItem],
+      similarQueueMode: { enabled: true },
+    });
+
+    result.current.maybeExtendQueueTail();
+
+    expect(updateUpcomingQueue).not.toHaveBeenCalled();
+  });
+
   it("appends fetched similar items when the generation still matches", async () => {
     const { result, sourceRelease, updateUpcomingQueue } = buildHarness();
 

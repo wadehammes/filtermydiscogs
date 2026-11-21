@@ -19,7 +19,7 @@ They complement—not replace—the reference chapters:
 | [Collection browsing](collection-browsing.md) | How does the full Discogs collection get to the grid without refetching every page? |
 | [Public sharing](public-sharing.md) | Why don’t we hydrate every release on the server for `/playlist/[id]`? |
 | [Playback](playback.md) | Where does the YouTube queue live, and why two playback shells? |
-| [Collection radio](radio.md) | Filtered shuffled radio — playlist-parity start, no provider embed surgery (v1 design) |
+| [Collection radio](radio.md) | Filtered shuffled radio — filters bar play, playlist-parity start |
 | [Crates & playlists (Postgres)](crates-and-playlists.md) | What is an `instance_id`, and where do cover snapshots live? |
 | [API layer & Discogs](api-and-discogs.md) | Why `api.*`, throttling, and batch release fetch? |
 
