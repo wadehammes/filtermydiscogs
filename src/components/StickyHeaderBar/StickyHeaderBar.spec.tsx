@@ -14,6 +14,14 @@ import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { render, screen, waitFor } from "test-utils";
 import { StickyHeaderBar } from "./StickyHeaderBar.component";
 
+jest.mock("src/hooks/useCollectionRadioPlayback.hook", () => ({
+  useCollectionRadioPlayback: () => ({
+    startCollectionRadio: jest.fn(),
+    isStarting: false,
+    filteredReleaseCount: 0,
+  }),
+}));
+
 let po: StickyHeaderBarPageObject;
 
 const filterBarReleases = [
