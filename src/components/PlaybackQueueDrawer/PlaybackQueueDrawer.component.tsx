@@ -31,6 +31,7 @@ import XIcon from "src/styles/icons/x-thin.svg";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { getQueueItemListId } from "src/utils/playbackQueue";
+import { resolvePlaybackQueueDrawerStatusMessage } from "src/utils/playbackQueueAutopopulate";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import styles from "./PlaybackQueueDrawer.module.css";
 
@@ -145,7 +146,31 @@ export const PlaybackQueueDrawer = ({
 }: PlaybackQueueDrawerProps) => {
   const { queue, playQueueAtIndex, removeFromQueue, reorderQueue, clearQueue } =
     useReleasePlaybackQueue();
-  const { isQueueBuilding } = useReleasePlaybackState();
+  const {
+    isQueueBuilding,
+    isSimilarQueueLoading,
+    isCollectionRadioQueueLoading,
+    queueAutopopulateSource,
+  } = useReleasePlaybackState();
+
+  const queueStatusMessage = useMemo(
+    () =>
+      resolvePlaybackQueueDrawerStatusMessage({
+        isAlbumQueueBuilding:
+          isQueueBuilding &&
+          !isSimilarQueueLoading &&
+          !isCollectionRadioQueueLoading,
+        isSimilarQueueLoading,
+        isCollectionRadioQueueLoading,
+        autopopulateSource: queueAutopopulateSource,
+      }),
+    [
+      isCollectionRadioQueueLoading,
+      isQueueBuilding,
+      isSimilarQueueLoading,
+      queueAutopopulateSource,
+    ],
+  );
 
   const sortableIds = useMemo(
     () => queue.map((item, index) => getQueueItemListId(item, index)),
@@ -228,13 +253,20 @@ export const PlaybackQueueDrawer = ({
         </p>
       ) : (
         <>
-          {isQueueBuilding ? (
+          {queueStatusMessage ? (
             <p
-              className={styles.buildingStatus}
+              className={classNames(
+                styles.buildingStatus,
+                queueAutopopulateSource === "collection-radio" &&
+                  styles.buildingStatusRadio,
+                queueAutopopulateSource === "similar-tail" &&
+                  styles.buildingStatusSimilar,
+              )}
               data-testid="fmdPlaybackQueueBuildingStatus"
+              data-queue-autopopulate-source={queueAutopopulateSource ?? undefined}
               role="status"
             >
-              Finishing album tracklist… You can still reorder upcoming tracks.
+              {queueStatusMessage}
             </p>
           ) : null}
           <DndContext

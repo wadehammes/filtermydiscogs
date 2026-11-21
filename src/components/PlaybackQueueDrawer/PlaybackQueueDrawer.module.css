@@ -14,6 +14,16 @@
   padding: var(--space-3) var(--space-4);
 }
 
+.buildingStatusSimilar {
+  border-bottom-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+  color: color-mix(in srgb, var(--foreground) 88%, var(--primary));
+}
+
+.buildingStatusRadio {
+  border-bottom-color: color-mix(in srgb, var(--link) 35%, var(--border));
+  color: color-mix(in srgb, var(--foreground) 88%, var(--link));
+}
+
 .queueDrawerOverVideo.queueDrawerShell.queueLayer.queueElevated {
   z-index: 2;
 }
