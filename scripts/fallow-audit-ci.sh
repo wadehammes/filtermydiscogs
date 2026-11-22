@@ -18,7 +18,7 @@ if ! git rev-parse --verify "${BASE_REF}^{commit}" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Fallow audit vs ${BASE_REF} (CI: advisory — worsened complexity reported, does not fail the job)"
+echo "Fallow audit vs ${BASE_REF} (CI: advisory — complexity + architecture on changed files; does not fail the job)"
 
 # Honor .fallowrc audit.worsened: warn — do not pass --worsened error on CI.
 pnpm exec fallow audit --changed-since "$BASE_REF" --worsened warn || true
@@ -35,6 +35,90 @@ if (!process.env.JSON?.trim()) {
 
 const j = JSON.parse(process.env.JSON);
 const attr = j.attribution ?? {};
+
+const ARCHITECTURE_ISSUE_TYPES = new Set([
+  "boundary-violation",
+  "boundary-coverage-violation",
+  "boundary-call-violation",
+  "policy-violation",
+  "circular-dependency",
+  "re-export-cycle",
+  "package-cycle",
+]);
+
+const isIntroduced = (finding) =>
+  finding.attribution === "introduced" || finding.introduced === true;
+
+const deadFindings = j.dead_code?.findings ?? [];
+const archIntroduced = deadFindings.filter(
+  (finding) =>
+    ARCHITECTURE_ISSUE_TYPES.has(finding.issue_type) && isIntroduced(finding),
+);
+const archInherited = deadFindings.filter(
+  (finding) =>
+    ARCHITECTURE_ISSUE_TYPES.has(finding.issue_type) &&
+    !isIntroduced(finding),
+);
+
+const deadSummary = j.dead_code?.summary ?? {};
+const archScopeTotals = {
+  boundary: deadSummary.boundary_violations ?? 0,
+  boundary_call: deadSummary.boundary_call_violations ?? 0,
+  boundary_coverage: deadSummary.boundary_coverage_violations ?? 0,
+  policy: deadSummary.policy_violations ?? 0,
+  circular: deadSummary.circular_dependencies ?? 0,
+  re_export: deadSummary.re_export_cycles ?? 0,
+  package: deadSummary.package_cycles ?? 0,
+};
+
+const printArchFinding = (finding) => {
+  const label =
+    finding.from_zone && finding.to_zone
+      ? `${finding.from_zone} -> ${finding.to_zone}`
+      : (finding.name ?? finding.issue_type);
+  const line = finding.line != null ? `:${finding.line}` : "";
+  console.log(
+    `  ${finding.issue_type} ${finding.path}${line} ${label}`.trimEnd(),
+  );
+  if (finding.message) {
+    console.log(`    ${finding.message}`);
+  }
+};
+
+if (
+  archScopeTotals.boundary +
+    archScopeTotals.boundary_call +
+    archScopeTotals.boundary_coverage +
+    archScopeTotals.policy +
+    archScopeTotals.circular +
+    archScopeTotals.re_export +
+    archScopeTotals.package >
+  0
+) {
+  console.log(
+    "fallow-audit-ci: architecture in changed scope (audit dead-code pass):",
+    `boundary=${archScopeTotals.boundary}`,
+    `boundary_call=${archScopeTotals.boundary_call}`,
+    `boundary_coverage=${archScopeTotals.boundary_coverage}`,
+    `policy=${archScopeTotals.policy}`,
+    `circular=${archScopeTotals.circular}`,
+    `re_export_cycle=${archScopeTotals.re_export}`,
+    `package_cycle=${archScopeTotals.package}`,
+  );
+}
+
+if (archIntroduced.length > 0) {
+  console.error(
+    `\nfallow-audit-ci: advisory — ${archIntroduced.length} introduced architecture finding(s) on changed files; job still passes.`,
+  );
+  for (const finding of archIntroduced) {
+    printArchFinding(finding);
+  }
+} else if (archInherited.length > 0) {
+  console.log(
+    `fallow-audit-ci: note — ${archInherited.length} inherited architecture finding(s) on touched files (new-only gate would not block).`,
+  );
+}
 
 const worsenedOnlyLineCount = (finding) => {
   const metrics = finding.worsened_metrics ?? [];
@@ -86,6 +170,6 @@ if (advisory.length > 0) {
 const introduced = attr.complexity_introduced ?? 0;
 const inherited = attr.complexity_inherited ?? 0;
 console.log(
-  `fallow-audit-ci: pass (complexity_worsened=${attr.complexity_worsened ?? 0}; blocking_worsened_reported=${blocking.length}; introduced=${introduced}, inherited=${inherited}).`,
+  `fallow-audit-ci: pass (architecture_introduced=${archIntroduced.length}; architecture_inherited=${archInherited.length}; complexity_worsened=${attr.complexity_worsened ?? 0}; blocking_worsened_reported=${blocking.length}; complexity_introduced=${introduced}; complexity_inherited=${inherited}).`,
 );
 NODE

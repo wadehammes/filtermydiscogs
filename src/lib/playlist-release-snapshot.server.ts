@@ -6,6 +6,7 @@ import {
   validateReleaseDataForStorage,
 } from "src/lib/release-data-validation";
 import type { DiscogsRelease } from "src/types";
+import { toPrismaInputJsonValue } from "src/utils/toPrismaJsonValue";
 
 export const loadPlaylistReleaseSnapshots = async ({
   userId,
@@ -88,10 +89,10 @@ export const persistPlaylistReleaseSnapshots = async ({
             user_id: userId,
             playlist_id: playlistId,
             instance_id: instanceId,
-            release_data: validated.release,
+            release_data: toPrismaInputJsonValue(validated.release),
           },
           update: {
-            release_data: validated.release,
+            release_data: toPrismaInputJsonValue(validated.release),
           },
         }),
       ];
