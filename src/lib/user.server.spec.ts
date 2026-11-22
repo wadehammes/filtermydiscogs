@@ -62,14 +62,13 @@ describe("readSupportProjectToastEligible", () => {
 });
 
 describe("recordDiscogsLogin", () => {
-  it("when creating a new user, stores a Discogs profile email when provided", async () => {
+  it("when creating a new user, sets login_count to 1 without support toast pending", async () => {
     mockFindUnique.mockResolvedValue(null);
     mockCreate.mockResolvedValue(prismaUserFactory.build());
 
     await recordDiscogsLogin({
       discogsUserId: 9,
       username: "new-digger",
-      discogsProfileEmail: "dig@example.com",
     });
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -77,7 +76,6 @@ describe("recordDiscogsLogin", () => {
         data: expect.objectContaining({
           login_count: 1,
           support_toast_pending: false,
-          email: "dig@example.com",
         }),
       }),
     );
@@ -98,54 +96,6 @@ describe("recordDiscogsLogin", () => {
       expect.objectContaining({
         data: expect.not.objectContaining({
           support_toast_pending: true,
-        }),
-      }),
-    );
-  });
-
-  it("when the user already has an email, does not overwrite it from Discogs", async () => {
-    mockFindUnique.mockResolvedValue(
-      prismaUserFactory.build({
-        login_count: 2,
-        email: "mine@example.com",
-      }),
-    );
-    mockUpdate.mockResolvedValue(prismaUserFactory.build());
-
-    await recordDiscogsLogin({
-      discogsUserId: 9,
-      username: "new-digger",
-      discogsProfileEmail: "discogs@example.com",
-    });
-
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.not.objectContaining({
-          email: "discogs@example.com",
-        }),
-      }),
-    );
-  });
-
-  it("when the user has no email yet, backfills from Discogs on login", async () => {
-    mockFindUnique.mockResolvedValue(
-      prismaUserFactory.build({
-        login_count: 2,
-        email: null,
-      }),
-    );
-    mockUpdate.mockResolvedValue(prismaUserFactory.build());
-
-    await recordDiscogsLogin({
-      discogsUserId: 9,
-      username: "new-digger",
-      discogsProfileEmail: "discogs@example.com",
-    });
-
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          email: "discogs@example.com",
         }),
       }),
     );

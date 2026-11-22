@@ -10,27 +10,19 @@ export type DiscogsProfileEmailCredentials = {
   accessTokenSecret: string;
 };
 
-export const fetchDiscogsProfileEmail = async ({
-  username,
-  accessToken,
-  accessTokenSecret,
-}: DiscogsProfileEmailCredentials): Promise<string | null> => {
-  const profile = await discogsOAuthService.getUserProfile(
-    username,
-    accessToken,
-    accessTokenSecret,
-    { skipThrottle: true },
-  );
-
-  return parseDiscogsProfileEmail(profile);
-};
-
 export const fetchDiscogsProfileEmailForLogin = async (
   credentials: DiscogsProfileEmailCredentials,
   routeLabel: string,
 ): Promise<string | null> => {
   try {
-    return await fetchDiscogsProfileEmail(credentials);
+    const profile = await discogsOAuthService.getUserProfile(
+      credentials.username,
+      credentials.accessToken,
+      credentials.accessTokenSecret,
+      { skipThrottle: true },
+    );
+
+    return parseDiscogsProfileEmail(profile);
   } catch (error) {
     logSanitizedApiRouteFailure(
       routeLabel,

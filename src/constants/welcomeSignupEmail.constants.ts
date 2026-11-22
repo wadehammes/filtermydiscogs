@@ -4,6 +4,16 @@ export const WELCOME_EMAIL_NEW_ACCOUNT_MIN_CREATED_AT = new Date(
 
 export const WELCOME_EMAIL_FIRST_SIGNUP_LOGIN_COUNT = 1;
 
+export const welcomeSignupEmailEligibilityWhere = {
+  welcome_email_sent: false,
+  login_count: WELCOME_EMAIL_FIRST_SIGNUP_LOGIN_COUNT,
+  created_at: { gte: WELCOME_EMAIL_NEW_ACCOUNT_MIN_CREATED_AT },
+} as const;
+
+export const hasTrimmedUserEmail = (
+  email: string | null | undefined,
+): boolean => (email?.trim() ?? "") !== "";
+
 export const isWelcomeSignupEmailEligibleAccount = (user: {
   login_count: number;
   created_at: Date;
@@ -14,11 +24,11 @@ export const isWelcomeSignupEmailEligibleAccount = (user: {
     return false;
   }
 
-  if ((user.email?.trim() ?? "") === "") {
+  if (!hasTrimmedUserEmail(user.email)) {
     return false;
   }
 
-  if (user.login_count !== WELCOME_EMAIL_FIRST_SIGNUP_LOGIN_COUNT) {
+  if (user.login_count !== welcomeSignupEmailEligibilityWhere.login_count) {
     return false;
   }
 
@@ -27,8 +37,6 @@ export const isWelcomeSignupEmailEligibleAccount = (user: {
 
 export const buildWelcomeSignupEmailClaimWhere = (discogsUserId: number) => ({
   discogs_user_id: discogsUserId,
-  welcome_email_sent: false,
+  ...welcomeSignupEmailEligibilityWhere,
   email: { not: null },
-  login_count: WELCOME_EMAIL_FIRST_SIGNUP_LOGIN_COUNT,
-  created_at: { gte: WELCOME_EMAIL_NEW_ACCOUNT_MIN_CREATED_AT },
 });

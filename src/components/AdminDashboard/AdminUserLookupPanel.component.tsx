@@ -14,6 +14,7 @@ import {
   type AdminUserLookupFormValues,
   adminUserLookupFormSchema,
 } from "src/lib/validation/adminUserLookup.schemas";
+import { buildDiscogsUserProfileUrl } from "src/utils/discogsUserProfileUrl";
 import { THEME_LABELS } from "src/utils/themeAppearance";
 import styles from "./AdminUserLookupPanel.module.css";
 
@@ -33,9 +34,6 @@ const ANALYTICS_CONSENT_LABELS = {
   disabled: "Disabled",
   unset: "Unset",
 } as const;
-
-const getDiscogsUserProfileUrl = (username: string): string =>
-  `https://www.discogs.com/user/${encodeURIComponent(username)}`;
 
 const formatTimestamp = (value: string | null): string => {
   if (!value) {
@@ -121,7 +119,7 @@ export const AdminUserLookupPanel = () => {
                   "Username",
                   <a
                     className={dashboardStyles.tableUserLink}
-                    href={getDiscogsUserProfileUrl(data.user.username)}
+                    href={buildDiscogsUserProfileUrl(data.user.username)}
                     rel="noopener noreferrer"
                     target="_blank"
                   >

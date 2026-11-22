@@ -6,7 +6,7 @@ import {
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
-import { queueLoginSideEffectsAfterLogin } from "src/lib/queueLoginSideEffectsAfterLogin.server";
+import { runLoginSideEffectsAfterLoginWithLoggedFailure } from "src/lib/runLoginSideEffectsAfterLogin.server";
 import { recordDiscogsLogin } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -80,14 +80,17 @@ export async function GET(request: NextRequest) {
       username: verifiedIdentity.username,
     });
 
-    queueLoginSideEffectsAfterLogin(
+    const oauthCredentials = {
+      username: verifiedIdentity.username,
+      accessToken: accessTokens.oauth_token,
+      accessTokenSecret: accessTokens.oauth_token_secret,
+    };
+
+    await runLoginSideEffectsAfterLoginWithLoggedFailure(
       loginResult.discogsUserId,
       "/api/auth/callback",
-      {
-        username: verifiedIdentity.username,
-        accessToken: accessTokens.oauth_token,
-        accessTokenSecret: accessTokens.oauth_token_secret,
-      },
+      oauthCredentials,
+      "Login side effects failed:",
     );
 
     const response = privateRouteRedirect(

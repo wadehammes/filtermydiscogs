@@ -28,11 +28,9 @@ import type {
 } from "src/types/dashboard.types";
 import type { AdminStatsFeatureUsageRow } from "src/types/productAnalytics.types";
 import type { StoredTheme } from "src/types/userPreferences.types";
+import { buildDiscogsUserProfileUrl } from "src/utils/discogsUserProfileUrl";
 import { THEME_LABELS } from "src/utils/themeAppearance";
 import styles from "./AdminDashboardClient.module.css";
-
-const getDiscogsUserProfileUrl = (username: string): string =>
-  `https://www.discogs.com/user/${encodeURIComponent(username)}`;
 
 const DEFAULT_VIEW_LABELS: Record<string, string> = {
   card: "Grid",
@@ -92,7 +90,7 @@ const formatTopUserLabel = (row: {
 }): ReactNode => (
   <a
     className={styles.tableUserLink}
-    href={getDiscogsUserProfileUrl(row.username)}
+    href={buildDiscogsUserProfileUrl(row.username)}
     rel="noopener noreferrer"
     target="_blank"
   >
@@ -137,7 +135,7 @@ const formatTopUserTrackLabel = (row: AdminStatsTopUserTrack): ReactNode => {
         (
         <a
           className={styles.tableUserLinkInline}
-          href={getDiscogsUserProfileUrl(row.username)}
+          href={buildDiscogsUserProfileUrl(row.username)}
           rel="noopener noreferrer"
           target="_blank"
         >

@@ -9,7 +9,7 @@ import {
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
-import { queueLoginSideEffectsAfterLogin } from "src/lib/queueLoginSideEffectsAfterLogin.server";
+import { runLoginSideEffectsAfterLoginWithLoggedFailure } from "src/lib/runLoginSideEffectsAfterLogin.server";
 import { recordDiscogsLogin } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -63,19 +63,13 @@ export async function GET(request: NextRequest) {
       if (!("error" in verified)) {
         const identity = verified.user;
 
-        const response = privateRouteRedirect(
-          new URL("/collection?auth=success", request.url),
-        );
-
-        syncIdentityCookies(response, identity);
-
         try {
           const loginResult = await recordDiscogsLogin({
             discogsUserId: identity.userId,
             username: identity.username,
           });
 
-          queueLoginSideEffectsAfterLogin(
+          await runLoginSideEffectsAfterLoginWithLoggedFailure(
             loginResult.discogsUserId,
             "/api/auth/discogs",
             {
@@ -83,14 +77,21 @@ export async function GET(request: NextRequest) {
               accessToken,
               accessTokenSecret,
             },
+            "Login side effects failed:",
           );
         } catch (error) {
           logSanitizedApiRouteFailure(
             "/api/auth/discogs",
             error,
-            "Failed to upsert user on token reuse login:",
+            "Failed to upsert user on token reuse:",
           );
         }
+
+        const response = privateRouteRedirect(
+          new URL("/collection?auth=success", request.url),
+        );
+
+        syncIdentityCookies(response, identity);
 
         return response;
       }
@@ -98,11 +99,6 @@ export async function GET(request: NextRequest) {
       if (isDiscogsVerificationUnavailable(verified.error)) {
         return privateRouteRedirect(new URL("/collection", request.url));
       }
-
-      console.log(
-        "Existing tokens invalid, starting new OAuth flow:",
-        verified.error.status,
-      );
     }
 
     const callbackUrl = new URL("/api/auth/callback", request.url).toString();
