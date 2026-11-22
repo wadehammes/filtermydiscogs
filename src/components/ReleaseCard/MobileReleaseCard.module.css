@@ -84,6 +84,14 @@
   z-index: 2;
 }
 
+.coverPlaceholder {
+  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
+    calc(var(--radius-card) - var(--release-card-border-width));
+  height: 100%;
+  min-height: 100%;
+  width: 100%;
+}
+
 .releaseImage {
   border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
     calc(var(--radius-card) - var(--release-card-border-width));

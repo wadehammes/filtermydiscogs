@@ -45,6 +45,9 @@ export const getAdminUserLookup = async (
       last_seen_at: true,
       created_at: true,
       updated_at: true,
+      email: true,
+      marketing_emails_opt_in: true,
+      welcome_email_sent: true,
     },
   });
 
@@ -175,6 +178,14 @@ export const getAdminUserLookup = async (
       updatedAt: user.updated_at.toISOString(),
       lastSeenAt: toIsoString(user.last_seen_at),
       loginCount: user.login_count,
+    },
+    contact: {
+      email:
+        user.email != null && user.email.trim().length > 0
+          ? user.email.trim()
+          : null,
+      marketingEmailsOptIn: user.marketing_emails_opt_in,
+      welcomeEmailSent: user.welcome_email_sent,
     },
     preferences: {
       theme: preferences.theme,

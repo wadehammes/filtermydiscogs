@@ -772,10 +772,49 @@ export default function AdminDashboardClient({
 
               <DashboardSection
                 id="usage"
-                lede="Account settings, and which pages opted-in visitors open."
+                lede="Account settings, contact email, and which pages opted-in visitors open."
                 title="Usage"
               >
                 <div className={styles.preferenceGroups}>
+                  <div className={styles.preferenceGroup}>
+                    <p className={styles.panelEyebrow}>Contact email</p>
+                    <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
+                      <StatCard
+                        label="Saved email address"
+                        subtext={formatPercent(
+                          stats.accountContact.usersWithEmail,
+                          stats.overview.totalUsers,
+                          "of users",
+                        )}
+                        value={formatCommunityStatValue(
+                          stats.accountContact.usersWithEmail,
+                        )}
+                      />
+                      <StatCard
+                        label="Marketing opt-in"
+                        subtext={`${formatPercent(
+                          stats.accountContact.marketingOptInEnabled,
+                          stats.accountContact.usersWithEmail,
+                          "of users with email",
+                        )}. Requires a saved address in Settings.`}
+                        value={formatCommunityStatValue(
+                          stats.accountContact.marketingOptInEnabled,
+                        )}
+                      />
+                      <StatCard
+                        label="Welcome email sent"
+                        subtext={`${formatPercent(
+                          stats.accountContact.welcomeEmailSent,
+                          stats.overview.totalUsers,
+                          "of users",
+                        )}. One-time Resend note after OAuth when eligible.`}
+                        value={formatCommunityStatValue(
+                          stats.accountContact.welcomeEmailSent,
+                        )}
+                      />
+                    </StatsGrid>
+                  </div>
+
                   <StatsGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
                     <StatCard
                       label="Remember filter selections"

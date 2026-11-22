@@ -54,6 +54,12 @@ export interface AdminUserLookupPlayback {
   lastListenedAt: string | null;
 }
 
+export interface AdminUserLookupContact {
+  email: string | null;
+  marketingEmailsOptIn: boolean;
+  welcomeEmailSent: boolean;
+}
+
 export interface AdminUserLookupStats {
   user: {
     discogsUserId: number;
@@ -63,6 +69,7 @@ export interface AdminUserLookupStats {
     lastSeenAt: string | null;
     loginCount: number;
   };
+  contact: AdminUserLookupContact;
   preferences: AdminUserLookupPreferences;
   totals: {
     crates: number;

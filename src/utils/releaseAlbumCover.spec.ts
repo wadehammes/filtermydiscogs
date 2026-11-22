@@ -2,9 +2,24 @@ import { describe, expect, it } from "@jest/globals";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
+  hasReleaseCoverImageUrl,
   resolvePlaylistTrackReleaseImageUrl,
   resolveReleaseDisplayImageUrl,
 } from "src/utils/releaseAlbumCover";
+
+describe("hasReleaseCoverImageUrl", () => {
+  it("when the url is a Discogs CDN address, returns true", () => {
+    expect(hasReleaseCoverImageUrl("https://i.discogs.com/123.jpg")).toBe(true);
+  });
+
+  it("when the url is an SVG data placeholder, returns false", () => {
+    expect(hasReleaseCoverImageUrl("data:image/svg+xml,%3Csvg")).toBe(false);
+  });
+
+  it("when the url is empty, returns false", () => {
+    expect(hasReleaseCoverImageUrl("")).toBe(false);
+  });
+});
 
 describe("resolveReleaseDisplayImageUrl", () => {
   it("prefers cover_image like ReleaseCard on /collection", () => {
