@@ -223,6 +223,12 @@ export interface AdminStatsSavedViews {
   countBreakdown: AdminStatsPreferenceBreakdownRow[];
 }
 
+export interface AdminStatsAccountContact {
+  usersWithEmail: number;
+  marketingOptInEnabled: number;
+  welcomeEmailSent: number;
+}
+
 export interface AdminStatsAccountPreferences {
   persistFiltersEnabled: number;
   analyticsConsent: {
@@ -272,6 +278,7 @@ export interface AdminStats {
     playlists: AdminStatsPlaylistsOverview;
   };
   engagement: AdminStatsEngagement;
+  accountContact: AdminStatsAccountContact;
   accountPreferences: AdminStatsAccountPreferences;
   featureUsage: AdminStatsFeatureUsage;
   recentActivity: {

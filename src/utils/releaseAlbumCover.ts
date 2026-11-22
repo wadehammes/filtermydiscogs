@@ -19,3 +19,6 @@ export const resolveReleaseDisplayImageUrl = (
 export const resolvePlaylistTrackReleaseImageUrl = (
   release: DiscogsRelease | undefined,
 ): string => (release ? resolveReleaseDisplayImageUrl(release) : "");
+
+export const hasReleaseCoverImageUrl = (url: string): boolean =>
+  url.length > 0 && !url.startsWith("data:");

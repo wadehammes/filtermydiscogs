@@ -148,6 +148,18 @@ export const AdminUserLookupPanel = () => {
                   "Last account update",
                   formatTimestamp(data.user.updatedAt),
                 )}
+                {renderPreferenceRow(
+                  "Contact email",
+                  data.contact.email ?? "—",
+                )}
+                {renderPreferenceRow(
+                  "Marketing emails",
+                  data.contact.marketingEmailsOptIn ? "On" : "Off",
+                )}
+                {renderPreferenceRow(
+                  "Welcome email sent",
+                  data.contact.welcomeEmailSent ? "Yes" : "No",
+                )}
               </dl>
             </article>
 

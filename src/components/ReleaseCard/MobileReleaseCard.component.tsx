@@ -10,11 +10,13 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
+import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import type { ReleaseCardProps as BaseReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
+import { hasReleaseCoverImageUrl } from "src/utils/releaseAlbumCover";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./MobileReleaseCard.module.css";
 import {
@@ -174,14 +176,13 @@ const MobileReleaseCardComponent = ({
         className={styles.imageContainer}
         {...definedProps(imageActivateProps ?? {})}
       >
-        {thumbUrl && (
+        {hasReleaseCoverImageUrl(thumbUrl) ? (
           <Image
             key={thumbUrl}
             src={thumbUrl}
             height={MOBILE_RELEASE_CARD_COVER_PX}
             width={MOBILE_RELEASE_CARD_COVER_PX}
             quality={85}
-            unoptimized={thumbUrl.startsWith("data:")}
             alt={release.basic_information.title}
             {...(priority
               ? { priority: true, loading: "eager" as const }
@@ -194,6 +195,14 @@ const MobileReleaseCardComponent = ({
               filter: "none",
             }}
             sizes="96px"
+          />
+        ) : (
+          <span
+            className={classNames(
+              skeletonPulseStyles.pulsesurface,
+              styles.coverPlaceholder,
+            )}
+            aria-hidden
           />
         )}
       </div>

@@ -312,6 +312,34 @@ const emptyFeatureUsage = (): AdminStats["featureUsage"] => ({
   events: [],
 });
 
+type AccountContactOverviewRow = {
+  users_with_email: number;
+  marketing_opt_in: number;
+  welcome_email_sent: number;
+};
+
+export const fetchAdminAccountContactStats = async (): Promise<
+  AdminStats["accountContact"]
+> => {
+  const rows = await prisma.$queryRaw<AccountContactOverviewRow[]>`
+    SELECT
+      COUNT(*) FILTER (
+        WHERE email IS NOT NULL AND btrim(email) <> ''
+      )::int AS users_with_email,
+      COUNT(*) FILTER (WHERE marketing_emails_opt_in = true)::int AS marketing_opt_in,
+      COUNT(*) FILTER (WHERE welcome_email_sent = true)::int AS welcome_email_sent
+    FROM users
+  `;
+
+  const overview = rows[0];
+
+  return {
+    usersWithEmail: overview?.users_with_email ?? 0,
+    marketingOptInEnabled: overview?.marketing_opt_in ?? 0,
+    welcomeEmailSent: overview?.welcome_email_sent ?? 0,
+  };
+};
+
 const mapAnalyticsConsentCounts = (
   rows: AccountPreferencesAnalyticsRow[],
 ): AdminStats["accountPreferences"]["analyticsConsent"] => {
@@ -471,6 +499,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     publicCrateGrowth,
     setMarkerGrowth,
     featureUsage,
+    accountContact,
     accountPreferences,
     userTrackStats,
   ] = await Promise.all([
@@ -592,6 +621,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       });
       return emptyFeatureUsage();
     }),
+    fetchAdminAccountContactStats(),
     fetchAdminAccountPreferencesStats(),
     fetchAdminUserTrackStats({ sevenDaysAgo, thirtyDaysAgo }),
   ]);
@@ -636,6 +666,7 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       },
     },
     engagement,
+    accountContact,
     accountPreferences,
     featureUsage,
     recentActivity: {

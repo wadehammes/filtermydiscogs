@@ -457,6 +457,25 @@ describe("ReleaseCard", () => {
     expect(image).toHaveAttribute("src", expect.stringContaining("thumb.jpg"));
   });
 
+  it("when release has no cover art, shows a skeleton placeholder instead of the SVG placeholder", () => {
+    const release = releaseFactory.build({
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        thumb: "",
+        cover_image: "",
+      },
+    });
+
+    const { container } = po.renderReleaseCard({ release });
+
+    expect(
+      screen.queryByAltText(release.basic_information.title),
+    ).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".imageContainer span[aria-hidden]"),
+    ).toBeInTheDocument();
+  });
+
   it("calls onReleaseClick when cover is clicked and handler is provided", async () => {
     const release = releaseFactory.withEmptyNotes();
     const onReleaseClick = jest.fn();

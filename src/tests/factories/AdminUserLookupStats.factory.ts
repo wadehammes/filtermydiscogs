@@ -18,6 +18,11 @@ class AdminUserLookupStatsFactory extends BaseFactory<
     const updatedAt = faker.date.recent().toISOString();
 
     const instance = {
+      contact: {
+        email: faker.datatype.boolean() ? faker.internet.email() : null,
+        marketingEmailsOptIn: faker.datatype.boolean(),
+        welcomeEmailSent: faker.datatype.boolean(),
+      },
       user: {
         discogsUserId: faker.number.int({ min: 1, max: 99_999 }),
         username,
