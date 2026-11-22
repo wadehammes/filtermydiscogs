@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import Image from "next/image";
 import { memo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
@@ -10,15 +9,14 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { usePillClickHandler } from "src/hooks/usePillClickHandler.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
-import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import type { ReleaseCardProps as BaseReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseFormatTags } from "src/utils/formatFilterTags";
 import { getReleaseImageUrl, getResourceUrl } from "src/utils/helpers";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
-import { hasReleaseCoverImageUrl } from "src/utils/releaseAlbumCover";
 import { getReleaseGenreStyleTags } from "src/utils/releaseGenreStyleTags";
 import styles from "./MobileReleaseCard.module.css";
+import { ReleaseCardCoverMedia } from "./ReleaseCardCoverMedia.component";
 import {
   ReleaseCardDateAdded,
   ReleaseCardMeta,
@@ -176,35 +174,21 @@ const MobileReleaseCardComponent = ({
         className={styles.imageContainer}
         {...definedProps(imageActivateProps ?? {})}
       >
-        {hasReleaseCoverImageUrl(thumbUrl) ? (
-          <Image
-            key={thumbUrl}
-            src={thumbUrl}
-            height={MOBILE_RELEASE_CARD_COVER_PX}
-            width={MOBILE_RELEASE_CARD_COVER_PX}
-            quality={85}
-            alt={release.basic_information.title}
-            {...(priority
-              ? { priority: true, loading: "eager" as const }
-              : { loading: "lazy" as const })}
-            className={styles.releaseImage}
-            style={{
-              maxWidth: "100%",
-              position: "relative",
-              zIndex: 2,
-              filter: "none",
-            }}
-            sizes="96px"
-          />
-        ) : (
-          <span
-            className={classNames(
-              skeletonPulseStyles.pulsesurface,
-              styles.coverPlaceholder,
-            )}
-            aria-hidden
-          />
-        )}
+        <ReleaseCardCoverMedia
+          thumbUrl={thumbUrl}
+          title={release.basic_information.title}
+          sizePx={MOBILE_RELEASE_CARD_COVER_PX}
+          priority={priority}
+          placeholderClassName={styles.coverPlaceholder}
+          imageClassName={styles.releaseImage}
+          imageStyle={{
+            maxWidth: "100%",
+            position: "relative",
+            zIndex: 2,
+            filter: "none",
+          }}
+          sizes="96px"
+        />
       </div>
       <div className={styles.contentContainer}>
         <div className={styles.mainContent}>

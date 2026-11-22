@@ -1,12 +1,9 @@
-import classNames from "classnames";
-import Image from "next/image";
 import { RELEASE_CARD_COVER_PX } from "src/constants/releaseCardCover.constants";
-import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import type { DiscogsRelease } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { getReleaseActivateProps } from "src/utils/releaseActivateProps";
-import { hasReleaseCoverImageUrl } from "src/utils/releaseAlbumCover";
 import styles from "./ReleaseCard.module.css";
+import { ReleaseCardCoverMedia } from "./ReleaseCardCoverMedia.component";
 
 interface ReleaseCardImageProps {
   release: DiscogsRelease;
@@ -31,36 +28,20 @@ export const ReleaseCardImage = ({
       })
     : undefined;
 
-  const hasCoverImage = hasReleaseCoverImageUrl(thumbUrl);
-
   return (
     <div className={styles.imageShell}>
       <div
         className={styles.imageContainer}
         {...definedProps(activateProps ?? {})}
       >
-        {hasCoverImage ? (
-          <Image
-            key={thumbUrl}
-            src={thumbUrl}
-            height={RELEASE_CARD_COVER_PX}
-            width={RELEASE_CARD_COVER_PX}
-            quality={85}
-            alt={release.basic_information.title}
-            {...(priority
-              ? { priority: true, loading: "eager" as const }
-              : { loading: "lazy" as const })}
-            sizes={`${RELEASE_CARD_COVER_PX}px`}
-          />
-        ) : (
-          <span
-            className={classNames(
-              skeletonPulseStyles.pulsesurface,
-              styles.coverPlaceholder,
-            )}
-            aria-hidden
-          />
-        )}
+        <ReleaseCardCoverMedia
+          thumbUrl={thumbUrl}
+          title={release.basic_information.title}
+          sizePx={RELEASE_CARD_COVER_PX}
+          priority={priority}
+          placeholderClassName={styles.coverPlaceholder}
+          sizes={`${RELEASE_CARD_COVER_PX}px`}
+        />
       </div>
     </div>
   );

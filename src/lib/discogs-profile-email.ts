@@ -6,7 +6,7 @@ export const parseDiscogsProfileEmail = (profile: {
   }
 
   const trimmed = profile.email.trim();
-  if (!trimmed?.includes("@")) {
+  if (!trimmed.includes("@")) {
     return null;
   }
 

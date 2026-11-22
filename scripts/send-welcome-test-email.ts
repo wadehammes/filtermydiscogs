@@ -1,8 +1,8 @@
 import { createElement } from "react";
-import { render } from "react-email";
 import { Resend } from "resend";
 import { WelcomeSignupEmailTemplate } from "../src/components/Email/WelcomeSignupEmailTemplate.component";
 import { WELCOME_SIGNUP_EMAIL_SUBJECT } from "../src/constants/welcomeSignupEmailCopy.constants";
+import { renderReactEmailHtmlAndText } from "../src/lib/renderReactEmail";
 
 const DEFAULT_FROM = "onboarding@resend.dev";
 const DEFAULT_TO = "delivered@resend.dev";
@@ -27,10 +27,7 @@ const main = async () => {
     baseUrl,
     username,
   });
-  const [html, text] = await Promise.all([
-    render(template),
-    render(template, { plainText: true }),
-  ]);
+  const { html, text } = await renderReactEmailHtmlAndText(template);
 
   const resend = new Resend(apiKey);
   const result = await resend.emails.send({
