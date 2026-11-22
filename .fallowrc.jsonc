@@ -32,19 +32,228 @@
     { "file": "src/hooks/useCollectionCacheReady.hook.ts", "exports": ["*"] },
     { "file": "src/utils/collectionCacheSync.ts", "exports": ["*"] }
   ],
-  // CI: scripts/fallow-audit-ci.sh (pnpm fallow:audit:ci) — advisory (always exit 0); prints worsened complexity.
+  // CI: scripts/fallow-audit-ci.sh (pnpm fallow:audit:ci) — advisory (always exit 0); worsened complexity + introduced architecture.
   // Local pr-prep: pnpm fallow:audit (gate: new-only).
   "audit": {
     "gate": "new-only",
     "worsened": "warn"
   },
+  // rulePacks: [".fallow/filtermydiscogs-policy.jsonc"] + policy-violation warn — after file is on staging (audit base tree).
   "rules": {
-    "duplicate-export": "warn"
+    "duplicate-export": "warn",
+    "boundary-violation": "warn"
+  },
+  "boundaries": {
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": [
+        "e2e/**",
+        "prisma/**",
+        "scripts/**",
+        ".jest/**",
+        "src/tests/**",
+        "src/analytics/**",
+        "src/@types/**",
+        "cssprops.d.ts",
+        "jest.config.ts",
+        "next.config.ts",
+        "playwright.config.ts",
+        "prisma.config.ts",
+        "stylelint.config.mjs",
+        "sentry.edge.config.ts",
+        "sentry.server.config.ts",
+        "src/instrumentation.ts",
+        "src/instrumentation-client.ts",
+        "src/proxy.ts",
+        "public/mockServiceWorker.js",
+        "public/e2e/**"
+      ]
+    },
+    "zones": [
+      { "name": "types", "patterns": ["src/types/**"] },
+      {
+        "name": "constants",
+        "patterns": ["src/constants/**", "src/constants.ts"]
+      },
+      { "name": "styles", "patterns": ["src/styles/**"] },
+      { "name": "utils", "patterns": ["src/utils/**"] },
+      { "name": "lib", "patterns": ["src/lib/**", "src/services/**"] },
+      { "name": "api", "patterns": ["src/api/**"] },
+      { "name": "atoms", "patterns": ["src/atoms/**"] },
+      { "name": "context", "patterns": ["src/context/**"] },
+      { "name": "hooks", "patterns": ["src/hooks/**"] },
+      { "name": "components", "patterns": ["src/components/**"] },
+      { "name": "app", "patterns": ["src/app/**"] }
+    ],
+    "rules": [
+      { "from": "types", "allow": ["types", "constants", "utils"] },
+      { "from": "constants", "allow": ["types", "constants", "components"] },
+      { "from": "styles", "allow": ["types", "constants", "styles", "utils"] },
+      {
+        "from": "lib",
+        "allow": ["types", "constants", "utils", "lib", "api", "hooks"]
+      },
+      { "from": "api", "allow": ["types", "constants", "utils", "lib", "api"] },
+      {
+        "from": "atoms",
+        "allow": ["types", "constants", "utils", "lib", "atoms"]
+      },
+      {
+        "from": "context",
+        "allow": [
+          "types",
+          "constants",
+          "utils",
+          "lib",
+          "api",
+          "atoms",
+          "hooks",
+          "context",
+          "components"
+        ]
+      },
+      {
+        "from": "hooks",
+        "allow": [
+          "types",
+          "constants",
+          "utils",
+          "lib",
+          "api",
+          "atoms",
+          "hooks",
+          "context",
+          "components"
+        ]
+      },
+      {
+        "from": "utils",
+        "allow": [
+          "types",
+          "constants",
+          "styles",
+          "utils",
+          "lib",
+          "api",
+          "atoms",
+          "hooks",
+          "context",
+          "components"
+        ]
+      },
+      {
+        "from": "components",
+        "allow": [
+          "types",
+          "constants",
+          "styles",
+          "utils",
+          "lib",
+          "api",
+          "atoms",
+          "hooks",
+          "context",
+          "components"
+        ]
+      },
+      {
+        "from": "app",
+        "allow": [
+          "types",
+          "constants",
+          "styles",
+          "utils",
+          "lib",
+          "api",
+          "atoms",
+          "hooks",
+          "context",
+          "components",
+          "app"
+        ]
+      }
+    ],
+    "calls": {
+      "forbidden": [
+        {
+          "from": "components",
+          "callee": [
+            "alert",
+            "confirm",
+            "prompt",
+            "child_process.*",
+            "fs.*",
+            "node:fs.*"
+          ]
+        },
+        {
+          "from": "hooks",
+          "callee": [
+            "alert",
+            "confirm",
+            "prompt",
+            "child_process.*",
+            "fs.*",
+            "node:fs.*"
+          ]
+        },
+        {
+          "from": "atoms",
+          "callee": [
+            "alert",
+            "confirm",
+            "prompt",
+            "child_process.*",
+            "fs.*",
+            "node:fs.*"
+          ]
+        },
+        {
+          "from": "context",
+          "callee": [
+            "alert",
+            "confirm",
+            "prompt",
+            "child_process.*",
+            "fs.*",
+            "node:fs.*"
+          ]
+        },
+        {
+          "from": "utils",
+          "callee": [
+            "alert",
+            "confirm",
+            "prompt",
+            "child_process.*",
+            "fs.*",
+            "node:fs.*"
+          ]
+        },
+        {
+          "from": "api",
+          "callee": [
+            "alert",
+            "confirm",
+            "prompt",
+            "child_process.*",
+            "fs.*",
+            "node:fs.*"
+          ]
+        },
+        {
+          "from": "app",
+          "callee": ["alert", "confirm", "prompt"]
+        }
+      ]
+    }
   },
   "ignorePatterns": ["public/theme-init.js", ".jest/**"],
   "health": {
     // Score and complexity focus on shipped code; specs/page objects stay reachable via the graph.
-    "ignore": ["**/*.spec.ts", "**/*.spec.tsx", "**/*.po.tsx", "e2e/**"]
+    "ignore": ["**/*.spec.ts", "**/*.spec.tsx", "**/*.po.tsx", "e2e/**"],
+    // After `pnpm test:coverage`, Fallow uses Istanbul for per-function CRAP (optional locally).
+    "coverage": "coverage/coverage-final.json"
   },
   "entry": [
     ".jest/setupTests.ts",
@@ -71,6 +280,12 @@
     "src/styles/modules/workspace-fab-chrome.module.css"
   ],
   "overrides": [
+    {
+      "files": ["**/*.spec.ts", "**/*.spec.tsx"],
+      "rules": {
+        "boundary-violation": "off"
+      }
+    },
     {
       "files": ["src/types/**"],
       "rules": {

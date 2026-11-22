@@ -1,0 +1,84 @@
+{
+  "$schema": "../node_modules/fallow/rule-pack-schema.json",
+  "version": 1,
+  "name": "filtermydiscogs-policy",
+  // Mirror of boundaries.calls for call rules; extra banned-import rules apply when rulePacks is wired in .fallowrc.
+  // Enable rulePacks after this file is on staging (Fallow audit resolves packs against the base git tree).
+  "description": "House rules from docs/handbook/conventions.md, patterns.md, and database.md (client vs server split).",
+  "rules": [
+    {
+      "id": "no-browser-dialogs",
+      "kind": "banned-call",
+      "callees": ["alert", "confirm", "prompt"],
+      "message": "Use toast helpers from src/utils/toast.ts or ConfirmDialog — not window.alert/confirm/prompt (patterns.md → Provider stack).",
+      "severity": "warn",
+      "zones": [
+        "components",
+        "hooks",
+        "atoms",
+        "context",
+        "utils",
+        "api",
+        "app"
+      ],
+      "exclude": ["**/*.spec.ts", "**/*.spec.tsx"]
+    },
+    {
+      "id": "no-child-process-client-zones",
+      "kind": "banned-call",
+      "callees": [
+        "child_process.*",
+        "node:child_process",
+        "node:child_process.*"
+      ],
+      "message": "child_process belongs in src/lib/*.server.ts or Route Handlers, not client-oriented zones.",
+      "severity": "warn",
+      "zones": ["components", "hooks", "atoms", "context", "utils", "api"],
+      "exclude": ["**/*.spec.ts", "**/*.spec.tsx"]
+    },
+    {
+      "id": "no-fs-client-zones",
+      "kind": "banned-call",
+      "callees": ["fs.*", "node:fs.*"],
+      "message": "Node fs APIs belong in server lib or tests — not shipped client zones (use src/lib/*.server.ts).",
+      "severity": "warn",
+      "zones": ["components", "hooks", "atoms", "context", "utils", "api"],
+      "exclude": ["**/*.spec.ts", "**/*.spec.tsx"]
+    },
+    {
+      "id": "no-next-headers-client",
+      "kind": "banned-import",
+      "specifiers": ["next/headers"],
+      "ignoreTypeOnly": true,
+      "message": "next/headers is for Server Components and src/lib/*.server.ts — not hooks, context, or client components.",
+      "severity": "warn",
+      "zones": ["components", "hooks", "atoms", "context", "utils", "api"],
+      "exclude": ["**/*.server.ts", "**/*.server.tsx", "**/*.spec.ts", "**/*.spec.tsx"]
+    },
+    {
+      "id": "no-prisma-client-ui",
+      "kind": "banned-import",
+      "specifiers": ["@prisma/client"],
+      "ignoreTypeOnly": true,
+      "message": "Prisma Client belongs in src/lib (db.ts) and Route Handlers — use api.* and React Query in UI code.",
+      "severity": "warn",
+      "zones": ["components", "hooks", "atoms", "context", "api"]
+    },
+    {
+      "id": "no-prisma-db-import-ui",
+      "kind": "banned-import",
+      "specifiers": ["src/lib/db"],
+      "message": "Import prisma only from server modules — never from components, hooks, context, or src/api.",
+      "severity": "warn",
+      "zones": ["components", "hooks", "atoms", "context", "utils", "api"]
+    },
+    {
+      "id": "no-server-only-specifier-ui",
+      "kind": "banned-import",
+      "specifiers": ["server-only"],
+      "message": "server-only modules live under src/lib; keep types in *.types.ts for client imports.",
+      "severity": "warn",
+      "zones": ["components", "hooks", "atoms", "context", "utils", "api"]
+    }
+  ]
+}
