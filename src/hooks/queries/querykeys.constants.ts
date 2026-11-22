@@ -108,6 +108,12 @@ export const UserPreferencesQueryKeys = {
     [...UserPreferencesQueryKeys.all(), userId] as const,
 };
 
+export const UserContactQueryKeys = {
+  all: () => ["userContact"] as const,
+  byUserId: (userId: string | number | null) =>
+    [...UserContactQueryKeys.all(), userId] as const,
+};
+
 export const YoutubeOembedQueryKeys = {
   all: () => ["youtubeOembed"] as const,
   byVideoId: (videoId: string) =>

@@ -56,6 +56,10 @@ import {
   saveTrackYoutubeOverride,
 } from "src/api/endpoints/tracks";
 import {
+  fetchUserContact,
+  updateUserContact,
+} from "src/api/endpoints/userContact";
+import {
   fetchUserPreferences,
   updateUserPreferences,
 } from "src/api/endpoints/userPreferences";
@@ -112,7 +116,9 @@ export const api = {
   updateCrateLayout,
   updatePlaylist,
   updateReleaseRating,
+  updateUserContact,
   updateUserPreferences,
+  userContact: fetchUserContact,
   userPreferences: fetchUserPreferences,
 };
 

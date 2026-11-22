@@ -146,6 +146,17 @@ export const LegalPageContent = () => {
               browsers; your full collection is not stored in Postgres.
             </li>
             <li>
+              <strong>Email contact</strong> (optional): an email address and
+              whether you opt in to occasional product and marketing mail (for
+              example collection digests and app updates). On login, I may copy
+              the email from your Discogs profile into your account when you
+              have not set one in Settings. When you first connect a new account
+              and an address is on file, I may send one transactional welcome
+              message (not marketing). I store a flag on your account so that
+              message is not sent again. Marketing email is sent only when you
+              opt in.
+            </li>
+            <li>
               <strong>Optional analytics</strong> (only if you opt in): product
               usage events in Postgres (for example page path, event name, and
               interaction label). When you&apos;re signed in, events may include
@@ -261,6 +272,18 @@ export const LegalPageContent = () => {
               One-time donations use Stripe; Stripe&apos;s terms and privacy
               policy apply to checkout.
             </li>
+            <li>
+              Transactional email (for example a one-time welcome message after
+              you connect Discogs) is delivered through Resend when configured.{" "}
+              <a
+                href="https://resend.com/legal/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Resend&apos;s privacy policy
+              </a>{" "}
+              applies.
+            </li>
           </ul>
         </section>
 
@@ -290,7 +313,8 @@ export const LegalPageContent = () => {
               Views menu on Collection, filter/sort selections when
               &quot;Remember filter selections&quot; is enabled in Settings, and
               playback settings (auto-play on queue add and extend queue with
-              similar releases)
+              similar releases), and any saved email address with marketing
+              opt-in choice
             </li>
             <li>
               Product analytics events linked to your account (when analytics

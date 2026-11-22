@@ -70,6 +70,18 @@ export class SettingsClientPageObject extends BasePageObject {
     );
   }
 
+  mockUpdateUserContact(contact: {
+    email: string | null;
+    marketingEmailsOptIn: boolean;
+  }): void {
+    mockApiResponse(
+      true,
+      this.mockApi.updateUserContact,
+      contact,
+      pageObjectApiError,
+    );
+  }
+
   renderSettingsClient(): RenderResult {
     return render(<SettingsClient />, {
       authInitialState: testAuthenticatedAuthState,

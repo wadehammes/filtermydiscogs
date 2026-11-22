@@ -152,6 +152,7 @@ const nextConfig: NextConfig = {
     "until-async",
     "@open-draft/deferred-promise",
     "@open-draft/until",
+    "react-email",
   ],
   logging: {
     fetches: {

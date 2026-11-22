@@ -10,7 +10,7 @@ Implemented in [`src/services/discogs-oauth.service.ts`](../../src/services/disc
 | ---- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | 1    | `GET /api/auth/discogs`       | Obtain request token, redirect to Discogs authorize                                                                                       |
 | 2    | Discogs redirects to callback | User approves app                                                                                                                         |
-| 3    | `GET /api/auth/callback`      | Exchange for access token, fetch identity, set cookies, upsert **`User`** row                                                             |
+| 3    | `GET /api/auth/callback`      | Exchange for access token, fetch identity, set cookies, upsert **`User`** row via [`recordDiscogsLogin`](../../src/lib/user.server.ts) (Discogs profile email only when **`User.email`** is empty) |
 | 4    | `GET /api/auth/check`         | Verify tokens still valid; return **`avatarUrl`** when profile fetch succeeds                                                             |
 | 5    | `POST /api/auth/logout`       | Clear session cookies; clear cached **`avatarUrl`** for the user                                                                          |
 | 6    | `POST /api/auth/clear-data`   | Delete **`product_analytics_events`** for the user, delete **`User`** row (cascades crates), and clear session (Settings / About / Legal) |

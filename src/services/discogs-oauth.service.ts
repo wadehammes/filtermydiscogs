@@ -50,6 +50,7 @@ interface DiscogsUserProfile {
   id: number;
   username: string;
   avatar_url?: string | null;
+  email?: string;
   [key: string]: unknown;
 }
 

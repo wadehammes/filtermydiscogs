@@ -14,8 +14,14 @@ import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.compon
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
-import { SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE } from "src/constants/settingsCopy.constants";
+import {
+  SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE,
+  SETTINGS_CONTACT_SAVE_ERROR_MESSAGE,
+  SETTINGS_CONTACT_SAVED_MESSAGE,
+} from "src/constants/settingsCopy.constants";
 import { useAuth } from "src/context/auth.context";
+import { useUpdateUserContactMutation } from "src/hooks/mutations/useUserContactMutations";
+import { useUserContactQuery } from "src/hooks/queries/useUserContactQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
@@ -83,6 +89,7 @@ export default function SettingsClient() {
       setActiveSection(section);
     }
   }, [searchParams]);
+
   const [showCompleteLogoutDialog, setShowCompleteLogoutDialog] =
     useState(false);
   const {
@@ -99,6 +106,14 @@ export default function SettingsClient() {
       userId: authState.userId,
       enabled: true,
     });
+  const { data: userContact, isPending: isContactLoading } =
+    useUserContactQuery({
+      userId: authState.userId,
+      enabled: true,
+    });
+  const { mutate: updateUserContact, isPending: isContactSaving } =
+    useUpdateUserContactMutation(authState.userId);
+
   const { persistPreferences, isPending: isPreferencesSaving } =
     usePersistUserPreferences();
   const dispatchView = useSetAtom(viewDispatchAtom);
@@ -197,6 +212,36 @@ export default function SettingsClient() {
         return (
           <SettingsAccountPanel
             authState={authState}
+            savedEmail={userContact?.email ?? null}
+            marketingEmailsOptIn={userContact?.marketingEmailsOptIn ?? false}
+            isContactLoading={isContactLoading}
+            isContactSaving={isContactSaving}
+            onPersistEmail={(email) => {
+              updateUserContact(
+                { email: email === "" ? "" : email },
+                {
+                  onSuccess: () => {
+                    toast.success(SETTINGS_CONTACT_SAVED_MESSAGE);
+                  },
+                  onError: () => {
+                    toast.error(SETTINGS_CONTACT_SAVE_ERROR_MESSAGE);
+                  },
+                },
+              );
+            }}
+            onMarketingEmailsOptInChange={(enabled) => {
+              updateUserContact(
+                { marketingEmailsOptIn: enabled },
+                {
+                  onSuccess: () => {
+                    toast.success(SETTINGS_CONTACT_SAVED_MESSAGE);
+                  },
+                  onError: () => {
+                    toast.error(SETTINGS_CONTACT_SAVE_ERROR_MESSAGE);
+                  },
+                },
+              );
+            }}
             onCompleteLogout={() => setShowCompleteLogoutDialog(true)}
           />
         );
