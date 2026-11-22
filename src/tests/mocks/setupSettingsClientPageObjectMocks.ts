@@ -37,6 +37,22 @@ export const setupSettingsClientPageObjectMocks = (): void => {
     crateMutationSuccessFactory.build(),
     pageObjectApiError,
   );
+  wireDefaultUserContactPageObjectMocks();
+};
+
+export const wireDefaultUserContactPageObjectMocks = (): void => {
+  mockApiResponse(
+    true,
+    pageObjectMockApi.userContact,
+    { email: null, marketingEmailsOptIn: false },
+    pageObjectApiError,
+  );
+  mockApiResponse(
+    true,
+    pageObjectMockApi.updateUserContact,
+    { email: null, marketingEmailsOptIn: false },
+    pageObjectApiError,
+  );
 };
 
 export const wireDefaultUserPreferencesPageObjectMocks = (): void => {

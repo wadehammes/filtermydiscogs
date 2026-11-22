@@ -34,6 +34,35 @@ describe("SettingsClient", () => {
     ).toBeInTheDocument();
   });
 
+  it("saves a valid email on blur", async () => {
+    const nextContact = {
+      email: "digests@example.com",
+      marketingEmailsOptIn: false,
+    };
+
+    po.mockUpdateUserContact(nextContact);
+
+    const user = userEvent.setup();
+
+    po.renderSettingsClient();
+
+    const emailInput = await screen.findByRole("textbox", { name: "Email" });
+
+    await waitFor(() => {
+      expect(emailInput).toBeEnabled();
+    });
+
+    await user.clear(emailInput);
+    await user.type(emailInput, "digests@example.com");
+    await user.tab();
+
+    await waitFor(() => {
+      expect(po.mockApi.updateUserContact).toHaveBeenCalledWith({
+        email: "digests@example.com",
+      });
+    });
+  });
+
   it("switches to the data panel and opens the clear-data dialog", async () => {
     const user = userEvent.setup();
 

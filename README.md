@@ -17,7 +17,7 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Crates**: Stage picks from Collection in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
 - **Collection insights**: Dashboard milestones, style evolution, growth and artist/label charts, most-crated releases, on-this-day adds, weekly recap, and On repeat
 - **Mosaic generator**: Cover grids from your collection, crates, or playlists; export JPEG or PNG
-- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, clear data
+- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, optional account email and marketing mail preferences, clear data
 - **Responsive UI**: Desktop sidebar and mobile drawers; fast route transitions on authenticated pages
 - **Discogs outage notice**: Stay signed in with a link to [Discogs status](https://status.discogs.com); collection loads when Discogs is back
 - **Deploy refresh**: Toast to reload when a newer production build is available
@@ -83,6 +83,12 @@ CRON_SECRET=generate_a_long_random_secret_for_vercel_cron
 # Stripe (optional, About page donations)
 STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 
+# Resend (optional, one-time welcome email on first account creation when User.email is set)
+# RESEND_API_KEY=re_your_resend_api_key_here
+# RESEND_FROM_EMAIL=FilterMyDisco.gs <onboarding@your-verified-domain.com>
+# EMAIL_ASSET_BASE_URL=https://www.filtermydisco.gs  # optional; absolute icon URLs in dev email preview
+# Preview templates: pnpm email:dev | smoke send: pnpm email:send:test (delivered@resend.dev)
+
 # Sentry (optional — Session Replay, bug reports, /monitoring tunnel; see docs/handbook/platform.md)
 # NEXT_PUBLIC_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
 # SENTRY_ENABLE_DEV=1               # local next dev (mirrored to browser via next.config env)
@@ -130,7 +136,7 @@ The app will be available at `http://localhost:6767`.
 3. On **Collection**, use the side panel — **Crates** or **Playlists** — stage albums into crates or add tracks to playlists while you browse
 4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Collection
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
-6. Adjust theme, playback queue, and sync options in **Settings**; sign out from the user menu
+6. Adjust theme, playback queue, sync options, and optional contact email in **Settings**; sign out from the user menu
 
 ## Pages
 
@@ -145,7 +151,7 @@ The app will be available at `http://localhost:6767`.
 | `/release/[id]`  | Public release listen by Discogs release id (no login)                   |
 | `/dashboard`     | Collection analytics                                                     |
 | `/mosaic`        | Cover-art mosaic grid (click tiles for release details; export download) |
-| `/settings`      | Theme, sync, data preferences                                            |
+| `/settings`      | Theme, sync, account contact, data preferences                           |
 | `/about`         | About, optional donations (Stripe), clear data                           |
 | `/legal`         | Terms of Service and Privacy Policy                                      |
 | `/admin`         | Admin stats (requires `ADMIN_USER_ID`)                                   |
@@ -157,6 +163,7 @@ The app will be available at `http://localhost:6767`.
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
 - **Playlists env override**: **`PLAYLISTS_FEATURE_OVERRIDE=0`** for a local/CI kill switch ([platform.md → Playlists env override](./docs/handbook/platform.md#playlists-env-override))
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
+- **Email (optional)**: React Email + Resend for a one-time welcome on first signup when an address is on file (`pnpm email:dev`, `pnpm email:send:test`)
 - **Forms**: React Hook Form + Zod 4
 - **Tooling**: pnpm 12, mise (Node 26 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
 - **Analytics**: Google Tag Manager (consent-aware)
@@ -189,6 +196,8 @@ pnpm build:e2e        # prod build for CI E2E: mock YouTube embed, test OAuth, p
 pnpm test:e2e:smoke:ci  # PR-parity smoke: install-playwright-chromium-ci.sh (install only if browsers missing) + build:e2e + smoke list
 pnpm test:e2e:ci      # full E2E matrix (same install script + build:e2e; matches push to staging)
 pnpm generate:theme-init  # regenerate public/theme-init.js after palette changes
+pnpm email:dev            # React Email preview (src/components/Email)
+pnpm email:send:test      # local Resend smoke test (needs RESEND_API_KEY in .env.local)
 
 pnpm lint             # Biome check
 pnpm lint:fix        # Biome autofix

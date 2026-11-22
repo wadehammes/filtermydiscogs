@@ -9,6 +9,7 @@ import {
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
+import { queueWelcomeSignupEmailAfterLogin } from "src/lib/queueWelcomeSignupEmailAfterLogin.server";
 import { recordDiscogsLogin } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -69,10 +70,21 @@ export async function GET(request: NextRequest) {
         syncIdentityCookies(response, identity);
 
         try {
-          await recordDiscogsLogin({
+          const loginResult = await recordDiscogsLogin({
             discogsUserId: identity.userId,
             username: identity.username,
+            oauthCredentials: {
+              username: identity.username,
+              accessToken,
+              accessTokenSecret,
+            },
+            loginRouteLabel: "/api/auth/discogs",
           });
+
+          queueWelcomeSignupEmailAfterLogin(
+            loginResult.discogsUserId,
+            "/api/auth/discogs",
+          );
         } catch (error) {
           logSanitizedApiRouteFailure(
             "/api/auth/discogs",

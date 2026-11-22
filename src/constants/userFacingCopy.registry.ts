@@ -40,12 +40,15 @@ import {
 import {
   SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE,
   SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
+  SETTINGS_EMAIL_FIELD_DESCRIPTION,
+  SETTINGS_MARKETING_EMAILS_DESCRIPTION,
   SETTINGS_SUPPORT_PANEL_DESCRIPTION,
 } from "src/constants/settingsCopy.constants";
 import {
   buildSupportProjectToastTitle,
   SUPPORT_PROJECT_TOAST_DESCRIPTION,
 } from "src/constants/supportProjectToast.constants";
+import { welcomeSignupEmailCopy } from "src/constants/welcomeSignupEmailCopy.constants";
 
 export type UserFacingCopyEntry = LoginPageCopyEntry;
 
@@ -111,6 +114,21 @@ export const getUserFacingCopyEntries = (
       id: "settings.supportPanel",
       text: SETTINGS_SUPPORT_PANEL_DESCRIPTION,
       source: "settingsCopy.constants.ts",
+    },
+    {
+      id: "settings.emailField",
+      text: SETTINGS_EMAIL_FIELD_DESCRIPTION,
+      source: "settingsCopy.constants.ts",
+    },
+    {
+      id: "settings.marketingEmails",
+      text: SETTINGS_MARKETING_EMAILS_DESCRIPTION,
+      source: "settingsCopy.constants.ts",
+    },
+    {
+      id: "email.welcomeBody",
+      text: welcomeSignupEmailCopy.body,
+      source: "welcomeSignupEmailCopy.constants.ts",
     },
     {
       id: "settings.completeLogoutDialog",
@@ -205,6 +223,7 @@ export const USER_FACING_COPY_SOURCE_FILES = [
   "src/constants/about.constants.ts",
   "src/constants/donate.constants.ts",
   "src/constants/settingsCopy.constants.ts",
+  "src/constants/welcomeSignupEmailCopy.constants.ts",
   "src/constants/dashboardCopy.constants.ts",
   "src/constants/cookieConsentCopy.constants.ts",
   "src/constants/sentryUserFeedbackForm.constants.ts",

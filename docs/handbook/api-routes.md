@@ -26,7 +26,7 @@ Browser code should call **[`api`](../../src/api/urls.ts)** only; implementation
 | `discogsRelease`, `discogsReleaseBatch`, `discogsSearch` | `/api/release/[id]`, `/api/release/batch`, `/api/search` |
 | `crates`, `crate`, `createCrate`, `updateCrate`, `deleteCrate`, `addReleaseToCrate`, `removeReleaseFromCrate`, `updateCrateLayout`, `syncCrates`, `migrateLegacyCrate`, `publicCrate`, `releaseCrateMembership`, `setReleaseCrateMembership`, `setReleasePackedInCrate`, `clearAllPackedInCrate` | `/api/crates/*` |
 | `playlists`, `playlist`, `createPlaylist`, `updatePlaylist`, `deletePlaylist`, `addTrackToPlaylist`, `removeTrackFromPlaylist`, `reorderPlaylistTracks`, `publicPlaylist`, `recordPublicPlaylistView`, `recordPublicPlaylistPlay`, `votePublicPlaylistTrack` | `/api/playlists/*` |
-| `userPreferences`, `updateUserPreferences`, `dismissSupportProjectToast` | `/api/user/preferences`, `/api/user/support-toast/dismiss` |
+| `userPreferences`, `updateUserPreferences`, `userContact`, `updateUserContact`, `dismissSupportProjectToast` | `/api/user/preferences`, `/api/user/contact`, `/api/user/support-toast/dismiss` |
 | `recordTrackEvent`, `fetchTrackStats`, `saveTrackYoutubeOverride`, `fetchYoutubeOembed` | `/api/tracks/*`, `/api/youtube/oembed` |
 | `mostCratedReleases`, `topUserTracks` | `/api/dashboard/*` |
 | `adminStats`, `adminUserLookup` | `/api/admin/*` |

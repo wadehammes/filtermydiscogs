@@ -1,6 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import classNames from "classnames";
+import {
+  type FocusEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFilterViewDialog.component";
 import Select from "src/components/Select/Select.component";
@@ -9,12 +18,20 @@ import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/Supp
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import {
   SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
+  SETTINGS_EMAIL_FIELD_DESCRIPTION,
+  SETTINGS_EMAIL_FIELD_LABEL,
+  SETTINGS_MARKETING_EMAILS_DESCRIPTION,
+  SETTINGS_MARKETING_EMAILS_LABEL,
   SETTINGS_SUPPORT_PANEL_DESCRIPTION,
 } from "src/constants/settingsCopy.constants";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
 import { useFilterViews } from "src/hooks/useFilterViews.hook";
+import {
+  type SettingsAccountEmailFormValues,
+  settingsAccountEmailFormSchema,
+} from "src/lib/validation/userContact.schemas";
 import type { CollectionSidePanelPreference } from "src/types/userPreferences.types";
 import {
   type FilterView,
@@ -24,19 +41,144 @@ import styles from "./SettingsClient.module.css";
 
 type SettingsAccountPanelProps = {
   authState: AuthState;
+  savedEmail: string | null;
+  marketingEmailsOptIn: boolean;
+  isContactLoading: boolean;
+  isContactSaving: boolean;
+  onPersistEmail: (email: string) => void;
+  onMarketingEmailsOptInChange: (enabled: boolean) => void;
   onCompleteLogout: () => void;
 };
 
 export const SettingsAccountPanel = ({
   authState,
+  savedEmail,
+  marketingEmailsOptIn,
+  isContactLoading,
+  isContactSaving,
+  onPersistEmail,
+  onMarketingEmailsOptInChange,
   onCompleteLogout,
 }: SettingsAccountPanelProps) => {
+  const contactFieldsDisabled = isContactLoading || isContactSaving;
+  const normalizedSavedEmail = savedEmail ?? "";
+  const isFocusedRef = useRef(false);
+
+  const {
+    register,
+    reset,
+    setValue,
+    trigger,
+    formState: { errors },
+  } = useForm<SettingsAccountEmailFormValues>({
+    resolver: zodResolver(settingsAccountEmailFormSchema),
+    defaultValues: { email: normalizedSavedEmail },
+    mode: "onBlur",
+  });
+
+  useEffect(() => {
+    if (!(isFocusedRef.current || isContactLoading)) {
+      reset({ email: normalizedSavedEmail });
+    }
+  }, [isContactLoading, normalizedSavedEmail, reset]);
+
+  const persistEmailIfChanged = useCallback(
+    async (trimmedEmail: string) => {
+      if (isContactSaving) {
+        return;
+      }
+
+      const isValid = await trigger("email");
+
+      if (!isValid) {
+        return;
+      }
+
+      const savedTrimmed = normalizedSavedEmail.trim();
+
+      if (trimmedEmail === savedTrimmed) {
+        return;
+      }
+
+      onPersistEmail(trimmedEmail);
+    },
+    [isContactSaving, normalizedSavedEmail, onPersistEmail, trigger],
+  );
+
+  const { onBlur, onChange, ...emailFieldProps } = register("email");
+
+  const handleEmailBlur = useCallback(
+    (event: FocusEvent<HTMLInputElement>) => {
+      isFocusedRef.current = false;
+      onBlur(event);
+
+      const trimmed = event.target.value.trim();
+
+      if (trimmed !== event.target.value) {
+        setValue("email", trimmed, { shouldValidate: true });
+      }
+
+      void persistEmailIfChanged(trimmed);
+    },
+    [onBlur, persistEmailIfChanged, setValue],
+  );
+
+  const handleEmailFocus = useCallback(() => {
+    isFocusedRef.current = true;
+  }, []);
+
+  const emailErrorMessage = errors.email?.message;
+
   return (
     <>
       <div className={styles.field}>
         <span className={styles.fieldLabel}>Discogs username</span>
         <p className={styles.fieldValue}>{authState.username}</p>
       </div>
+      <div className={styles.panelBlock}>
+        <label className={styles.field} htmlFor="settings-account-email">
+          <span className={styles.fieldLabel}>
+            {SETTINGS_EMAIL_FIELD_LABEL}
+          </span>
+          <input
+            id="settings-account-email"
+            type="email"
+            autoComplete="email"
+            data-1p-ignore
+            className={classNames(styles.emailInput, {
+              [styles.emailInputInvalid]: emailErrorMessage != null,
+            })}
+            disabled={contactFieldsDisabled}
+            aria-invalid={emailErrorMessage != null ? true : undefined}
+            aria-describedby={
+              emailErrorMessage ? "settings-account-email-error" : undefined
+            }
+            onBlur={handleEmailBlur}
+            onChange={onChange}
+            onFocus={handleEmailFocus}
+            {...emailFieldProps}
+          />
+        </label>
+        {emailErrorMessage ? (
+          <p
+            id="settings-account-email-error"
+            className={styles.fieldError}
+            role="alert"
+          >
+            {emailErrorMessage}
+          </p>
+        ) : null}
+        <p className={styles.sectionDescription}>
+          {SETTINGS_EMAIL_FIELD_DESCRIPTION}
+        </p>
+      </div>
+      <SettingsBooleanPreferenceToggle
+        checked={marketingEmailsOptIn}
+        label={SETTINGS_MARKETING_EMAILS_LABEL}
+        description={SETTINGS_MARKETING_EMAILS_DESCRIPTION}
+        disabled={contactFieldsDisabled}
+        onChange={onMarketingEmailsOptInChange}
+      />
       <div className={styles.panelBlock}>
         <h3 className={styles.panelBlockTitle}>Support the app</h3>
         <p className={styles.sectionDescription}>
