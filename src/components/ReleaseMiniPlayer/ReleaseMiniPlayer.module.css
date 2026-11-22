@@ -276,7 +276,9 @@
   border-radius: var(--radius-full);
   color: var(--primary-foreground);
   display: inline-flex;
+  font-family: var(--font-family-meta);
   font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
   font-weight: var(--font-medium);
   height: 1rem;
   justify-content: center;

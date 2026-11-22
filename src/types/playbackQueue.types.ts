@@ -10,4 +10,5 @@ export interface PlaybackQueueItem {
   releaseTitle?: string | null;
   previewVideoUri?: string;
   fromSimilarRelease?: boolean;
+  fromCollectionRadio?: boolean;
 }

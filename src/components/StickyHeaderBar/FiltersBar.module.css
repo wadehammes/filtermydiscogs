@@ -16,7 +16,14 @@
 
   .desktopFiltersStack {
     height: 100%;
+    overflow: visible;
     width: 100%;
+  }
+
+  .collectionRadioPlayEnd {
+    flex: none;
+    margin-inline-start: auto;
+    overflow: visible;
   }
 
   .desktopFilters {
@@ -26,6 +33,7 @@
     gap: var(--space-2);
     height: 100%;
     margin: 0 auto;
+    overflow: visible;
     padding: 0 var(--space-3);
 
     & .searchBar .input {

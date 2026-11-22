@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "@jest/globals";
 import {
   resolvePlaybackDockEmbedProgressResetKey,
+  useReleasePlaybackDockEmbedProgress,
   useReleasePlaybackDockTransport,
 } from "src/hooks/useReleasePlaybackDockControls.hook";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
@@ -59,6 +60,24 @@ describe("useReleasePlaybackDockControls", () => {
         playbackVideoId: "def98765432",
       }),
     ).toBe("def98765432");
+  });
+
+  it("re-exports embed progress reset and guard release from the dock embed hook", () => {
+    const { result } = renderHook(() => useReleasePlaybackDockEmbedProgress());
+
+    expect(result.current.resetEmbedProgress).toEqual(expect.any(Function));
+    expect(result.current.releaseStaleEmbedProgressGuard).toEqual(
+      expect.any(Function),
+    );
+
+    act(() => {
+      result.current.resetEmbedProgress();
+    });
+
+    expect(result.current.embedProgress).toEqual({
+      currentTime: 0,
+      duration: null,
+    });
   });
 
   it("when playback starts, the registered restore posts the stored dock volume", () => {

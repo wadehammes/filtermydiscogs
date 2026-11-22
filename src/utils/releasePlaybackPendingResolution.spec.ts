@@ -1,9 +1,14 @@
 import { describe, expect, it } from "@jest/globals";
+import { discogsTrackFactory } from "src/tests/factories/DiscogsTrack.factory";
 import { discogsVideoFactory } from "src/tests/factories/DiscogsVideo.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
+import { createQueueItem } from "src/utils/playbackQueue";
 import {
   findPendingPreviewVideo,
+  findQueueItemTrackResolutionIndex,
   isPlaybackReleaseDetailSynced,
   resolveIsQueueBuilding,
+  resolvePlayQueueItemPendingTrackPlay,
   shouldApplyPendingAlbumQueueRebuild,
   shouldClearTransportForMissingVideo,
   shouldResetActiveTrackIndex,
@@ -175,5 +180,140 @@ describe("releasePlaybackPendingResolution", () => {
         queueManuallyExtended: true,
       }),
     ).toBe(false);
+  });
+
+  it("findQueueItemTrackResolutionIndex prefers embedded tracklist for collection radio rows", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const item = createQueueItem({
+      release: {
+        ...release,
+        tracklist: [
+          discogsTrackFactory.build({
+            position: "B1",
+            title: "Second",
+            type_: "track",
+          }),
+        ],
+      },
+      trackPosition: "B1",
+      trackTitle: "Second",
+    });
+    item.fromCollectionRadio = true;
+
+    const index = findQueueItemTrackResolutionIndex({
+      item,
+      isSameRelease: true,
+      releaseDetailId: release.basic_information.id,
+      sessionTracks: [
+        discogsTrackFactory.build({
+          position: "A1",
+          title: "First",
+          type_: "track",
+        }),
+      ],
+    });
+
+    expect(index).toBe(0);
+  });
+
+  it("resolvePlayQueueItemPendingTrackPlay clears pending for collection radio on same release when embedded tracklist resolves", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const item = createQueueItem({
+      release: {
+        ...release,
+        tracklist: [
+          discogsTrackFactory.build({
+            position: "B1",
+            title: "Second",
+            type_: "track",
+          }),
+        ],
+      },
+      trackPosition: "B1",
+      trackTitle: "Second",
+    });
+    item.fromCollectionRadio = true;
+
+    const pending = resolvePlayQueueItemPendingTrackPlay({
+      item,
+      isSameRelease: true,
+      releaseDetailId: release.basic_information.id,
+      sessionTracks: [
+        discogsTrackFactory.build({
+          position: "A1",
+          title: "First",
+          type_: "track",
+        }),
+      ],
+      resolvedYoutubeVideoId: "abc12345678",
+    });
+
+    expect(pending.pendingTrackPosition).toBeNull();
+    expect(pending.canResolveTrackIndexFromLoadedDetail).toBe(true);
+    expect(pending.resolutionIndex).toBe(0);
+  });
+
+  it("resolvePlayQueueItemPendingTrackPlay clears pending on same release when resolution uses enriched embedded tracklist", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const item = createQueueItem({
+      release: {
+        ...release,
+        tracklist: [
+          discogsTrackFactory.build({
+            position: "A",
+            title: "Playable",
+            type_: "track",
+          }),
+        ],
+      },
+      trackPosition: "A",
+      trackTitle: "Playable",
+    });
+
+    const pending = resolvePlayQueueItemPendingTrackPlay({
+      item,
+      isSameRelease: true,
+      releaseDetailId: release.basic_information.id,
+      sessionTracks: [
+        discogsTrackFactory.build({
+          position: "A1",
+          title: "Other",
+          type_: "track",
+        }),
+      ],
+      resolvedYoutubeVideoId: "overrideVideo12",
+    });
+
+    expect(pending.pendingTrackPosition).toBeNull();
+    expect(pending.canResolveTrackIndexFromLoadedDetail).toBe(true);
+  });
+
+  it("resolvePlayQueueItemPendingTrackPlay clears pending track when index resolves cross-release", () => {
+    const release = releaseFactory.withDisplayDefaults();
+    const item = createQueueItem({
+      release: {
+        ...release,
+        tracklist: [
+          discogsTrackFactory.build({
+            position: "A1",
+            title: "First",
+            type_: "track",
+          }),
+        ],
+      },
+      trackPosition: "A1",
+      trackTitle: "First",
+    });
+
+    const pending = resolvePlayQueueItemPendingTrackPlay({
+      item,
+      isSameRelease: false,
+      releaseDetailId: undefined,
+      sessionTracks: [],
+      resolvedYoutubeVideoId: null,
+    });
+
+    expect(pending.pendingTrackPosition).toBeNull();
+    expect(pending.canResolveTrackIndexFromLoadedDetail).toBe(true);
   });
 });

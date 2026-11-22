@@ -37,6 +37,13 @@ export const resolveQueueItemEmbedTracksVideos = ({
   currentVideos: DiscogsVideo[];
   cachedReleaseDetail: DiscogsReleaseDetail | null | undefined;
 }): { tracks: DiscogsTrack[]; videos: DiscogsVideo[] } => {
+  const embeddedTracks = readReleaseEmbeddedTracklist(item.release);
+  const embeddedVideos = readReleaseEmbeddedVideos(item.release);
+
+  if (embeddedTracks.length > 0 && embeddedVideos.length > 0) {
+    return { tracks: embeddedTracks, videos: embeddedVideos };
+  }
+
   if (isSameReleaseInstance(currentRelease, item.release)) {
     return { tracks: currentTracks, videos: currentVideos };
   }
@@ -48,12 +55,10 @@ export const resolveQueueItemEmbedTracksVideos = ({
     };
   }
 
-  const embeddedTracks = readReleaseEmbeddedTracklist(item.release);
-
   if (embeddedTracks.length > 0) {
     return {
       tracks: embeddedTracks,
-      videos: readReleaseEmbeddedVideos(item.release),
+      videos: embeddedVideos,
     };
   }
 

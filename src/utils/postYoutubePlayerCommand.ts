@@ -1,3 +1,5 @@
+import { enableYoutubeIframeListening } from "src/utils/youtubeIframeEvents";
+
 export type YoutubePlayerCommand =
   | "playVideo"
   | "pauseVideo"
@@ -64,6 +66,17 @@ export const requestYoutubeEmbedPlaybackSync = (
   requestYoutubePlayerState(iframe);
   postYoutubeIframeCommand({ iframe, func: "getCurrentTime" });
   postYoutubeIframeCommand({ iframe, func: "getDuration" });
+};
+
+export const syncYoutubeEmbedPlaybackProgress = (
+  iframe: HTMLIFrameElement | null,
+): void => {
+  if (!iframe) {
+    return;
+  }
+
+  enableYoutubeIframeListening(iframe);
+  requestYoutubeEmbedPlaybackSync(iframe);
 };
 
 export const loadYoutubeVideoById = ({

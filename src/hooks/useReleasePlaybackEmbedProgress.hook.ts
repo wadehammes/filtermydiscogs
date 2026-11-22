@@ -84,9 +84,17 @@ export const useReleasePlaybackEmbedProgress = () => {
     const nowMs = Date.now();
     progressGuardRef.current =
       createPlaybackEmbedProgressGuardForTrackReset(nowMs);
-    latestProgressRef.current = PLAYBACK_EMBED_PROGRESS_TRACK_RESET;
+    const nextProgress: PlaybackEmbedProgress = {
+      currentTime: PLAYBACK_EMBED_PROGRESS_TRACK_RESET.currentTime,
+      duration: latestProgressRef.current?.duration ?? null,
+    };
+    latestProgressRef.current = nextProgress;
     lastPublishedAtMsRef.current = nowMs;
-    setEmbedProgress(PLAYBACK_EMBED_PROGRESS_TRACK_RESET);
+    setEmbedProgress(nextProgress);
+  }, []);
+
+  const releaseStaleEmbedProgressGuard = useCallback(() => {
+    progressGuardRef.current = clearPlaybackEmbedProgressGuard();
   }, []);
 
   const applyLocalSeekSeconds = useCallback(
@@ -111,6 +119,7 @@ export const useReleasePlaybackEmbedProgress = () => {
     embedProgress,
     handleInfoDelivery,
     resetEmbedProgress,
+    releaseStaleEmbedProgressGuard,
     applyLocalSeekSeconds,
   };
 };

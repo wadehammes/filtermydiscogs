@@ -18,6 +18,31 @@ import {
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
 
+jest.mock("src/hooks/useCollectionRadioPlayback.hook", () => ({
+  useCollectionRadioPlayback: () => ({
+    startCollectionRadio: jest.fn(),
+    isStarting: false,
+    isPrefetching: false,
+    isDetailsReady: true,
+    filteredReleaseCount: 2,
+    isCollectionRadioSession: false,
+    isCollectionRadioTransportPlaying: false,
+  }),
+}));
+
+jest.mock("src/context/releasePlayback.context", () => {
+  const actual = jest.requireActual<
+    typeof import("src/context/releasePlayback.context")
+  >("src/context/releasePlayback.context");
+
+  return {
+    ...actual,
+    useReleasePlaybackActions: () => ({
+      togglePlayback: jest.fn(),
+    }),
+  };
+});
+
 let po: FiltersDrawerPageObject;
 
 describe("FiltersDrawer", () => {
@@ -470,5 +495,22 @@ describe("FiltersDrawer", () => {
 
     const saved = JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) ?? "{}");
     expect(saved.selectedFormats).toEqual(["Test Pressing", "White Label"]);
+  });
+
+  it("shows collection radio play in the drawer footer when filters are active", () => {
+    po.renderFiltersDrawer({
+      sessionFilters: {
+        ...defaultPersistedFilters,
+        selectedStyles: ["Rock"],
+      },
+    });
+
+    expect(
+      screen.getByTestId("fmdCollectionRadioPlayButton"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Play collection radio")).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Play collection radio" }),
+    ).toBeEnabled();
   });
 });

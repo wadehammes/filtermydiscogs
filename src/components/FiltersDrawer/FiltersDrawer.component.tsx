@@ -6,16 +6,20 @@ import {
 } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import Button from "src/components/Button/Button.component";
+import { CollectionRadioPlayButton } from "src/components/CollectionRadioPlayButton/CollectionRadioPlayButton.component";
 import { CollectionSortControls } from "src/components/CollectionSortControls/CollectionSortControls.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
 import { FilterViewsMenu } from "src/components/FilterViewsMenu/FilterViewsMenu.component";
+import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { useCollectionContext } from "src/context/collection.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useAppliedFilterCount } from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
+import { useFilterViews } from "src/hooks/useFilterViews.hook";
 import type { StyleOperator, YearOperator } from "src/types/filters.types";
+import { shouldShowCollectionRadioPlayButton } from "src/utils/collectionRadioPlayback";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./FiltersDrawer.module.css";
 
@@ -95,6 +99,11 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
   const { state: collectionState } = useCollectionContext();
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const appliedFilterCount = useAppliedFilterCount();
+  const { hasActiveFilters, matchingView } = useFilterViews();
+  const showCollectionRadioPlayButton = shouldShowCollectionRadioPlayButton({
+    hasActiveFilters,
+    matchingViewActive: matchingView !== null,
+  });
   const {
     handleStyleChange,
     handleYearChange,
@@ -119,8 +128,6 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
   const { fetchingCollection, collection, error } = collectionState;
 
-  const hasActiveFilters = appliedFilterCount > 0;
-
   const drawerTitle = useMemo(() => {
     if (appliedFilterCount === 0) {
       return "Filters";
@@ -144,14 +151,30 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
       closeButtonAriaLabel="Close filters"
       dataAttribute="data-filters-drawer-open"
       aboveMiniPlayer={isMiniPlayerVisible}
+      drawerClassName={styles.filtersDrawerPanel}
       footer={
-        hasActiveFilters ? (
+        appliedFilterCount > 0 || showCollectionRadioPlayButton ? (
           <div className={styles.footer}>
-            <p className={styles.activeFiltersHint}>
-              {appliedFilterCount === 1
-                ? "1 filter applied"
-                : `${appliedFilterCount} filters applied`}
-            </p>
+            <div className={styles.footerRow}>
+              {appliedFilterCount > 0 ? (
+                <p className={styles.activeFiltersHint}>
+                  {appliedFilterCount === 1
+                    ? "1 filter applied"
+                    : `${appliedFilterCount} filters applied`}
+                </p>
+              ) : (
+                <span className={styles.activeFiltersHint} aria-hidden />
+              )}
+              {showCollectionRadioPlayButton ? (
+                <OverlayStack
+                  className={styles.collectionRadioSlot}
+                  escapeStackingContext
+                  popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
+                >
+                  <CollectionRadioPlayButton showLabel />
+                </OverlayStack>
+              ) : null}
+            </div>
           </div>
         ) : undefined
       }

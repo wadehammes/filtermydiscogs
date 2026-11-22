@@ -12,6 +12,7 @@ import {
   resolveActivePlaybackVideo,
   resolveActiveTrackPosition,
   resolveActiveVideoId,
+  resolveCommittedSessionEmbedVideoId,
   resolveIsPlaybackReady,
   resolveNeedsPlaybackVideoSwitch,
   resolvePlaybackVideoId,
@@ -224,6 +225,19 @@ describe("releasePlaybackActivePresentation", () => {
     ).toBe(true);
   });
 
+  it("isEmbedAlignedForLoadingPlaybackConfirm prefers committed embed id over stale matchedActiveVideoId while loading", () => {
+    expect(
+      isEmbedAlignedForLoadingPlaybackConfirm({
+        loadingTargetVideoId: "next-id",
+        activeVideoId: "next-id",
+        matchedActiveVideoId: "prev-id",
+        embedVideoId: "next-id",
+        transitionTargetVideoId: null,
+        watchdogVideoId: "next-id",
+      }),
+    ).toBe(true);
+  });
+
   it("isEmbedAlignedForLoadingPlaybackConfirm prefers matchedActiveVideoId over presentation activeVideoId when embedVideoId is ahead", () => {
     expect(
       isEmbedAlignedForLoadingPlaybackConfirm({
@@ -262,6 +276,30 @@ describe("releasePlaybackActivePresentation", () => {
         transitionTargetVideoId: null,
       }),
     ).toBe(false);
+  });
+
+  it("resolveCommittedSessionEmbedVideoId prefers matched upload id, then last sync, then embed ref", () => {
+    expect(
+      resolveCommittedSessionEmbedVideoId({
+        matchedActiveVideoId: " matched ",
+        lastSyncedActiveVideoId: "sync-id",
+        embedVideoId: "embed-id",
+      }),
+    ).toBe("matched");
+    expect(
+      resolveCommittedSessionEmbedVideoId({
+        matchedActiveVideoId: null,
+        lastSyncedActiveVideoId: "sync-id",
+        embedVideoId: "embed-id",
+      }),
+    ).toBe("sync-id");
+    expect(
+      resolveCommittedSessionEmbedVideoId({
+        matchedActiveVideoId: null,
+        lastSyncedActiveVideoId: null,
+        embedVideoId: "embed-id",
+      }),
+    ).toBe("embed-id");
   });
 
   it("resolveNeedsPlaybackVideoSwitch is true when force reload is required on the same upload after unavailable skip", () => {

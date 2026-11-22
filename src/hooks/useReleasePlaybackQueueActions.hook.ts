@@ -5,6 +5,7 @@ import {
   trackPlaybackQueued,
   trackPlaybackStarted,
 } from "src/analytics/productAnalyticsEvents";
+import { useCollectionRadioActiveChrome } from "src/hooks/useCollectionRadioActiveChrome.hook";
 import {
   createSimilarQueueMode,
   type SimilarQueueMode,
@@ -35,18 +36,20 @@ import {
 import { isQueueItemReplayOfActiveSession } from "src/utils/playbackQueueReplay";
 import type { PlaybackSessionAction } from "src/utils/playbackSessionState";
 import { resetPlaybackSkipLogToast } from "src/utils/playbackSkippedTrackToast";
-import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
+import { parseYoutubeVideoId } from "src/utils/releasePlayback";
 import {
-  findTrackIndexByPosition,
-  parseYoutubeVideoId,
-} from "src/utils/releasePlayback";
-import { resolveNeedsPlaybackVideoSwitch } from "src/utils/releasePlaybackActivePresentation";
+  resolveCommittedSessionEmbedVideoId,
+  resolveNeedsPlaybackVideoSwitch,
+} from "src/utils/releasePlaybackActivePresentation";
+import {
+  findQueueItemTrackResolutionIndex,
+  resolvePlayQueueItemPendingTrackPlay,
+} from "src/utils/releasePlaybackPendingResolution";
 import {
   clearPersistedReleasePlayback,
   toPersistedQueueItem,
   writePersistedReleasePlayback,
 } from "src/utils/releasePlaybackStorage";
-import { readReleaseEmbeddedTracklist } from "src/utils/resolveQueueItemEmbedTracksVideos";
 import {
   recordTrackPlayFromQueueItem,
   resetUserTrackRecordingSession,
@@ -101,6 +104,7 @@ interface QueueActionRefs {
 }
 
 interface UseReleasePlaybackQueueActionsParams {
+  resetDockEmbedProgress: () => void;
   dispatchSession: Dispatch<PlaybackSessionAction>;
   setNowPlayingQueueItem: (item: PlaybackQueueItem | null) => void;
   setPlaybackTrackTitleOverride: (title: string | null) => void;
@@ -142,6 +146,7 @@ interface UseReleasePlaybackQueueActionsParams {
 }
 
 export const useReleasePlaybackQueueActions = ({
+  resetDockEmbedProgress,
   dispatchSession,
   setNowPlayingQueueItem,
   setPlaybackTrackTitleOverride,
@@ -173,6 +178,7 @@ export const useReleasePlaybackQueueActions = ({
   forceEmbedReloadAfterUnavailableSkipRef,
   refs,
 }: UseReleasePlaybackQueueActionsParams) => {
+  const { clearCollectionRadioActive } = useCollectionRadioActiveChrome();
   const {
     awaitingResumeGestureRef,
     pendingPlayFromGestureRef,
@@ -198,35 +204,14 @@ export const useReleasePlaybackQueueActions = ({
     isReleasePreviewRef,
   } = refs;
 
-  const findQueueItemResolutionIndex = useCallback(
-    (item: PlaybackQueueItem): number => {
-      const itemReleaseId = parseReleaseId(item.release);
-
-      if (itemReleaseId === null) {
-        return -1;
-      }
-
-      if (
-        Number(releaseDetailIdRef.current) === itemReleaseId &&
-        tracksRef.current.length > 0
-      ) {
-        return findTrackIndexByPosition(tracksRef.current, item.trackPosition);
-      }
-
-      const embeddedTracks = readReleaseEmbeddedTracklist(item.release);
-
-      if (embeddedTracks.length > 0) {
-        return findTrackIndexByPosition(embeddedTracks, item.trackPosition);
-      }
-
-      return -1;
-    },
-    [releaseDetailIdRef, tracksRef],
-  );
-
   const resolveQueueItemPlayback = useCallback(
-    (item: PlaybackQueueItem): boolean => {
-      const index = findQueueItemResolutionIndex(item);
+    (item: PlaybackQueueItem, isSameRelease: boolean): boolean => {
+      const index = findQueueItemTrackResolutionIndex({
+        item,
+        isSameRelease,
+        releaseDetailId: releaseDetailIdRef.current,
+        sessionTracks: tracksRef.current,
+      });
 
       if (index < 0) {
         return false;
@@ -239,7 +224,7 @@ export const useReleasePlaybackQueueActions = ({
       });
       return true;
     },
-    [dispatchSession, findQueueItemResolutionIndex],
+    [dispatchSession, releaseDetailIdRef, tracksRef],
   );
 
   const applyTargetEmbedVideoId = useCallback(
@@ -277,19 +262,27 @@ export const useReleasePlaybackQueueActions = ({
       });
 
       shouldRebuildAlbumQueueRef.current = rebuildAlbumQueue;
-      const isSameRelease = isSameReleaseInstance(
-        releaseRef.current,
-        item.release,
-      );
       const replaySameTrack = isQueueItemReplayOfActiveSession(item, {
         release: releaseRef.current,
         activeTrackPosition: activeTrackPositionRef.current,
         isReleasePreview: isReleasePreviewRef.current,
         activeVideoId: activeVideoIdRef.current,
       });
+      const isSameRelease = replaySameTrack;
       const forceEmbedReload =
         !resolvedYoutubeVideoId &&
         (replaySameTrack || forceEmbedReloadAfterUnavailableSkip);
+
+      setPlaybackTrackTitleOverride(
+        isQueueItemTrackTitlePlaceholder(item) ? null : item.trackTitle,
+      );
+
+      const priorCommittedUploadVideoId = resolveCommittedSessionEmbedVideoId({
+        matchedActiveVideoId: matchedActiveVideoIdRef.current,
+        lastSyncedActiveVideoId: lastSyncedActiveVideoIdRef.current,
+        embedVideoId: embedVideoIdRef.current,
+      });
+
       const preparedEmbedVideoId = resolvedYoutubeVideoId
         ? applyTargetEmbedVideoId(resolvedYoutubeVideoId)
         : syncEmbedForQueueItem(item, { forceReload: forceEmbedReload });
@@ -298,22 +291,22 @@ export const useReleasePlaybackQueueActions = ({
         prefetchQueueItemEmbed(item);
       }
 
-      setPlaybackTrackTitleOverride(
-        isQueueItemTrackTitlePlaceholder(item) ? null : item.trackTitle,
-      );
       releaseRef.current = item.release;
 
       if (autoplay && !startPaused) {
         recordTrackPlayFromQueueItem(item, preparedEmbedVideoId ?? null);
       }
 
-      const resolutionIndex = item.previewVideoUri
-        ? -1
-        : findQueueItemResolutionIndex(item);
-      const pendingTrackPositionForPlay =
-        item.previewVideoUri || resolutionIndex >= 0
-          ? null
-          : item.trackPosition;
+      const {
+        canResolveTrackIndexFromLoadedDetail,
+        pendingTrackPosition: pendingTrackPositionForPlay,
+      } = resolvePlayQueueItemPendingTrackPlay({
+        item,
+        isSameRelease,
+        releaseDetailId: releaseDetailIdRef.current,
+        sessionTracks: tracksRef.current,
+        resolvedYoutubeVideoId: resolvedYoutubeVideoId ?? null,
+      });
 
       dispatchSession({
         type: "PLAY_QUEUE_ITEM",
@@ -327,14 +320,20 @@ export const useReleasePlaybackQueueActions = ({
       });
       isPlayingRef.current = true;
 
+      const resolvedPlaybackOnPlay =
+        !item.previewVideoUri &&
+        canResolveTrackIndexFromLoadedDetail &&
+        resolveQueueItemPlayback(item, isSameRelease);
+
       setShouldAutoplayEmbed(autoplay && !startPaused);
       awaitingResumeGestureRef.current = startPaused;
       const needsPlaybackVideoSwitch = resolveNeedsPlaybackVideoSwitch({
         preparedEmbedVideoId,
-        activeVideoId: matchedActiveVideoIdRef.current,
+        activeVideoId: priorCommittedUploadVideoId,
         replaySameTrack,
         forceEmbedReload,
       });
+
       const isVideoSwitchFromPriorUpload =
         matchedActiveVideoIdRef.current !== null &&
         preparedEmbedVideoId !== null &&
@@ -371,7 +370,7 @@ export const useReleasePlaybackQueueActions = ({
         lastSyncedActiveVideoIdRef.current = null;
       }
 
-      if (resolveQueueItemPlayback(item)) {
+      if (resolvedPlaybackOnPlay) {
         return;
       }
 
@@ -388,7 +387,6 @@ export const useReleasePlaybackQueueActions = ({
       beginPlaybackVideoUiLoading,
       clearPlayFromGestureRetries,
       dispatchSession,
-      findQueueItemResolutionIndex,
       setNowPlayingQueueItem,
       setPlaybackTrackTitleOverride,
       isPausedRef,
@@ -396,6 +394,7 @@ export const useReleasePlaybackQueueActions = ({
       markEmbedTrackSwitchGrace,
       pendingPlayFromGestureRef,
       prefetchQueueItemEmbed,
+      releaseDetailIdRef,
       releaseRef,
       resolveQueueItemPlayback,
       activeVideoIdRef,
@@ -409,6 +408,8 @@ export const useReleasePlaybackQueueActions = ({
       isReleasePreviewRef.current,
       isPlayingRef,
       matchedActiveVideoIdRef,
+      tracksRef,
+      embedVideoIdRef.current,
     ],
   );
 
@@ -469,15 +470,24 @@ export const useReleasePlaybackQueueActions = ({
       rebuildAlbumQueue: rebuildAlbumQueueOption,
       youtubeVideoId,
       upcomingQueue,
+      startQueueItem,
     }: StartPlaybackParams) => {
+      clearCollectionRadioActive();
       similarQueueSuppressedAfterClearRef.current = false;
       dispatchSession({ type: "CLEAR_PREVIEW_PENDING" });
-      const item = createQueueItem({
-        release: nextRelease,
-        trackPosition,
-        trackTitle,
-        ...definedProps({ youtubeVideoId, artist, releaseTitle }),
-      });
+
+      if (upcomingQueue !== undefined) {
+        resetPlaybackSkipState?.();
+        clearPlaybackVideoUiLoading();
+      }
+      const item =
+        startQueueItem ??
+        createQueueItem({
+          release: nextRelease,
+          trackPosition,
+          trackTitle,
+          ...definedProps({ youtubeVideoId, artist, releaseTitle }),
+        });
 
       const preserveQueue =
         upcomingQueue === undefined &&
@@ -540,6 +550,7 @@ export const useReleasePlaybackQueueActions = ({
       });
     },
     [
+      clearCollectionRadioActive,
       dispatchSession,
       maybePushCurrentToHistory,
       playQueueItem,
@@ -552,6 +563,8 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueModeRef,
       similarQueueSuppressedAfterClearRef,
       extendQueueWithSimilarReleasesRef,
+      clearPlaybackVideoUiLoading,
+      resetPlaybackSkipState,
     ],
   );
 
@@ -559,6 +572,7 @@ export const useReleasePlaybackQueueActions = ({
     ({ release: nextRelease, video }: StartReleasePreviewParams) => {
       const previewVideoId = parseYoutubeVideoId(video.uri);
 
+      resetDockEmbedProgress();
       isPausedRef.current = false;
 
       shouldRebuildAlbumQueueRef.current = false;
@@ -621,6 +635,7 @@ export const useReleasePlaybackQueueActions = ({
       similarQueueModeRef,
       isPlayingRef,
       setNowPlayingQueueItem,
+      resetDockEmbedProgress,
     ],
   );
 
@@ -779,6 +794,7 @@ export const useReleasePlaybackQueueActions = ({
 
   const stopPlayback = useCallback(
     ({ resetSkipLogToast = true }: { resetSkipLogToast?: boolean } = {}) => {
+      clearCollectionRadioActive();
       resetUserTrackRecordingSession();
       setNowPlayingQueueItem(null);
       setPlaybackTrackTitleOverride(null);
@@ -804,12 +820,15 @@ export const useReleasePlaybackQueueActions = ({
       embedVideoIdRef.current = null;
       lastSyncedActiveVideoIdRef.current = null;
       clearPersistedReleasePlayback();
+      resetDockEmbedProgress();
     },
     [
+      clearCollectionRadioActive,
       clearPlayFromGestureRetries,
       dispatchSession,
       setPlaybackTrackTitleOverride,
       resetEmbedSession,
+      resetDockEmbedProgress,
       embedVideoIdRef,
       isPlayingRef,
       lastSyncedActiveVideoIdRef,
@@ -908,6 +927,7 @@ export const useReleasePlaybackQueueActions = ({
   startPlaybackRef.current = startPlayback;
 
   const clearQueue = useCallback(() => {
+    clearCollectionRadioActive();
     similarQueueSuppressedAfterClearRef.current = true;
     similarQueueModeRef.current = createSimilarQueueMode(false);
     similarQueueGenerationRef.current += 1;
@@ -915,6 +935,7 @@ export const useReleasePlaybackQueueActions = ({
     queueManuallyExtendedRef.current = false;
     setUpcomingQueue([]);
   }, [
+    clearCollectionRadioActive,
     queueManuallyExtendedRef,
     setUpcomingQueue,
     shouldRebuildAlbumQueueRef,

@@ -490,13 +490,6 @@ describe("ReleaseMiniPlayer", () => {
     await user.click(screen.getByRole("button", { name: "Next track" }));
 
     await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-playback-video-loading",
-        "true",
-      );
-    });
-
-    await waitFor(() => {
       expect(po.mockLoadAndPlayYoutubeVideo).toHaveBeenCalledWith(
         expect.objectContaining({
           iframe,

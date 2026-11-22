@@ -73,15 +73,15 @@
   display: inline-flex;
   flex-shrink: 0;
   height: 2rem;
-  inset-block: 0;
+  inset-inline-start: calc(var(--queue-leading-inset) / 2);
   justify-content: center;
-  left: calc(var(--queue-leading-inset) / 2);
-  margin-block: auto;
   padding: 0;
   position: absolute;
+  top: 50%;
   touch-action: none;
-  translate: -50% 0;
+  translate: -50% -50%;
   width: 1.75rem;
+  z-index: 1;
 
   &:active {
     cursor: grabbing;

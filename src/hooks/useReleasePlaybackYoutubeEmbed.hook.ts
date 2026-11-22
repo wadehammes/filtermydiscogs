@@ -18,10 +18,12 @@ import {
   beginPlaybackDockVolumeForVideo,
   commitPlaybackDockVolumeOnPlayerEvent,
 } from "src/utils/playbackDockVolumeReapply";
+import { PLAYBACK_EMBED_PROGRESS_THROTTLE_MS } from "src/utils/playbackEmbedProgress";
 import {
   selectShouldAttemptPlayFromGestureDuringHiddenPoll,
   selectShouldRunHiddenTabPlayerStatePoll,
   selectShouldRunVisibleTabAudibleSyncPoll,
+  selectShouldRunVisibleTabPlaybackProgressSyncPoll,
   tryConfirmPlaybackEmbedFromSignal,
 } from "src/utils/playbackEmbedSession";
 import {
@@ -33,7 +35,7 @@ import { shouldHoldConfirmedEmbedDuringSimilarQueueFetch } from "src/utils/playb
 import {
   loadAndPlayYoutubeVideo,
   refreshYoutubeEmbedPlayerLayout,
-  requestYoutubeEmbedPlaybackSync,
+  syncYoutubeEmbedPlaybackProgress,
 } from "src/utils/postYoutubePlayerCommand";
 import { isSameReleaseInstance, parseReleaseId } from "src/utils/releaseNotes";
 import {
@@ -70,16 +72,17 @@ const getDocumentHidden = (): boolean => document.visibilityState === "hidden";
 const getDocumentHiddenServerSnapshot = (): boolean => false;
 
 import {
+  classifyPlaybackYoutubeEmbedIframeMessage,
+  resolveYoutubeEmbedIframeMessagePlayerState,
+  shouldRequestYoutubeEmbedProgressResync,
+} from "src/utils/playbackYoutubeEmbedIframeMessage";
+import {
   EMBED_PLAYBACK_ENDED_DEBOUNCE_MS,
   EMBED_TRACK_SWITCH_PAUSE_GRACE_MS,
   enableYoutubeIframeListening,
   HIDDEN_TAB_YOUTUBE_PLAYER_STATE_POLL_MS,
   isYoutubeEmbedAtOrPastEnd,
   isYoutubeEmbedOrigin,
-  parseYoutubeEmbedReadyFromMessage,
-  parseYoutubeInfoDelivery,
-  parseYoutubePlayerErrorFromMessage,
-  parseYoutubePlayerStateFromMessage,
   type YoutubeInfoDelivery,
 } from "src/utils/youtubeIframeEvents";
 
@@ -196,6 +199,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
   const embedTrackSwitchGraceUntilRef = useRef(0);
   const embedLoadStateSyncTimeoutRef = useRef<number | null>(null);
+  const embedProgressResyncTimeoutRef = useRef<number | null>(null);
   const lastEmbedPlaybackEndedAtRef = useRef(0);
 
   const notifyEmbedPlaybackEnded = useCallback(() => {
@@ -345,8 +349,28 @@ export const useReleasePlaybackYoutubeEmbed = ({
   }, [playbackIframeRef]);
 
   const syncEmbedPlaybackState = useCallback(() => {
-    requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
+    syncYoutubeEmbedPlaybackProgress(playbackIframeRef.current);
   }, [playbackIframeRef]);
+
+  const clearEmbedProgressResyncTimeout = useCallback(() => {
+    if (embedProgressResyncTimeoutRef.current === null) {
+      return;
+    }
+
+    window.clearTimeout(embedProgressResyncTimeoutRef.current);
+    embedProgressResyncTimeoutRef.current = null;
+  }, []);
+
+  const scheduleEmbedProgressResync = useCallback(() => {
+    if (embedProgressResyncTimeoutRef.current !== null) {
+      return;
+    }
+
+    embedProgressResyncTimeoutRef.current = window.setTimeout(() => {
+      embedProgressResyncTimeoutRef.current = null;
+      syncEmbedPlaybackState();
+    }, 50);
+  }, [syncEmbedPlaybackState]);
 
   const recoverPlaybackAfterTabVisible = useCallback(() => {
     refreshEmbedPlayerLayout();
@@ -508,7 +532,6 @@ export const useReleasePlaybackYoutubeEmbed = ({
             return;
           }
 
-          lastSyncedActiveVideoIdRef.current = videoId;
           syncEmbedToVideoId(videoId);
         })
         .catch(() => undefined);
@@ -603,6 +626,35 @@ export const useReleasePlaybackYoutubeEmbed = ({
     isPlayingRef,
     syncEmbedPlaybackState,
   ]);
+
+  useEffect(() => {
+    if (
+      !selectShouldRunVisibleTabPlaybackProgressSyncPoll({
+        transportSessionActive: isPlaying,
+        transportPaused: isPaused,
+        documentHidden,
+      })
+    ) {
+      return;
+    }
+
+    syncEmbedPlaybackState();
+    const intervalId = window.setInterval(
+      syncEmbedPlaybackState,
+      PLAYBACK_EMBED_PROGRESS_THROTTLE_MS,
+    );
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [documentHidden, isPaused, isPlaying, syncEmbedPlaybackState]);
+
+  useEffect(
+    () => () => {
+      clearEmbedProgressResyncTimeout();
+    },
+    [clearEmbedProgressResyncTimeout],
+  );
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -796,18 +848,22 @@ export const useReleasePlaybackYoutubeEmbed = ({
         return;
       }
 
-      if (parseYoutubeEmbedReadyFromMessage(event.data)) {
+      const message = classifyPlaybackYoutubeEmbedIframeMessage(event.data);
+
+      if (message.kind === "ignored") {
+        return;
+      }
+
+      if (message.kind === "ready") {
         enableYoutubeIframeListening(iframe);
         onYoutubeEmbedPlayerReady?.();
         return;
       }
 
-      const embedErrorCode = parseYoutubePlayerErrorFromMessage(event.data);
-
-      if (embedErrorCode !== null) {
+      if (message.kind === "error") {
         if (
           shouldIgnoreYoutubeEmbedErrorDuringTrackSwitchGrace({
-            errorCode: embedErrorCode,
+            errorCode: message.errorCode,
             isWithinTrackSwitchGrace: isWithinTrackSwitchGrace(),
             isPlaybackVideoUiLoading: isPlaybackVideoUiLoadingRef.current,
             hasPlaybackVideoTransitionTarget:
@@ -817,53 +873,58 @@ export const useReleasePlaybackYoutubeEmbed = ({
           return;
         }
 
-        onYoutubeEmbedPlaybackError?.(embedErrorCode);
+        onYoutubeEmbedPlaybackError?.(message.errorCode);
         return;
       }
 
-      const infoDelivery = parseYoutubeInfoDelivery(event.data);
-      commitPlaybackDockVolumeOnPlayerEvent({
-        data: event.data,
-        videoId: embedVideoIdRef.current,
-      });
+      if (message.kind === "info" || message.kind === "state") {
+        commitPlaybackDockVolumeOnPlayerEvent({
+          data: event.data,
+          videoId: embedVideoIdRef.current,
+        });
+      }
 
-      if (infoDelivery) {
-        if (isYoutubeEmbedAtOrPastEnd(infoDelivery)) {
+      if (message.kind === "info") {
+        if (isYoutubeEmbedAtOrPastEnd(message.info)) {
           notifyEmbedPlaybackEnded();
           return;
         }
 
-        onEmbedInfoDelivery?.(infoDelivery);
+        onEmbedInfoDelivery?.(message.info);
 
         const previousCurrentTime = lastInfoDeliveryCurrentTimeRef.current;
 
-        if (infoDelivery.currentTime !== undefined) {
-          lastInfoDeliveryCurrentTimeRef.current = infoDelivery.currentTime;
+        if (message.info.currentTime !== undefined) {
+          lastInfoDeliveryCurrentTimeRef.current = message.info.currentTime;
+        }
+
+        if (shouldRequestYoutubeEmbedProgressResync(message.info)) {
+          scheduleEmbedProgressResync();
         }
 
         if (
           tryConfirmAudibleEmbedPlayback({
             ...definedProps({
-              playerState: infoDelivery.playerState,
-              infoDeliveryCurrentTime: infoDelivery.currentTime,
+              playerState: message.info.playerState,
+              infoDeliveryCurrentTime: message.info.currentTime,
               previousInfoDeliveryCurrentTime: previousCurrentTime,
             }),
           })
         ) {
           return;
         }
-      }
 
-      const playerState =
-        parseYoutubePlayerStateFromMessage(event.data) ??
-        infoDelivery?.playerState ??
-        null;
+        const infoPlayerState =
+          resolveYoutubeEmbedIframeMessagePlayerState(message);
 
-      if (playerState === null) {
+        if (infoPlayerState !== null) {
+          handleYoutubeEmbedPlayerState(infoPlayerState);
+        }
+
         return;
       }
 
-      handleYoutubeEmbedPlayerState(playerState);
+      handleYoutubeEmbedPlayerState(message.playerState);
     };
 
     window.addEventListener("message", handleMessage);
@@ -883,6 +944,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     playbackIframeRef,
     isPlaybackVideoUiLoadingRef,
     playbackVideoTransitionTargetIdRef,
+    scheduleEmbedProgressResync,
     tryConfirmAudibleEmbedPlayback,
   ]);
 
@@ -907,15 +969,15 @@ export const useReleasePlaybackYoutubeEmbed = ({
     clearEmbedLoadStateSyncTimeout();
     embedLoadStateSyncTimeoutRef.current = window.setTimeout(() => {
       embedLoadStateSyncTimeoutRef.current = null;
-      requestYoutubeEmbedPlaybackSync(playbackIframeRef.current);
+      syncEmbedPlaybackState();
     }, EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS);
   }, [
     clearEmbedLoadStateSyncTimeout,
     lastInfoDeliveryCurrentTimeRef,
     markEmbedTrackSwitchGrace,
     onImperativeEmbedLoadStarted,
-    playbackIframeRef,
     schedulePlayFromGestureAttempts,
+    syncEmbedPlaybackState,
   ]);
 
   const notifyPlaybackIframeLoaded = useCallback(() => {
@@ -937,6 +999,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
 
         playbackIframeRef.current = null;
         clearEmbedLoadStateSyncTimeout();
+        clearEmbedProgressResyncTimeout();
         clearPlayFromGestureRetries();
         return;
       }
@@ -967,6 +1030,7 @@ export const useReleasePlaybackYoutubeEmbed = ({
     },
     [
       clearEmbedLoadStateSyncTimeout,
+      clearEmbedProgressResyncTimeout,
       clearPlayFromGestureRetries,
       isPlaybackEmbedMounted,
       pendingPlayFromGestureRef,
@@ -989,5 +1053,6 @@ export const useReleasePlaybackYoutubeEmbed = ({
     resumePlaybackFromGesture,
     recoverPlaybackAfterTabVisible,
     markEmbedTrackSwitchGrace,
+    syncEmbedPlaybackState,
   };
 };

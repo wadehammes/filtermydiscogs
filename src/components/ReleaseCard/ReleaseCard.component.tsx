@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import { memo } from "react";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
+import { RELEASE_CARD_COVER_PX } from "src/constants/releaseCardCover.constants";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -29,8 +30,8 @@ const ReleaseCardComponent = ({
   const thumbUrl = getReleaseImageUrl({
     thumb: release.basic_information.thumb,
     cover_image: release.basic_information.cover_image,
-    width: 200,
-    height: 200,
+    width: RELEASE_CARD_COVER_PX,
+    height: RELEASE_CARD_COVER_PX,
     preferCoverImage: true,
   });
 

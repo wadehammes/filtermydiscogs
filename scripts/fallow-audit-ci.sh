@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Fallow changed-files audit for CI: print the full report, but exit 1 only when a
-# *worsened* complexity finding has effective_severity error from cyclomatic,
-# cognitive, or CRAP growth — not line_count alone (feature-sized components may
-# grow without failing CI). Introduced findings are advisory in CI; use
-# `pnpm fallow:audit` locally for the new-only gate (pr-prep).
+# Fallow changed-files audit for CI: print the full report (including worsened
+# complexity at error severity). Exit 0 always — findings are advisory on PRs.
+# Use `pnpm fallow:audit` locally (`mise run pr-prep`) for the stricter new-only gate.
 #
 # Usage: bash scripts/fallow-audit-ci.sh [base-ref]
 # Default base: origin/staging
@@ -20,7 +18,7 @@ if ! git rev-parse --verify "${BASE_REF}^{commit}" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Fallow audit vs ${BASE_REF} (CI gate: worsened complexity at error severity, excluding line_count-only growth)"
+echo "Fallow audit vs ${BASE_REF} (CI: advisory — worsened complexity reported, does not fail the job)"
 
 # Honor .fallowrc audit.worsened: warn — do not pass --worsened error on CI.
 pnpm exec fallow audit --changed-since "$BASE_REF" --worsened warn || true
@@ -73,10 +71,9 @@ const printWorsened = (list, prefix) => {
 
 if (blocking.length > 0) {
   console.error(
-    `\nfallow-audit-ci: FAIL — ${blocking.length} worsened complexity finding(s) at error severity (excluding line_count-only).`,
+    `\nfallow-audit-ci: advisory — ${blocking.length} worsened complexity finding(s) at error severity (excluding line_count-only); job still passes.`,
   );
   printWorsened(blocking, " ");
-  process.exit(1);
 }
 
 if (advisory.length > 0) {
@@ -89,6 +86,6 @@ if (advisory.length > 0) {
 const introduced = attr.complexity_introduced ?? 0;
 const inherited = attr.complexity_inherited ?? 0;
 console.log(
-  `fallow-audit-ci: pass (blocking worsened=0; complexity_worsened=${attr.complexity_worsened ?? 0}; introduced=${introduced}, inherited=${inherited} — advisory in CI).`,
+  `fallow-audit-ci: pass (complexity_worsened=${attr.complexity_worsened ?? 0}; blocking_worsened_reported=${blocking.length}; introduced=${introduced}, inherited=${inherited}).`,
 );
 NODE

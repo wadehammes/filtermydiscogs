@@ -52,44 +52,14 @@ export const resolvePlaybackDockEmbedProgressResetKey = ({
   return playbackVideoId ?? release.instance_id;
 };
 
-export const useReleasePlaybackDockEmbedProgress = ({
-  release,
-  previewVideo,
-  playbackVideoId,
-}: {
-  release: DiscogsRelease | null;
-  previewVideo: DiscogsVideo | null;
-  playbackVideoId: string | null;
-}) => {
+export const useReleasePlaybackDockEmbedProgress = () => {
   const {
     embedProgress,
     handleInfoDelivery,
     resetEmbedProgress,
+    releaseStaleEmbedProgressGuard,
     applyLocalSeekSeconds,
   } = useReleasePlaybackEmbedProgress();
-
-  const embedProgressResetKey = useMemo(
-    () =>
-      resolvePlaybackDockEmbedProgressResetKey({
-        release,
-        previewVideo,
-        playbackVideoId,
-      }),
-    [playbackVideoId, previewVideo, release],
-  );
-
-  const appliedEmbedProgressResetKeyRef = useRef<string | null | undefined>(
-    undefined,
-  );
-
-  useEffect(() => {
-    if (appliedEmbedProgressResetKeyRef.current === embedProgressResetKey) {
-      return;
-    }
-
-    appliedEmbedProgressResetKeyRef.current = embedProgressResetKey;
-    resetEmbedProgress();
-  }, [embedProgressResetKey, resetEmbedProgress]);
 
   const embedProgressValue = useMemo(
     (): ReleasePlaybackEmbedProgressState => ({ embedProgress }),
@@ -101,6 +71,8 @@ export const useReleasePlaybackDockEmbedProgress = ({
     embedProgress,
     embedProgressValue,
     handleInfoDelivery,
+    resetEmbedProgress,
+    releaseStaleEmbedProgressGuard,
   };
 };
 

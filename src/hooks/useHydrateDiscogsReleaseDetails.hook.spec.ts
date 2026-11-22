@@ -73,4 +73,32 @@ describe("useHydrateDiscogsReleaseDetails", () => {
 
     expect(mockApi.discogsReleaseBatch).not.toHaveBeenCalled();
   });
+
+  it("when releaseIds array identity changes but normalized ids match, does not start another batch fetch", async () => {
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 249504,
+    });
+    setupFetchDiscogsReleaseMock(mockApi, detail);
+
+    const { rerender } = renderFeatureHook(
+      ({ ids }: { ids: readonly string[] }) =>
+        useHydrateDiscogsReleaseDetails({
+          releaseIds: ids,
+          enabled: true,
+        }),
+      {
+        initialProps: { ids: ["249504"] as readonly string[] },
+      },
+    );
+
+    await waitFor(() => {
+      expect(mockApi.discogsReleaseBatch).toHaveBeenCalledTimes(1);
+    });
+
+    rerender({ ids: ["249504"] as readonly string[] });
+
+    await waitFor(() => {
+      expect(mockApi.discogsReleaseBatch).toHaveBeenCalledTimes(1);
+    });
+  });
 });

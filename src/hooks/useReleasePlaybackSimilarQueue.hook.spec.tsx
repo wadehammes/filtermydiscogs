@@ -121,6 +121,7 @@ const buildHarness = (
           queueManuallyExtendedRef,
           extendQueueWithSimilarReleasesRef,
           similarQueueSuppressedAfterClearRef,
+          collectionRadioActiveRef: { current: false },
         },
       }),
     { wrapper },
@@ -253,6 +254,24 @@ describe("useReleasePlaybackSimilarQueue", () => {
 
     const { result, updateUpcomingQueue } = buildHarness({
       queue: [similarItem],
+      similarQueueMode: { enabled: true },
+    });
+
+    result.current.maybeExtendQueueTail();
+
+    expect(updateUpcomingQueue).not.toHaveBeenCalled();
+  });
+
+  it("does not extend the tail while a collection radio track is in up next", () => {
+    const radioItem = createQueueItem({
+      release: catalogSimilarRelease,
+      trackPosition: "A1",
+      trackTitle: "Collection radio track",
+    });
+    radioItem.fromCollectionRadio = true;
+
+    const { result, updateUpcomingQueue } = buildHarness({
+      queue: [radioItem],
       similarQueueMode: { enabled: true },
     });
 

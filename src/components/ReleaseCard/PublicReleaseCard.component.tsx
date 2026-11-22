@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import { memo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
+import { RELEASE_CARD_COVER_PX } from "src/constants/releaseCardCover.constants";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import type { ReleaseCardProps } from "src/types";
 import { definedProps } from "src/utils/definedProps";
@@ -42,8 +43,8 @@ const PublicReleaseCardComponent = ({
   const thumbUrl = getReleaseImageUrl({
     thumb,
     cover_image,
-    width: 200,
-    height: 200,
+    width: RELEASE_CARD_COVER_PX,
+    height: RELEASE_CARD_COVER_PX,
     preferCoverImage: true,
   });
 

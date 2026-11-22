@@ -3,6 +3,7 @@ import Image from "next/image";
 import { memo } from "react";
 import { HorizontalScrollRow } from "src/components/HorizontalScrollRow/HorizontalScrollRow.component";
 import { ReleaseNotesEditorProvider } from "src/components/ReleaseNotes/ReleaseNotesEditor.context";
+import { MOBILE_RELEASE_CARD_COVER_PX } from "src/constants/releaseCardCover.constants";
 import {
   useSelectedFormats,
   useSelectedStyles,
@@ -58,8 +59,8 @@ const MobileReleaseCardComponent = ({
   const thumbUrl = getReleaseImageUrl({
     thumb,
     cover_image,
-    width: 200,
-    height: 200,
+    width: MOBILE_RELEASE_CARD_COVER_PX,
+    height: MOBILE_RELEASE_CARD_COVER_PX,
     preferCoverImage: true,
   });
 
@@ -175,10 +176,12 @@ const MobileReleaseCardComponent = ({
       >
         {thumbUrl && (
           <Image
+            key={thumbUrl}
             src={thumbUrl}
-            height={96}
-            width={96}
+            height={MOBILE_RELEASE_CARD_COVER_PX}
+            width={MOBILE_RELEASE_CARD_COVER_PX}
             quality={85}
+            unoptimized={thumbUrl.startsWith("data:")}
             alt={release.basic_information.title}
             {...(priority
               ? { priority: true, loading: "eager" as const }

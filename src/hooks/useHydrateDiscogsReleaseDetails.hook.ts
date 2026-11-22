@@ -43,9 +43,13 @@ export const useHydrateDiscogsReleaseDetails = ({
   enabled = true,
 }: UseHydrateDiscogsReleaseDetailsParams) => {
   const queryClient = useQueryClient();
-  const normalizedIds = useMemo(
-    () => normalizeDiscogsReleaseIds(releaseIds),
+  const releaseIdsKey = useMemo(
+    () => normalizeDiscogsReleaseIds(releaseIds).join("\0"),
     [releaseIds],
+  );
+  const normalizedIds = useMemo(
+    () => (releaseIdsKey === "" ? [] : releaseIdsKey.split("\0")),
+    [releaseIdsKey],
   );
   const options = useMemo(
     () => hydrateDiscogsReleaseDetailsQueryOptions(normalizedIds, queryClient),
