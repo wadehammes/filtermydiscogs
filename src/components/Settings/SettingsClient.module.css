@@ -264,6 +264,10 @@
   gap: var(--space-3);
 }
 
+.supportPanelLink {
+  composes: button secondary md from "../Button/Button.module.css";
+}
+
 .settingToggle {
   align-items: center;
   color: var(--foreground);

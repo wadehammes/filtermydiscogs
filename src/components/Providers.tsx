@@ -115,7 +115,6 @@ export const Providers = ({ children }: ProvidersProps) => {
                           <CollectionLoadingToast />
                           <DeploymentUpdateToast />
                           <DiscogsOutageToast />
-                          <SupportProjectToast />
                           <SentryUserFeedbackDialogHost />
                         </AnalyticsShell>
                       </AuthenticatedProvidersGate>
@@ -126,6 +125,7 @@ export const Providers = ({ children }: ProvidersProps) => {
             </CollectionContextProvider>
           </AuthProvider>
           <AppToaster />
+          <SupportProjectToast />
           <DonationSuccessToast />
         </ThemeProvider>
       </JotaiProvider>

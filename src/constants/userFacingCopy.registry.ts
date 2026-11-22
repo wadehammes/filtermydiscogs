@@ -40,6 +40,7 @@ import {
 import {
   SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE,
   SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
+  SETTINGS_SUPPORT_PANEL_DESCRIPTION,
 } from "src/constants/settingsCopy.constants";
 import {
   buildSupportProjectToastTitle,
@@ -104,6 +105,11 @@ export const getUserFacingCopyEntries = (
     {
       id: "settings.completeLogoutPanel",
       text: SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
+      source: "settingsCopy.constants.ts",
+    },
+    {
+      id: "settings.supportPanel",
+      text: SETTINGS_SUPPORT_PANEL_DESCRIPTION,
       source: "settingsCopy.constants.ts",
     },
     {

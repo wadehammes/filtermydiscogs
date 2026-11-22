@@ -5,8 +5,13 @@ import Button from "src/components/Button/Button.component";
 import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFilterViewDialog.component";
 import Select from "src/components/Select/Select.component";
 import { SettingsBooleanPreferenceToggle } from "src/components/Settings/SettingsBooleanPreferenceToggle.component";
+import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
-import { SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION } from "src/constants/settingsCopy.constants";
+import {
+  SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
+  SETTINGS_SUPPORT_PANEL_DESCRIPTION,
+} from "src/constants/settingsCopy.constants";
+import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
 import { useFilterViews } from "src/hooks/useFilterViews.hook";
@@ -31,6 +36,17 @@ export const SettingsAccountPanel = ({
       <div className={styles.field}>
         <span className={styles.fieldLabel}>Discogs username</span>
         <p className={styles.fieldValue}>{authState.username}</p>
+      </div>
+      <div className={styles.panelBlock}>
+        <h3 className={styles.panelBlockTitle}>Support the app</h3>
+        <p className={styles.sectionDescription}>
+          {SETTINGS_SUPPORT_PANEL_DESCRIPTION}
+        </p>
+        <div className={styles.actions}>
+          <SupportProjectNavLink className={styles.supportPanelLink}>
+            {SUPPORT_PROJECT_NAV_LABEL}
+          </SupportProjectNavLink>
+        </div>
       </div>
       <div className={styles.panelBlock}>
         <h3 className={styles.panelBlockTitle}>Complete logout</h3>

@@ -19,9 +19,9 @@ Schema: [`prisma/schema.prisma`](../../prisma/schema.prisma). Datasource URL: [`
 | `discogs_user_id`           | Primary key — Discogs user ID from **verified OAuth identity**                                                                                                                           |
 | `username`                  | Discogs username (updated on login)                                                                                                                                                      |
 | `preferences`               | JSON blob for account settings (see below)                                                                                                                                               |
-| `login_count`               | Completed OAuth logins (incremented in [`recordDiscogsLogin`](../../src/lib/user.server.ts))                                                                                             |
+| `login_count`               | Completed OAuth logins (incremented in [`recordDiscogsLogin`](../../src/lib/user.server.ts)); analytics only — not used for support-toast eligibility                                                                  |
 | `support_toast_dismissed`   | When `true`, the support-project action toast is never shown again                                                                                                                       |
-| `support_toast_pending`     | One-shot flag set on login when `login_count` reaches the threshold and the toast was not dismissed; consumed by **`GET /api/auth/check`**                                               |
+| `support_toast_pending`     | Legacy column (cleared on dismiss); eligibility no longer depends on it — **`GET /api/auth/check`** sets **`showSupportProjectToast`** when **`support_toast_dismissed`** is false         |
 | `last_seen_at`              | Last authenticated activity timestamp; set on every login and throttled updates from **`GET /api/auth/check`** ([`touchUserLastSeen`](../../src/lib/user.server.ts), 15-minute interval) |
 | `created_at` / `updated_at` | Row timestamps                                                                                                                                                                           |
 

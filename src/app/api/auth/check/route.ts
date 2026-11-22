@@ -11,7 +11,7 @@ import {
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteJson } from "src/lib/private-route-response";
 import {
-  consumeSupportProjectToastPending,
+  readSupportProjectToastEligible,
   touchUserLastSeen,
 } from "src/lib/user.server";
 import { resolveDiscogsAvatarUrl } from "src/lib/user-profile.server";
@@ -73,6 +73,9 @@ export async function GET(request: NextRequest) {
     if ("error" in verified) {
       if (isDiscogsVerificationUnavailable(verified.error)) {
         const displayIdentity = getDisplayIdentityFromCookies(request);
+        const showSupportProjectToast = displayIdentity
+          ? await readSupportProjectToastEligible(displayIdentity.userId)
+          : false;
 
         return authCheckResponse(
           {
@@ -83,6 +86,7 @@ export async function GET(request: NextRequest) {
             discogsUnavailable: isDiscogsOutageAuthCheckStatus(
               verified.error.status,
             ),
+            showSupportProjectToast,
           },
           {
             headers: { "Retry-After": "60" },
@@ -99,7 +103,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [showSupportProjectToast, avatarUrl] = await Promise.all([
-      consumeSupportProjectToastPending(verified.user.userId),
+      readSupportProjectToastEligible(verified.user.userId),
       resolveDiscogsAvatarUrl(request, verified.user),
     ]);
     void touchUserLastSeen(verified.user.userId);

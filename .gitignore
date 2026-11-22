@@ -38,6 +38,12 @@
 .fallow-health-snapshot.json
 .fallow-*.json
 
+# Fallow workspace cache — policy file is whitelisted in .fallow/.gitignore
+/.fallow/*
+!/.fallow/
+!/.fallow/.gitignore
+!/.fallow/*.jsonc
+
 # misc
 .DS_Store
 /.pnpm-store

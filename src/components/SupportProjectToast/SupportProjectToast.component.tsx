@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   dismissSupportProjectToast,
   showSupportProjectToast,
@@ -10,6 +10,7 @@ import { SUPPORT_PROJECT_ABOUT_PATH } from "src/constants/supportProjectToast.co
 import { useDismissSupportProjectToastMutation } from "src/hooks/mutations/useAuthMutations";
 import { useAuthQuery } from "src/hooks/queries/useAuthQuery";
 import { navigateToPathHash } from "src/utils/hashNavigation";
+import { markSupportProjectToastShownThisSession } from "src/utils/supportProjectToastSession";
 
 export const SupportProjectToast = () => {
   const router = useRouter();
@@ -17,36 +18,51 @@ export const SupportProjectToast = () => {
   const { mutate: dismissSupportToast } =
     useDismissSupportProjectToastMutation();
   const hasShownRef = useRef(false);
+  const [canMountToast, setCanMountToast] = useState(false);
 
   useEffect(() => {
-    if (
-      !(authData?.isAuthenticated && authData.showSupportProjectToast) ||
-      hasShownRef.current
-    ) {
+    const readyTimer = window.setTimeout(() => {
+      setCanMountToast(true);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(readyTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!canMountToast) {
+      return;
+    }
+
+    if (!(authData?.isAuthenticated && authData.showSupportProjectToast)) {
+      return;
+    }
+
+    if (hasShownRef.current) {
       return;
     }
 
     hasShownRef.current = true;
 
-    const persistDismissal = () => {
-      dismissSupportToast();
-    };
-
     showSupportProjectToast({
       onLearnMore: () => {
-        dismissSupportProjectToast();
-        persistDismissal();
         navigateToPathHash({
           href: SUPPORT_PROJECT_ABOUT_PATH,
           currentPathname: window.location.pathname,
           router,
         });
       },
-      onDismiss: persistDismissal,
+      onDismiss: () => {
+        markSupportProjectToastShownThisSession();
+        dismissSupportProjectToast();
+        dismissSupportToast();
+      },
     });
   }, [
     authData?.isAuthenticated,
     authData?.showSupportProjectToast,
+    canMountToast,
     dismissSupportToast,
     router,
   ]);
