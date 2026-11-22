@@ -1,4 +1,3 @@
-import { SUPPORT_PROJECT_TOAST_LOGIN_THRESHOLD } from "src/constants/supportProjectToast.constants";
 import { USER_LAST_SEEN_TOUCH_INTERVAL_MS } from "src/constants/userEngagement.constants";
 import { prisma } from "src/lib/db";
 
@@ -32,18 +31,12 @@ export async function recordDiscogsLogin({
     });
   }
 
-  const nextLoginCount = existingUser.login_count + 1;
-  const shouldPromptForSupport =
-    nextLoginCount >= SUPPORT_PROJECT_TOAST_LOGIN_THRESHOLD &&
-    !existingUser.support_toast_dismissed;
-
   return prisma.user.update({
     where: { discogs_user_id: discogsUserId },
     data: {
       username,
-      login_count: nextLoginCount,
+      login_count: existingUser.login_count + 1,
       last_seen_at: now,
-      ...(shouldPromptForSupport ? { support_toast_pending: true } : {}),
     },
   });
 }
@@ -62,21 +55,19 @@ export async function touchUserLastSeen(discogsUserId: number): Promise<void> {
   });
 }
 
-export async function consumeSupportProjectToastPending(
+export async function readSupportProjectToastEligible(
   discogsUserId: number,
 ): Promise<boolean> {
-  const result = await prisma.user.updateMany({
-    where: {
-      discogs_user_id: discogsUserId,
-      support_toast_pending: true,
-      support_toast_dismissed: false,
-    },
-    data: {
-      support_toast_pending: false,
-    },
+  const user = await prisma.user.findUnique({
+    where: { discogs_user_id: discogsUserId },
+    select: { support_toast_dismissed: true },
   });
 
-  return result.count > 0;
+  if (user == null) {
+    return true;
+  }
+
+  return !user.support_toast_dismissed;
 }
 
 export async function dismissSupportProjectToastForUser(

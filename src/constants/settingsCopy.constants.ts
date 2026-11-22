@@ -1,3 +1,6 @@
+export const SETTINGS_SUPPORT_PANEL_DESCRIPTION =
+  "Optional one-time donations cover hosting and ongoing development.";
+
 export const SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION =
   "Sign out and revoke stored OAuth tokens on this browser. Your crates, playlists, and preferences stay saved. You can sign in again with Discogs when you are ready.";
 

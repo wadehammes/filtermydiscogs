@@ -28,7 +28,7 @@ jest.mock("src/lib/auth-request", () => {
 });
 
 jest.mock("src/lib/user.server", () => ({
-  consumeSupportProjectToastPending: jest.fn(),
+  readSupportProjectToastEligible: jest.fn(),
   touchUserLastSeen: jest.fn(),
 }));
 
@@ -54,8 +54,8 @@ let mockGetStoredReconnectUsername: jest.MockedFunction<
 let mockGetVerifiedUserFromStoredTokens: jest.MockedFunction<
   AuthRequestModule["getVerifiedUserFromStoredTokens"]
 >;
-let mockConsumeSupportProjectToastPending: jest.MockedFunction<
-  UserServerModule["consumeSupportProjectToastPending"]
+let mockReadSupportProjectToastEligible: jest.MockedFunction<
+  UserServerModule["readSupportProjectToastEligible"]
 >;
 let mockTouchUserLastSeen: jest.MockedFunction<
   UserServerModule["touchUserLastSeen"]
@@ -102,8 +102,8 @@ beforeAll(async () => {
   mockGetVerifiedUserFromStoredTokens = jest.mocked(
     authRequest.getVerifiedUserFromStoredTokens,
   );
-  mockConsumeSupportProjectToastPending = jest.mocked(
-    userServer.consumeSupportProjectToastPending,
+  mockReadSupportProjectToastEligible = jest.mocked(
+    userServer.readSupportProjectToastEligible,
   );
   mockTouchUserLastSeen = jest.mocked(userServer.touchUserLastSeen);
   mockResolveDiscogsAvatarUrl = jest.mocked(
@@ -114,7 +114,7 @@ beforeAll(async () => {
 describe("GET /api/auth/check", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockConsumeSupportProjectToastPending.mockResolvedValue(false);
+    mockReadSupportProjectToastEligible.mockResolvedValue(false);
     mockTouchUserLastSeen.mockResolvedValue(undefined);
     mockResolveDiscogsAvatarUrl.mockResolvedValue(null);
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
@@ -129,7 +129,7 @@ describe("GET /api/auth/check", () => {
         username: "crate-digger",
       }),
     );
-    mockConsumeSupportProjectToastPending.mockResolvedValue(true);
+    mockReadSupportProjectToastEligible.mockResolvedValue(true);
     mockResolveDiscogsAvatarUrl.mockResolvedValue(
       "https://i.discogs.com/avatar.jpeg",
     );
@@ -137,7 +137,7 @@ describe("GET /api/auth/check", () => {
     const response = await GET(createRequest());
 
     expect(response.status).toBe(200);
-    expect(mockConsumeSupportProjectToastPending).toHaveBeenCalledWith(42);
+    expect(mockReadSupportProjectToastEligible).toHaveBeenCalledWith(42);
     expect(mockTouchUserLastSeen).toHaveBeenCalledWith(42);
     expect(mockResolveDiscogsAvatarUrl).toHaveBeenCalled();
     await expect(response.json()).resolves.toEqual({
@@ -162,11 +162,13 @@ describe("GET /api/auth/check", () => {
         username: "crate-digger",
       }),
     );
+    mockReadSupportProjectToastEligible.mockResolvedValue(true);
 
     const response = await GET(createRequest());
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Retry-After")).toBe("60");
+    expect(mockReadSupportProjectToastEligible).toHaveBeenCalledWith(42);
     await expect(response.json()).resolves.toEqual({
       isAuthenticated: true,
       username: "crate-digger",
@@ -175,7 +177,7 @@ describe("GET /api/auth/check", () => {
       rateLimited: true,
       discogsUnavailable: false,
       reconnectUsername: null,
-      showSupportProjectToast: false,
+      showSupportProjectToast: true,
     });
   });
 
