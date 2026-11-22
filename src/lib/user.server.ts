@@ -1,16 +1,10 @@
 import { USER_LAST_SEEN_TOUCH_INTERVAL_MS } from "src/constants/userEngagement.constants";
 import { prisma } from "src/lib/db";
-import {
-  type DiscogsProfileEmailCredentials,
-  fetchDiscogsProfileEmailForLogin,
-} from "src/lib/discogs-profile-email.server";
 
 type RecordDiscogsLoginInput = {
   discogsUserId: number;
   username: string;
   discogsProfileEmail?: string | null;
-  oauthCredentials?: DiscogsProfileEmailCredentials;
-  loginRouteLabel?: string;
 };
 
 export type RecordDiscogsLoginResult = {
@@ -28,36 +22,10 @@ const emailBackfillFromDiscogs = (
   return discogsProfileEmail;
 };
 
-const resolveDiscogsProfileEmailForLogin = async (
-  existingEmail: string | null | undefined,
-  discogsProfileEmail: string | null | undefined,
-  oauthCredentials: DiscogsProfileEmailCredentials | undefined,
-  loginRouteLabel: string | undefined,
-): Promise<string | null> => {
-  if (discogsProfileEmail !== undefined) {
-    return discogsProfileEmail;
-  }
-
-  if ((existingEmail?.trim() ?? "") !== "") {
-    return null;
-  }
-
-  if (!oauthCredentials) {
-    return null;
-  }
-
-  return fetchDiscogsProfileEmailForLogin(
-    oauthCredentials,
-    loginRouteLabel ?? "/api/auth/callback",
-  );
-};
-
 export async function recordDiscogsLogin({
   discogsUserId,
   username,
   discogsProfileEmail,
-  oauthCredentials,
-  loginRouteLabel,
 }: RecordDiscogsLoginInput): Promise<RecordDiscogsLoginResult> {
   const now = new Date();
   const existingUser = await prisma.user.findUnique({
@@ -70,15 +38,11 @@ export async function recordDiscogsLogin({
     },
   });
 
-  const resolvedProfileEmail = await resolveDiscogsProfileEmailForLogin(
-    existingUser?.email,
-    discogsProfileEmail,
-    oauthCredentials,
-    loginRouteLabel,
-  );
+  const resolvedProfileEmail =
+    discogsProfileEmail !== undefined ? discogsProfileEmail : null;
 
   if (!existingUser) {
-    const email = resolvedProfileEmail ?? null;
+    const email = resolvedProfileEmail;
 
     await prisma.user.create({
       data: {

@@ -413,12 +413,15 @@ class DiscogsOAuthService {
     username: string,
     oauthToken: string,
     oauthTokenSecret: string,
+    options?: { skipThrottle?: boolean },
   ): Promise<DiscogsUserProfile> {
     return this.makeAuthenticatedRequest(
       `https://api.discogs.com/users/${encodeURIComponent(username)}`,
       "GET",
       oauthToken,
       oauthTokenSecret,
+      {},
+      { skipThrottle: options?.skipThrottle ?? false },
     ) as Promise<DiscogsUserProfile>;
   }
 

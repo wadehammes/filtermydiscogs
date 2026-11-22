@@ -19,6 +19,7 @@ export const fetchDiscogsProfileEmail = async ({
     username,
     accessToken,
     accessTokenSecret,
+    { skipThrottle: true },
   );
 
   return parseDiscogsProfileEmail(profile);

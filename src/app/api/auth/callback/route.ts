@@ -6,7 +6,7 @@ import {
 } from "src/lib/auth-request";
 import { enforceAuthRouteIpRateLimit } from "src/lib/auth-route-guards";
 import { privateRouteRedirect } from "src/lib/private-route-response";
-import { queueWelcomeSignupEmailAfterLogin } from "src/lib/queueWelcomeSignupEmailAfterLogin.server";
+import { queueLoginSideEffectsAfterLogin } from "src/lib/queueLoginSideEffectsAfterLogin.server";
 import { recordDiscogsLogin } from "src/lib/user.server";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
@@ -78,17 +78,16 @@ export async function GET(request: NextRequest) {
     const loginResult = await recordDiscogsLogin({
       discogsUserId: verifiedIdentity.id,
       username: verifiedIdentity.username,
-      oauthCredentials: {
+    });
+
+    queueLoginSideEffectsAfterLogin(
+      loginResult.discogsUserId,
+      "/api/auth/callback",
+      {
         username: verifiedIdentity.username,
         accessToken: accessTokens.oauth_token,
         accessTokenSecret: accessTokens.oauth_token_secret,
       },
-      loginRouteLabel: "/api/auth/callback",
-    });
-
-    queueWelcomeSignupEmailAfterLogin(
-      loginResult.discogsUserId,
-      "/api/auth/callback",
     );
 
     const response = privateRouteRedirect(
