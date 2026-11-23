@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { userTrackPrismaFactory } from "src/tests/factories/UserTrackPrisma.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -14,8 +16,8 @@ jest.mock("src/lib/db", () => ({
 type DbModule = typeof import("src/lib/db");
 
 let backfillDiscogsReleaseIdsForPlaylistTracks: typeof import("src/lib/backfill-user-track-discogs-release-id.server")["backfillDiscogsReleaseIdsForPlaylistTracks"];
-let mockUserTrackUpdate: jest.MockedFunction<
-  DbModule["prisma"]["userTrack"]["update"]
+let mockUserTrackUpdate: jest.Mock<
+  (...args: unknown[]) => Promise<import("@prisma/client").UserTrack>
 >;
 let mockTransaction: jest.MockedFunction<DbModule["prisma"]["$transaction"]>;
 
@@ -30,9 +32,11 @@ describe("backfillDiscogsReleaseIdsForPlaylistTracks", () => {
     ]);
     backfillDiscogsReleaseIdsForPlaylistTracks =
       backfillModule.backfillDiscogsReleaseIdsForPlaylistTracks;
-    mockUserTrackUpdate = jest.mocked(db.prisma.userTrack.update);
+    mockUserTrackUpdate = mockPrismaDelegate<
+      import("@prisma/client").UserTrack
+    >(jest.mocked(db.prisma.userTrack.update));
     mockTransaction = jest.mocked(db.prisma.$transaction);
-    mockUserTrackUpdate.mockResolvedValue({} as never);
+    mockUserTrackUpdate.mockResolvedValue(userTrackPrismaFactory.build());
   });
 
   it("persists discogs_release_id from the owner crate snapshot when the track row is missing it", async () => {

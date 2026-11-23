@@ -10,7 +10,12 @@ import {
   LOGIN_DEMO_PUBLIC_PLAYLIST_ID,
   PUBLIC_PLAYLIST_STATIC_PARAM_PLACEHOLDER_ID,
 } from "src/constants/publicPlaylist.constants";
+import {
+  type PlaylistIdRow,
+  playlistIdRowFactory,
+} from "src/tests/factories/PlaylistQueryPrisma.factory";
 import { publicPlaylistResponseFactory } from "src/tests/factories/PublicPlaylistResponse.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 jest.mock("next/cache", () => ({
   cacheLife: jest.fn(),
@@ -33,14 +38,10 @@ jest.mock("src/lib/public-playlist-load.server", () => ({
   loadPublicPlaylist: jest.fn(),
 }));
 
-type DbModule = typeof import("src/lib/db");
-
 let getPublicPlaylistIdsForStaticGeneration: typeof import("src/lib/public-playlist.server")["getPublicPlaylistIdsForStaticGeneration"];
 let getPublicPlaylistForPage: typeof import("src/lib/public-playlist.server")["getPublicPlaylistForPage"];
 let getPublicPlaylistForOg: typeof import("src/lib/public-playlist.server")["getPublicPlaylistForOg"];
-let mockFindMany: jest.MockedFunction<
-  DbModule["prisma"]["playlist"]["findMany"]
->;
+let mockFindMany: jest.Mock<(...args: unknown[]) => Promise<PlaylistIdRow[]>>;
 let mockLoadPublicPlaylist: jest.MockedFunction<
   typeof import("src/lib/public-playlist-load.server")["loadPublicPlaylist"]
 >;
@@ -59,7 +60,9 @@ describe("getPublicPlaylistIdsForStaticGeneration", () => {
     getPublicPlaylistIdsForStaticGeneration =
       serverModule.getPublicPlaylistIdsForStaticGeneration;
     getPublicPlaylistForPage = serverModule.getPublicPlaylistForPage;
-    mockFindMany = jest.mocked(db.prisma.playlist.findMany);
+    mockFindMany = mockPrismaDelegate<PlaylistIdRow[]>(
+      jest.mocked(db.prisma.playlist.findMany),
+    );
     mockLoadPublicPlaylist = jest.mocked(loadModule.loadPublicPlaylist);
     mockFindMany.mockReset();
     mockFindMany.mockResolvedValue([]);
@@ -142,9 +145,9 @@ describe("getPublicPlaylistIdsForStaticGeneration", () => {
 
   it("when public playlists exist, returns fallback ids plus playlist ids", async () => {
     mockFindMany.mockResolvedValue([
-      { id: "playlist-a" },
-      { id: "playlist-b" },
-    ] as never);
+      playlistIdRowFactory.build({ id: "playlist-a" }),
+      playlistIdRowFactory.build({ id: "playlist-b" }),
+    ]);
 
     await expect(getPublicPlaylistIdsForStaticGeneration(25)).resolves.toEqual([
       PUBLIC_PLAYLIST_STATIC_PARAM_PLACEHOLDER_ID,
@@ -155,7 +158,9 @@ describe("getPublicPlaylistIdsForStaticGeneration", () => {
 
   it("when public playlists exist during E2E build, returns demo id first", async () => {
     process.env.NEXT_PUBLIC_E2E_MOCK_YOUTUBE_EMBED = "1";
-    mockFindMany.mockResolvedValue([{ id: "playlist-a" }] as never);
+    mockFindMany.mockResolvedValue([
+      playlistIdRowFactory.build({ id: "playlist-a" }),
+    ]);
 
     await expect(getPublicPlaylistIdsForStaticGeneration(25)).resolves.toEqual([
       LOGIN_DEMO_PUBLIC_PLAYLIST_ID,
@@ -197,7 +202,13 @@ describe("getPublicPlaylistForPage", () => {
 
     await expect(
       getPublicPlaylistForPage(payload.playlist.id),
-    ).resolves.toEqual(payload);
+    ).resolves.toEqual({
+      ...payload,
+      tracks: payload.tracks.map((track) => ({
+        ...track,
+        viewerVote: track.viewerVote ?? null,
+      })),
+    });
     expect(mockLoadPublicPlaylist).toHaveBeenCalledWith(payload.playlist.id, {
       discogsHydration: "snapshotsOnly",
     });

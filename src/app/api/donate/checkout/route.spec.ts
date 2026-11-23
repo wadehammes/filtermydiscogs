@@ -7,6 +7,10 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  asStripeClient,
+  stripeCheckoutClientStubFactory,
+} from "src/tests/factories/StripeCheckoutClientStub.factory";
 
 jest.mock("src/lib/stripe.server", () => ({
   getStripeClient: jest.fn(),
@@ -62,13 +66,9 @@ describe("POST /api/donate/checkout", () => {
       url: "https://checkout.stripe.com/test-session",
     }));
 
-    mockGetStripeClient.mockReturnValue({
-      checkout: {
-        sessions: {
-          create,
-        },
-      },
-    } as never);
+    mockGetStripeClient.mockReturnValue(
+      asStripeClient(stripeCheckoutClientStubFactory.build(create)),
+    );
 
     const response = await POST(createRequest({ amountCents: 1000 }));
     const body = await response.json();
@@ -96,13 +96,9 @@ describe("POST /api/donate/checkout", () => {
       url: "https://checkout.stripe.com/custom-session",
     }));
 
-    mockGetStripeClient.mockReturnValue({
-      checkout: {
-        sessions: {
-          create,
-        },
-      },
-    } as never);
+    mockGetStripeClient.mockReturnValue(
+      asStripeClient(stripeCheckoutClientStubFactory.build(create)),
+    );
 
     const response = await POST(createRequest({ amountCents: 1500 }));
     const body = await response.json();
@@ -123,13 +119,9 @@ describe("POST /api/donate/checkout", () => {
   });
 
   it("rejects amounts below the minimum", async () => {
-    mockGetStripeClient.mockReturnValue({
-      checkout: {
-        sessions: {
-          create: jest.fn(),
-        },
-      },
-    } as never);
+    mockGetStripeClient.mockReturnValue(
+      asStripeClient(stripeCheckoutClientStubFactory.build(jest.fn())),
+    );
 
     const response = await POST(createRequest({ amountCents: 50 }));
     const body = await response.json();
@@ -139,13 +131,9 @@ describe("POST /api/donate/checkout", () => {
   });
 
   it("requires an amount", async () => {
-    mockGetStripeClient.mockReturnValue({
-      checkout: {
-        sessions: {
-          create: jest.fn(),
-        },
-      },
-    } as never);
+    mockGetStripeClient.mockReturnValue(
+      asStripeClient(stripeCheckoutClientStubFactory.build(jest.fn())),
+    );
 
     const response = await POST(createRequest({}));
     const body = await response.json();

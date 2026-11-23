@@ -1,4 +1,5 @@
 import { PLAYLIST_PUBLIC_DESCRIPTION_MAX_LENGTH } from "src/constants/publicPlaylist.constants";
+import { crateReleaseStorageSchema } from "src/lib/validation/releaseStorage.schemas";
 import { userTrackMetadataBodySchema } from "src/lib/validation/userTrack.schemas";
 import { z } from "zod";
 
@@ -44,7 +45,11 @@ export const updatePlaylistBodySchema = z
     "At least one field is required",
   );
 
-export const addPlaylistTrackBodySchema = userTrackMetadataBodySchema;
+export const addPlaylistTrackBodySchema = userTrackMetadataBodySchema.extend({
+  release_snapshot: crateReleaseStorageSchema.optional(),
+});
+
+export type AddPlaylistTrackBody = z.infer<typeof addPlaylistTrackBodySchema>;
 
 export const reorderPlaylistTracksBodySchema = z.object({
   track_keys: z.array(z.string().min(1).max(512)).min(1),

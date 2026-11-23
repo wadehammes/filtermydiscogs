@@ -9,8 +9,10 @@ import {
   useRemoveTrackFromPlaylistEntryMutation,
 } from "src/hooks/mutations/usePlaylistMutations";
 import { usePlaylistsQuery } from "src/hooks/queries/usePlaylistsQuery";
-import type { CreatePlaylistFormValues } from "src/lib/validation/playlist.schemas";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import type {
+  AddPlaylistTrackBody,
+  CreatePlaylistFormValues,
+} from "src/lib/validation/playlist.schemas";
 import { sortByDisplayName } from "src/utils/compareByDisplayName";
 import {
   showPlaylistTrackAddedToast,
@@ -18,7 +20,7 @@ import {
 } from "src/utils/playlistToast";
 
 export type UseReleasePlaylistPickerControllerOptions = {
-  metadata: UserTrackMetadataBody;
+  metadata: AddPlaylistTrackBody;
   trackTitle: string;
   onRequestCloseMenu?: () => void;
   useOverlayStack?: boolean;

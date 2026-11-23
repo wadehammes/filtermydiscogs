@@ -7,7 +7,10 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest } from "next/server";
+import { crateIdRowFactory } from "src/tests/factories/CrateQueryPrisma.factory";
+import { crateReleaseFactory } from "src/tests/factories/CrateRelease.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -29,7 +32,6 @@ jest.mock("src/lib/public-share-cache.server", () => ({
 type RouteModule =
   typeof import("src/app/api/crates/[id]/releases/[releaseId]/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
-type DbModule = typeof import("src/lib/db");
 type PublicShareCacheModule =
   typeof import("src/lib/public-share-cache.server");
 
@@ -37,11 +39,15 @@ let DELETE: RouteModule["DELETE"];
 let mockGetVerifiedUser: jest.MockedFunction<
   ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
-let mockFindUnique: jest.MockedFunction<
-  DbModule["prisma"]["crate"]["findUnique"]
+let mockFindUnique: jest.Mock<
+  (
+    ...args: unknown[]
+  ) => Promise<
+    import("src/tests/factories/CrateQueryPrisma.factory").CrateIdRow | null
+  >
 >;
-let mockDelete: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["delete"]
+let mockDelete: jest.Mock<
+  (...args: unknown[]) => Promise<import("@prisma/client").CrateRelease>
 >;
 let mockRevalidatePublicCrateShareWhenPublic: jest.MockedFunction<
   PublicShareCacheModule["revalidatePublicCrateShareWhenPublic"]
@@ -65,8 +71,12 @@ beforeAll(async () => {
   mockGetVerifiedUser = jest.mocked(
     apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
-  mockFindUnique = jest.mocked(db.prisma.crate.findUnique);
-  mockDelete = jest.mocked(db.prisma.crateRelease.delete);
+  mockFindUnique = mockPrismaDelegate<
+    import("src/tests/factories/CrateQueryPrisma.factory").CrateIdRow | null
+  >(jest.mocked(db.prisma.crate.findUnique));
+  mockDelete = mockPrismaDelegate<import("@prisma/client").CrateRelease>(
+    jest.mocked(db.prisma.crateRelease.delete),
+  );
   mockRevalidatePublicCrateShareWhenPublic = jest.mocked(
     publicShareCache.revalidatePublicCrateShareWhenPublic,
   );
@@ -76,8 +86,8 @@ describe("/api/crates/[id]/releases/[releaseId] DELETE", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetVerifiedUser.mockResolvedValue(verifiedUser);
-    mockFindUnique.mockResolvedValue({ id: crateId } as never);
-    mockDelete.mockResolvedValue({} as never);
+    mockFindUnique.mockResolvedValue(crateIdRowFactory.build({ id: crateId }));
+    mockDelete.mockResolvedValue(crateReleaseFactory.build());
     mockRevalidatePublicCrateShareWhenPublic.mockResolvedValue(undefined);
   });
 

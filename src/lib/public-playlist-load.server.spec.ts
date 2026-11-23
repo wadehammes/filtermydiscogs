@@ -1,5 +1,22 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import {
+  type CrateReleaseReleaseDataFindManyRow,
+  crateReleaseFactory,
+} from "src/tests/factories/CrateRelease.factory";
+import {
+  type PlaylistReleaseSnapshotFindManyRow,
+  playlistReleaseSnapshotFindManyRowFactory,
+  playlistReleaseSnapshotUpsertResultFactory,
+} from "src/tests/factories/PlaylistReleaseSnapshotPrisma.factory";
+import {
+  type PlaylistDetailTrackJoinRow,
+  playlistDetailTrackJoinRowFactory,
+} from "src/tests/factories/PlaylistTrackPrisma.factory";
+import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
+import { publicPlaylistRowFactory } from "src/tests/factories/PublicPlaylistRow.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { prismaUserFactory } from "src/tests/factories/User.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -63,7 +80,6 @@ jest.mock("src/lib/discogs-consumer-search.server", () => ({
     .mockResolvedValue(null),
 }));
 
-type DbModule = typeof import("src/lib/db");
 type DiscogsModule = typeof import("src/lib/public-playlist-discogs.server");
 type QueryModule = typeof import("src/lib/public-playlist-query.server");
 
@@ -71,20 +87,24 @@ let loadPublicPlaylist: typeof import("src/lib/public-playlist-load.server")["lo
 let mockFindPublicPlaylistById: jest.MockedFunction<
   QueryModule["findPublicPlaylistById"]
 >;
-let mockPlaylistTrackFindMany: jest.MockedFunction<
-  DbModule["prisma"]["playlistTrack"]["findMany"]
+let mockPlaylistTrackFindMany: jest.Mock<
+  (...args: unknown[]) => Promise<PlaylistDetailTrackJoinRow[]>
 >;
-let mockCrateReleaseFindMany: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["findMany"]
+let mockCrateReleaseFindMany: jest.Mock<
+  (...args: unknown[]) => Promise<CrateReleaseReleaseDataFindManyRow[]>
 >;
-let mockPlaylistReleaseSnapshotFindMany: jest.MockedFunction<
-  DbModule["prisma"]["playlistReleaseSnapshot"]["findMany"]
+let mockPlaylistReleaseSnapshotFindMany: jest.Mock<
+  (...args: unknown[]) => Promise<PlaylistReleaseSnapshotFindManyRow[]>
 >;
-let mockPlaylistReleaseSnapshotUpsert: jest.MockedFunction<
-  DbModule["prisma"]["playlistReleaseSnapshot"]["upsert"]
+let mockPlaylistReleaseSnapshotUpsert: jest.Mock<
+  (
+    ...args: unknown[]
+  ) => Promise<
+    ReturnType<typeof playlistReleaseSnapshotUpsertResultFactory.build>
+  >
 >;
-let mockUserFindUnique: jest.MockedFunction<
-  DbModule["prisma"]["user"]["findUnique"]
+let mockUserFindUnique: jest.Mock<
+  (...args: unknown[]) => Promise<import("@prisma/client").User | null>
 >;
 let mockHydratePublicPlaylistReleases: jest.MockedFunction<
   DiscogsModule["hydratePublicPlaylistReleases"]
@@ -111,17 +131,25 @@ describe("loadPublicPlaylist", () => {
     mockFindPublicPlaylistById = jest.mocked(
       queryModule.findPublicPlaylistById,
     );
-    mockPlaylistTrackFindMany = jest.mocked(db.prisma.playlistTrack.findMany);
-    mockCrateReleaseFindMany = jest.mocked(db.prisma.crateRelease.findMany);
-    mockPlaylistReleaseSnapshotFindMany = jest.mocked(
-      db.prisma.playlistReleaseSnapshot.findMany,
-    );
-    mockPlaylistReleaseSnapshotUpsert = jest.mocked(
-      db.prisma.playlistReleaseSnapshot.upsert,
-    );
-    mockUserFindUnique = jest.mocked(db.prisma.user.findUnique);
+    mockPlaylistTrackFindMany = mockPrismaDelegate<
+      PlaylistDetailTrackJoinRow[]
+    >(jest.mocked(db.prisma.playlistTrack.findMany));
+    mockCrateReleaseFindMany = mockPrismaDelegate<
+      CrateReleaseReleaseDataFindManyRow[]
+    >(jest.mocked(db.prisma.crateRelease.findMany));
+    mockPlaylistReleaseSnapshotFindMany = mockPrismaDelegate<
+      PlaylistReleaseSnapshotFindManyRow[]
+    >(jest.mocked(db.prisma.playlistReleaseSnapshot.findMany));
+    mockPlaylistReleaseSnapshotUpsert = mockPrismaDelegate<
+      ReturnType<typeof playlistReleaseSnapshotUpsertResultFactory.build>
+    >(jest.mocked(db.prisma.playlistReleaseSnapshot.upsert));
+    mockUserFindUnique = mockPrismaDelegate<
+      import("@prisma/client").User | null
+    >(jest.mocked(db.prisma.user.findUnique));
     mockPlaylistReleaseSnapshotFindMany.mockResolvedValue([]);
-    mockPlaylistReleaseSnapshotUpsert.mockResolvedValue({} as never);
+    mockPlaylistReleaseSnapshotUpsert.mockResolvedValue(
+      playlistReleaseSnapshotUpsertResultFactory.build(),
+    );
   });
 
   it("returns release snapshots keyed by playlist track instance ids", async () => {
@@ -134,43 +162,31 @@ describe("loadPublicPlaylist", () => {
       },
     });
 
-    mockFindPublicPlaylistById.mockResolvedValue({
-      user_id: USER_ID,
-      id: PLAYLIST_ID,
-      name: "Shared",
-      username: "dj",
-      private: false,
-      public_description: null,
-      public_view_count: 5,
-      public_play_count: 2,
-      created_at: new Date("2026-01-01T00:00:00.000Z"),
-      updated_at: new Date("2026-01-02T00:00:00.000Z"),
-    });
+    mockFindPublicPlaylistById.mockResolvedValue(
+      publicPlaylistRowFactory.forSharedLoadTest({
+        user_id: USER_ID,
+        id: PLAYLIST_ID,
+        public_view_count: 5,
+        public_play_count: 2,
+      }),
+    );
 
     mockPlaylistTrackFindMany.mockResolvedValue([
-      {
-        sort_order: 1,
-        track_key: "instance-9001:A1",
-        up_count: 0,
-        down_count: 0,
-        user_track: {
-          track_title: "Track one",
+      playlistDetailTrackJoinRowFactory.fromTrackRow(
+        playlistTrackRowFactory.build({
+          track_key: "instance-9001:A1",
           track_position: "A1",
           instance_id: "instance-9001",
-          artist: "Artist",
-          release_title: "Album",
+          track_title: "Track one",
           youtube_id: null,
           discogs_release_id: null,
-        },
-      },
-    ] as never);
+        }),
+      ),
+    ]);
 
     mockCrateReleaseFindMany.mockResolvedValue([
-      {
-        instance_id: "instance-9001",
-        release_data: release,
-      },
-    ] as never);
+      crateReleaseFactory.releaseDataFindManyRow(release),
+    ]);
 
     const payload = await loadPublicPlaylist(PLAYLIST_ID, {
       discogsHydration: "full",
@@ -194,36 +210,82 @@ describe("loadPublicPlaylist", () => {
     expect(mockPlaylistReleaseSnapshotUpsert).toHaveBeenCalled();
   });
 
-  it("when discogsHydration is snapshotsOnly, does not call hydratePublicPlaylistReleases", async () => {
-    mockFindPublicPlaylistById.mockResolvedValue({
-      user_id: USER_ID,
-      id: PLAYLIST_ID,
-      name: "Shared",
-      username: "dj",
-      private: false,
-      public_description: null,
-      public_view_count: 0,
-      public_play_count: 0,
-      created_at: new Date("2026-01-01T00:00:00.000Z"),
-      updated_at: new Date("2026-01-02T00:00:00.000Z"),
+  it("when playlist snapshot has no art but crate snapshot does, uses crate art and backfills playlist_release_snapshots", async () => {
+    const crateRelease = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-9001",
+      basic_information: {
+        thumb: "https://i.discogs.com/crate-thumb.jpg",
+        cover_image: "https://i.discogs.com/crate-cover.jpg",
+      },
     });
+    const emptyPlaylistSnapshot = releaseFactory.build({
+      instance_id: "instance-9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        thumb: "",
+        cover_image: "",
+      },
+    });
+
+    mockFindPublicPlaylistById.mockResolvedValue(
+      publicPlaylistRowFactory.forSharedLoadTest({
+        user_id: USER_ID,
+        id: PLAYLIST_ID,
+      }),
+    );
     mockPlaylistTrackFindMany.mockResolvedValue([
-      {
-        sort_order: 1,
-        track_key: "instance-9001:A1",
-        up_count: 0,
-        down_count: 0,
-        user_track: {
-          track_title: "Track one",
+      playlistDetailTrackJoinRowFactory.fromTrackRow(
+        playlistTrackRowFactory.build({
+          track_key: "instance-9001:A1",
           track_position: "A1",
           instance_id: "instance-9001",
-          artist: "Artist",
-          release_title: "Album",
+          track_title: "Track one",
+          youtube_id: null,
+          discogs_release_id: 249504,
+        }),
+      ),
+    ]);
+    mockCrateReleaseFindMany.mockResolvedValue([
+      crateReleaseFactory.releaseDataFindManyRow(crateRelease),
+    ]);
+    mockPlaylistReleaseSnapshotFindMany.mockResolvedValue([
+      playlistReleaseSnapshotFindManyRowFactory.fromDiscogsRelease(
+        emptyPlaylistSnapshot,
+      ),
+    ]);
+
+    const payload = await loadPublicPlaylist(PLAYLIST_ID, {
+      discogsHydration: "snapshotsOnly",
+    });
+
+    expect(payload?.releases[0]?.basic_information.cover_image).toBe(
+      "https://i.discogs.com/crate-cover.jpg",
+    );
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    expect(mockPlaylistReleaseSnapshotUpsert).toHaveBeenCalled();
+  });
+
+  it("when discogsHydration is snapshotsOnly, does not call hydratePublicPlaylistReleases", async () => {
+    mockFindPublicPlaylistById.mockResolvedValue(
+      publicPlaylistRowFactory.forSharedLoadTest({
+        user_id: USER_ID,
+        id: PLAYLIST_ID,
+      }),
+    );
+    mockPlaylistTrackFindMany.mockResolvedValue([
+      playlistDetailTrackJoinRowFactory.fromTrackRow(
+        playlistTrackRowFactory.build({
+          track_key: "instance-9001:A1",
+          track_position: "A1",
+          instance_id: "instance-9001",
+          track_title: "Track one",
           youtube_id: null,
           discogs_release_id: null,
-        },
-      },
-    ] as never);
+        }),
+      ),
+    ]);
     mockCrateReleaseFindMany.mockResolvedValue([]);
     mockPlaylistReleaseSnapshotFindMany.mockResolvedValue([]);
 
@@ -236,21 +298,16 @@ describe("loadPublicPlaylist", () => {
   });
 
   it("when playlist username is unset, resolves owner username for the payload", async () => {
-    mockFindPublicPlaylistById.mockResolvedValue({
-      user_id: USER_ID,
-      id: PLAYLIST_ID,
-      name: "Shared",
-      username: null,
-      private: false,
-      public_description: null,
-      public_view_count: 0,
-      public_play_count: 0,
-      created_at: new Date("2026-01-01T00:00:00.000Z"),
-      updated_at: new Date("2026-01-02T00:00:00.000Z"),
-    });
-    mockUserFindUnique.mockResolvedValue({
-      username: "collector",
-    } as Awaited<ReturnType<DbModule["prisma"]["user"]["findUnique"]>>);
+    mockFindPublicPlaylistById.mockResolvedValue(
+      publicPlaylistRowFactory.forSharedLoadTest({
+        user_id: USER_ID,
+        id: PLAYLIST_ID,
+        username: null,
+      }),
+    );
+    mockUserFindUnique.mockResolvedValue(
+      prismaUserFactory.build({ username: "collector" }),
+    );
     mockPlaylistTrackFindMany.mockResolvedValue([]);
     mockCrateReleaseFindMany.mockResolvedValue([]);
 
@@ -265,18 +322,10 @@ describe("loadPublicPlaylist", () => {
     mockCrateReleaseFindMany.mockResolvedValue([]);
 
     const payload = await loadPublicPlaylist(PLAYLIST_ID, {
-      playlist: {
+      playlist: publicPlaylistRowFactory.forSharedLoadTest({
         user_id: USER_ID,
         id: PLAYLIST_ID,
-        name: "Shared",
-        username: "dj",
-        private: false,
-        public_description: null,
-        public_view_count: 0,
-        public_play_count: 0,
-        created_at: new Date("2026-01-01T00:00:00.000Z"),
-        updated_at: new Date("2026-01-02T00:00:00.000Z"),
-      },
+      }),
     });
 
     expect(mockFindPublicPlaylistById).not.toHaveBeenCalled();

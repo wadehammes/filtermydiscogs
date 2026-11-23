@@ -124,6 +124,21 @@ export const resolveDiscogsReleaseIdForPlaylistTrack = (
   return parseReleaseId(crateSnapshot);
 };
 
+export const resolveMergedPublicPlaylistReleaseSnapshot = (
+  crateSnapshot: DiscogsRelease | undefined,
+  playlistSnapshot: DiscogsRelease | undefined,
+): DiscogsRelease | undefined => {
+  if (playlistSnapshot && playlistReleaseHasDisplayArt(playlistSnapshot)) {
+    return playlistSnapshot;
+  }
+
+  if (crateSnapshot && playlistReleaseHasDisplayArt(crateSnapshot)) {
+    return crateSnapshot;
+  }
+
+  return playlistSnapshot ?? crateSnapshot;
+};
+
 export const playlistReleaseHasDisplayArt = (
   release: DiscogsRelease | undefined,
 ): boolean => {

@@ -5,6 +5,7 @@ import { basicInformationFactory } from "src/tests/factories/BasicInformation.fa
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { setupFetchDiscogsReleaseMock } from "src/tests/mocks/setupFetchDiscogsReleaseMock";
+import type { DiscogsTrack, DiscogsVideo } from "src/types";
 import { renderFeatureHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -30,8 +31,8 @@ describe("useReleasePlaybackReleaseDetail", () => {
     const release = releaseFactory.withDisplayDefaults({
       basic_information: basicInformationFactory.build({ id: RELEASE_ID }),
     });
-    const tracksRef = { current: [] as never[] };
-    const videosRef = { current: [] as never[] };
+    const tracksRef = { current: [] as DiscogsTrack[] };
+    const videosRef = { current: [] as DiscogsVideo[] };
     const releaseDetailIdRef = { current: undefined as number | undefined };
 
     renderFeatureHook(() =>
@@ -57,8 +58,8 @@ describe("useReleasePlaybackReleaseDetail", () => {
     const release = releaseFactory.withDisplayDefaults({
       basic_information: basicInformationFactory.build({ id: RELEASE_ID }),
     });
-    const tracksRef = { current: [] as never[] };
-    const videosRef = { current: [] as never[] };
+    const tracksRef = { current: [] as DiscogsTrack[] };
+    const videosRef = { current: [] as DiscogsVideo[] };
     const releaseDetailIdRef = { current: undefined as number | undefined };
 
     const { result } = renderFeatureHook(() =>

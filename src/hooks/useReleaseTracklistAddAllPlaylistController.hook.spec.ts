@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, waitFor } from "@testing-library/react";
 import { api } from "src/api/urls";
 import { useReleaseTracklistAddAllPlaylistController } from "src/hooks/useReleaseTracklistAddAllPlaylistController.hook";
+import { addPlaylistTrackBodyFactory } from "src/tests/factories/AddPlaylistTrackBody.factory";
 import { playlistSummaryFactory } from "src/tests/factories/PlaylistSummary.factory";
-import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { renderFeatureHook } from "test-utils";
@@ -41,10 +41,13 @@ describe("useReleaseTracklistAddAllPlaylistController", () => {
     );
   });
 
-  it("calls addTrackToPlaylist for each metadata row when a playlist is picked", async () => {
-    const firstTrack = trackMetadataBodyFactory.opening();
-    const secondTrack = trackMetadataBodyFactory.build({
-      track_key: "inst:B1",
+  it("calls addTrackToPlaylist for each body including release_snapshot when a playlist is picked", async () => {
+    const firstTrack = addPlaylistTrackBodyFactory.opening({
+      track_key: "9001:A1",
+      track_position: "A1",
+    });
+    const secondTrack = addPlaylistTrackBodyFactory.opening({
+      track_key: "9001:B1",
       track_position: "B1",
     });
     const metadata = [firstTrack, secondTrack];
@@ -80,12 +83,15 @@ describe("useReleaseTracklistAddAllPlaylistController", () => {
       "pl-1",
       secondTrack,
     );
+    expect(
+      firstTrack.release_snapshot?.basic_information.cover_image,
+    ).toContain("i.discogs.com");
   });
 
   it("when creating a playlist from the dialog, posts name and publicDescription then adds all tracks", async () => {
-    const firstTrack = trackMetadataBodyFactory.opening();
-    const secondTrack = trackMetadataBodyFactory.build({
-      track_key: "inst:B1",
+    const firstTrack = addPlaylistTrackBodyFactory.opening();
+    const secondTrack = addPlaylistTrackBodyFactory.opening({
+      track_key: "9001:B1",
       track_position: "B1",
     });
     const metadata = [firstTrack, secondTrack];

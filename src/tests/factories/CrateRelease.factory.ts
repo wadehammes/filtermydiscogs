@@ -1,11 +1,28 @@
 import { faker } from "@faker-js/faker";
-import type { CrateRelease } from "@prisma/client";
+import type { CrateRelease, Prisma } from "@prisma/client";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { DiscogsRelease } from "src/types";
 import type { KeysMatch } from "src/types/KeysMatch";
 import { nullish } from "src/utils/factory.helpers";
 import { toPrismaJsonValue } from "src/utils/toPrismaJsonValue";
+
+export type CrateReleaseReleaseDataFindManyRow = Prisma.CrateReleaseGetPayload<{
+  select: { instance_id: true; release_data: true };
+}>;
+
+export type CrateReleaseCrateIdRow = Prisma.CrateReleaseGetPayload<{
+  select: { crate_id: true };
+}>;
+
+export type CrateReleaseReleaseDataOnlyRow = Prisma.CrateReleaseGetPayload<{
+  select: { release_data: true };
+}>;
+
+export type CrateReleasePreviewQueryRow = {
+  crate_id: string;
+  release_data: unknown;
+};
 
 type CrateReleaseFactoryOptions = {
   userId?: number;
@@ -69,6 +86,53 @@ class CrateReleaseFactory extends BaseFactory<
       },
       options,
     );
+  }
+
+  releaseDataFindManyRow(
+    release: DiscogsRelease,
+    attributes?: Partial<CrateReleaseReleaseDataFindManyRow>,
+  ): CrateReleaseReleaseDataFindManyRow {
+    const row: CrateReleaseReleaseDataFindManyRow = {
+      instance_id: String(release.instance_id),
+      release_data: toPrismaJsonValue(release),
+    };
+
+    return {
+      ...row,
+      ...(attributes ?? {}),
+    };
+  }
+
+  crateIdFindManyRow(
+    crateId: string,
+    attributes?: Partial<CrateReleaseCrateIdRow>,
+  ): CrateReleaseCrateIdRow {
+    return {
+      crate_id: crateId,
+      ...attributes,
+    };
+  }
+
+  releaseDataOnlyFindManyRow(
+    release: DiscogsRelease,
+    attributes?: Partial<CrateReleaseReleaseDataOnlyRow>,
+  ): CrateReleaseReleaseDataOnlyRow {
+    return {
+      release_data: toPrismaJsonValue(release),
+      ...attributes,
+    };
+  }
+
+  previewQueryRow(
+    crateId: string,
+    release: DiscogsRelease,
+    attributes?: Partial<CrateReleasePreviewQueryRow>,
+  ): CrateReleasePreviewQueryRow {
+    return {
+      crate_id: crateId,
+      release_data: toPrismaJsonValue(release),
+      ...attributes,
+    };
   }
 }
 

@@ -8,12 +8,12 @@ import {
   type ReleaseTrackRowMenuViewProps,
 } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenuView.component";
 import { useReleasePlaylistPickerController } from "src/hooks/useReleasePlaylistPickerController.hook";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import type { AddPlaylistTrackBody } from "src/lib/validation/playlist.schemas";
 import { definedProps } from "src/utils/definedProps";
 
 export type ReleaseTrackRowMenuWithPlaylistProps =
   ReleaseTrackRowMenuViewProps & {
-    playlistPickerMetadata: UserTrackMetadataBody;
+    playlistPickerMetadata: AddPlaylistTrackBody;
   };
 
 export const ReleaseTrackRowMenuWithPlaylist = ({
