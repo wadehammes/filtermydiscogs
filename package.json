@@ -1,7 +1,7 @@
 {
   "name": "filtermydiscogs",
   "version": "0.0.1",
-  "packageManager": "pnpm@12.21.0",
+  "packageManager": "pnpm@12.23.0",
   "private": true,
   "scripts": {
     "predev": "prisma generate",
@@ -131,7 +131,7 @@
     "@types/react-dom": "^19.3.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv-cli": "^11.1.0",
-    "fallow": "3.45.0",
+    "fallow": "3.46.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
