@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { WelcomeSignupEmailTemplate } from "../src/components/Email/WelcomeSignupEmailTemplate.component";
 import { WELCOME_SIGNUP_EMAIL_SUBJECT } from "../src/constants/welcomeSignupEmailCopy.constants";
 import { renderReactEmailHtmlAndText } from "../src/lib/renderReactEmail";
+import { definedProps } from "../src/utils/definedProps";
 
 const DEFAULT_FROM = "onboarding@resend.dev";
 const DEFAULT_TO = "delivered@resend.dev";
@@ -10,6 +11,7 @@ const DEFAULT_TO = "delivered@resend.dev";
 const main = async () => {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const from = process.env.RESEND_FROM_EMAIL?.trim() ?? DEFAULT_FROM;
+  const replyTo = process.env.RESEND_REPLY_TO?.trim();
   const to = process.env.RESEND_TEST_TO?.trim() ?? DEFAULT_TO;
   const username = process.env.RESEND_TEST_USERNAME?.trim() ?? "crate-digger";
   const baseUrl =
@@ -23,10 +25,14 @@ const main = async () => {
     return;
   }
 
-  const template = createElement(WelcomeSignupEmailTemplate, {
-    baseUrl,
-    username,
-  });
+  const template = createElement(
+    WelcomeSignupEmailTemplate,
+    definedProps({
+      baseUrl,
+      ...(replyTo ? { contactEmail: replyTo } : {}),
+      username,
+    }),
+  );
   const { html, text } = await renderReactEmailHtmlAndText(template);
 
   const resend = new Resend(apiKey);
@@ -36,6 +42,7 @@ const main = async () => {
     subject: WELCOME_SIGNUP_EMAIL_SUBJECT,
     html,
     text,
+    ...(replyTo ? { reply_to: replyTo } : {}),
   });
 
   if (result.error) {

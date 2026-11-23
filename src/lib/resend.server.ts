@@ -1,27 +1,79 @@
 import "server-only";
 
-import { Resend } from "resend";
+import type { Resend } from "resend";
+import { Resend as ResendClient } from "resend";
 
 let resendClient: Resend | null = null;
 
+const readTrimmedEnv = (key: string): string | null => {
+  const value = process.env[key]?.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  return value;
+};
+
 export const getResendClient = (): Resend | null => {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const apiKey = readTrimmedEnv("RESEND_API_KEY");
 
   if (!apiKey) {
     return null;
   }
 
-  resendClient ??= new Resend(apiKey);
+  resendClient ??= new ResendClient(apiKey);
 
   return resendClient;
 };
 
-export const getResendFromEmail = (): string | null => {
-  const from = process.env.RESEND_FROM_EMAIL?.trim();
+export const getResendFromEmail = (): string | null =>
+  readTrimmedEnv("RESEND_FROM_EMAIL");
 
-  if (!from) {
-    return null;
+export const getResendReplyTo = (): string | null =>
+  readTrimmedEnv("RESEND_REPLY_TO");
+
+export const resendReplyToSendFields = (): { reply_to: string } | undefined => {
+  const replyTo = getResendReplyTo();
+
+  if (!replyTo) {
+    return undefined;
   }
 
-  return from;
+  return { reply_to: replyTo };
+};
+
+export type ResendSendEmailInput = {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+};
+
+export const sendResendEmail = async (
+  resend: Resend,
+  input: ResendSendEmailInput,
+): Promise<void> => {
+  let deliveryError: Error | null = null;
+
+  try {
+    const result = await resend.emails.send({
+      ...input,
+      ...resendReplyToSendFields(),
+    });
+
+    if (result.error) {
+      deliveryError = new Error(
+        result.error.message?.trim() || "Resend rejected the email",
+      );
+    }
+  } catch (error) {
+    deliveryError =
+      error instanceof Error ? error : new Error("Resend send failed");
+  }
+
+  if (deliveryError != null) {
+    throw deliveryError;
+  }
 };

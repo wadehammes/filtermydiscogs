@@ -85,7 +85,8 @@ STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 
 # Resend (optional, one-time welcome email on first account creation when User.email is set)
 # RESEND_API_KEY=re_your_resend_api_key_here
-# RESEND_FROM_EMAIL=FilterMyDisco.gs <onboarding@your-verified-domain.com>
+# RESEND_FROM_EMAIL=FilterMyDisco.gs <no-reply@updates.filtermydisco.gs>
+# RESEND_REPLY_TO=noise@filtermydiscogs
 # EMAIL_ASSET_BASE_URL=https://www.filtermydisco.gs  # optional; absolute icon URLs in dev email preview
 # Preview templates: pnpm email:dev | smoke send: pnpm email:send:test (delivered@resend.dev)
 

@@ -83,7 +83,15 @@ export const sendAdminWelcomeEmailForUser = async (
     );
   }
 
-  await sendWelcomeSignupEmailIfEligible(discogsUserId);
+  try {
+    await sendWelcomeSignupEmailIfEligible(discogsUserId);
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message.trim() !== ""
+        ? error.message
+        : "Welcome email delivery failed";
+    throw new AdminWelcomeEmailSendFailedError(message);
+  }
 
   const after = await prisma.user.findUnique({
     where: { discogs_user_id: discogsUserId },

@@ -6,7 +6,11 @@ import {
 } from "src/constants/welcomeSignupEmail.constants";
 import { prisma } from "src/lib/db";
 import { renderWelcomeSignupEmail } from "src/lib/renderWelcomeSignupEmail.server";
-import { getResendClient, getResendFromEmail } from "src/lib/resend.server";
+import {
+  getResendClient,
+  getResendFromEmail,
+  sendResendEmail,
+} from "src/lib/resend.server";
 import { reportTaggedAppError } from "src/lib/sentry/reportTaggedAppError.server";
 
 let reportedWelcomeResendNotConfigured = false;
@@ -66,36 +70,19 @@ export const sendWelcomeSignupEmailIfEligible = async (
     username: user.username,
   });
 
-  const clearWelcomeEmailSentClaim = async (): Promise<void> => {
-    await prisma.user.update({
-      where: { discogs_user_id: discogsUserId },
-      data: { welcome_email_sent: false },
-    });
-  };
-
-  let deliveryError: Error | null = null;
-
   try {
-    const result = await resend.emails.send({
+    await sendResendEmail(resend, {
       from,
       to: trimmedEmail,
       subject,
       text,
       html,
     });
-
-    if (result.error) {
-      deliveryError = new Error(
-        result.error.message?.trim() || "Resend rejected the welcome email",
-      );
-    }
   } catch (error) {
-    deliveryError =
-      error instanceof Error ? error : new Error("Resend send failed");
-  }
-
-  if (deliveryError != null) {
-    await clearWelcomeEmailSentClaim();
-    throw deliveryError;
+    await prisma.user.update({
+      where: { discogs_user_id: discogsUserId },
+      data: { welcome_email_sent: false },
+    });
+    throw error;
   }
 };

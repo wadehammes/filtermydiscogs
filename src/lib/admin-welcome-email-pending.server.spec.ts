@@ -131,6 +131,26 @@ describe("sendAdminWelcomeEmailForUser", () => {
     expect(mockSendWelcome).not.toHaveBeenCalled();
   });
 
+  it("maps Resend delivery errors to AdminWelcomeEmailSendFailedError", async () => {
+    mockFindUnique.mockResolvedValueOnce({
+      email: eligibleUser.email,
+      welcome_email_sent: false,
+      created_at: eligibleUser.created_at,
+    } as unknown as Awaited<
+      ReturnType<DbModule["prisma"]["user"]["findUnique"]>
+    >);
+    mockSendWelcome.mockRejectedValue(
+      new Error(
+        "The filtermydisco.gs domain is not verified. Please, add and verify your domain on https://resend.com/domains",
+      ),
+    );
+
+    await expect(sendAdminWelcomeEmailForUser(42)).rejects.toMatchObject({
+      name: "AdminWelcomeEmailSendFailedError",
+      message: expect.stringContaining("domain is not verified"),
+    });
+  });
+
   it("rejects when welcome_email_sent stays false after send", async () => {
     mockFindUnique
       .mockResolvedValueOnce({
