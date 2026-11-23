@@ -1,6 +1,6 @@
 import { ApiFetchError, parseRetryAfterMs } from "src/api/apiFetchError";
+import type { AddPlaylistTrackBody } from "src/lib/validation/playlist.schemas";
 import type { PlaylistTrackVoteBody } from "src/lib/validation/playlistTrackVote.schemas";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
 import type {
   PlaylistDetail,
   PlaylistSummary,
@@ -233,7 +233,7 @@ export const deletePlaylist = async (playlistId: string): Promise<void> => {
 
 export const addTrackToPlaylist = async (
   playlistId: string,
-  metadata: UserTrackMetadataBody,
+  body: AddPlaylistTrackBody,
 ): Promise<{ sort_order: number }> => {
   const response = await fetch(
     `/api/playlists/${encodeURIComponent(playlistId)}/tracks`,
@@ -241,7 +241,7 @@ export const addTrackToPlaylist = async (
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(metadata),
+      body: JSON.stringify(body),
     },
   );
 

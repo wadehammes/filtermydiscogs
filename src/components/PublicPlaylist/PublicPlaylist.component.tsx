@@ -89,7 +89,11 @@ export const PublicPlaylistClient = ({
     state: { userId, username, isAuthenticated, isCheckingAuth },
   } = useAuth();
 
+  const viewerContextReady =
+    initialPublicPlaylist === undefined || data?.viewerIsOwner !== undefined;
+
   const showTrackVoteControls =
+    viewerContextReady &&
     data != null &&
     shouldShowPublicPlaylistTrackVotes(data, {
       isCheckingAuth,
@@ -120,7 +124,7 @@ export const PublicPlaylistClient = ({
     [orderedTracks, playPlaylistTrack, playlistId, userId],
   );
 
-  if (isPending && !data) {
+  if (isPending && !data && initialPublicPlaylist === undefined) {
     return (
       <div className={styles.container}>
         <div className={styles.content}>

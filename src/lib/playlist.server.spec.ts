@@ -23,6 +23,7 @@ import {
   playlistTrackCreateResultRowFactory,
 } from "src/tests/factories/PlaylistTrackPrisma.factory";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
 import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
 import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
@@ -51,6 +52,10 @@ jest.mock("src/lib/user-track.server", () => ({
   ensureUserTrackMetadata: jest.fn(),
 }));
 
+jest.mock("src/lib/ensure-playlist-release-snapshot-on-add.server", () => ({
+  ensurePlaylistReleaseSnapshotOnTrackAdd: jest.fn(),
+}));
+
 let listPlaylistsForUser: typeof import("src/lib/playlist.server")["listPlaylistsForUser"];
 let getPlaylistDetail: typeof import("src/lib/playlist.server")["getPlaylistDetail"];
 let addTrackToPlaylist: typeof import("src/lib/playlist.server")["addTrackToPlaylist"];
@@ -74,6 +79,9 @@ let mockPlaylistTrackCreate: jest.Mock<
 >;
 let mockEnsureUserTrackMetadata: jest.MockedFunction<
   typeof import("src/lib/user-track.server")["ensureUserTrackMetadata"]
+>;
+let mockEnsurePlaylistReleaseSnapshotOnTrackAdd: jest.MockedFunction<
+  typeof import("src/lib/ensure-playlist-release-snapshot-on-add.server")["ensurePlaylistReleaseSnapshotOnTrackAdd"]
 >;
 
 const USER_ID = 3;
@@ -114,6 +122,13 @@ beforeEach(async () => {
   mockEnsureUserTrackMetadata = jest.mocked(
     userTrackModule.ensureUserTrackMetadata,
   );
+  const ensureSnapshotModule = await import(
+    "src/lib/ensure-playlist-release-snapshot-on-add.server"
+  );
+  mockEnsurePlaylistReleaseSnapshotOnTrackAdd = jest.mocked(
+    ensureSnapshotModule.ensurePlaylistReleaseSnapshotOnTrackAdd,
+  );
+  mockEnsurePlaylistReleaseSnapshotOnTrackAdd.mockResolvedValue(undefined);
 });
 
 describe("addTrackToPlaylist", () => {
@@ -148,6 +163,52 @@ describe("addTrackToPlaylist", () => {
       },
     });
     expect(result).toEqual({ created: true, sort_order: 11 });
+    expect(mockEnsurePlaylistReleaseSnapshotOnTrackAdd).toHaveBeenCalledWith({
+      userId: USER_ID,
+      playlistId: PLAYLIST_ID,
+      instanceId: metadata.instance_id,
+      releaseFromRequest: undefined,
+    });
+  });
+
+  it("persists a playlist release snapshot when release_snapshot is included", async () => {
+    const metadata = trackMetadataBodyFactory.opening();
+    const release = releaseFactory.build({
+      instance_id: metadata.instance_id,
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        thumb: "https://i.discogs.com/thumb.jpg",
+        cover_image: "https://i.discogs.com/cover.jpg",
+      },
+    });
+    mockPlaylistFindUnique.mockResolvedValue(
+      playlistIdRowFactory.build({ id: PLAYLIST_ID }),
+    );
+    mockAggregate.mockResolvedValue(
+      playlistTrackMaxSortOrderAggregateFactory.build({
+        _max: { sort_order: 0 },
+      }),
+    );
+    mockPlaylistTrackCreate.mockResolvedValue(
+      playlistTrackCreateResultRowFactory.fromTrackMetadata(
+        USER_ID,
+        PLAYLIST_ID,
+        metadata.track_key,
+        1,
+      ),
+    );
+
+    await addTrackToPlaylist(USER_ID, PLAYLIST_ID, {
+      ...metadata,
+      release_snapshot: release,
+    });
+
+    expect(mockEnsurePlaylistReleaseSnapshotOnTrackAdd).toHaveBeenCalledWith({
+      userId: USER_ID,
+      playlistId: PLAYLIST_ID,
+      instanceId: metadata.instance_id,
+      releaseFromRequest: release,
+    });
   });
 
   it("returns duplicate when create hits a unique constraint", async () => {

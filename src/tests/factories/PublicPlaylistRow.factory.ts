@@ -42,6 +42,24 @@ class PublicPlaylistRowFactory extends BaseFactory<
 
     return mergeFactoryAttributes(base, attributes);
   }
+
+  forSharedLoadTest(
+    attributes: Partial<PublicPlaylistRow> = {},
+  ): PublicPlaylistRow {
+    return this.build({
+      user_id: 123,
+      id: "11111111-2222-3333-4444-555555555555",
+      name: "Shared",
+      username: "dj",
+      private: false,
+      public_description: null,
+      public_view_count: 0,
+      public_play_count: 0,
+      created_at: new Date("2026-01-01T00:00:00.000Z"),
+      updated_at: new Date("2026-01-02T00:00:00.000Z"),
+      ...attributes,
+    });
+  }
 }
 
 export const publicPlaylistRowFactory = new PublicPlaylistRowFactory();

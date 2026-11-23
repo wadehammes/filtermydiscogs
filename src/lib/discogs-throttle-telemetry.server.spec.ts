@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
 const mockSetAttribute = jest.fn();
-const mockGetActiveSpan = jest.fn(() => ({
+
+type ActiveSpan = { setAttribute: typeof mockSetAttribute };
+
+const mockGetActiveSpan = jest.fn<() => ActiveSpan | undefined>(() => ({
   setAttribute: mockSetAttribute,
 }));
 
@@ -41,7 +44,7 @@ describe("discogs-throttle-telemetry.server", () => {
   });
 
   it("does nothing when there is no active span", async () => {
-    mockGetActiveSpan.mockReturnValueOnce(undefined as never);
+    mockGetActiveSpan.mockReturnValueOnce(undefined);
 
     const { recordDiscogsThrottleTelemetry } = await import(
       "src/lib/discogs-throttle-telemetry.server"

@@ -7,7 +7,7 @@ import { TrackYoutubeOverrideDialog } from "src/components/TrackYoutubeOverrideD
 import { useAuth } from "src/context/auth.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
 import type { DiscogsRelease } from "src/types";
-import { buildUserTrackMetadataBody } from "src/utils/buildUserTrackMetadataBody";
+import { buildAddPlaylistTrackBody } from "src/utils/buildAddPlaylistTrackBody";
 import { definedProps } from "src/utils/definedProps";
 import { formatArtistNames } from "src/utils/releaseDisplay";
 import { isSameReleaseInstance } from "src/utils/releaseNotes";
@@ -43,7 +43,7 @@ export const ReleaseModalPlaybackTracksFromState = ({
 
       const youtubeId = playback.userYoutubeIdByPosition[trackPosition];
 
-      return buildUserTrackMetadataBody({
+      return buildAddPlaylistTrackBody({
         release,
         trackPosition,
         trackTitle: track.title,

@@ -23,6 +23,10 @@ import type {
   PlaylistTrackRow,
   PublicPlaylistResponse,
 } from "src/types/playlist.types";
+import {
+  playlistReleaseHasDisplayArt,
+  resolveMergedPublicPlaylistReleaseSnapshot,
+} from "src/utils/discogsReleaseArt";
 import { buildPlaylistMosaicThumbUrls } from "src/utils/playlistMosaic";
 
 const loadOwnerReleaseSnapshots = async (
@@ -121,8 +125,41 @@ export const loadPublicPlaylist = async (
   const crateSnapshotsByInstanceId = new Map(
     crateSnapshots.map((release) => [String(release.instance_id), release]),
   );
-  for (const [instanceId, snapshot] of playlistSnapshots) {
-    crateSnapshotsByInstanceId.set(instanceId, snapshot);
+  const snapshotsToBackfill: DiscogsRelease[] = [];
+
+  for (const instanceId of instanceIds) {
+    const merged = resolveMergedPublicPlaylistReleaseSnapshot(
+      crateSnapshotsByInstanceId.get(instanceId),
+      playlistSnapshots.get(instanceId),
+    );
+
+    if (!merged) {
+      continue;
+    }
+
+    crateSnapshotsByInstanceId.set(instanceId, merged);
+
+    const playlistSnapshot = playlistSnapshots.get(instanceId);
+    if (
+      playlist.private === false &&
+      !(playlistSnapshot && playlistReleaseHasDisplayArt(playlistSnapshot)) &&
+      playlistReleaseHasDisplayArt(merged)
+    ) {
+      snapshotsToBackfill.push(merged);
+    }
+  }
+
+  if (snapshotsToBackfill.length > 0) {
+    void persistPlaylistReleaseSnapshots({
+      userId: playlist.user_id,
+      playlistId: playlist.id,
+      releases: snapshotsToBackfill,
+    }).catch((error: unknown) => {
+      reportInfrastructureFailure("public_playlist", error, {
+        operation: "persist_playlist_release_snapshots_from_crate",
+        playlistId: playlist.id,
+      });
+    });
   }
   const discogsHydration = options?.discogsHydration ?? "snapshotsOnly";
 

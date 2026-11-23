@@ -11,6 +11,10 @@ import {
 } from "src/lib/crate-layout.server";
 import { reparentCrateLayoutMarkersAfterDelete } from "src/lib/crate-section-layout";
 import { crateLayoutItemFactory as layout } from "src/tests/factories/CrateLayoutItem.factory";
+import {
+  crateLayoutApplyUpdateTx,
+  crateLayoutMarkerReferenceClearTx,
+} from "src/tests/helpers/crateLayoutPrismaTransaction";
 import type { CrateLayoutPutItem } from "src/types/crate.types";
 
 const crateInstanceIds = new Set(["111", "222", "333"]);
@@ -26,10 +30,7 @@ const createMarkerReferenceClearMocks = () => {
   return {
     releaseUpdateMany,
     markerUpdateMany,
-    tx: {
-      crateRelease: { updateMany: releaseUpdateMany },
-      crateSetMarker: { updateMany: markerUpdateMany },
-    } as never,
+    tx: crateLayoutMarkerReferenceClearTx(releaseUpdateMany, markerUpdateMany),
   };
 };
 
@@ -91,14 +92,13 @@ describe("crateLayoutServer", () => {
     const markerUpsert = jest.fn((_args: unknown) => Promise.resolve({}));
 
     await applyCrateLayoutUpdate({
-      tx: {
-        crateRelease: { update: releaseUpdate, updateMany: releaseUpdateMany },
-        crateSetMarker: {
-          updateMany: markerUpdateMany,
-          deleteMany: markerDeleteMany,
-          upsert: markerUpsert,
-        },
-      } as never,
+      tx: crateLayoutApplyUpdateTx(
+        releaseUpdate,
+        releaseUpdateMany,
+        markerUpdateMany,
+        markerDeleteMany,
+        markerUpsert,
+      ),
       userId: 1,
       crateId: "crate-a",
       update: {

@@ -9,8 +9,10 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 import { crateFactory } from "src/tests/factories/Crate.factory";
 import { crateReleaseFactory } from "src/tests/factories/CrateRelease.factory";
+import { crateSetMarkerFactory } from "src/tests/factories/CrateSetMarker.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 const mockTransaction = jest.fn();
 
@@ -58,14 +60,14 @@ let mockReleaseFindMany: jest.MockedFunction<
 let mockMarkerFindMany: jest.MockedFunction<
   DbModule["prisma"]["crateSetMarker"]["findMany"]
 >;
-let mockReleaseUpdate: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["update"]
+let mockReleaseUpdate: jest.Mock<
+  (...args: unknown[]) => Promise<import("@prisma/client").CrateRelease>
 >;
 let mockMarkerDeleteMany: jest.MockedFunction<
   DbModule["prisma"]["crateSetMarker"]["deleteMany"]
 >;
-let mockMarkerUpsert: jest.MockedFunction<
-  DbModule["prisma"]["crateSetMarker"]["upsert"]
+let mockMarkerUpsert: jest.Mock<
+  (...args: unknown[]) => Promise<import("@prisma/client").CrateSetMarker>
 >;
 let mockAudit: jest.MockedFunction<ApiHelpersModule["auditDatabaseOperation"]>;
 let mockRevalidatePublicCrateShareWhenPublic: jest.MockedFunction<
@@ -102,9 +104,13 @@ beforeAll(async () => {
   mockFindUnique = jest.mocked(db.prisma.crate.findUnique);
   mockReleaseFindMany = jest.mocked(db.prisma.crateRelease.findMany);
   mockMarkerFindMany = jest.mocked(db.prisma.crateSetMarker.findMany);
-  mockReleaseUpdate = jest.mocked(db.prisma.crateRelease.update);
+  mockReleaseUpdate = mockPrismaDelegate<import("@prisma/client").CrateRelease>(
+    jest.mocked(db.prisma.crateRelease.update),
+  );
   mockMarkerDeleteMany = jest.mocked(db.prisma.crateSetMarker.deleteMany);
-  mockMarkerUpsert = jest.mocked(db.prisma.crateSetMarker.upsert);
+  mockMarkerUpsert = mockPrismaDelegate<
+    import("@prisma/client").CrateSetMarker
+  >(jest.mocked(db.prisma.crateSetMarker.upsert));
   mockAudit = jest.mocked(apiHelpers.auditDatabaseOperation);
   mockRevalidatePublicCrateShareWhenPublic = jest.mocked(
     publicShareCache.revalidatePublicCrateShareWhenPublic,
@@ -187,9 +193,9 @@ describe("PUT /api/crates/[id]/layout", () => {
       };
       return callback(tx);
     }) as (...args: unknown[]) => unknown);
-    mockReleaseUpdate.mockResolvedValue({} as never);
+    mockReleaseUpdate.mockResolvedValue(crateReleaseFactory.build());
     mockMarkerDeleteMany.mockResolvedValue({ count: 0 });
-    mockMarkerUpsert.mockResolvedValue({} as never);
+    mockMarkerUpsert.mockResolvedValue(crateSetMarkerFactory.build());
     mockRevalidatePublicCrateShareWhenPublic.mockResolvedValue(undefined);
   });
 

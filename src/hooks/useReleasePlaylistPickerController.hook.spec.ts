@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, waitFor } from "@testing-library/react";
 import { api } from "src/api/urls";
 import { useReleasePlaylistPickerController } from "src/hooks/useReleasePlaylistPickerController.hook";
+import { addPlaylistTrackBodyFactory } from "src/tests/factories/AddPlaylistTrackBody.factory";
 import { playlistSummaryFactory } from "src/tests/factories/PlaylistSummary.factory";
 import { trackMetadataBodyFactory } from "src/tests/factories/TrackMetadataBody.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
@@ -101,6 +102,42 @@ describe("useReleasePlaylistPickerController", () => {
     expect(mockApi.addTrackToPlaylist).not.toHaveBeenCalled();
   });
 
+  it("when picking a playlist, adds the track body including release_snapshot for public share art", async () => {
+    if (!jest.isMockFunction(mockApi.addTrackToPlaylist)) {
+      Object.assign(mockApi, { addTrackToPlaylist: jest.fn() });
+    }
+    mockApiResponse(
+      true,
+      mockApi.addTrackToPlaylist,
+      { sort_order: 1 },
+      new Error("Add track to playlist failed"),
+    );
+
+    const metadata = addPlaylistTrackBodyFactory.opening();
+
+    const { result } = renderFeatureHook(
+      () =>
+        useReleasePlaylistPickerController({
+          metadata,
+          trackTitle: "Opening",
+        }),
+      { authInitialState: testAuthenticatedAuthState },
+    );
+
+    await act(async () => {
+      await result.current.submenuPanelProps.onPickPlaylist(
+        "pl-new",
+        "Sunday",
+        false,
+      );
+    });
+
+    expect(mockApi.addTrackToPlaylist).toHaveBeenCalledWith("pl-new", metadata);
+    expect(metadata.release_snapshot?.basic_information.cover_image).toContain(
+      "i.discogs.com",
+    );
+  });
+
   it("when creating a playlist from the dialog, posts name and publicDescription then adds the track", async () => {
     if (!jest.isMockFunction(mockApi.createPlaylist)) {
       Object.assign(mockApi, { createPlaylist: jest.fn() });
@@ -123,7 +160,7 @@ describe("useReleasePlaylistPickerController", () => {
       new Error("Add track to playlist failed"),
     );
 
-    const metadata = trackMetadataBodyFactory.opening();
+    const metadata = addPlaylistTrackBodyFactory.opening();
 
     const { result } = renderFeatureHook(
       () =>
@@ -148,6 +185,9 @@ describe("useReleasePlaylistPickerController", () => {
     expect(mockApi.addTrackToPlaylist).toHaveBeenCalledWith(
       created.id,
       metadata,
+    );
+    expect(metadata.release_snapshot?.basic_information.thumb).toContain(
+      "i.discogs.com",
     );
     expect(result.current.createDialogProps.isOpen).toBe(false);
   });

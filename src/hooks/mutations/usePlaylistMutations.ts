@@ -9,7 +9,7 @@ import {
   PlaylistQueryKeys,
   PlaylistsQueryKeys,
 } from "src/hooks/queries/querykeys.constants";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import type { AddPlaylistTrackBody } from "src/lib/validation/playlist.schemas";
 import type { PlaylistDetail } from "src/types/playlist.types";
 import { toast } from "src/utils/toast";
 
@@ -117,7 +117,7 @@ export const useAddTrackToPlaylistMutation = () => {
       metadata,
     }: {
       playlistId: string;
-      metadata: UserTrackMetadataBody;
+      metadata: AddPlaylistTrackBody;
     }) => api.addTrackToPlaylist(playlistId, metadata),
     onSuccess: (_data, { playlistId }) => {
       invalidatePlaylists(queryClient, userId ?? null, playlistId);

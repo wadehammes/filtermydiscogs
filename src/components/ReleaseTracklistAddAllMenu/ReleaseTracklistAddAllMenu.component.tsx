@@ -9,7 +9,7 @@ import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopove
 import tracklistStyles from "src/components/ReleaseTracklist/ReleaseTracklist.module.css";
 import { ReleaseTrackRowMenuPlaylistSubmenu } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenuPlaylistSubmenu.component";
 import { useReleaseTracklistAddAllPlaylistController } from "src/hooks/useReleaseTracklistAddAllPlaylistController.hook";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import type { AddPlaylistTrackBody } from "src/lib/validation/playlist.schemas";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import MenuIcon from "src/styles/icons/menu-thin.svg";
 import styles from "./ReleaseTracklistAddAllMenu.module.css";
@@ -19,7 +19,7 @@ const ADD_ALL_TRIGGER_LABEL = "Add all to…";
 
 export interface ReleaseTracklistAddAllMenuProps {
   onAddAllToQueue: () => void;
-  trackMetadataList: UserTrackMetadataBody[];
+  trackMetadataList: AddPlaylistTrackBody[];
   releaseTitle: string;
   showPlaylistSubmenu: boolean;
   useOverlayStack?: boolean;

@@ -8,7 +8,7 @@ import { PlayingIndicator } from "src/components/PlayingIndicator/PlayingIndicat
 import { ReleaseTracklistAddAllMenu } from "src/components/ReleaseTracklistAddAllMenu/ReleaseTracklistAddAllMenu.component";
 import { ReleaseTrackRowMenu } from "src/components/ReleaseTrackRowMenu/ReleaseTrackRowMenu.component";
 import { RELEASE_TRACKLIST_LABEL } from "src/constants/accessibilityLabels.constants";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import type { AddPlaylistTrackBody } from "src/lib/validation/playlist.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListThinIcon } from "src/styles/icons/ListThinIcon.component";
 import MinusIcon from "src/styles/icons/minus-thin.svg";
@@ -48,7 +48,7 @@ interface ReleaseTracklistProps {
   onEditTrackYoutube?: (position: string) => void;
   getPlaylistTrackMetadata?: (
     position: string,
-  ) => UserTrackMetadataBody | undefined;
+  ) => AddPlaylistTrackBody | undefined;
   hasUserYoutubeOverride?: (position: string) => boolean;
   alwaysShowTrackRowMenu?: boolean;
 }

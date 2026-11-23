@@ -7,7 +7,15 @@ import {
   jest,
 } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
+import { crateIdRowFactory } from "src/tests/factories/CrateQueryPrisma.factory";
+import {
+  type CrateReleaseCrateIdRow,
+  crateReleaseFactory,
+} from "src/tests/factories/CrateRelease.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
+import { releaseValidationResultFactory } from "src/tests/factories/ReleaseValidationResult.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -51,11 +59,15 @@ let PUT: RouteModule["PUT"];
 let mockGetVerifiedUser: jest.MockedFunction<
   ApiHelpersModule["getVerifiedUserFromRequestWithRateLimit"]
 >;
-let mockFindMany: jest.MockedFunction<
-  DbModule["prisma"]["crateRelease"]["findMany"]
+let mockFindMany: jest.Mock<
+  (...args: unknown[]) => Promise<CrateReleaseCrateIdRow[]>
 >;
-let mockFindCrates: jest.MockedFunction<
-  DbModule["prisma"]["crate"]["findMany"]
+let mockFindCrates: jest.Mock<
+  (
+    ...args: unknown[]
+  ) => Promise<
+    import("src/tests/factories/CrateQueryPrisma.factory").CrateIdRow[]
+  >
 >;
 let mockTransaction: jest.MockedFunction<DbModule["prisma"]["$transaction"]>;
 let mockValidateRelease: jest.MockedFunction<
@@ -68,13 +80,14 @@ let mockRevalidatePublicCrateSharesWhenPublic: jest.MockedFunction<
 const INSTANCE_ID = "12345";
 const USER_ID = 42;
 
-const releasePayload = {
+const releasePayload = releaseFactory.build({
   instance_id: INSTANCE_ID,
   basic_information: {
+    ...releaseFactory.build().basic_information,
     id: 1,
     title: "Test Release",
   },
-};
+});
 
 beforeAll(async () => {
   const [routeModule, apiHelpers, db, releaseValidation, publicShareCache] =
@@ -91,8 +104,12 @@ beforeAll(async () => {
   mockGetVerifiedUser = jest.mocked(
     apiHelpers.getVerifiedUserFromRequestWithRateLimit,
   );
-  mockFindMany = jest.mocked(db.prisma.crateRelease.findMany);
-  mockFindCrates = jest.mocked(db.prisma.crate.findMany);
+  mockFindMany = mockPrismaDelegate<CrateReleaseCrateIdRow[]>(
+    jest.mocked(db.prisma.crateRelease.findMany),
+  );
+  mockFindCrates = mockPrismaDelegate<
+    import("src/tests/factories/CrateQueryPrisma.factory").CrateIdRow[]
+  >(jest.mocked(db.prisma.crate.findMany));
   mockTransaction = jest.mocked(db.prisma.$transaction);
   mockValidateRelease = jest.mocked(
     releaseValidation.validateReleaseDataForStorage,
@@ -135,9 +152,9 @@ describe("GET /api/crates/membership/[instanceId]", () => {
       user: verifiedDiscogsUserFactory.defaults({ userId: USER_ID }),
     });
     mockFindMany.mockResolvedValue([
-      { crate_id: "crate-a" },
-      { crate_id: "crate-b" },
-    ] as Awaited<ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>>);
+      crateReleaseFactory.crateIdFindManyRow("crate-a"),
+      crateReleaseFactory.crateIdFindManyRow("crate-b"),
+    ]);
 
     const response = await GET(
       new NextRequest(`http://localhost/api/crates/membership/${INSTANCE_ID}`),
@@ -176,16 +193,16 @@ describe("PUT /api/crates/membership/[instanceId]", () => {
     mockGetVerifiedUser.mockResolvedValue({
       user: verifiedDiscogsUserFactory.defaults({ userId: USER_ID }),
     });
-    mockValidateRelease.mockReturnValue({
-      release: releasePayload as never,
-    });
+    mockValidateRelease.mockReturnValue(
+      releaseValidationResultFactory.success(releasePayload),
+    );
     mockFindCrates.mockResolvedValue([
-      { id: "crate-a" },
-      { id: "crate-b" },
-    ] as Awaited<ReturnType<DbModule["prisma"]["crate"]["findMany"]>>);
-    mockFindMany.mockResolvedValue([{ crate_id: "crate-a" }] as Awaited<
-      ReturnType<DbModule["prisma"]["crateRelease"]["findMany"]>
-    >);
+      crateIdRowFactory.build({ id: "crate-a" }),
+      crateIdRowFactory.build({ id: "crate-b" }),
+    ]);
+    mockFindMany.mockResolvedValue([
+      crateReleaseFactory.crateIdFindManyRow("crate-a"),
+    ]);
     mockTransaction.mockImplementation((async (
       callback: (tx: unknown) => Promise<unknown>,
     ) =>

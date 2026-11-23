@@ -168,9 +168,21 @@ export async function getPublicPlaylistForPage(
       return null;
     }
 
-    return await loadPublicPlaylist(playlistId, {
+    const payload = await loadPublicPlaylist(playlistId, {
       discogsHydration: "snapshotsOnly",
     });
+
+    if (!payload) {
+      return null;
+    }
+
+    return {
+      ...payload,
+      tracks: payload.tracks.map((track) => ({
+        ...track,
+        viewerVote: track.viewerVote ?? null,
+      })),
+    };
   } catch (error) {
     console.error(
       `Failed to load public playlist for page ${playlistId}:`,

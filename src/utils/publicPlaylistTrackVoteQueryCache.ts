@@ -122,11 +122,22 @@ export const rollbackOptimisticPlaylistTrackVoteInQueryCaches = (
   }
 };
 
+const normalizePublicPlaylistViewerIsOwner = (
+  value: PublicPlaylistResponse["viewerIsOwner"],
+): boolean => value ?? false;
+
+const normalizePublicPlaylistViewerVote = (
+  value: PlaylistTrackRow["viewerVote"],
+): PlaylistTrackVoteDirection | null => value ?? null;
+
 export const publicPlaylistQueryDataEqualsForRender = (
   current: PublicPlaylistResponse,
   next: PublicPlaylistResponse,
 ): boolean => {
-  if (current.viewerIsOwner !== next.viewerIsOwner) {
+  if (
+    normalizePublicPlaylistViewerIsOwner(current.viewerIsOwner) !==
+    normalizePublicPlaylistViewerIsOwner(next.viewerIsOwner)
+  ) {
     return false;
   }
 
@@ -146,12 +157,17 @@ export const publicPlaylistQueryDataEqualsForRender = (
     }
 
     return (
-      track.viewerVote === other.viewerVote &&
+      normalizePublicPlaylistViewerVote(track.viewerVote) ===
+        normalizePublicPlaylistViewerVote(other.viewerVote) &&
       track.upCount === other.upCount &&
       track.downCount === other.downCount
     );
   });
 };
+
+export const publicPlaylistViewerContextIsHydrated = (
+  response: PublicPlaylistResponse,
+): boolean => response.viewerIsOwner !== undefined;
 
 export const mergePublicPlaylistResponsePreservingLocalVotes = (
   local: PublicPlaylistResponse,

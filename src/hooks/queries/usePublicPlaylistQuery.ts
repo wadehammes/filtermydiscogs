@@ -5,6 +5,7 @@ import type { PublicPlaylistResponse } from "src/types/playlist.types";
 import {
   mergePublicPlaylistResponsePreservingLocalVotes,
   publicPlaylistQueryDataEqualsForRender,
+  publicPlaylistViewerContextIsHydrated,
 } from "src/utils/publicPlaylistTrackVoteQueryCache";
 import { PublicPlaylistQueryKeys } from "./querykeys.constants";
 
@@ -85,11 +86,21 @@ export const usePublicPlaylistQuery = ({
               );
               const previous = current ?? localBefore;
 
-              if (
-                previous &&
-                publicPlaylistQueryDataEqualsForRender(previous, merged)
-              ) {
-                return previous;
+              if (previous) {
+                const renderUnchanged = publicPlaylistQueryDataEqualsForRender(
+                  previous,
+                  merged,
+                );
+                const viewerContextAlreadyHydrated =
+                  publicPlaylistViewerContextIsHydrated(previous);
+
+                if (renderUnchanged && viewerContextAlreadyHydrated) {
+                  return previous;
+                }
+
+                if (renderUnchanged) {
+                  return merged;
+                }
               }
 
               return merged;

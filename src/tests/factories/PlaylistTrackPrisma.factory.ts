@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import type { Prisma } from "@prisma/client";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import { mergeFactoryAttributes } from "src/tests/factories/mergeFactoryAttributes";
+import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
 import type { KeysMatch } from "src/types/KeysMatch";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
 
@@ -133,3 +134,46 @@ export const playlistDetailTrackJoinRowFromDomain = (
     discogs_release_id: track.discogs_release_id,
   },
 });
+
+class PlaylistDetailTrackJoinRowFactory extends BaseFactory<
+  PlaylistDetailTrackJoinRow,
+  PlaylistTrackPrismaFactoryOptions
+> {
+  build(
+    attributes?: Partial<PlaylistDetailTrackJoinRow>,
+    _options?: PlaylistTrackPrismaFactoryOptions,
+  ): PlaylistDetailTrackJoinRow {
+    const fromDomain = playlistDetailTrackJoinRowFromDomain(
+      playlistTrackRowFactory.build({
+        track_key: "instance-9001:A1",
+        track_position: "A1",
+        instance_id: "instance-9001",
+        track_title: "Track one",
+        youtube_id: null,
+        discogs_release_id: null,
+      }),
+    );
+
+    const factoryBuilt = mergeFactoryAttributes(fromDomain, attributes);
+
+    const _allKeysMustBeInTheInstance: KeysMatch<
+      PlaylistDetailTrackJoinRow,
+      typeof fromDomain
+    > = undefined;
+
+    return factoryBuilt;
+  }
+
+  fromTrackRow(
+    track: PlaylistTrackRow,
+    attributes?: Partial<PlaylistDetailTrackJoinRow>,
+  ): PlaylistDetailTrackJoinRow {
+    return mergeFactoryAttributes(
+      playlistDetailTrackJoinRowFromDomain(track),
+      attributes,
+    );
+  }
+}
+
+export const playlistDetailTrackJoinRowFactory =
+  new PlaylistDetailTrackJoinRowFactory();

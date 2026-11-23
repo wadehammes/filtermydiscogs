@@ -1,11 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "src/lib/db";
+import { ensurePlaylistReleaseSnapshotOnTrackAdd } from "src/lib/ensure-playlist-release-snapshot-on-add.server";
 import { mapPlaylistEngagementCounts } from "src/lib/playlist-engagement.server";
 import { mapPlaylistTrackRow } from "src/lib/playlist-track-map.server";
+import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 import { ensureUserTrackMetadata } from "src/lib/user-track.server";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import type { AddPlaylistTrackBody } from "src/lib/validation/playlist.schemas";
 import type { PlaylistDetail, PlaylistSummary } from "src/types/playlist.types";
+import { toUserTrackMetadataBodyFromAddPlaylistTrack } from "src/utils/addPlaylistTrackBody";
 import { normalizePlaylistPublicDescriptionForStorage } from "src/utils/publicPlaylistDescription";
 
 const playlistWhere = (userId: number, playlistId: string) => ({
@@ -285,8 +288,9 @@ export type AddTrackToPlaylistResult =
 export const addTrackToPlaylist = async (
   userId: number,
   playlistId: string,
-  metadata: UserTrackMetadataBody,
+  body: AddPlaylistTrackBody,
 ): Promise<AddTrackToPlaylistResult> => {
+  const metadata = toUserTrackMetadataBodyFromAddPlaylistTrack(body);
   const playlist = await prisma.playlist.findUnique({
     where: playlistWhere(userId, playlistId),
     select: { id: true },
@@ -322,6 +326,21 @@ export const addTrackToPlaylist = async (
         sort_order: nextSortOrder,
       },
     });
+
+    try {
+      await ensurePlaylistReleaseSnapshotOnTrackAdd({
+        userId,
+        playlistId,
+        instanceId: metadata.instance_id,
+        releaseFromRequest: body.release_snapshot,
+      });
+    } catch (error: unknown) {
+      reportInfrastructureFailure("public_playlist", error, {
+        operation: "ensure_playlist_release_snapshot_on_add",
+        playlistId,
+        instanceId: metadata.instance_id,
+      });
+    }
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

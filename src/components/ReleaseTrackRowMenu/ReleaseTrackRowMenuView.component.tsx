@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
-import type { UserTrackMetadataBody } from "src/lib/validation/userTrack.schemas";
+import type { AddPlaylistTrackBody } from "src/lib/validation/playlist.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import MenuIcon from "src/styles/icons/menu-thin.svg";
@@ -26,7 +26,7 @@ export type ReleaseTrackRowMenuProps = {
   onAddToQueue?: () => void;
   onRemoveFromQueue?: () => void;
   onEditYoutube?: () => void;
-  playlistPickerMetadata?: UserTrackMetadataBody;
+  playlistPickerMetadata?: AddPlaylistTrackBody;
   useMenuOverlayStack?: boolean;
   releaseHasQueueActions?: boolean;
   playlistSubmenuOpenOnHover?: boolean;

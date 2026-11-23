@@ -9,6 +9,7 @@ import {
   collectUniquePlaylistDiscogsReleaseIdsNeedingArtHydration,
   mergePlaylistReleaseWithDiscogsDetail,
   resolveDiscogsReleaseDetailCoverUri,
+  resolveMergedPublicPlaylistReleaseSnapshot,
 } from "src/utils/discogsReleaseArt";
 
 describe("collectUniquePlaylistDiscogsReleaseIds", () => {
@@ -45,6 +46,36 @@ describe("collectUniquePlaylistDiscogsReleaseIds", () => {
         new Map([["9001", release]]),
       ),
     ).toEqual(["249504"]);
+  });
+});
+
+describe("resolveMergedPublicPlaylistReleaseSnapshot", () => {
+  it("prefers playlist snapshot art over an empty crate snapshot", () => {
+    const crateSnapshot = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        thumb: "https://i.discogs.com/crate-thumb.jpg",
+        cover_image: "https://i.discogs.com/crate-cover.jpg",
+      },
+    });
+    const playlistSnapshot = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        thumb: "",
+        cover_image: "",
+      },
+    });
+
+    const merged = resolveMergedPublicPlaylistReleaseSnapshot(
+      crateSnapshot,
+      playlistSnapshot,
+    );
+
+    expect(merged?.basic_information.cover_image).toBe(
+      "https://i.discogs.com/crate-cover.jpg",
+    );
   });
 });
 

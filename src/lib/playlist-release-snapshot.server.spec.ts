@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import {
+  type PlaylistReleaseSnapshotFindManyRow,
+  playlistReleaseSnapshotFindManyRowFactory,
+  playlistReleaseSnapshotUpsertResultFactory,
+} from "src/tests/factories/PlaylistReleaseSnapshotPrisma.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { mockPrismaDelegate } from "src/tests/helpers/mockPrismaDelegate";
 
 jest.mock("src/lib/db", () => ({
   prisma: {
@@ -13,15 +19,17 @@ jest.mock("src/lib/db", () => ({
   },
 }));
 
-type DbModule = typeof import("src/lib/db");
-
 let loadPlaylistReleaseSnapshots: typeof import("src/lib/playlist-release-snapshot.server")["loadPlaylistReleaseSnapshots"];
 let persistPlaylistReleaseSnapshots: typeof import("src/lib/playlist-release-snapshot.server")["persistPlaylistReleaseSnapshots"];
-let mockFindMany: jest.MockedFunction<
-  DbModule["prisma"]["playlistReleaseSnapshot"]["findMany"]
+let mockFindMany: jest.Mock<
+  (...args: unknown[]) => Promise<PlaylistReleaseSnapshotFindManyRow[]>
 >;
-let mockUpsert: jest.MockedFunction<
-  DbModule["prisma"]["playlistReleaseSnapshot"]["upsert"]
+let mockUpsert: jest.Mock<
+  (
+    ...args: unknown[]
+  ) => Promise<
+    ReturnType<typeof playlistReleaseSnapshotUpsertResultFactory.build>
+  >
 >;
 
 const USER_ID = 42;
@@ -40,8 +48,12 @@ describe("playlist-release-snapshot.server", () => {
     loadPlaylistReleaseSnapshots = snapshotModule.loadPlaylistReleaseSnapshots;
     persistPlaylistReleaseSnapshots =
       snapshotModule.persistPlaylistReleaseSnapshots;
-    mockFindMany = jest.mocked(db.prisma.playlistReleaseSnapshot.findMany);
-    mockUpsert = jest.mocked(db.prisma.playlistReleaseSnapshot.upsert);
+    mockFindMany = mockPrismaDelegate<PlaylistReleaseSnapshotFindManyRow[]>(
+      jest.mocked(db.prisma.playlistReleaseSnapshot.findMany),
+    );
+    mockUpsert = mockPrismaDelegate<
+      ReturnType<typeof playlistReleaseSnapshotUpsertResultFactory.build>
+    >(jest.mocked(db.prisma.playlistReleaseSnapshot.upsert));
   });
 
   it("loads validated snapshots keyed by instance id", async () => {
@@ -50,11 +62,8 @@ describe("playlist-release-snapshot.server", () => {
     });
 
     mockFindMany.mockResolvedValue([
-      {
-        instance_id: INSTANCE_ID,
-        release_data: release,
-      },
-    ] as never);
+      playlistReleaseSnapshotFindManyRowFactory.fromDiscogsRelease(release),
+    ]);
 
     const snapshots = await loadPlaylistReleaseSnapshots({
       userId: USER_ID,
@@ -81,7 +90,13 @@ describe("playlist-release-snapshot.server", () => {
       instance_id: INSTANCE_ID,
     });
 
-    mockUpsert.mockResolvedValue({} as never);
+    mockUpsert.mockResolvedValue(
+      playlistReleaseSnapshotUpsertResultFactory.build({
+        user_id: USER_ID,
+        playlist_id: PLAYLIST_ID,
+        instance_id: INSTANCE_ID,
+      }),
+    );
 
     await persistPlaylistReleaseSnapshots({
       userId: USER_ID,
