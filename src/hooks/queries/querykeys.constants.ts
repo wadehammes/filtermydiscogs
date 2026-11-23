@@ -102,6 +102,10 @@ export const AdminUserLookupQueryKeys = {
     [...AdminUserLookupQueryKeys.all(), username] as const,
 };
 
+export const AdminWelcomeEmailPendingQueryKeys = {
+  all: () => ["adminWelcomeEmailPending"] as const,
+};
+
 export const UserPreferencesQueryKeys = {
   all: () => ["userPreferences"] as const,
   byUserId: (userId: string | number | null) =>
