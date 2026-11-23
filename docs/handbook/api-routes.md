@@ -29,7 +29,7 @@ Browser code should call **[`api`](../../src/api/urls.ts)** only; implementation
 | `userPreferences`, `updateUserPreferences`, `userContact`, `updateUserContact`, `dismissSupportProjectToast` | `/api/user/preferences`, `/api/user/contact`, `/api/user/support-toast/dismiss` |
 | `recordTrackEvent`, `fetchTrackStats`, `saveTrackYoutubeOverride`, `fetchYoutubeOembed` | `/api/tracks/*`, `/api/youtube/oembed` |
 | `mostCratedReleases`, `topUserTracks` | `/api/dashboard/*` |
-| `adminStats`, `adminUserLookup` | `/api/admin/*` |
+| `adminStats`, `adminUserLookup`, `adminWelcomeEmailPending`, `sendAdminWelcomeEmail` | `/api/admin/stats`, `/api/admin/users/[username]`, `/api/admin/welcome-email/pending`, `/api/admin/welcome-email/send` |
 | `buildVersion` | `/api/build-version` |
 
 When you add a **`api.newMethod`**, add the endpoint module, wire it in **`urls.ts`**, add a route under `src/app/api/`, Zod schema if needed, and update [database.md](database.md) (or this table) in the same PR.

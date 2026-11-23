@@ -28,8 +28,10 @@ import {
 import {
   fetchAdminStats,
   fetchAdminUserLookup,
+  fetchAdminWelcomeEmailPending,
   fetchMostCratedReleases,
   fetchTopUserTracks,
+  sendAdminWelcomeEmail,
 } from "src/api/endpoints/dashboard";
 import {
   addTrackToPlaylist,
@@ -70,6 +72,8 @@ export const api = {
   addReleaseToCrate,
   adminStats: fetchAdminStats,
   adminUserLookup: fetchAdminUserLookup,
+  adminWelcomeEmailPending: fetchAdminWelcomeEmailPending,
+  sendAdminWelcomeEmail,
   buildVersion: fetchBuildVersion,
   checkAuth,
   clearAllPackedInCrate,

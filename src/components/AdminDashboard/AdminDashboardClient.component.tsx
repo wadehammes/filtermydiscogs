@@ -7,6 +7,7 @@ import { AdminHero } from "src/components/AdminDashboard/AdminHero.component";
 import { AdminMetricTable } from "src/components/AdminDashboard/AdminMetricTable.component";
 import { AdminPreferenceBreakdownPanel } from "src/components/AdminDashboard/AdminPreferenceBreakdownPanel.component";
 import { AdminUserLookupPanel } from "src/components/AdminDashboard/AdminUserLookupPanel.component";
+import { AdminWelcomeEmailPanel } from "src/components/AdminDashboard/AdminWelcomeEmailPanel.component";
 import { ReturningUsersChart } from "src/components/AdminDashboard/ReturningUsersChart.component";
 import { AdminYoutubeEmbedTestPanel } from "src/components/AdminYoutubeEmbedTestPanel/AdminYoutubeEmbedTestPanel.component";
 import appLoadingStyles from "src/components/AppPageLoading/AppPageLoading.module.css";
@@ -104,6 +105,7 @@ const ADMIN_SECTION_LINKS = [
   { href: "#listening", label: "Listening" },
   { href: "#playlists", label: "Playlists" },
   { href: "#usage", label: "Usage" },
+  { href: "#welcome-email", label: "Welcome" },
   { href: "#user-lookup", label: "Lookup" },
   { href: "#youtube-embed-test", label: "Embed test" },
 ] as const;
@@ -957,6 +959,8 @@ export default function AdminDashboardClient({
                   </article>
                 </div>
               </DashboardSection>
+
+              <AdminWelcomeEmailPanel enabled={Boolean(stats)} />
 
               <AdminUserLookupPanel />
 

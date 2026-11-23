@@ -25,6 +25,12 @@ jest.mock("src/lib/renderWelcomeSignupEmail.server", () => ({
   renderWelcomeSignupEmail: mockRenderWelcomeSignupEmail,
 }));
 
+const mockReportTaggedAppError = jest.fn();
+
+jest.mock("src/lib/sentry/reportTaggedAppError.server", () => ({
+  reportTaggedAppError: mockReportTaggedAppError,
+}));
+
 jest.mock("src/lib/db", () => ({
   prisma: {
     user: {
@@ -70,6 +76,7 @@ beforeEach(async () => {
     "FilterMyDisco.gs <onboarding@filtermydisco.gs>",
   );
   mockEmailsSend.mockResolvedValue({ data: { id: "msg-1" } });
+  mockReportTaggedAppError.mockReset();
   mockRenderWelcomeSignupEmail.mockReset();
   mockRenderWelcomeSignupEmail.mockImplementation(async () => ({
     subject: "Welcome to FilterMyDisco.gs",
@@ -161,6 +168,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
 
     expect(mockUpdateMany).not.toHaveBeenCalled();
     expect(mockEmailsSend).not.toHaveBeenCalled();
+    expect(mockReportTaggedAppError).toHaveBeenCalled();
   });
 
   it("sends for a returning account when welcome was never sent", async () => {

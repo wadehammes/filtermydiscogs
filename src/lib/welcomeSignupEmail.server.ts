@@ -7,17 +7,26 @@ import {
 import { prisma } from "src/lib/db";
 import { renderWelcomeSignupEmail } from "src/lib/renderWelcomeSignupEmail.server";
 import { getResendClient, getResendFromEmail } from "src/lib/resend.server";
+import { reportTaggedAppError } from "src/lib/sentry/reportTaggedAppError.server";
+
+let reportedWelcomeResendNotConfigured = false;
+
+const reportWelcomeResendNotConfiguredOnce = (): void => {
+  if (reportedWelcomeResendNotConfigured) {
+    return;
+  }
+  reportedWelcomeResendNotConfigured = true;
+  reportTaggedAppError(
+    { area: "welcome_email", kind: "resend_not_configured" },
+    new Error(
+      "Welcome email skipped: RESEND_API_KEY or RESEND_FROM_EMAIL missing",
+    ),
+  );
+};
 
 export const sendWelcomeSignupEmailIfEligible = async (
   discogsUserId: number,
 ): Promise<void> => {
-  const resend = getResendClient();
-  const from = getResendFromEmail();
-
-  if (!(resend && from)) {
-    return;
-  }
-
   const user = await prisma.user.findUnique({
     where: { discogs_user_id: discogsUserId },
     select: {
@@ -29,6 +38,14 @@ export const sendWelcomeSignupEmailIfEligible = async (
   });
 
   if (user == null || !isWelcomeSignupEmailEligibleAccount(user)) {
+    return;
+  }
+
+  const resend = getResendClient();
+  const from = getResendFromEmail();
+
+  if (!(resend && from)) {
+    reportWelcomeResendNotConfiguredOnce();
     return;
   }
 
