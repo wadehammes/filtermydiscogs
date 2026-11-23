@@ -70,6 +70,7 @@ jest.mock("src/lib/public-playlist-discogs.server", () => ({
       crateSnapshotsByInstanceId: Map<string, unknown>;
     }) => [...crateSnapshotsByInstanceId.values()],
   ),
+  backfillMissingDisplayArtInSnapshotMap: jest.fn(async () => []),
 }));
 
 jest.mock("src/lib/discogs-consumer-search.server", () => ({
@@ -109,6 +110,9 @@ let mockUserFindUnique: jest.Mock<
 let mockHydratePublicPlaylistReleases: jest.MockedFunction<
   DiscogsModule["hydratePublicPlaylistReleases"]
 >;
+let mockBackfillMissingDisplayArtInSnapshotMap: jest.MockedFunction<
+  DiscogsModule["backfillMissingDisplayArtInSnapshotMap"]
+>;
 
 const PLAYLIST_ID = "11111111-2222-3333-4444-555555555555";
 const USER_ID = 123;
@@ -127,6 +131,9 @@ describe("loadPublicPlaylist", () => {
     loadPublicPlaylist = loadModule.loadPublicPlaylist;
     mockHydratePublicPlaylistReleases = jest.mocked(
       discogsModule.hydratePublicPlaylistReleases,
+    );
+    mockBackfillMissingDisplayArtInSnapshotMap = jest.mocked(
+      discogsModule.backfillMissingDisplayArtInSnapshotMap,
     );
     mockFindPublicPlaylistById = jest.mocked(
       queryModule.findPublicPlaylistById,
@@ -265,6 +272,33 @@ describe("loadPublicPlaylist", () => {
       setImmediate(resolve);
     });
     expect(mockPlaylistReleaseSnapshotUpsert).toHaveBeenCalled();
+  });
+
+  it("when discogsHydration is snapshotsOnly on a public playlist, backfills missing art via snapshot map only", async () => {
+    mockFindPublicPlaylistById.mockResolvedValue(
+      publicPlaylistRowFactory.forSharedLoadTest({
+        user_id: USER_ID,
+        id: PLAYLIST_ID,
+      }),
+    );
+    mockPlaylistTrackFindMany.mockResolvedValue([
+      playlistDetailTrackJoinRowFactory.fromTrackRow(
+        playlistTrackRowFactory.build({
+          track_key: "instance-9001:A1",
+          instance_id: "instance-9001",
+          discogs_release_id: 249504,
+        }),
+      ),
+    ]);
+    mockCrateReleaseFindMany.mockResolvedValue([]);
+    mockPlaylistReleaseSnapshotFindMany.mockResolvedValue([]);
+
+    await loadPublicPlaylist(PLAYLIST_ID, {
+      discogsHydration: "snapshotsOnly",
+    });
+
+    expect(mockBackfillMissingDisplayArtInSnapshotMap).toHaveBeenCalledTimes(1);
+    expect(mockHydratePublicPlaylistReleases).not.toHaveBeenCalled();
   });
 
   it("when discogsHydration is snapshotsOnly, does not call hydratePublicPlaylistReleases", async () => {

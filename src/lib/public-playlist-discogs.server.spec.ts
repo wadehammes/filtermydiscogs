@@ -71,6 +71,95 @@ describe("buildPublicPlaylistReleasesFromSnapshots", () => {
   });
 });
 
+describe("backfillMissingDisplayArtInSnapshotMap", () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const fetchModule = await import(
+      "src/lib/fetchDiscogsReleaseRecord.server"
+    );
+    mockFetchDiscogsReleaseRecord = jest.mocked(
+      fetchModule.fetchDiscogsReleaseRecord,
+    );
+  });
+
+  it("when snapshots lack art but tracks have release ids, fetches Discogs and merges cover art", async () => {
+    const { backfillMissingDisplayArtInSnapshotMap } = await import(
+      "src/lib/public-playlist-discogs.server"
+    );
+    const { DISCOGS_THROTTLE_CALLERS } = await import(
+      "src/constants/discogsThrottleCaller.constants"
+    );
+    const discogsId = 249504;
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: discogsId,
+      images: [
+        {
+          type: "primary",
+          uri: "https://i.discogs.com/fetched-cover.jpg",
+        },
+      ],
+    });
+
+    mockFetchDiscogsReleaseRecord.mockResolvedValue(detail);
+
+    const snapshot = releaseFactory.build({
+      instance_id: "instance-9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        id: discogsId,
+        thumb: "",
+        cover_image: "",
+      },
+    });
+    const snapshotsByInstanceId = new Map([["instance-9001", snapshot]]);
+    const tracks = [
+      playlistTrackRowFactory.opening({
+        instance_id: "instance-9001",
+        discogs_release_id: discogsId,
+      }),
+    ];
+
+    const backfilled = await backfillMissingDisplayArtInSnapshotMap({
+      tracks,
+      snapshotsByInstanceId,
+      throttleCaller: DISCOGS_THROTTLE_CALLERS.publicPlaylistHydrate,
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).toHaveBeenCalledTimes(1);
+    expect(backfilled).toHaveLength(1);
+    expect(
+      snapshotsByInstanceId.get("instance-9001")?.basic_information.cover_image,
+    ).toBe("https://i.discogs.com/fetched-cover.jpg");
+  });
+
+  it("when snapshots already include display art, does not call Discogs", async () => {
+    const { backfillMissingDisplayArtInSnapshotMap } = await import(
+      "src/lib/public-playlist-discogs.server"
+    );
+    const { DISCOGS_THROTTLE_CALLERS } = await import(
+      "src/constants/discogsThrottleCaller.constants"
+    );
+    const snapshot = releaseFactory.withDisplayDefaults({
+      instance_id: "instance-9001",
+    });
+    const snapshotsByInstanceId = new Map([["instance-9001", snapshot]]);
+
+    const backfilled = await backfillMissingDisplayArtInSnapshotMap({
+      tracks: [
+        playlistTrackRowFactory.opening({
+          instance_id: "instance-9001",
+          discogs_release_id: snapshot.basic_information.id ?? 1,
+        }),
+      ],
+      snapshotsByInstanceId,
+      throttleCaller: DISCOGS_THROTTLE_CALLERS.publicPlaylistHydrate,
+    });
+
+    expect(mockFetchDiscogsReleaseRecord).not.toHaveBeenCalled();
+    expect(backfilled).toEqual([]);
+  });
+});
+
 describe("hydratePublicPlaylistReleases", () => {
   beforeEach(async () => {
     jest.clearAllMocks();

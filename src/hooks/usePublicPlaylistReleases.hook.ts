@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
 import type { DiscogsRelease } from "src/types";
 import type { PlaylistTrackRow } from "src/types/playlist.types";
@@ -23,6 +24,7 @@ export const usePublicPlaylistReleases = ({
   apiReleases: DiscogsRelease[];
 }) => {
   const queryClient = useQueryClient();
+  const isMiniPlayerVisible = useIsMiniPlayerVisible();
 
   const apiReleaseByInstanceId = useMemo(() => {
     const map = new Map<string, DiscogsRelease>();
@@ -49,7 +51,7 @@ export const usePublicPlaylistReleases = ({
   const { data: hydratedReleaseDetails = EMPTY_DISCOGS_RELEASE_DETAIL_MAP } =
     useHydrateDiscogsReleaseDetails({
       releaseIds: uniqueDiscogsReleaseIds,
-      enabled: uniqueDiscogsReleaseIds.length > 0,
+      enabled: uniqueDiscogsReleaseIds.length > 0 && !isMiniPlayerVisible,
     });
 
   const releaseByInstanceId = useMemo(() => {

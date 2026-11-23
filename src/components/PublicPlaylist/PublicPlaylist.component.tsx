@@ -60,6 +60,8 @@ export const PublicPlaylistClient = ({
     apiReleases,
   });
 
+  const playbackReleases = apiReleases;
+
   const coverThumbUrls = useMemo(
     () =>
       resolvePublicPlaylistHeroThumbUrls({
@@ -81,7 +83,7 @@ export const PublicPlaylistClient = ({
   useRecordPublicPlaylistView(playlistId, Boolean(data));
 
   const { playPlaylistTrack, playPlaylistTracks } = usePlaylistPlayback({
-    releases,
+    releases: playbackReleases,
     publicEngagementPlaylistId: playlistId,
   });
 

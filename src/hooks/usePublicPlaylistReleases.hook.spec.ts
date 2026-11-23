@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { createElement, type ReactNode } from "react";
 import { api } from "src/api/urls";
+import { ReleasePlaybackVisibilityContext } from "src/context/releasePlaybackContexts";
 import { usePublicPlaylistReleases } from "src/hooks/usePublicPlaylistReleases.hook";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 import { playlistTrackRowFactory } from "src/tests/factories/PlaylistTrackRow.factory";
@@ -10,6 +12,28 @@ import { renderFeatureHook, waitFor } from "test-utils";
 jest.mock("src/api/urls");
 
 const mockApi = jest.mocked(api);
+
+const PublicPlaylistReleasesDockHiddenWrapper = ({
+  children,
+}: {
+  children: ReactNode;
+}) =>
+  createElement(
+    ReleasePlaybackVisibilityContext.Provider,
+    { value: false },
+    children,
+  );
+
+const PublicPlaylistReleasesDockVisibleWrapper = ({
+  children,
+}: {
+  children: ReactNode;
+}) =>
+  createElement(
+    ReleasePlaybackVisibilityContext.Provider,
+    { value: true },
+    children,
+  );
 
 describe("usePublicPlaylistReleases", () => {
   beforeEach(() => {
@@ -51,11 +75,13 @@ describe("usePublicPlaylistReleases", () => {
 
     setupFetchDiscogsReleaseMock(mockApi, detail);
 
-    const { result } = renderFeatureHook(() =>
-      usePublicPlaylistReleases({
-        tracks: [trackA, trackB],
-        apiReleases: [apiRelease],
-      }),
+    const { result } = renderFeatureHook(
+      () =>
+        usePublicPlaylistReleases({
+          tracks: [trackA, trackB],
+          apiReleases: [apiRelease],
+        }),
+      { wrapper: PublicPlaylistReleasesDockHiddenWrapper },
     );
 
     await waitFor(() => {
@@ -84,17 +110,48 @@ describe("usePublicPlaylistReleases", () => {
       },
     });
 
-    const { result } = renderFeatureHook(() =>
-      usePublicPlaylistReleases({
-        tracks: [track],
-        apiReleases: [apiRelease],
-      }),
+    const { result } = renderFeatureHook(
+      () =>
+        usePublicPlaylistReleases({
+          tracks: [track],
+          apiReleases: [apiRelease],
+        }),
+      { wrapper: PublicPlaylistReleasesDockHiddenWrapper },
     );
 
     await waitFor(() => {
       expect(
         result.current.releaseByInstanceId.get("9001")?.basic_information.thumb,
       ).toBe("https://i.discogs.com/ssr-thumb.jpg");
+    });
+
+    expect(mockApi.discogsReleaseBatch).not.toHaveBeenCalled();
+  });
+
+  it("when the playback dock is visible, does not call release batch", async () => {
+    const track = playlistTrackRowFactory.opening({
+      discogs_release_id: 249504,
+    });
+    const apiRelease = releaseFactory.build({
+      instance_id: "9001",
+      basic_information: {
+        ...releaseFactory.build().basic_information,
+        thumb: "",
+        cover_image: "",
+      },
+    });
+
+    const { result } = renderFeatureHook(
+      () =>
+        usePublicPlaylistReleases({
+          tracks: [track],
+          apiReleases: [apiRelease],
+        }),
+      { wrapper: PublicPlaylistReleasesDockVisibleWrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.releaseByInstanceId.get("9001")).toBeDefined();
     });
 
     expect(mockApi.discogsReleaseBatch).not.toHaveBeenCalled();

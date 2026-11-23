@@ -1,3 +1,4 @@
+import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import { backfillDiscogsReleaseIdsForPlaylistTracks } from "src/lib/backfill-user-track-discogs-release-id.server";
 import { backfillPlaylistTrackDiscogsReleaseIds } from "src/lib/backfill-user-track-discogs-release-id-search.server";
 import { prisma } from "src/lib/db";
@@ -8,6 +9,7 @@ import {
 } from "src/lib/playlist-release-snapshot.server";
 import { mapPlaylistTrackRow } from "src/lib/playlist-track-map.server";
 import {
+  backfillMissingDisplayArtInSnapshotMap,
   buildPublicPlaylistReleasesFromSnapshots,
   hydratePublicPlaylistReleases,
 } from "src/lib/public-playlist-discogs.server";
@@ -162,6 +164,27 @@ export const loadPublicPlaylist = async (
     });
   }
   const discogsHydration = options?.discogsHydration ?? "snapshotsOnly";
+
+  if (discogsHydration === "snapshotsOnly" && playlist.private === false) {
+    const backfilledReleases = await backfillMissingDisplayArtInSnapshotMap({
+      tracks,
+      snapshotsByInstanceId: crateSnapshotsByInstanceId,
+      throttleCaller: DISCOGS_THROTTLE_CALLERS.publicPlaylistHydrate,
+    });
+
+    if (backfilledReleases.length > 0) {
+      void persistPlaylistReleaseSnapshots({
+        userId: playlist.user_id,
+        playlistId: playlist.id,
+        releases: backfilledReleases,
+      }).catch((error: unknown) => {
+        reportInfrastructureFailure("public_playlist", error, {
+          operation: "persist_playlist_release_snapshots_missing_art",
+          playlistId: playlist.id,
+        });
+      });
+    }
+  }
 
   if (discogsHydration === "full") {
     tracks = await backfillPlaylistTrackDiscogsReleaseIds({
