@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
 const mockEmailsSend =
   jest.fn<
-    (input: Record<string, unknown>) => Promise<{ data: { id: string } }>
+    (input: Record<string, unknown>) => Promise<{
+      data: { id: string } | null;
+      error?: { message: string; name: string };
+    }>
   >();
 const mockGetResendClient = jest.fn();
 const mockGetResendFromEmail = jest.fn<() => string | null>();
@@ -218,6 +221,22 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     await expect(
       sendWelcomeSignupEmailIfEligible(discogsUserId),
     ).rejects.toThrow("Resend down");
+
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { discogs_user_id: discogsUserId },
+      data: { welcome_email_sent: false },
+    });
+  });
+
+  it("clears welcome_email_sent when Resend returns an error without throwing", async () => {
+    mockEmailsSend.mockResolvedValue({
+      data: null,
+      error: { message: "Domain not verified", name: "validation_error" },
+    });
+
+    await expect(
+      sendWelcomeSignupEmailIfEligible(discogsUserId),
+    ).rejects.toThrow("Domain not verified");
 
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { discogs_user_id: discogsUserId },

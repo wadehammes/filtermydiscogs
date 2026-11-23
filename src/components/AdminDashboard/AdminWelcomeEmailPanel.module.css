@@ -51,8 +51,97 @@
   margin: 0;
 }
 
+.tableContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.queueTable {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.queueTable thead {
+  border-bottom: 1px solid var(--border);
+}
+
+.queueTable th,
+.queueTable td {
+  box-sizing: border-box;
+  padding-inline: var(--space-2);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.queueTable th {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.08em;
+  padding-block: var(--space-2);
+  text-transform: uppercase;
+}
+
+.queueTable td {
+  border-top: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  padding-block: var(--space-3);
+}
+
+.queueTable tbody tr:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 4%, transparent);
+}
+
+.queueTable col.colUser {
+  width: 22%;
+}
+
+.queueTable col.colEmail {
+  width: 30%;
+}
+
+.queueTable col.colSignedUp {
+  width: 22%;
+}
+
+.queueTable col.colLogins {
+  width: 10%;
+}
+
+.queueTable col.colSend {
+  width: 16%;
+}
+
 .emailCell {
   font-family: var(--font-family-meta);
   font-size: var(--text-sm);
   word-break: break-all;
+}
+
+.signedUpCell {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.loginsCell {
+  font-family: var(--font-family-meta);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.sendCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.emptyTable {
+  color: var(--muted-foreground);
+  font-style: italic;
+  padding-block: var(--space-4);
+  text-align: center;
 }
