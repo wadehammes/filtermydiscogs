@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import {
   createErrorResponse,
   getVerifiedUserFromRequestWithRateLimit,
+  logSanitizedApiRouteFailure,
 } from "src/lib/api-helpers";
 import { prisma } from "src/lib/db";
 import { privateRouteJson } from "src/lib/private-route-response";
@@ -12,6 +13,7 @@ import {
 } from "src/lib/user-contact.server";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { userContactPatchSchema } from "src/lib/validation/userContact.schemas";
+import { sendWelcomeSignupEmailIfEligible } from "src/lib/welcomeSignupEmail.server";
 import type { UserContactPatch } from "src/types/userContact.types";
 
 const USER_CONTACT_SELECT = {
@@ -87,6 +89,16 @@ export async function PATCH(request: NextRequest) {
         marketing_emails_opt_in: merged.contact.marketingEmailsOptIn,
       },
     });
+
+    try {
+      await sendWelcomeSignupEmailIfEligible(verified.user.userId);
+    } catch (error) {
+      logSanitizedApiRouteFailure(
+        "/api/user/contact",
+        error,
+        "Welcome email after contact save failed:",
+      );
+    }
 
     return privateRouteJson(merged.contact);
   } catch (error) {

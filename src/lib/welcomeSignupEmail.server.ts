@@ -24,7 +24,6 @@ export const sendWelcomeSignupEmailIfEligible = async (
       email: true,
       username: true,
       welcome_email_sent: true,
-      login_count: true,
       created_at: true,
     },
   });

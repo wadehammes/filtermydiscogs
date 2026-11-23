@@ -104,7 +104,6 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
           discogs_user_id: discogsUserId,
           welcome_email_sent: false,
           email: { not: null },
-          login_count: 1,
         }),
         data: {
           welcome_email_sent: true,
@@ -164,12 +163,11 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     expect(mockEmailsSend).not.toHaveBeenCalled();
   });
 
-  it("does not send for a returning account with login_count above one", async () => {
+  it("sends for a returning account when welcome was never sent", async () => {
     mockFindUnique.mockResolvedValue({
       email: "dig@example.com",
       username: "crate-digger",
       welcome_email_sent: false,
-      login_count: 42,
       created_at: new Date("2026-11-22T18:00:00.000Z"),
     } as unknown as Awaited<
       ReturnType<DbModule["prisma"]["user"]["findUnique"]>
@@ -177,8 +175,8 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
 
     await sendWelcomeSignupEmailIfEligible(discogsUserId);
 
-    expect(mockUpdateMany).not.toHaveBeenCalled();
-    expect(mockEmailsSend).not.toHaveBeenCalled();
+    expect(mockUpdateMany).toHaveBeenCalled();
+    expect(mockEmailsSend).toHaveBeenCalled();
   });
 
   it("does not send for accounts created before the rollout cutoff", async () => {

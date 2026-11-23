@@ -20,6 +20,9 @@ jest.mock("src/lib/db", () => ({
 }));
 
 jest.mock("src/lib/api-helpers");
+jest.mock("src/lib/welcomeSignupEmail.server", () => ({
+  sendWelcomeSignupEmailIfEligible: jest.fn(),
+}));
 
 type RouteModule = typeof import("src/app/api/user/contact/route");
 type ApiHelpersModule = typeof import("src/lib/api-helpers");
@@ -34,6 +37,9 @@ let mockFindUnique: jest.MockedFunction<
   DbModule["prisma"]["user"]["findUnique"]
 >;
 let mockUpsert: jest.MockedFunction<DbModule["prisma"]["user"]["upsert"]>;
+let mockSendWelcomeSignupEmailIfEligible: jest.MockedFunction<
+  typeof import("src/lib/welcomeSignupEmail.server")["sendWelcomeSignupEmailIfEligible"]
+>;
 
 const USER_ID = 42;
 const USERNAME = "crate-digger";
@@ -57,11 +63,16 @@ beforeAll(async () => {
   );
   mockFindUnique = jest.mocked(db.prisma.user.findUnique);
   mockUpsert = jest.mocked(db.prisma.user.upsert);
+  const welcomeEmail = await import("src/lib/welcomeSignupEmail.server");
+  mockSendWelcomeSignupEmailIfEligible = jest.mocked(
+    welcomeEmail.sendWelcomeSignupEmailIfEligible,
+  );
 });
 
 describe("/api/user/contact", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSendWelcomeSignupEmailIfEligible.mockResolvedValue(undefined);
     jest.spyOn(NextResponse, "json").mockImplementation((body, init) => {
       return new NextResponse(JSON.stringify(body), init);
     });
@@ -145,5 +156,6 @@ describe("/api/user/contact", () => {
       email: "new@example.com",
       marketingEmailsOptIn: true,
     });
+    expect(mockSendWelcomeSignupEmailIfEligible).toHaveBeenCalledWith(USER_ID);
   });
 });
