@@ -4,6 +4,8 @@ import { WelcomeSignupEmailTemplate } from "src/components/Email/WelcomeSignupEm
 import { WELCOME_SIGNUP_EMAIL_SUBJECT } from "src/constants/welcomeSignupEmailCopy.constants";
 import { getEmailBaseUrl } from "src/lib/emailConstants";
 import { renderReactEmailHtmlAndText } from "src/lib/renderReactEmail";
+import { getResendReplyTo } from "src/lib/resend.server";
+import { definedProps } from "src/utils/definedProps";
 
 export type RenderedWelcomeSignupEmail = {
   subject: string;
@@ -17,8 +19,15 @@ export const renderWelcomeSignupEmail = async ({
   username: string;
 }): Promise<RenderedWelcomeSignupEmail> => {
   const baseUrl = getEmailBaseUrl();
+  const replyTo = getResendReplyTo();
   const { html, text } = await renderReactEmailHtmlAndText(
-    <WelcomeSignupEmailTemplate baseUrl={baseUrl} username={username} />,
+    <WelcomeSignupEmailTemplate
+      {...definedProps({
+        baseUrl,
+        ...(replyTo ? { contactEmail: replyTo } : {}),
+        username,
+      })}
+    />,
   );
 
   return {

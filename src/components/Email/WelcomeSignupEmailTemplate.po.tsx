@@ -3,17 +3,21 @@ jest.mock("react-email", () =>
 );
 
 import { WelcomeSignupEmailTemplate } from "src/components/Email/WelcomeSignupEmailTemplate.component";
+import { definedProps } from "src/utils/definedProps";
 import { render } from "test-utils";
 
 const normalizeWhitespace = (value: string) =>
   value.replace(/\s+/g, " ").trim();
 
 export class WelcomeSignupEmailTemplatePO {
-  renderWelcomeSignupEmail(username = "crate-digger") {
+  renderWelcomeSignupEmail(username = "crate-digger", contactEmail?: string) {
     return render(
       <WelcomeSignupEmailTemplate
-        baseUrl="https://www.filtermydisco.gs"
-        username={username}
+        {...definedProps({
+          baseUrl: "https://www.filtermydisco.gs",
+          ...(contactEmail ? { contactEmail } : {}),
+          username,
+        })}
       />,
     );
   }

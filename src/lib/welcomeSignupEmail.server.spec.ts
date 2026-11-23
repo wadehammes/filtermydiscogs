@@ -1,18 +1,34 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
-const mockEmailsSend =
-  jest.fn<
-    (input: Record<string, unknown>) => Promise<{
-      data: { id: string } | null;
-      error?: { message: string; name: string };
-    }>
-  >();
 const mockGetResendClient = jest.fn();
 const mockGetResendFromEmail = jest.fn<() => string | null>();
+const mockSendResendEmail =
+  jest.fn<
+    (
+      resend: unknown,
+      input: {
+        from: string;
+        to: string;
+        subject: string;
+        text: string;
+        html: string;
+      },
+    ) => Promise<void>
+  >();
 
 jest.mock("src/lib/resend.server", () => ({
   getResendClient: () => mockGetResendClient(),
   getResendFromEmail: () => mockGetResendFromEmail(),
+  sendResendEmail: (
+    resend: unknown,
+    input: {
+      from: string;
+      to: string;
+      subject: string;
+      text: string;
+      html: string;
+    },
+  ) => mockSendResendEmail(resend, input),
 }));
 
 const mockRenderWelcomeSignupEmail =
@@ -57,12 +73,13 @@ let mockUpdate: jest.MockedFunction<DbModule["prisma"]["user"]["update"]>;
 let sendWelcomeSignupEmailIfEligible: typeof import("src/lib/welcomeSignupEmail.server").sendWelcomeSignupEmailIfEligible;
 
 const discogsUserId = 42;
+const resendClientStub = { emails: { send: jest.fn() } };
 
 beforeEach(async () => {
   jest.resetModules();
-  mockEmailsSend.mockReset();
   mockGetResendClient.mockReset();
   mockGetResendFromEmail.mockReset();
+  mockSendResendEmail.mockReset();
 
   const db = (await import("src/lib/db")) as DbModule;
   mockFindUnique = jest.mocked(db.prisma.user.findUnique);
@@ -72,13 +89,11 @@ beforeEach(async () => {
   mockUpdateMany.mockReset();
   mockUpdate.mockReset();
 
-  mockGetResendClient.mockReturnValue({
-    emails: { send: mockEmailsSend },
-  });
+  mockGetResendClient.mockReturnValue(resendClientStub);
   mockGetResendFromEmail.mockReturnValue(
-    "FilterMyDisco.gs <onboarding@filtermydisco.gs>",
+    "FilterMyDisco.gs <no-reply@updates.filtermydisco.gs>",
   );
-  mockEmailsSend.mockResolvedValue({ data: { id: "msg-1" } });
+  mockSendResendEmail.mockResolvedValue(undefined);
   mockReportTaggedAppError.mockReset();
   mockRenderWelcomeSignupEmail.mockReset();
   mockRenderWelcomeSignupEmail.mockImplementation(async () => ({
@@ -120,10 +135,11 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
         },
       }),
     );
-    expect(mockEmailsSend).toHaveBeenCalledWith(
+    expect(mockSendResendEmail).toHaveBeenCalledWith(
+      resendClientStub,
       expect.objectContaining({
         to: "dig@example.com",
-        from: "FilterMyDisco.gs <onboarding@filtermydisco.gs>",
+        from: "FilterMyDisco.gs <no-reply@updates.filtermydisco.gs>",
         subject: expect.stringContaining("Welcome"),
       }),
     );
@@ -144,7 +160,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     await sendWelcomeSignupEmailIfEligible(discogsUserId);
 
     expect(mockUpdateMany).not.toHaveBeenCalled();
-    expect(mockEmailsSend).not.toHaveBeenCalled();
+    expect(mockSendResendEmail).not.toHaveBeenCalled();
   });
 
   it("does not send when there is no email address", async () => {
@@ -161,7 +177,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     await sendWelcomeSignupEmailIfEligible(discogsUserId);
 
     expect(mockUpdateMany).not.toHaveBeenCalled();
-    expect(mockEmailsSend).not.toHaveBeenCalled();
+    expect(mockSendResendEmail).not.toHaveBeenCalled();
   });
 
   it("does not send when Resend is not configured", async () => {
@@ -170,7 +186,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     await sendWelcomeSignupEmailIfEligible(discogsUserId);
 
     expect(mockUpdateMany).not.toHaveBeenCalled();
-    expect(mockEmailsSend).not.toHaveBeenCalled();
+    expect(mockSendResendEmail).not.toHaveBeenCalled();
     expect(mockReportTaggedAppError).toHaveBeenCalled();
   });
 
@@ -187,7 +203,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     await sendWelcomeSignupEmailIfEligible(discogsUserId);
 
     expect(mockUpdateMany).toHaveBeenCalled();
-    expect(mockEmailsSend).toHaveBeenCalled();
+    expect(mockSendResendEmail).toHaveBeenCalled();
   });
 
   it("does not send for accounts created before the rollout cutoff", async () => {
@@ -204,7 +220,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     await sendWelcomeSignupEmailIfEligible(discogsUserId);
 
     expect(mockUpdateMany).not.toHaveBeenCalled();
-    expect(mockEmailsSend).not.toHaveBeenCalled();
+    expect(mockSendResendEmail).not.toHaveBeenCalled();
   });
 
   it("does not send when another login already claimed the slot", async () => {
@@ -212,31 +228,15 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
 
     await sendWelcomeSignupEmailIfEligible(discogsUserId);
 
-    expect(mockEmailsSend).not.toHaveBeenCalled();
+    expect(mockSendResendEmail).not.toHaveBeenCalled();
   });
 
   it("clears welcome_email_sent when delivery fails", async () => {
-    mockEmailsSend.mockRejectedValue(new Error("Resend down"));
+    mockSendResendEmail.mockRejectedValue(new Error("Resend down"));
 
     await expect(
       sendWelcomeSignupEmailIfEligible(discogsUserId),
     ).rejects.toThrow("Resend down");
-
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { discogs_user_id: discogsUserId },
-      data: { welcome_email_sent: false },
-    });
-  });
-
-  it("clears welcome_email_sent when Resend returns an error without throwing", async () => {
-    mockEmailsSend.mockResolvedValue({
-      data: null,
-      error: { message: "Domain not verified", name: "validation_error" },
-    });
-
-    await expect(
-      sendWelcomeSignupEmailIfEligible(discogsUserId),
-    ).rejects.toThrow("Domain not verified");
 
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { discogs_user_id: discogsUserId },

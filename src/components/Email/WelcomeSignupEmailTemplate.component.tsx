@@ -11,14 +11,17 @@ import {
   welcomeSignupEmailCopy,
 } from "src/constants/welcomeSignupEmailCopy.constants";
 import { getEmailBaseUrl } from "src/lib/emailConstants";
+import { definedProps } from "src/utils/definedProps";
 
 export type WelcomeSignupEmailTemplateProps = {
   baseUrl?: string;
+  contactEmail?: string;
   username: string;
 };
 
 export const WelcomeSignupEmailTemplate = ({
   baseUrl = getEmailBaseUrl(),
+  contactEmail,
   username,
 }: WelcomeSignupEmailTemplateProps) => {
   const collectionUrl = `${baseUrl}/collection`;
@@ -71,13 +74,19 @@ export const WelcomeSignupEmailTemplate = ({
         </Text>
       </Section>
 
-      <EmailFooter baseUrl={baseUrl} />
+      <EmailFooter
+        {...definedProps({
+          baseUrl,
+          ...(contactEmail ? { contactEmail } : {}),
+        })}
+      />
     </EmailLayout>
   );
 };
 
 WelcomeSignupEmailTemplate.PreviewProps = {
   baseUrl: "https://www.filtermydisco.gs",
+  contactEmail: "noise@filtermydiscogs",
   username: "crate-digger",
 };
 

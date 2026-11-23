@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { WelcomeSignupEmailTemplatePO } from "src/components/Email/WelcomeSignupEmailTemplate.po";
+import { emailContactCopy } from "src/constants/emailCopy.constants";
 import { welcomeSignupEmailCopy } from "src/constants/welcomeSignupEmailCopy.constants";
 import { screen } from "test-utils";
 
@@ -31,5 +32,14 @@ describe("WelcomeSignupEmailTemplate", () => {
       "data-src",
       "https://www.filtermydisco.gs/email-icon.png",
     );
+  });
+
+  it("shows a mailto contact line when contactEmail is set", () => {
+    po.renderWelcomeSignupEmail("crate-digger", "noise@filtermydisco.gs");
+
+    expect(po.documentText()).toContain(emailContactCopy.contactLead);
+    expect(
+      screen.getByRole("link", { name: "noise@filtermydisco.gs" }),
+    ).toHaveAttribute("href", "mailto:noise@filtermydisco.gs");
   });
 });
