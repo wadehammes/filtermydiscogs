@@ -199,9 +199,7 @@ export const PublicPlaylistTrackItem = ({
                     </span>
                   ) : null}
                   {metaLine ? (
-                    <span className={tracklistStyles.trackCredits}>
-                      {metaLine}
-                    </span>
+                    <span className={styles.trackReleaseMeta}>{metaLine}</span>
                   ) : null}
                 </span>
               ) : null}
@@ -237,9 +235,7 @@ export const PublicPlaylistTrackItem = ({
                     </span>
                   ) : null}
                   {metaLine ? (
-                    <span className={tracklistStyles.trackCredits}>
-                      {metaLine}
-                    </span>
+                    <span className={styles.trackReleaseMeta}>{metaLine}</span>
                   ) : null}
                 </span>
               ) : null}

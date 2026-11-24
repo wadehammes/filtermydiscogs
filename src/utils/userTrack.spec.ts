@@ -15,6 +15,7 @@ import {
   mapUserYoutubeIdsByPosition,
   normalizeTrackStatsKeys,
   normalizeYoutubeVideoInput,
+  resolveTracklistRowDisplay,
 } from "src/utils/userTrack";
 
 describe("userTrack utils", () => {
@@ -40,6 +41,34 @@ describe("userTrack utils", () => {
       youtube_id: "dQw4w9WgXcQ",
       artist: "Test Artist",
       release_title: "Test Album",
+    });
+  });
+
+  it("resolveTracklistRowDisplay splits mono position column from title text", () => {
+    expect(resolveTracklistRowDisplay("A1", "Gaia")).toEqual({
+      accessibleLabel: "A1 - Gaia",
+      positionLabel: "A1",
+      titleLabel: "Gaia",
+    });
+    expect(resolveTracklistRowDisplay("A1", "A1 - Gaia")).toEqual({
+      accessibleLabel: "A1 - Gaia",
+      positionLabel: "A1",
+      titleLabel: "Gaia",
+    });
+    expect(resolveTracklistRowDisplay("A1", "A1")).toEqual({
+      accessibleLabel: "A1",
+      positionLabel: "A1",
+      titleLabel: "",
+    });
+    expect(
+      resolveTracklistRowDisplay(
+        "preview:https://www.youtube.com/watch?v=K9dGxyfJ1U",
+        "Walker. Membrane [Teluric Remix] (Ci.03)",
+      ),
+    ).toEqual({
+      accessibleLabel: "Walker. Membrane [Teluric Remix] (Ci.03)",
+      positionLabel: null,
+      titleLabel: "Walker. Membrane [Teluric Remix] (Ci.03)",
     });
   });
 

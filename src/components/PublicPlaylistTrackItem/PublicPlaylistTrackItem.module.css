@@ -34,6 +34,16 @@
   }
 }
 
+.trackReleaseMeta {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .trackMetaGroup {
   display: flex;
   flex-direction: column;

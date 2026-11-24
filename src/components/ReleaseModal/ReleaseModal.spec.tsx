@@ -2,13 +2,9 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ReleaseModalPageObject } from "src/components/ReleaseModal/ReleaseModal.po";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
-import { formatTrackPositionTitle } from "src/utils/userTrack";
 import { act, fireEvent, screen, waitFor } from "test-utils";
 
-const trackBLabel = formatTrackPositionTitle(
-  "B",
-  "Never Gonna Give You Up (Instrumental)",
-);
+const trackBTitle = "Never Gonna Give You Up (Instrumental)";
 
 let po: ReleaseModalPageObject;
 
@@ -36,7 +32,8 @@ describe("ReleaseModal", () => {
       expect(screen.getByTestId("fmdReleaseTracklist")).toBeInTheDocument();
     });
 
-    expect(screen.getByText(trackBLabel)).toBeInTheDocument();
+    expect(screen.getByText(trackBTitle)).toBeInTheDocument();
+    expect(screen.getByText("B")).toBeInTheDocument();
   });
 
   it("calls onClose when Escape is pressed", async () => {

@@ -175,7 +175,7 @@ export const PlaylistDrawerTrackItem = ({
               <span
                 className={classNames(
                   "typography-span",
-                  crateItemStyles.itemLabel,
+                  styles.trackReleaseMeta,
                 )}
               >
                 {metaLine}

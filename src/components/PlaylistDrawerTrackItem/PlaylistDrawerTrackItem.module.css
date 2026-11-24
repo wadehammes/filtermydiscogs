@@ -29,6 +29,15 @@
   min-width: 0;
 }
 
+.trackReleaseMeta {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @property --playlist-hot-track-border-angle {
   syntax: "<angle>";
   inherits: false;

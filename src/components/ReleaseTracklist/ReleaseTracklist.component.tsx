@@ -16,8 +16,8 @@ import type { DiscogsTrack } from "src/types";
 import { definedProps } from "src/utils/definedProps";
 import { formatTrackCreditsLine } from "src/utils/releaseDisplay";
 import {
-  formatTrackPositionTitle,
   formatUserTrackListenLabel,
+  resolveTracklistRowDisplay,
   type UserTrackStatCounts,
 } from "src/utils/userTrack";
 import styles from "./ReleaseTracklist.module.css";
@@ -63,7 +63,7 @@ export const ReleaseTracklist = ({
   isTrackQueued,
   isTrackUnqueueable,
   getPositionLabel,
-  hideTrackPosition: _hideTrackPosition = false,
+  hideTrackPosition = false,
   reserveQueueColumn = false,
   onTrackSelect,
   onTrackQueue,
@@ -124,7 +124,9 @@ export const ReleaseTracklist = ({
     <div className={styles.tracklistPanel}>
       <Tooltip.Provider closeDelay={80} delay={250}>
         <ol
-          className={classNames(styles.tracklist, styles.tracklistNoPosition)}
+          className={classNames(styles.tracklist, {
+            [styles.tracklistNoPosition]: hideTrackPosition,
+          })}
           data-testid="fmdReleaseTracklist"
           aria-label={RELEASE_TRACKLIST_LABEL}
         >
@@ -161,10 +163,14 @@ export const ReleaseTracklist = ({
               track,
               releaseArtistNames,
             });
-            const trackDisplayTitle = formatTrackPositionTitle(
-              getPositionLabel?.(track.position) ?? track.position,
-              track.title,
-            );
+            const positionInput =
+              getPositionLabel?.(track.position) ?? track.position;
+            const { accessibleLabel, positionLabel, titleLabel } =
+              resolveTracklistRowDisplay(positionInput, track.title);
+            const trackDisplayTitle = accessibleLabel;
+            const primaryTitleText = hideTrackPosition
+              ? trackDisplayTitle
+              : titleLabel || positionLabel || "Untitled track";
             const trackStats = trackStatsByPosition?.[track.position];
             const trackStatsLabel = trackStats
               ? formatUserTrackListenLabel(trackStats)
@@ -177,7 +183,7 @@ export const ReleaseTracklist = ({
                 ) : null}
                 <span className={styles.trackTitleStack}>
                   <span className={styles.trackTitleText}>
-                    {trackDisplayTitle}
+                    {primaryTitleText}
                   </span>
                   {trackCreditsLine ? (
                     <span className={styles.trackCredits}>
@@ -188,7 +194,14 @@ export const ReleaseTracklist = ({
               </span>
             );
 
-            const trackMainContent = trackTitleContent;
+            const trackMainContent = (
+              <>
+                {!hideTrackPosition && positionLabel ? (
+                  <span className={styles.trackPosition}>{positionLabel}</span>
+                ) : null}
+                {trackTitleContent}
+              </>
+            );
 
             return (
               <li
