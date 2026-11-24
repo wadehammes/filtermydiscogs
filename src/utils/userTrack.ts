@@ -120,6 +120,55 @@ export const findTracklistTitleByPosition = (
   return title || null;
 };
 
+export const resolveTracklistRowDisplay = (
+  trackPosition: string,
+  trackTitle: string,
+): {
+  accessibleLabel: string;
+  positionLabel: string | null;
+  titleLabel: string;
+} => {
+  const accessibleLabel = formatTrackPositionTitle(trackPosition, trackTitle);
+  const trimmedPosition = trackPosition.trim();
+  const position =
+    trimmedPosition && isPreviewTrackPosition(trimmedPosition)
+      ? null
+      : trimmedPosition || null;
+  const title = trackTitle.trim();
+
+  if (!position) {
+    return {
+      accessibleLabel,
+      positionLabel: null,
+      titleLabel: title || "Untitled track",
+    };
+  }
+
+  if (!title || title === position) {
+    return {
+      accessibleLabel,
+      positionLabel: position,
+      titleLabel: "",
+    };
+  }
+
+  const positionDashPrefix = `${position.toLowerCase()} - `;
+  const positionSpacePrefix = `${position.toLowerCase()} `;
+
+  let titleLabel = title;
+  if (title.toLowerCase().startsWith(positionDashPrefix)) {
+    titleLabel = title.slice(positionDashPrefix.length).trim();
+  } else if (title.toLowerCase().startsWith(positionSpacePrefix)) {
+    titleLabel = title.slice(positionSpacePrefix.length).trim();
+  }
+
+  return {
+    accessibleLabel,
+    positionLabel: position,
+    titleLabel: titleLabel || title,
+  };
+};
+
 export const formatTrackPositionTitle = (
   trackPosition: string,
   trackTitle: string,

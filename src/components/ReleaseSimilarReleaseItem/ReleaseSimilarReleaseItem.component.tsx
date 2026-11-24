@@ -97,12 +97,7 @@ export const ReleaseSimilarReleaseItem = ({
             {basicInfo.title}
           </span>
           {meta ? (
-            <span
-              className={classNames(
-                styles.itemTextLine,
-                crateItemStyles.itemLabel,
-              )}
-            >
+            <span className={classNames(styles.itemTextLine, styles.itemMeta)}>
               {meta}
             </span>
           ) : null}

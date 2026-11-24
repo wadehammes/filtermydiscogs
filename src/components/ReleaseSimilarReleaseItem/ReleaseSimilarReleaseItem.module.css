@@ -69,3 +69,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.itemMeta {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+}

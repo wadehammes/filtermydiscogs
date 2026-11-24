@@ -11,14 +11,15 @@ const releaseArtistNames = "Rick Astley";
 
 const openTrackActionsMenu = async (
   user: ReturnType<typeof userEvent.setup>,
-  trackTitle: string,
+  accessibleTrackLabel: string,
 ) => {
-  const row = screen.getByText(trackTitle).closest("li");
+  const actionsTrigger = screen.getByRole("button", {
+    name: `Actions for ${accessibleTrackLabel}`,
+  });
+  const row = actionsTrigger.closest("li");
   expect(row).not.toBeNull();
   await user.hover(row as HTMLElement);
-  await user.click(
-    screen.getByRole("button", { name: `Actions for ${trackTitle}` }),
-  );
+  await user.click(actionsTrigger);
   await waitFor(() => {
     expect(
       screen.getByTestId("fmdReleaseTrackRowMenuPanel"),
@@ -41,11 +42,10 @@ const tracks: DiscogsTrack[] = [
   }),
 ];
 
-const trackALabel = formatTrackPositionTitle("A", "Never Gonna Give You Up");
-const trackBLabel = formatTrackPositionTitle(
-  "B",
-  "Never Gonna Give You Up (Instrumental)",
-);
+const trackATitle = "Never Gonna Give You Up";
+const trackBTitle = "Never Gonna Give You Up (Instrumental)";
+const trackALabel = formatTrackPositionTitle("A", trackATitle);
+const trackBLabel = formatTrackPositionTitle("B", trackBTitle);
 
 describe("ReleaseTracklist", () => {
   it("renders tracks and calls onTrackSelect when a row is clicked", async () => {
@@ -62,6 +62,8 @@ describe("ReleaseTracklist", () => {
     );
 
     expect(screen.getByTestId("fmdReleaseTracklist")).toBeInTheDocument();
+    expect(screen.getByText("A")).toBeInTheDocument();
+    expect(screen.getByText(trackATitle)).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
         name: `Play ${trackBLabel}`,
@@ -108,14 +110,15 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    expect(screen.getByText(trackBLabel)).toBeInTheDocument();
+    expect(screen.getByText(trackBTitle)).toBeInTheDocument();
+    expect(screen.getByText("B")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", {
         name: `Play ${trackBLabel}`,
       }),
     ).toBeNull();
 
-    await user.click(screen.getByText(trackBLabel));
+    await user.click(screen.getByText(trackBTitle));
 
     expect(onTrackSelect).not.toHaveBeenCalled();
   });
@@ -329,7 +332,7 @@ describe("ReleaseTracklist", () => {
       />,
     );
 
-    const row = screen.getByText(trackALabel).closest("li");
+    const row = screen.getByText(trackATitle).closest("li");
     expect(row).toHaveAttribute("data-track-queued-at-rest", "");
     expect(
       screen.getByTestId("fmdReleaseTrackQueueCheckIcon"),
@@ -428,7 +431,7 @@ describe("ReleaseTracklist", () => {
     expect(
       screen.getByTestId("fmdReleaseTrackQueueRemoveIcon"),
     ).toBeInTheDocument();
-    expect(screen.getByText(trackALabel).closest("li")).toHaveAttribute(
+    expect(screen.getByText(trackATitle).closest("li")).toHaveAttribute(
       "data-track-queued-at-rest",
       "",
     );

@@ -191,7 +191,7 @@
   align-items: center;
   color: inherit;
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   grid-template-columns: auto minmax(0, 1fr);
   min-height: 2.75rem;
   min-width: 0;
@@ -212,7 +212,7 @@
   cursor: pointer;
   display: grid;
   font: inherit;
-  gap: var(--space-2);
+  gap: var(--space-1);
   grid-template-columns: auto minmax(0, 1fr);
   min-height: 2.75rem;
   min-width: 0;
@@ -241,9 +241,11 @@
 .trackPosition {
   align-self: center;
   color: var(--muted-foreground);
-  font-size: var(--text-sm);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xs);
+  font-variant-numeric: tabular-nums;
   line-height: 1;
-  min-width: 2rem;
+  min-width: 1.5rem;
 }
 
 .trackTitle {
