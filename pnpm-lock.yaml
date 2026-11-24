@@ -247,8 +247,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@tanstack/react-query':
-        specifier: ^5.108.2
-        version: 5.108.2(@types/react@19.3.0)(react@19.3.1)
+        specifier: ^5.108.4
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
       '@tanstack/react-table':
         specifier: ^9.3.1
         version: 9.3.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -377,8 +377,8 @@ importers:
         specifier: ^11.1.0
         version: 11.1.0
       fallow:
-        specifier: 3.46.0
-        version: 3.46.0
+        specifier: 3.47.0
+        version: 3.47.0
       identity-obj-proxy:
         specifier: ^3.0.0
         version: 3.0.0
@@ -398,8 +398,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(@jest/globals@30.5.2(supports-color@8.1.1))(vitest@4.1.12(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(jsdom@26.1.0(supports-color@8.1.1))(msw@3.0.7(@types/node@26.6.6)(graphql@16.14.2)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))
       knip:
-        specifier: ^6.47.0
-        version: 6.47.0
+        specifier: ^6.48.0
+        version: 6.48.0
       lighthouse:
         specifier: ^13.6.0
         version: 13.6.0(ajv@8.20.0)(rollup@4.68.8)(supports-color@8.1.1)(yauzl@3.4.0)
@@ -1542,47 +1542,47 @@ packages:
     resolution: {integrity: sha512-3RQHgEtvL1Frl/d1cSreo7qhJ3Gk1OdNUai/CtZ8G+wYeRQnJih3s9xJ9/kgYekPQRdwgh0HXRPqMlzWGwivIQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || ^23.5.0 || >=24.0.0, npm: '>=10'}
 
-  '@fallow-cli/darwin-arm64@3.46.0':
-    resolution: {integrity: sha512-wvMkJxWmi5ApWqjoyd7Wm/f0WLGwtxr3VE4dz+E567hYN7RSC17yuzjnVr0PhTEnSgF36a5uw2TuDjACpYicFA==}
+  '@fallow-cli/darwin-arm64@3.47.0':
+    resolution: {integrity: sha512-31MPo4aAjm8zd3h20OSDwL+n/SnfMLymSkYkdEGV7xOfO/Vd1juHii9xLoZmPUhp9YgYGEpMk/15tN2uQePGjQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@fallow-cli/darwin-x64@3.46.0':
-    resolution: {integrity: sha512-42TT1ZSt0N6wyk6dYtI/aHBuI5DX86ab+v5B6iVvXeQOmwFLrbfaVWieRYtTmaA6Ls+S3om4hiVQ8EHwbzJ1bw==}
+  '@fallow-cli/darwin-x64@3.47.0':
+    resolution: {integrity: sha512-xeR5lEPPkjnf3brYVu7PjQCxvzNiOU/se6MGUHvNQqyMqqzdF3wyfO6msQc2hYp9tTJHQpVIb+KpP+aEYki64A==}
     cpu: [x64]
     os: [darwin]
 
-  '@fallow-cli/linux-arm64-gnu@3.46.0':
-    resolution: {integrity: sha512-xYZb2EIkKwBddFfgibG6EvHRXGyQlNEjNwYD1OSRTm0v/MNkkvDe2dce31egkt/ocjLzo/ufi4gDe7KmvHSmWg==}
+  '@fallow-cli/linux-arm64-gnu@3.47.0':
+    resolution: {integrity: sha512-f+YglL2thbPNtxARY/jkfOr/voyEi+zDr2VAsy/ujH4DOeA/kjKoeiXbRwy19EgYYnXP2HKjRCEtVvjNZ0nBng==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@fallow-cli/linux-arm64-musl@3.46.0':
-    resolution: {integrity: sha512-OyVtlDmXV2GQ+g4pRAbaxQ1H9vyxDMmDfoi2wHBn8ZH5dA49kKTfzadJf/04u46+bpeNoNLpKOqZFVbqGZCraA==}
+  '@fallow-cli/linux-arm64-musl@3.47.0':
+    resolution: {integrity: sha512-D/f2K6ZPeK7vhwu96yuInxym5jIIzwm4OPCJLoZp4onmVG/1xJqi5Wd/cdu5yCItmaBhc0+xh+bmqtYZZQjuGg==}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@fallow-cli/linux-x64-gnu@3.46.0':
-    resolution: {integrity: sha512-AsO67zA3or0bzWIgcR7AiaeplM6HyIek6em9BrL+s2a9SvbSuusjH66MLSIqFqkXk8s2IgsAunZWL9V8Fn9BnQ==}
+  '@fallow-cli/linux-x64-gnu@3.47.0':
+    resolution: {integrity: sha512-6xSuigE7b3QSnl2wEfNSiHMtPfqNyfuMqKL71Rczq9C3Snu4raRHYrNmWrqm1tWedM8/IIfB3cySUZLMAznEVw==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@fallow-cli/linux-x64-musl@3.46.0':
-    resolution: {integrity: sha512-NUpeUoGWRBB8Tds1BVNvN9CK24m2z3moONYhAUYAR7QThKMCp4x/y+pUEjKwESkEoHLriU8X2XD7pP6axJf5Tg==}
+  '@fallow-cli/linux-x64-musl@3.47.0':
+    resolution: {integrity: sha512-aP+HOT3N52yd72Qa9SGNn1InbnuX2C+2/hfN+Cyv/wCNiBXabZxNx6W/AQJ9HQw7z4GJpnnY5vbTN3ro2gSM/g==}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@fallow-cli/win32-arm64-msvc@3.46.0':
-    resolution: {integrity: sha512-2ltJIwc9fwgqKYYeT/42U0rH6Z1qs87kcuHpY6vHnpZyIjIHsUwpLsEdYzkHb9x2GfbdV8ExRmr98Qo1JvlO9w==}
+  '@fallow-cli/win32-arm64-msvc@3.47.0':
+    resolution: {integrity: sha512-UozbQKPbtnKGEffZrwMq5v0W6gPRJ9PNnRCE6mfgCe1AHBpclrz/czVFJYrbnq+70Q636ABmMzyLsODhbulnxg==}
     cpu: [arm64]
     os: [win32]
 
-  '@fallow-cli/win32-x64-msvc@3.46.0':
-    resolution: {integrity: sha512-ekZqYupm9TZI4odbLwWQEp5phVrouCwvTmZl3Yx6ZTaZCcxi7fVeKwGiQPbP7dwWRV/3AyOoIwqSnL5c0QASvg==}
+  '@fallow-cli/win32-x64-msvc@3.47.0':
+    resolution: {integrity: sha512-2QlK9Sqp3RmEYrH9rGXplkAH4kdjyTrbvwsv57vjLaRNTHstS5WYjHN0wNb17foNGQTKWp0VhzM7WCNMdyRyOA==}
     cpu: [x64]
     os: [win32]
 
@@ -3258,11 +3258,11 @@ packages:
       vue:
         optional: true
 
-  '@tanstack/query-core@5.108.2':
-    resolution: {integrity: sha512-0l+0xDKqn71hfJBKaAvFP/X7WYM0TbscEk6nK1pHaWQUWUEA+WJD0VlT8wF+HIJANMV9B/DouPWwDnX3w/l9BA==}
+  '@tanstack/query-core@5.108.4':
+    resolution: {integrity: sha512-2Ks5dlLWz4eXJrthOyG0qW3SLt3xx0RrQmAmN0rnmogiaaOYuWiAe6HAm9KE2b2v8nig+vraNz8fsfZ6fF6zFg==}
 
-  '@tanstack/react-query@5.108.2':
-    resolution: {integrity: sha512-wV6hEjVGTfh9rvu3uREYW0hgBfS9klDejGelhPY575jD5jg6qbAb1nzT7hR1Q+wemR66ZjtE5p9pAGUwqK8zbg==}
+  '@tanstack/react-query@5.108.4':
+    resolution: {integrity: sha512-GlTa94kfEKTVsbzXe58rFA3GZ0ZE7N1aFtbZAfOS3XxMv8YNn4C+8rsz40LorHLazdm5PsqCroWaYAR+ZkMXMQ==}
     peerDependencies:
       '@types/react': ^18 || ^19
       react: ^18 || ^19
@@ -4521,8 +4521,8 @@ packages:
   exsolve@1.1.1:
     resolution: {integrity: sha512-9U/jZUgjnSGyntRr6y5Muu1MJcwFl6kPu7k8qLF0IMNfLqvw0NZ4nnVDq0RVoZ0RvCyumib4Ez3KYrVfilrw+g==}
 
-  fallow@3.46.0:
-    resolution: {integrity: sha512-PXCxpJ45u6kcItpK+IDPCNvEdLRGZreFHBmNXcdNA3aaRfJrWq2qLjZLzWJLnSK16xdrrrMFIlsu6BSnxWB8gw==}
+  fallow@3.47.0:
+    resolution: {integrity: sha512-V4LDua/DnO4elpHMnvMLuVyz90Kz66pqDvJxpE993Gaq4ajbxtA9AYRpB6ijtPoStDuEHszV09buY6Dw7BL5Nw==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -5106,8 +5106,8 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  knip@6.47.0:
-    resolution: {integrity: sha512-nYmQnk0YqDXIJrYViJz88c8xw3tBDkpuAmofo58EkVPnKr6DnRKYtf6oIqcGVHZvXDE+gtmFuYx277/QsWng+A==}
+  knip@6.48.0:
+    resolution: {integrity: sha512-v+Gfp6uiOeXaaj+Khk2Z7/fTTZYWLnDwxZapQUyy8WoQFLYXiUHXqRdFJTwRnrKNA1gPXTPi5NGTKKLXyImVrg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -6267,8 +6267,8 @@ packages:
     resolution: {integrity: sha512-8iAasVS4wUx0gPLjH8Xtz2PeDzTSiy8QiLGu2DT3X5GU+egFEQhpnbtkehbAwjvDcxIERmCYcysiODFmE3Ud0Q==}
     engines: {node: '>=18'}
 
-  unbash@6.0.4:
-    resolution: {integrity: sha512-t3OptUArewg9OpYGDskTSlxhyLDahfmZ4d36hE44Efb1y3HRLLpzsVqwH+AwBVymP4t7pP71xN+nnduudn2awA==}
+  unbash@6.0.5:
+    resolution: {integrity: sha512-5P8o+nYRueKpHxmemofYqZRZCSWAi+Tqy31MQS8l/sT54Z+Axn55N9CnWPo19BxxJD4wYYf6RqlcURhWkrFXew==}
     engines: {node: '>=14'}
 
   undici-types@8.9.0:
@@ -7773,28 +7773,28 @@ snapshots:
 
   '@faker-js/faker@10.6.0': {}
 
-  '@fallow-cli/darwin-arm64@3.46.0':
+  '@fallow-cli/darwin-arm64@3.47.0':
     optional: true
 
-  '@fallow-cli/darwin-x64@3.46.0':
+  '@fallow-cli/darwin-x64@3.47.0':
     optional: true
 
-  '@fallow-cli/linux-arm64-gnu@3.46.0':
+  '@fallow-cli/linux-arm64-gnu@3.47.0':
     optional: true
 
-  '@fallow-cli/linux-arm64-musl@3.46.0':
+  '@fallow-cli/linux-arm64-musl@3.47.0':
     optional: true
 
-  '@fallow-cli/linux-x64-gnu@3.46.0':
+  '@fallow-cli/linux-x64-gnu@3.47.0':
     optional: true
 
-  '@fallow-cli/linux-x64-musl@3.46.0':
+  '@fallow-cli/linux-x64-musl@3.47.0':
     optional: true
 
-  '@fallow-cli/win32-arm64-msvc@3.46.0':
+  '@fallow-cli/win32-arm64-msvc@3.47.0':
     optional: true
 
-  '@fallow-cli/win32-x64-msvc@3.46.0':
+  '@fallow-cli/win32-x64-msvc@3.47.0':
     optional: true
 
   '@floating-ui/core@1.8.0':
@@ -9181,11 +9181,11 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
-  '@tanstack/query-core@5.108.2': {}
+  '@tanstack/query-core@5.108.4': {}
 
-  '@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1)':
+  '@tanstack/react-query@5.108.4(@types/react@19.3.0)(react@19.3.1)':
     dependencies:
-      '@tanstack/query-core': 5.108.2
+      '@tanstack/query-core': 5.108.4
       react: 19.3.1
     optionalDependencies:
       '@types/react': 19.3.0
@@ -10436,18 +10436,18 @@ snapshots:
 
   exsolve@1.1.1: {}
 
-  fallow@3.46.0:
+  fallow@3.47.0:
     dependencies:
       detect-libc: 2.1.2
     optionalDependencies:
-      '@fallow-cli/darwin-arm64': 3.46.0
-      '@fallow-cli/darwin-x64': 3.46.0
-      '@fallow-cli/linux-arm64-gnu': 3.46.0
-      '@fallow-cli/linux-arm64-musl': 3.46.0
-      '@fallow-cli/linux-x64-gnu': 3.46.0
-      '@fallow-cli/linux-x64-musl': 3.46.0
-      '@fallow-cli/win32-arm64-msvc': 3.46.0
-      '@fallow-cli/win32-x64-msvc': 3.46.0
+      '@fallow-cli/darwin-arm64': 3.47.0
+      '@fallow-cli/darwin-x64': 3.47.0
+      '@fallow-cli/linux-arm64-gnu': 3.47.0
+      '@fallow-cli/linux-arm64-musl': 3.47.0
+      '@fallow-cli/linux-x64-gnu': 3.47.0
+      '@fallow-cli/linux-x64-musl': 3.47.0
+      '@fallow-cli/win32-arm64-msvc': 3.47.0
+      '@fallow-cli/win32-x64-msvc': 3.47.0
 
   fast-check@3.23.2:
     dependencies:
@@ -11192,7 +11192,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knip@6.47.0:
+  knip@6.48.0:
     dependencies:
       formatly: 0.11.4
       get-tsconfig: 4.14.3
@@ -11203,7 +11203,7 @@ snapshots:
       smol-toml: 1.9.1
       strip-json-comments: 5.0.3
       tinyglobby: 0.2.17
-      unbash: 6.0.4
+      unbash: 6.0.5
       yaml: 2.9.1
 
   known-css-properties@0.37.0:
@@ -12448,7 +12448,7 @@ snapshots:
 
   uint8array-extras@1.6.0: {}
 
-  unbash@6.0.4: {}
+  unbash@6.0.5: {}
 
   undici-types@8.9.0: {}
 
