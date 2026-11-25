@@ -40,6 +40,7 @@ mise bootstrap      # tools + pnpm install + Prisma generate
 mise run ci         # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e)
 mise run ci-full    # same unit gates + full Playwright (all specs × desktop/phone/tablet)
 mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + test:changed + fallow:audit
+mise run ops-health # Dependabot + pnpm audit snapshot (pair with Sentry MCP — .cursor/skills/ops-health-check)
 ```
 
 **Zed:** Open the repo as a folder so [`.zed/settings.json`](./.zed/settings.json) applies — **`vtsls`** uses the **`typescript-langservice`** devDependency (TS 6 **`tsserver`**; builds use **TypeScript 7** **`tsc`**). Reload after **`pnpm install`**. In **LSP → vtsls** logs, confirm **`Using tsserver from: …/typescript-langservice/lib/tsserver.js`**.
@@ -181,6 +182,7 @@ pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
 mise run ci           # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e + next start)
 mise run ci-full      # same unit gates + full Playwright (all specs; phone/tablet/desktop)
 mise run pr-prep      # lint:all + handbook:check + test:changed + fallow:audit (before opening a PR)
+mise run ops-health   # security snapshot: Dependabot, pnpm audit (agents add Sentry via ops-health-check skill)
 mise run lint-all     # pnpm lint:all
 
 pnpm lint:all         # Biome (changed vs staging), Stylelint fix, tsc:ci, Knip

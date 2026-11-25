@@ -40,6 +40,7 @@ overrides:
   "@hono/node-server": ">=1.19.13"
   "@babel/plugin-transform-modules-systemjs": ">=7.29.4"
   zod: ">=4.6.6"
+  effect: ">=3.22.1 <4.0.0"
   glob: ">=14.0.2"
   minimatch: ">=11.0.1"
   vitest: "4.1.12"
@@ -47,3 +48,12 @@ overrides:
 publicHoistPattern:
   - "*jest*"
   - "*@jest/*"
+permissions:
+  "@tanstack/charts":
+    skills: true
+  "@tanstack/react-table":
+    skills: true
+  fallow:
+    skills: true
+  prisma-json-types-generator:
+    skills: true

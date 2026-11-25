@@ -1,9 +1,18 @@
 import { HttpResponse, http } from "msw";
+import {
+  defaultUserContact,
+  mergeUserContactPatch,
+} from "src/lib/user-contact.server";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import type {
+  UserContact,
+  UserContactPatch,
+} from "src/types/userContact.types";
 import type { UserPreferences } from "src/types/userPreferences.types";
 
 export function createDefaultUserApiHandlers() {
   let preferences: UserPreferences = userPreferencesFactory.defaults();
+  let contact: UserContact = defaultUserContact();
 
   const responseBody = () => ({ preferences });
 
@@ -17,6 +26,19 @@ export function createDefaultUserApiHandlers() {
       });
 
       return HttpResponse.json(responseBody());
+    }),
+    http.get("/api/user/contact", () => HttpResponse.json(contact)),
+    http.patch("/api/user/contact", async ({ request }) => {
+      const body = (await request.json()) as UserContactPatch;
+      const merged = mergeUserContactPatch(contact, body);
+
+      if (merged.error) {
+        return HttpResponse.json({ error: merged.error }, { status: 400 });
+      }
+
+      contact = merged.contact;
+
+      return HttpResponse.json(contact);
     }),
   ];
 }
