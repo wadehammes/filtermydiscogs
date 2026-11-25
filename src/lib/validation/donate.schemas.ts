@@ -10,8 +10,11 @@ export const donateAmountCentsSchema = z
   .min(DONATION_MIN_CENTS, "Minimum donation is $1")
   .max(DONATION_MAX_CENTS, "Maximum donation is $10,000");
 
+export const donateCheckoutReturnToSchema = z.enum(["about", "settings"]);
+
 export const donateCheckoutBodySchema = z.object({
   amountCents: donateAmountCentsSchema,
+  returnTo: donateCheckoutReturnToSchema.optional(),
 });
 
 export const donateCheckoutFormSchema = z.object({

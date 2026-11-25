@@ -1,0 +1,99 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { createDonateCheckoutSession } from "src/api/endpoints/donate";
+import {
+  type DonationCheckoutReturnTo,
+  DONATION_PRESET_AMOUNTS_CENTS,
+  isDonationPresetAmount,
+} from "src/constants/donate.constants";
+import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
+import {
+  type DonateCheckoutFormValues,
+  donateCheckoutFormSchema,
+  parseCustomDonationDollarsToCents,
+} from "src/lib/validation/donate.schemas";
+import { toast } from "src/utils/toast";
+
+export const useDonationCheckoutForm = (
+  returnTo: DonationCheckoutReturnTo = "about",
+) => {
+  const {
+    control,
+    getValues,
+    handleSubmit,
+    register,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<DonateCheckoutFormValues>({
+    resolver: zodResolver(donateCheckoutFormSchema),
+    defaultValues: {
+      amountCents: DONATION_PRESET_AMOUNTS_CENTS[0],
+      customAmountDollars: "",
+    },
+  });
+  const selectedAmountCents = useWatch({ control, name: "amountCents" });
+  const customAmountDollars = useWatch({
+    control,
+    name: "customAmountDollars",
+  });
+  const isCustomDonationSubmitting =
+    isSubmitting && !isDonationPresetAmount(selectedAmountCents);
+
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        reset();
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, [reset]);
+
+  const onDonateSubmit = handleSubmit(async ({ amountCents }) => {
+    try {
+      const { url } = await createDonateCheckoutSession({
+        amountCents,
+        returnTo,
+      });
+      window.location.assign(url);
+    } catch (error) {
+      console.error("Error starting donation checkout:", error);
+      reportClientFailure("donation", error);
+      toast.error("Could not start checkout. Please try again.");
+      reset();
+    }
+  });
+
+  const preparePresetAmount = (amountCents: number) => {
+    setValue("customAmountDollars", "");
+    setValue("amountCents", amountCents, { shouldValidate: true });
+  };
+
+  const prepareCustomAmount = () => {
+    setValue(
+      "amountCents",
+      parseCustomDonationDollarsToCents(getValues("customAmountDollars")),
+      { shouldValidate: true },
+    );
+  };
+
+  return {
+    customAmountDollars,
+    errors,
+    isCustomDonationSubmitting,
+    isSubmitting,
+    onDonateSubmit,
+    prepareCustomAmount,
+    preparePresetAmount,
+    register,
+    selectedAmountCents,
+  };
+};
