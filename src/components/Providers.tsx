@@ -7,22 +7,19 @@ import {
 } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
-import { AppToaster } from "src/components/AppToaster/AppToaster.component";
-import { AuthCheckingToast } from "src/components/AuthCheckingToast/AuthCheckingToast.component";
 import { AuthenticatedCollectionSyncGate } from "src/components/AuthenticatedCollectionSyncGate.component";
 import { AuthenticatedProvidersGate } from "src/components/AuthenticatedProvidersGate.component";
 import { CollectionCachePrepGate } from "src/components/CollectionCachePrepGate/CollectionCachePrepGate.component";
-import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import { CookieConsentBanner } from "src/components/CookieConsentBanner/CookieConsentBanner.component";
-import { DeploymentUpdateToast } from "src/components/DeploymentUpdateToast/DeploymentUpdateToast.component";
-import { DiscogsOutageToast } from "src/components/DiscogsOutageToast/DiscogsOutageToast.component";
-import { DonationSuccessToast } from "src/components/DonationSuccessToast/DonationSuccessToast.component";
 import { AnalyticsPageViewTracker } from "src/components/GoogleTagManagerLoader/AnalyticsPageViewTracker.component";
 import { GoogleTagManagerLoader } from "src/components/GoogleTagManagerLoader/GoogleTagManagerLoader.component";
 import { WebVitalsReporter } from "src/components/GoogleTagManagerLoader/WebVitalsReporter.component";
 import { LogoutOverlay } from "src/components/LogoutOverlay/LogoutOverlay.component";
 import { SentryUserFeedbackDialogHost } from "src/components/SentryUserFeedbackDialog/SentryUserFeedbackDialog.component";
-import { SupportProjectToast } from "src/components/SupportProjectToast/SupportProjectToast.component";
+import {
+  RootToastManager,
+  SessionToastManager,
+} from "src/components/ToastManager/ToastManager.component";
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
@@ -111,10 +108,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                         <AnalyticsShell>
                           {children}
                           <LogoutOverlayWrapper />
-                          <AuthCheckingToast />
-                          <CollectionLoadingToast />
-                          <DeploymentUpdateToast />
-                          <DiscogsOutageToast />
+                          <SessionToastManager />
                           <SentryUserFeedbackDialogHost />
                         </AnalyticsShell>
                       </AuthenticatedProvidersGate>
@@ -124,9 +118,7 @@ export const Providers = ({ children }: ProvidersProps) => {
               </FiltersProvider>
             </CollectionContextProvider>
           </AuthProvider>
-          <AppToaster />
-          <SupportProjectToast />
-          <DonationSuccessToast />
+          <RootToastManager />
         </ThemeProvider>
       </JotaiProvider>
     </QueryClientProvider>

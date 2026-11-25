@@ -9,6 +9,11 @@ import {
 } from "src/constants/dashboardCopy.constants";
 import { DONATION_PRODUCT } from "src/constants/donate.constants";
 import {
+  EMAIL_ACCOUNT_CAPTURE_TOAST_ACTION_LABEL,
+  EMAIL_ACCOUNT_CAPTURE_TOAST_DESCRIPTION,
+  EMAIL_ACCOUNT_CAPTURE_TOAST_TITLE,
+} from "src/constants/emailAccountToast.constants";
+import {
   getLoginPageCopyEntries,
   LOGIN_PAGE_COPY_SOURCE_FILES,
   type LoginPageCopyEntry,
@@ -94,6 +99,21 @@ export const getUserFacingCopyEntries = (
       id: "support.toastDescription",
       text: SUPPORT_PROJECT_TOAST_DESCRIPTION,
       source: "supportProjectToast.constants.ts",
+    },
+    {
+      id: "email.accountCaptureToastTitle",
+      text: EMAIL_ACCOUNT_CAPTURE_TOAST_TITLE,
+      source: "emailAccountToast.constants.ts",
+    },
+    {
+      id: "email.accountCaptureToastDescription",
+      text: EMAIL_ACCOUNT_CAPTURE_TOAST_DESCRIPTION,
+      source: "emailAccountToast.constants.ts",
+    },
+    {
+      id: "email.accountCaptureToastActionLabel",
+      text: EMAIL_ACCOUNT_CAPTURE_TOAST_ACTION_LABEL,
+      source: "emailAccountToast.constants.ts",
     },
     {
       id: "about.donationBody",
@@ -220,6 +240,7 @@ export const USER_FACING_COPY_SOURCE_FILES = [
   "src/constants/userFacingCopy.registry.ts",
   "src/constants/marketingPublicCopy.ts",
   "src/constants/supportProjectToast.constants.ts",
+  "src/constants/emailAccountToast.constants.ts",
   "src/constants/about.constants.ts",
   "src/constants/donate.constants.ts",
   "src/constants/settingsCopy.constants.ts",

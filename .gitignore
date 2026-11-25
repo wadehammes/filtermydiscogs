@@ -6,6 +6,7 @@
 !.cursor/hooks/
 !.cursor/rules/
 !.cursor/skills/
+!.cursor/commands/
 !.cursor/mcp.json
 .cursor/*.log
 .cursor/settings.local.json

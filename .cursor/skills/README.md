@@ -23,4 +23,4 @@ Short task checklists; **`docs/handbook/`** stays canonical. Load via `@` skill 
 | [release-playback](./release-playback/SKILL.md)                       | Mini player, queue, embed                         |
 | [oauth-and-session](./oauth-and-session/SKILL.md)                     | Login, cookies, OAuth routes                      |
 
-Glob rules: [`.cursor/rules/`](../rules/). Hooks: [`.cursor/hooks/README.md`](../hooks/README.md).
+Glob rules: [`.cursor/rules/`](../rules/). Hooks: [`.cursor/hooks/README.md`](../hooks/README.md). Slash commands: [`.cursor/commands/`](../commands/) — e.g. **`/handbook-review`** (optional base branch or file paths; review-only, same idea as rhythm-app).

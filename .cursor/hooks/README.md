@@ -4,7 +4,7 @@ Project hooks that keep agent work aligned with `docs/handbook/`.
 
 Config: [`.cursor/hooks.json`](../hooks.json). Scripts: [`.cursor/hooks/`](./).
 
-Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `rules/`, `skills/`). Local/runtime Cursor state (`*.log`, `settings.local.json`, checkpoints, etc.) stays gitignored — [`.cursor/mcp.json`](../../.cursor/mcp.json) is committed. See root [`.gitignore`](../../.gitignore).
+Shared team files under `.cursor/` are tracked in git (`hooks.json`, `hooks/`, `rules/`, `skills/`, `commands/`). Local/runtime Cursor state (`*.log`, `settings.local.json`, checkpoints, etc.) stays gitignored — [`.cursor/mcp.json`](../../.cursor/mcp.json) is committed. See root [`.gitignore`](../../.gitignore).
 
 ## Cursor hook events
 
@@ -73,6 +73,16 @@ To quiet hooks further: remove or narrow entries in **`hooks.json`**, or rely on
 
 - `bash`, `jq`, `git` on `PATH`
 - Hook scripts must be executable (`chmod +x .cursor/hooks/*.sh`)
+
+## Slash commands
+
+Hooks enforce one edit at a time; before a PR, run **`/handbook-review`** ([`../commands/handbook-review.md`](../commands/handbook-review.md)) in Agent chat. It diff-scopes the branch, routes through **`docs/handbook/llms.md`**, runs **read-only** Biome (and Stylelint when CSS changed), cross-checks **`preToolUse`** / edit-guard rules the hooks enforce, and reports **without editing code** (aligned with rhythm-app’s **`handbook-review`**). Reply **go** in a follow-up turn to apply fixes + **`pnpm lint:all`**.
+
+```text
+/handbook-review                                    # PR base or origin/staging + uncommitted
+/handbook-review 11-25-create-toastmanager          # compare with a branch you choose
+/handbook-review src/components/ToastManager/       # review just these paths
+```
 
 ## Adding or changing a hook
 

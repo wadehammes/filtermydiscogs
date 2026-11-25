@@ -17,5 +17,10 @@ export const SIMILAR_PAGE_INDEX_SESSION_KEY =
   "fmd:similar-page-index-by-anchor";
 export const PLAYBACK_DOCK_VOLUME_STORAGE_KEY =
   "filtermydiscogs_playback_dock_volume";
+
+export const buildEmailAccountToastDismissedStorageKey = (
+  userId: string,
+): string => `fmd_email_account_toast_dismissed_${userId}`;
+
 export const COLLECTION_CACHE_DB_NAME = "filtermydiscogs";
 export const COLLECTION_CACHE_STORE_NAME = "collection_cache";
