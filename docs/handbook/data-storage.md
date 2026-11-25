@@ -15,7 +15,7 @@ Where user and session data lives, what **Delete account** ( **`POST /api/auth/c
 
 ### Common `localStorage` keys
 
-Defined in [`src/constants/storageKeys.ts`](../../src/constants/storageKeys.ts): **`filtermydiscogs_filters`**, **`filtermydiscogs_view_state`**, **`filtermydiscogs_theme`**, **`filtermydiscogs_analytics_consent`**, **`filtermydiscogs_selected_releases`**, collection item counts, releases table layout, etc. Prefer extending this module over new ad-hoc key strings.
+Defined in [`src/constants/storageKeys.ts`](../../src/constants/storageKeys.ts): **`filtermydiscogs_filters`**, **`filtermydiscogs_view_state`**, **`filtermydiscogs_theme`**, **`filtermydiscogs_analytics_consent`**, **`filtermydiscogs_selected_releases`**, collection item counts, releases table layout, etc. Per-user keys include **`buildEmailAccountToastDismissedStorageKey(userId)`** (`fmd_email_account_toast_dismissed_<userId>`) for the Account email capture toast. Prefer extending this module over new ad-hoc key strings.
 
 ## Server: delete account (`clear-data` API)
 
