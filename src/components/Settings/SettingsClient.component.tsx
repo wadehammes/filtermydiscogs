@@ -14,11 +14,13 @@ import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.compon
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
+import { CLEAR_ALL_DATA_TITLE } from "src/constants/clearData.constants";
 import {
   SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE,
   SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
   SETTINGS_CONTACT_SAVE_ERROR_MESSAGE,
   SETTINGS_CONTACT_SAVED_MESSAGE,
+  SETTINGS_DATA_PANEL_LEAD,
   SETTINGS_EMAIL_VERIFICATION_EXPIRED_MESSAGE,
   SETTINGS_EMAIL_VERIFICATION_INVALID_MESSAGE,
   SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE,
@@ -50,6 +52,7 @@ import {
   SettingsAppearancePanel,
   SettingsCollectionPanel,
   SettingsDataPanel,
+  SettingsDeleteAccountPanel,
   SettingsFiltersPanel,
   SettingsPlaybackPanel,
   SettingsSupportPanel,
@@ -338,12 +341,7 @@ export default function SettingsClient() {
       case "support":
         return <SettingsSupportPanel />;
       case "data":
-        return (
-          <SettingsDataPanel
-            isClearing={isClearing}
-            onClearData={openClearDataDialog}
-          />
-        );
+        return <SettingsDataPanel />;
       default:
         return null;
     }
@@ -436,6 +434,27 @@ export default function SettingsClient() {
                             setShowCompleteLogoutDialog(true)
                           }
                         />,
+                      )}
+                    </>
+                  ) : activeSection === "data" ? (
+                    <>
+                      {renderSettingsPanel(
+                        activeSection,
+                        activeSectionMeta?.label ?? "Privacy",
+                        SETTINGS_DATA_PANEL_LEAD,
+                        "settings-panel-title",
+                        renderActivePanel(),
+                      )}
+                      {renderSettingsPanel(
+                        `${activeSection}-delete-account`,
+                        CLEAR_ALL_DATA_TITLE,
+                        undefined,
+                        "settings-delete-account-title",
+                        <SettingsDeleteAccountPanel
+                          isClearing={isClearing}
+                          onClearData={openClearDataDialog}
+                        />,
+                        styles.panelDanger,
                       )}
                     </>
                   ) : (

@@ -27,9 +27,9 @@ test.describe("authenticated logout and clear data (MSW)", () => {
     await expectNotOnLogin(page);
 
     await page.goto("/settings?section=data");
-    await page.getByRole("button", { name: "Clear all stored data" }).click();
+    await page.getByRole("button", { name: "Delete account" }).click();
     await expect(
-      page.getByRole("heading", { level: 2, name: "Clear all stored data" }),
+      page.getByRole("heading", { level: 2, name: "Delete account" }),
     ).toBeVisible();
     await page
       .getByRole("textbox", {

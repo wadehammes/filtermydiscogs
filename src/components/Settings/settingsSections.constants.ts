@@ -1,3 +1,5 @@
+import { SETTINGS_DATA_SECTION_NAV_DESCRIPTION } from "src/constants/settingsCopy.constants";
+
 export type SettingsSectionId =
   | "account"
   | "appearance"
@@ -46,8 +48,8 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   },
   {
     id: "data",
-    label: "Data",
-    description: "Stored app data",
+    label: "Privacy",
+    description: SETTINGS_DATA_SECTION_NAV_DESCRIPTION,
   },
 ];
 

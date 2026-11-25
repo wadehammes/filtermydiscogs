@@ -2,11 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { ClearAllDataConfirmDialog } from "src/components/ClearAllDataConfirmDialog/ClearAllDataConfirmDialog.component";
 import { ClearAllDataConfirmDialogPageObject } from "src/components/ClearAllDataConfirmDialog/ClearAllDataConfirmDialog.po";
-import {
-  CLEAR_ALL_DATA_ACTION_LABEL,
-  CLEAR_ALL_DATA_ACTION_LOADING_LABEL,
-  CLEAR_ALL_DATA_CONFIRM_PHRASE,
-} from "src/constants/clearData.constants";
+import { CLEAR_ALL_DATA_CONFIRM_PHRASE } from "src/constants/clearData.constants";
 import { fireEvent, screen } from "test-utils";
 
 let po: ClearAllDataConfirmDialogPageObject;
@@ -35,7 +31,7 @@ describe("ClearAllDataConfirmDialog", () => {
     po.renderClearAllDataConfirmDialog();
 
     const confirmButton = screen.getByRole("button", {
-      name: CLEAR_ALL_DATA_ACTION_LABEL,
+      name: "Delete account",
     });
     expect(confirmButton).toBeDisabled();
 
@@ -61,7 +57,7 @@ describe("ClearAllDataConfirmDialog", () => {
     po.renderClearAllDataConfirmDialog();
 
     const confirmButton = screen.getByRole("button", {
-      name: CLEAR_ALL_DATA_ACTION_LABEL,
+      name: "Delete account",
     });
 
     await user.type(
@@ -86,9 +82,7 @@ describe("ClearAllDataConfirmDialog", () => {
       }),
       CLEAR_ALL_DATA_CONFIRM_PHRASE,
     );
-    await user.click(
-      screen.getByRole("button", { name: CLEAR_ALL_DATA_ACTION_LABEL }),
-    );
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
@@ -100,7 +94,7 @@ describe("ClearAllDataConfirmDialog", () => {
     po.renderClearAllDataConfirmDialog({ onConfirm });
 
     const confirmButton = screen.getByRole("button", {
-      name: CLEAR_ALL_DATA_ACTION_LABEL,
+      name: "Delete account",
     });
     await user.click(confirmButton);
 
@@ -159,9 +153,7 @@ describe("ClearAllDataConfirmDialog", () => {
         name: /type delete my account to confirm/i,
       }),
     ).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: CLEAR_ALL_DATA_ACTION_LOADING_LABEL }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Deleting..." })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
   });
 

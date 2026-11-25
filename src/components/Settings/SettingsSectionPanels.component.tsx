@@ -16,6 +16,12 @@ import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFi
 import Select from "src/components/Select/Select.component";
 import { SettingsBooleanPreferenceToggle } from "src/components/Settings/SettingsBooleanPreferenceToggle.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
+import { ABOUT_DATA_DELETION_ITEMS } from "src/constants/about.constants";
+import {
+  CLEAR_ALL_DATA_ACTION_LABEL,
+  CLEAR_ALL_DATA_ACTION_LOADING_LABEL,
+  CLEAR_ALL_DATA_PANEL_LEAD,
+} from "src/constants/clearData.constants";
 import {
   SETTINGS_EMAIL_FIELD_DESCRIPTION,
   SETTINGS_EMAIL_FIELD_LABEL,
@@ -38,6 +44,7 @@ import {
 } from "src/lib/validation/userContact.schemas";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ClockThinIcon } from "src/styles/icons/ClockThinIcon.component";
+import accountDeletionCard from "src/styles/modules/account-deletion-card.module.css";
 import type { CollectionSidePanelPreference } from "src/types/userPreferences.types";
 import {
   type FilterView,
@@ -573,15 +580,7 @@ export const SettingsSupportPanel = () => (
   </div>
 );
 
-type SettingsDataPanelProps = {
-  isClearing: boolean;
-  onClearData: () => void;
-};
-
-export const SettingsDataPanel = ({
-  isClearing,
-  onClearData,
-}: SettingsDataPanelProps) => {
+export const SettingsDataPanel = () => {
   const {
     isAnalyticsEnabled,
     isReady: isAnalyticsConsentReady,
@@ -589,46 +588,56 @@ export const SettingsDataPanel = ({
   } = useAnalyticsConsent();
 
   return (
-    <>
-      <SettingsBooleanPreferenceToggle
-        checked={isAnalyticsEnabled}
-        label="Allow analytics cookies"
-        description={
-          <>
-            When enabled, Google Tag Manager may set analytics cookies to
-            measure page views and interactions. Similar events may also be
-            stored on our server (page path, event name, and label) to
-            understand product usage, linked to your account when signed in.
-            Essential Discogs login cookies always apply. See the{" "}
-            <a href="/legal#cookies" className={styles.inlineLink}>
-              cookie notice
-            </a>{" "}
-            for details. Disabling analytics reloads the page so tracking
-            scripts stop running.
-          </>
-        }
-        disabled={!isAnalyticsConsentReady}
-        onChange={setAnalyticsEnabled}
-      />
-      <div className={styles.panelBlock}>
-        <h3 className={styles.panelBlockTitle}>Clear all stored data</h3>
-        <p className={styles.sectionDescription}>
-          Delete your crates, product analytics events linked to your account,
-          clear local preferences (including your analytics cookie choice), and
-          sign out. You will need to authorize the app again to continue using
-          Filter My Discogs.
-        </p>
-        <div className={styles.actions}>
-          <Button
-            variant="danger"
-            size="md"
-            onPress={onClearData}
-            disabled={isClearing}
-          >
-            {isClearing ? "Clearing..." : "Clear all stored data"}
-          </Button>
-        </div>
-      </div>
-    </>
+    <SettingsBooleanPreferenceToggle
+      checked={isAnalyticsEnabled}
+      label="Allow analytics cookies"
+      description={
+        <>
+          When enabled, Google Tag Manager may set analytics cookies to measure
+          page views and interactions. Similar events may also be stored on our
+          server (page path, event name, and label) to understand product usage,
+          linked to your account when signed in. Essential Discogs login cookies
+          always apply. See the{" "}
+          <a href="/legal#cookies" className={styles.inlineLink}>
+            cookie notice
+          </a>{" "}
+          for details. Disabling analytics reloads the page so tracking scripts
+          stop running.
+        </>
+      }
+      disabled={!isAnalyticsConsentReady}
+      onChange={setAnalyticsEnabled}
+    />
   );
 };
+
+type SettingsDeleteAccountPanelProps = {
+  isClearing: boolean;
+  onClearData: () => void;
+};
+
+export const SettingsDeleteAccountPanel = ({
+  isClearing,
+  onClearData,
+}: SettingsDeleteAccountPanelProps) => (
+  <>
+    <p className={styles.sectionDescription}>{CLEAR_ALL_DATA_PANEL_LEAD}</p>
+    <ul className={accountDeletionCard["deletion-list"]}>
+      {ABOUT_DATA_DELETION_ITEMS.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+    <div className={accountDeletionCard["deletion-actions"]}>
+      <Button
+        variant="danger"
+        size="md"
+        onPress={onClearData}
+        disabled={isClearing}
+      >
+        {isClearing
+          ? CLEAR_ALL_DATA_ACTION_LOADING_LABEL
+          : CLEAR_ALL_DATA_ACTION_LABEL}
+      </Button>
+    </div>
+  </>
+);

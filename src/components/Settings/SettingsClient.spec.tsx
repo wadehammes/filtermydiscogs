@@ -117,26 +117,24 @@ describe("SettingsClient", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "Data Stored app data",
+        name: "Privacy Cookies and analytics",
       }),
     );
 
     expect(
-      screen.getByRole("heading", { level: 2, name: "Data" }),
+      screen.getByRole("heading", { level: 2, name: "Privacy" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Allow analytics cookies")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Clear all stored data" }),
+      screen.getByRole("button", { name: "Delete account" }),
     ).toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole("button", { name: "Clear all stored data" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
 
     const dialog = screen.getByRole("dialog");
     expect(dialog).toContainOneByRole("heading", {
       level: 2,
-      name: "Clear all stored data",
+      name: "Delete account",
     });
     expect(dialog).toContainOneByText(/permanently deletes your/i);
     expect(dialog).toContainOneByRole("textbox", {
@@ -198,7 +196,7 @@ describe("SettingsClient", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "Data Stored app data",
+        name: "Privacy Cookies and analytics",
       }),
     );
 
@@ -220,16 +218,14 @@ describe("SettingsClient", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "Data Stored app data",
+        name: "Privacy Cookies and analytics",
       }),
     );
-    await user.click(
-      screen.getByRole("button", { name: "Clear all stored data" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
 
     const dialog = screen.getByRole("dialog");
     const confirmButton = within(dialog).getByRole("button", {
-      name: "Clear all data",
+      name: "Delete account",
     });
     expect(confirmButton).toBeDisabled();
 
@@ -255,12 +251,10 @@ describe("SettingsClient", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "Data Stored app data",
+        name: "Privacy Cookies and analytics",
       }),
     );
-    await user.click(
-      screen.getByRole("button", { name: "Clear all stored data" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
 
     expect(
       within(screen.getByRole("dialog")).getByText(
