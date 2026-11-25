@@ -2,6 +2,11 @@
 
 import Button from "src/components/Button/Button.component";
 import { ClearAllDataConfirmDialog } from "src/components/ClearAllDataConfirmDialog/ClearAllDataConfirmDialog.component";
+import {
+  CLEAR_ALL_DATA_ACTION_LABEL,
+  CLEAR_ALL_DATA_ACTION_LOADING_LABEL,
+  CLEAR_ALL_DATA_LOGIN_REQUIRED_NOTE,
+} from "src/constants/clearData.constants";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import styles from "./Legal.module.css";
 
@@ -23,14 +28,16 @@ export const LegalDataManagementActions = () => {
           size="md"
           onPress={openClearDataDialog}
           disabled={isClearing || !isAuthenticated}
-          aria-label="Clear all data"
+          aria-label={CLEAR_ALL_DATA_ACTION_LABEL}
         >
-          {isClearing ? "Clearing..." : "Clear All Data"}
+          {isClearing
+            ? CLEAR_ALL_DATA_ACTION_LOADING_LABEL
+            : CLEAR_ALL_DATA_ACTION_LABEL}
         </Button>
       </div>
       {!isAuthenticated && (
         <p className={styles.clearDataNote}>
-          You must be logged in to clear data.
+          {CLEAR_ALL_DATA_LOGIN_REQUIRED_NOTE}
         </p>
       )}
       <ClearAllDataConfirmDialog

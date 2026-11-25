@@ -5,6 +5,7 @@ import {
   ABOUT_GITHUB_LINKS,
   ABOUT_SUPPORT_EMAIL,
 } from "src/constants/about.constants";
+import { CLEAR_ALL_DATA_ACTION_LABEL } from "src/constants/clearData.constants";
 import { SITE_NAME } from "src/constants/siteMetadata";
 import styles from "./Legal.module.css";
 import { LegalDataManagementActions } from "./LegalDataManagementActions.client";
@@ -54,8 +55,8 @@ export const LegalPageContent = () => {
               Most of the time the app only reads your Discogs collection. When
               you add, edit, or clear release notes here, those changes are
               saved to your Discogs account through the Discogs API. They are
-              not stored in my database. Clearing app data below does not undo
-              note changes you already saved on Discogs.
+              not stored in my database. Deleting your {SITE_NAME} account below
+              does not undo note changes you already saved on Discogs.
             </li>
             <li>
               The app does not add or remove releases from your collection. Note
@@ -146,15 +147,20 @@ export const LegalPageContent = () => {
               browsers; your full collection is not stored in Postgres.
             </li>
             <li>
-              <strong>Email contact</strong> (optional): an email address and
-              whether you opt in to occasional product and marketing mail (for
-              example collection digests and app updates). On login, I may copy
-              the email from your Discogs profile into your account when you
-              have not set one in Settings. When you first connect a new account
-              and an address is on file, I may send one transactional welcome
-              message (not marketing). I store a flag on your account so that
-              message is not sent again. Marketing email is sent only when you
-              opt in.
+              <strong>Email contact</strong> (optional): a confirmed email
+              address and whether you opt in to occasional product and marketing
+              mail (for example product news and app updates). On login, I may
+              copy the email from your Discogs profile into your account when
+              you have not set one in Settings; that Discogs-sourced address is
+              treated as confirmed for account mail. If you add or change an
+              email in Settings, I send a verification link by email; until you
+              confirm, the new address is stored as pending, marketing mail
+              stays off, and I keep only a hashed verification token and expiry
+              on your account (not the link text). When you first connect a new
+              account and a confirmed address is on file, I may send one
+              transactional welcome message (not marketing). I store a flag on
+              your account so that message is not sent again. Marketing email is
+              sent only after confirmation and when you opt in.
             </li>
             <li>
               <strong>Optional analytics</strong> (only if you opt in): product
@@ -199,12 +205,12 @@ export const LegalPageContent = () => {
               you&apos;re signed in, changes sync to your account.
             </li>
             <li>
-              You can remove everything stored on my side with &quot;Clear All
-              Data&quot; below. That wipes crates, playlists, in-app playback
-              stats, and saved preferences from the database and clears local
-              app data in this browser. It does not delete or change your
-              Discogs collection or notes. You&apos;d manage those on Discogs
-              itself.
+              You can delete your {SITE_NAME} account with &quot;
+              {CLEAR_ALL_DATA_ACTION_LABEL}&quot; below. That permanently
+              removes crates, playlists, in-app playback stats, and saved
+              preferences from the database and clears local app data in this
+              browser. It does not delete or change your Discogs account,
+              collection, or notes. You&apos;d manage those on Discogs itself.
             </li>
           </ul>
           <h3 id="cookies">Cookies & Storage</h3>
@@ -225,7 +231,7 @@ export const LegalPageContent = () => {
               <strong>IndexedDB:</strong> After your collection finishes
               loading, a cached copy of those pages may be stored on this device
               to speed up return visits until your Discogs collection size
-              changes or you clear app data.
+              changes or you delete your {SITE_NAME} account.
             </li>
             <li>
               <strong>Optional analytics:</strong> When you opt in, Google Tag
@@ -234,8 +240,8 @@ export const LegalPageContent = () => {
               Postgres (for example page path, event name, and label) to
               understand product usage, sometimes linked to your account ID when
               you&apos;re signed in. Analytics does not run until you accept.
-              You can change your choice anytime in Settings under Data, or use
-              Essential only on the consent banner.
+              You can change your choice anytime in Settings under Privacy, or
+              use Essential only on the consent banner.
             </li>
           </ul>
           <h3>Third parties</h3>
@@ -274,7 +280,9 @@ export const LegalPageContent = () => {
             </li>
             <li>
               Transactional email (for example a one-time welcome message after
-              you connect Discogs) is delivered through Resend when configured.{" "}
+              you connect Discogs, or an address-verification link when you
+              change email in Settings) is delivered through Resend when
+              configured.{" "}
               <a
                 href="https://resend.com/legal/privacy-policy"
                 target="_blank"
@@ -293,8 +301,8 @@ export const LegalPageContent = () => {
         >
           <h2>Data Management</h2>
           <p>
-            If you want a clean slate in {SITE_NAME}, &quot;Clear All Data&quot;
-            removes the following:
+            If you want a clean slate in {SITE_NAME}, &quot;
+            {CLEAR_ALL_DATA_ACTION_LABEL}&quot; removes the following:
           </p>
           <ul>
             <li>Auth tokens and session cookies</li>
@@ -313,8 +321,8 @@ export const LegalPageContent = () => {
               Views menu on Collection, filter/sort selections when
               &quot;Remember filter selections&quot; is enabled in Settings, and
               playback settings (auto-play on queue add and extend queue with
-              similar releases), and any saved email address with marketing
-              opt-in choice
+              similar releases), and any saved or pending email contact,
+              marketing opt-in choice, and in-progress email verification state
             </li>
             <li>
               Product analytics events linked to your account (when analytics

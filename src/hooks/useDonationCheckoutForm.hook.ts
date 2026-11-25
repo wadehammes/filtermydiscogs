@@ -6,6 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { createDonateCheckoutSession } from "src/api/endpoints/donate";
 import {
   DONATION_PRESET_AMOUNTS_CENTS,
+  type DonationCheckoutReturnTo,
   isDonationPresetAmount,
 } from "src/constants/donate.constants";
 import { reportClientFailure } from "src/lib/sentry/reportClientFailure";
@@ -16,7 +17,9 @@ import {
 } from "src/lib/validation/donate.schemas";
 import { toast } from "src/utils/toast";
 
-export const useAboutDonationForm = () => {
+export const useDonationCheckoutForm = (
+  returnTo: DonationCheckoutReturnTo = "about",
+) => {
   const {
     control,
     getValues,
@@ -56,7 +59,10 @@ export const useAboutDonationForm = () => {
 
   const onDonateSubmit = handleSubmit(async ({ amountCents }) => {
     try {
-      const { url } = await createDonateCheckoutSession(amountCents);
+      const { url } = await createDonateCheckoutSession({
+        amountCents,
+        returnTo,
+      });
       window.location.assign(url);
     } catch (error) {
       console.error("Error starting donation checkout:", error);

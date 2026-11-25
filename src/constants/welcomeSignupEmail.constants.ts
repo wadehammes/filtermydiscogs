@@ -15,12 +15,17 @@ export const isWelcomeSignupEmailEligibleAccount = (user: {
   created_at: Date;
   welcome_email_sent: boolean;
   email: string | null;
+  email_verified_at: Date | null;
 }): boolean => {
   if (user.welcome_email_sent) {
     return false;
   }
 
   if (!hasTrimmedUserEmail(user.email)) {
+    return false;
+  }
+
+  if (user.email_verified_at == null) {
     return false;
   }
 
@@ -31,4 +36,5 @@ export const buildWelcomeSignupEmailClaimWhere = (discogsUserId: number) => ({
   discogs_user_id: discogsUserId,
   ...welcomeSignupEmailEligibilityWhere,
   email: { not: null },
+  email_verified_at: { not: null },
 });

@@ -20,9 +20,21 @@ export const userContactPatchSchema = z
     marketingEmailsOptIn: z
       .boolean({ error: "marketingEmailsOptIn must be a boolean" })
       .optional(),
+    resendEmailVerification: z.literal(true).optional(),
   })
   .refine(
     (value) =>
-      value.email !== undefined || value.marketingEmailsOptIn !== undefined,
+      value.email !== undefined ||
+      value.marketingEmailsOptIn !== undefined ||
+      value.resendEmailVerification === true,
     { message: "At least one contact field is required" },
+  )
+  .refine(
+    (value) =>
+      value.resendEmailVerification !== true ||
+      (value.email === undefined && value.marketingEmailsOptIn === undefined),
+    {
+      message:
+        "resendEmailVerification must be the only field in the request body",
+    },
   );

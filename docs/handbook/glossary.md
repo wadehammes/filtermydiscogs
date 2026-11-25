@@ -41,7 +41,7 @@ Domain and internal terms agents see in code, copy, and API payloads. Paths are 
 | **Verified session** | OAuth tokens validated on the server; API routes use **`getVerifiedUserFromRequest*`** and **`identity.id`**. |
 | **`discogs_user_id` cookie** | Client-readable id hint — **not** sufficient alone to authorize mutations. |
 | **Soft logout / reconnect** | Logout keeps tokens for fast re-login; **`reconnectUsername`** + collection cache prep ([`resolveCollectionCacheUsername`](../../src/utils/resolveCollectionCacheUsername.ts)). |
-| **Clear stored data** | Deletes **`User`** row + analytics + cookies; wipes client prefs (see [data-storage.md](data-storage.md)). |
+| **Delete account** | UI name for **`POST /api/auth/clear-data`**: deletes the **`User`** row + analytics + cookies; wipes client prefs. Does not delete the Discogs account (see [data-storage.md](data-storage.md)). |
 
 ## Client state (short)
 

@@ -14,7 +14,11 @@ type EmailHeaderProps = {
 export const EmailHeader = ({
   baseUrl = getEmailBaseUrl(),
 }: EmailHeaderProps) => {
-  const iconUrl = `${getEmailAssetBaseUrl()}${EMAIL_ICON_PATH}`;
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  const assetBase = process.env.EMAIL_ASSET_BASE_URL?.trim()
+    ? getEmailAssetBaseUrl()
+    : normalizedBase;
+  const iconUrl = `${assetBase}${EMAIL_ICON_PATH}`;
 
   return (
     <Section className="pb-2 pt-0 text-center">

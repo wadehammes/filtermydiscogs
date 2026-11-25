@@ -32,9 +32,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsedBody.error }, { status: 400 });
   }
 
-  const { amountCents } = parsedBody.data;
+  const { amountCents, returnTo } = parsedBody.data;
   const { successUrl, cancelUrl } = getDonateCheckoutUrls(
     getDonateRequestSiteUrl(request),
+    returnTo,
   );
 
   try {

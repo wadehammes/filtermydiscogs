@@ -1,9 +1,10 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { useSetAtom, useStore } from "jotai";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
   ViewActionTypes,
   viewDispatchAtom,
@@ -14,13 +15,21 @@ import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.compon
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
 import { ScrollRevealOnce } from "src/components/ScrollReveal/ScrollReveal.component";
+import { CLEAR_ALL_DATA_TITLE } from "src/constants/clearData.constants";
 import {
   SETTINGS_COMPLETE_LOGOUT_DIALOG_MESSAGE,
+  SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
   SETTINGS_CONTACT_SAVE_ERROR_MESSAGE,
   SETTINGS_CONTACT_SAVED_MESSAGE,
+  SETTINGS_DATA_PANEL_LEAD,
+  SETTINGS_EMAIL_VERIFICATION_EXPIRED_MESSAGE,
+  SETTINGS_EMAIL_VERIFICATION_INVALID_MESSAGE,
+  SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE,
+  SETTINGS_EMAIL_VERIFIED_TOAST_MESSAGE,
 } from "src/constants/settingsCopy.constants";
 import { useAuth } from "src/context/auth.context";
 import { useUpdateUserContactMutation } from "src/hooks/mutations/useUserContactMutations";
+import { UserContactQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { useUserContactQuery } from "src/hooks/queries/useUserContactQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
@@ -40,12 +49,15 @@ import { clearPersistedFilters } from "src/utils/filtersStorage";
 import { toast } from "src/utils/toast";
 import styles from "./SettingsClient.module.css";
 import {
+  SettingsAccountCompleteLogoutPanel,
   SettingsAccountPanel,
   SettingsAppearancePanel,
   SettingsCollectionPanel,
   SettingsDataPanel,
+  SettingsDeleteAccountPanel,
   SettingsFiltersPanel,
   SettingsPlaybackPanel,
+  SettingsSupportPanel,
 } from "./SettingsSectionPanels.component";
 import {
   DEFAULT_SETTINGS_SECTION,
@@ -68,6 +80,7 @@ const showPreferencesSaveErrorToast = () => {
 };
 
 export default function SettingsClient() {
+  const queryClient = useQueryClient();
   const { logout, state: authState } = useAuth();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const {
@@ -81,14 +94,44 @@ export default function SettingsClient() {
     DEFAULT_SETTINGS_SECTION,
   );
   const searchParams = useSearchParams();
+  const settingsSectionParam = searchParams.get("section");
+  const emailVerificationParam = searchParams.get("emailVerification");
+  const handledEmailVerificationToastRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const section = searchParams.get("section");
-
-    if (section && isSettingsSectionId(section)) {
-      setActiveSection(section);
+    if (
+      settingsSectionParam != null &&
+      isSettingsSectionId(settingsSectionParam)
+    ) {
+      setActiveSection(settingsSectionParam);
     }
-  }, [searchParams]);
+  }, [settingsSectionParam]);
+
+  useEffect(() => {
+    if (emailVerificationParam == null) {
+      handledEmailVerificationToastRef.current = null;
+      return;
+    }
+
+    if (handledEmailVerificationToastRef.current === emailVerificationParam) {
+      return;
+    }
+
+    handledEmailVerificationToastRef.current = emailVerificationParam;
+
+    if (emailVerificationParam === "success") {
+      toast.success(SETTINGS_EMAIL_VERIFIED_TOAST_MESSAGE);
+      if (authState.userId != null) {
+        void queryClient.invalidateQueries({
+          queryKey: UserContactQueryKeys.byUserId(authState.userId),
+        });
+      }
+    } else if (emailVerificationParam === "expired") {
+      toast.error(SETTINGS_EMAIL_VERIFICATION_EXPIRED_MESSAGE);
+    } else if (emailVerificationParam === "invalid") {
+      toast.error(SETTINGS_EMAIL_VERIFICATION_INVALID_MESSAGE);
+    }
+  }, [authState.userId, emailVerificationParam, queryClient]);
 
   const [showCompleteLogoutDialog, setShowCompleteLogoutDialog] =
     useState(false);
@@ -213,6 +256,8 @@ export default function SettingsClient() {
           <SettingsAccountPanel
             authState={authState}
             savedEmail={userContact?.email ?? null}
+            pendingEmail={userContact?.pendingEmail ?? null}
+            emailVerified={userContact?.emailVerified ?? false}
             marketingEmailsOptIn={userContact?.marketingEmailsOptIn ?? false}
             isContactLoading={isContactLoading}
             isContactSaving={isContactSaving}
@@ -220,8 +265,26 @@ export default function SettingsClient() {
               updateUserContact(
                 { email: email === "" ? "" : email },
                 {
-                  onSuccess: () => {
+                  onSuccess: (contact) => {
+                    if (contact.pendingEmail) {
+                      toast.success(SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE);
+                      return;
+                    }
+
                     toast.success(SETTINGS_CONTACT_SAVED_MESSAGE);
+                  },
+                  onError: () => {
+                    toast.error(SETTINGS_CONTACT_SAVE_ERROR_MESSAGE);
+                  },
+                },
+              );
+            }}
+            onResendEmailVerification={() => {
+              updateUserContact(
+                { resendEmailVerification: true },
+                {
+                  onSuccess: () => {
+                    toast.success(SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE);
                   },
                   onError: () => {
                     toast.error(SETTINGS_CONTACT_SAVE_ERROR_MESSAGE);
@@ -242,7 +305,6 @@ export default function SettingsClient() {
                 },
               );
             }}
-            onCompleteLogout={() => setShowCompleteLogoutDialog(true)}
           />
         );
       case "appearance":
@@ -299,17 +361,38 @@ export default function SettingsClient() {
             onSyncClick={openSyncDialog}
           />
         );
+      case "support":
+        return <SettingsSupportPanel />;
       case "data":
-        return (
-          <SettingsDataPanel
-            isClearing={isClearing}
-            onClearData={openClearDataDialog}
-          />
-        );
+        return <SettingsDataPanel />;
       default:
         return null;
     }
   };
+
+  const renderSettingsPanel = (
+    panelKey: string,
+    title: string,
+    lead: string | undefined,
+    titleId: string,
+    body: ReactNode,
+    panelClassName?: string,
+  ) => (
+    <section
+      className={panelClassName ?? styles.panel}
+      aria-labelledby={titleId}
+    >
+      <header className={styles.panelHeader}>
+        <h2 id={titleId} className={styles.panelTitle}>
+          {title}
+        </h2>
+        {lead ? <p className={styles.panelLead}>{lead}</p> : null}
+      </header>
+      <ScrollRevealOnce key={panelKey} className={styles.panelBody}>
+        {body}
+      </ScrollRevealOnce>
+    </section>
+  );
 
   return (
     <>
@@ -353,27 +436,60 @@ export default function SettingsClient() {
                   </ul>
                 </nav>
 
-                <section
-                  className={styles.panel}
-                  aria-labelledby="settings-panel-title"
-                >
-                  <header className={styles.panelHeader}>
-                    <h2 id="settings-panel-title" className={styles.panelTitle}>
-                      {activeSectionMeta?.label}
-                    </h2>
-                    {activeSectionMeta ? (
-                      <p className={styles.panelLead}>
-                        {activeSectionMeta.description}
-                      </p>
-                    ) : null}
-                  </header>
-                  <ScrollRevealOnce
-                    key={activeSection}
-                    className={styles.panelBody}
-                  >
-                    {renderActivePanel()}
-                  </ScrollRevealOnce>
-                </section>
+                <div className={styles.panelStack}>
+                  {activeSection === "account" ? (
+                    <>
+                      {renderSettingsPanel(
+                        activeSection,
+                        activeSectionMeta?.label ?? "Account",
+                        activeSectionMeta?.description,
+                        "settings-panel-title",
+                        renderActivePanel(),
+                      )}
+                      {renderSettingsPanel(
+                        `${activeSection}-logout`,
+                        "Complete logout",
+                        SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
+                        "settings-complete-logout-title",
+                        <SettingsAccountCompleteLogoutPanel
+                          authState={authState}
+                          onCompleteLogout={() =>
+                            setShowCompleteLogoutDialog(true)
+                          }
+                        />,
+                      )}
+                    </>
+                  ) : activeSection === "data" ? (
+                    <>
+                      {renderSettingsPanel(
+                        activeSection,
+                        activeSectionMeta?.label ?? "Privacy",
+                        SETTINGS_DATA_PANEL_LEAD,
+                        "settings-panel-title",
+                        renderActivePanel(),
+                      )}
+                      {renderSettingsPanel(
+                        `${activeSection}-delete-account`,
+                        CLEAR_ALL_DATA_TITLE,
+                        undefined,
+                        "settings-delete-account-title",
+                        <SettingsDeleteAccountPanel
+                          isClearing={isClearing}
+                          onClearData={openClearDataDialog}
+                        />,
+                        styles.panelDanger,
+                      )}
+                    </>
+                  ) : (
+                    renderSettingsPanel(
+                      activeSection,
+                      activeSectionMeta?.label ?? "Settings",
+                      activeSectionMeta?.description,
+                      "settings-panel-title",
+                      renderActivePanel(),
+                    )
+                  )}
+                </div>
               </div>
             </div>
           </div>

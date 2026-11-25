@@ -86,7 +86,13 @@ describe("backfillUserEmailFromDiscogsProfileIfEmpty", () => {
     );
     expect(mockUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { email: "discogs@example.com" },
+        data: expect.objectContaining({
+          email: "discogs@example.com",
+          email_verified_at: expect.any(Date),
+          email_pending: null,
+          email_verification_token_hash: null,
+          email_verification_expires_at: null,
+        }),
       }),
     );
   });

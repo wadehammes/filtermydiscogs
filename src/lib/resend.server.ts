@@ -2,6 +2,27 @@ import "server-only";
 
 import type { Resend } from "resend";
 import { Resend as ResendClient } from "resend";
+import { reportTaggedAppError } from "src/lib/sentry/reportTaggedAppError.server";
+
+const reportedResendNotConfigured = new Set<string>();
+
+export const reportResendNotConfiguredOnce = (input: {
+  area: string;
+  kind: string;
+  message: string;
+}): void => {
+  const key = `${input.area}:${input.kind}`;
+
+  if (reportedResendNotConfigured.has(key)) {
+    return;
+  }
+
+  reportedResendNotConfigured.add(key);
+  reportTaggedAppError(
+    { area: input.area, kind: input.kind },
+    new Error(input.message),
+  );
+};
 
 let resendClient: Resend | null = null;
 

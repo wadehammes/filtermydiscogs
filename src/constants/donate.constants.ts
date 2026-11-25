@@ -25,10 +25,27 @@ export const DONATION_PRODUCT = {
   description: `Thank you for helping keep ${SITE_NAME} free.`,
 };
 
-export const getDonateCheckoutUrls = (siteUrl: string) => ({
-  successUrl: `${siteUrl}/about?${DONATION_SUCCESS_QUERY_PARAM}=${DONATION_SUCCESS_QUERY_VALUE}#support`,
-  cancelUrl: `${siteUrl}${SUPPORT_PROJECT_ABOUT_PATH}`,
-});
+export const DONATION_STRIPE_CHECKOUT_NOTE =
+  "Secure checkout powered by Stripe.";
+
+export type DonationCheckoutReturnTo = "about" | "settings";
+
+export const getDonateCheckoutUrls = (
+  siteUrl: string,
+  returnTo: DonationCheckoutReturnTo = "about",
+) => {
+  if (returnTo === "settings") {
+    return {
+      successUrl: `${siteUrl}/settings?section=support&${DONATION_SUCCESS_QUERY_PARAM}=${DONATION_SUCCESS_QUERY_VALUE}`,
+      cancelUrl: `${siteUrl}/settings?section=support`,
+    };
+  }
+
+  return {
+    successUrl: `${siteUrl}/about?${DONATION_SUCCESS_QUERY_PARAM}=${DONATION_SUCCESS_QUERY_VALUE}#support`,
+    cancelUrl: `${siteUrl}${SUPPORT_PROJECT_ABOUT_PATH}`,
+  };
+};
 
 export const getDonateRequestSiteUrl = (request: {
   headers: { get(name: string): string | null };

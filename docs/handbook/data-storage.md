@@ -1,6 +1,6 @@
 # Data storage and privacy alignment
 
-Where user and session data lives, what **Clear all data** removes, and which **user-facing copy** must stay aligned when storage behavior changes. Agents changing persistence or auth should read this **before** editing code.
+Where user and session data lives, what **Delete account** ( **`POST /api/auth/clear-data`** ) removes, and which **user-facing copy** must stay aligned when storage behavior changes. Agents changing persistence or auth should read this **before** editing code.
 
 ## Storage map
 
@@ -17,7 +17,7 @@ Where user and session data lives, what **Clear all data** removes, and which **
 
 Defined in [`src/constants/storageKeys.ts`](../../src/constants/storageKeys.ts): **`filtermydiscogs_filters`**, **`filtermydiscogs_view_state`**, **`filtermydiscogs_theme`**, **`filtermydiscogs_analytics_consent`**, **`filtermydiscogs_selected_releases`**, collection item counts, releases table layout, etc. Prefer extending this module over new ad-hoc key strings.
 
-## Server: clear all data
+## Server: delete account (`clear-data` API)
 
 **`POST /api/auth/clear-data`** (client: **`api.clearData`**):
 
@@ -35,7 +35,7 @@ If you change **what** is stored, **where**, or **what clear-data removes**, ver
 | --------- | --------------------- |
 | [`storageKeys.ts`](../../src/constants/storageKeys.ts), filter/view persistence | Settings, cookie consent if applicable |
 | [`useClearAllUserData`](../../src/hooks/useClearAllUserData.hook.ts), clear-data API | [`AboutClient`](../../src/components/About/AboutClient.component.tsx), [`LegalPageContent`](../../src/components/Legal/LegalPageContent.server.tsx), Settings confirm copy |
-| Prisma schema / preferences API | [patterns.md → Clear stored data](patterns.md), Settings |
+| Prisma schema / preferences API | [patterns.md → Delete account](patterns.md#delete-account-clear-data-api), Settings |
 | Analytics consent keys | [`CookieConsentBanner`](../../src/components/CookieConsentBanner/), Legal |
 
 Cursor **`stop`** hook **`stop_section_terms_privacy`** nudges when storage-related **`src/`** files change without About/Legal updates (see [`.cursor/hooks/README.md`](../../.cursor/hooks/README.md)).

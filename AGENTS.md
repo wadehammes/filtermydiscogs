@@ -26,6 +26,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Use [`.cursor/skills/sentry/SKILL.md`](./.cursor/skills/sentry/SKILL.md) and [platform.md → Sentry runbook](docs/handbook/platform.md#sentry-runbook). OAuth once in Cursor desktop (**Settings → MCP → sentry**).
 
+## Ops health (security + Sentry)
+
+| When the agent is about to…                           | Run                                                                                                                                                                                                                                                      |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| sweep Dependabot, `pnpm audit`, and production Sentry | `mise run ops-health` (or `pnpm ops:health`) then [`.cursor/skills/ops-health-check/SKILL.md`](./.cursor/skills/ops-health-check/SKILL.md) — fix on a **`staging`** PR; re-run script until `pnpm audit` is clean (Dependabot alerts close after merge). |
+
 <!-- fallow:setup-hooks:start -->
 ## Fallow (ad-hoc analysis)
 

@@ -57,6 +57,15 @@
   }
 }
 
+.panelStack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  width: 100%;
+}
+
 .sidebarList {
   display: flex;
   flex-flow: row nowrap;
@@ -88,27 +97,28 @@
   text-align: left;
   transition:
     background var(--transition-fast),
-    border-color var(--transition-fast);
-
-  &:hover {
-    background: var(--secondary);
-    border-color: var(--input);
-  }
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 
   &:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
+  &:hover {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  &:hover:not(.sidebarButtonActive) {
+    background: var(--secondary);
+    border-color: var(--input);
+  }
+
   @media (width >= 768px) {
     min-width: 0;
     width: 100%;
   }
-}
-
-.sidebarButtonActive {
-  background: var(--secondary);
-  border-color: var(--link);
 }
 
 .sidebarButtonLabel {
@@ -124,6 +134,21 @@
 
   @media (width >= 768px) {
     display: block;
+  }
+}
+
+.sidebarButtonActive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+
+  &:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  & .sidebarButtonDescription {
+    color: color-mix(in srgb, var(--primary-foreground) 72%, transparent);
   }
 }
 
@@ -153,6 +178,24 @@
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   margin: 0;
+}
+
+.panelDanger {
+  composes: panel;
+  background: color-mix(in srgb, var(--destructive) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--destructive) 28%, var(--border));
+
+  & .panelHeader {
+    border-bottom-color: color-mix(
+      in srgb,
+      var(--destructive) 18%,
+      var(--border)
+    );
+  }
+
+  & .panelTitle {
+    color: color-mix(in srgb, var(--destructive) 88%, var(--foreground));
+  }
 }
 
 .panelLead {
@@ -258,14 +301,40 @@
   width: 100%;
 }
 
+.emailFieldRow {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+  max-width: 20rem;
+  width: 100%;
+}
+
+.emailFieldStatus {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-1);
+}
+
+.emailStatusIconVerified {
+  color: var(--success);
+  display: inline-flex;
+}
+
+.emailStatusIconPending {
+  color: var(--warning);
+  display: inline-flex;
+}
+
 .emailInput {
   background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-ui);
   color: var(--foreground);
+  flex: 1;
   font-family: inherit;
   font-size: var(--text-sm);
-  max-width: 16rem;
+  min-width: 0;
   padding: var(--space-2) var(--space-3);
   width: 100%;
 
@@ -295,10 +364,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-}
-
-.supportPanelLink {
-  composes: button secondary md from "../Button/Button.module.css";
 }
 
 .settingToggle {

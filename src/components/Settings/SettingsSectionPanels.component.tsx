@@ -11,20 +11,26 @@ import {
 } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import { DonationCheckoutForm } from "src/components/DonationCheckoutForm/DonationCheckoutForm.component";
 import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFilterViewDialog.component";
 import Select from "src/components/Select/Select.component";
 import { SettingsBooleanPreferenceToggle } from "src/components/Settings/SettingsBooleanPreferenceToggle.component";
-import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
+import { ABOUT_DATA_DELETION_ITEMS } from "src/constants/about.constants";
 import {
-  SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION,
+  CLEAR_ALL_DATA_ACTION_LABEL,
+  CLEAR_ALL_DATA_ACTION_LOADING_LABEL,
+  CLEAR_ALL_DATA_PANEL_LEAD,
+} from "src/constants/clearData.constants";
+import {
   SETTINGS_EMAIL_FIELD_DESCRIPTION,
   SETTINGS_EMAIL_FIELD_LABEL,
+  SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL,
+  SETTINGS_EMAIL_STATUS_VERIFIED_LABEL,
   SETTINGS_MARKETING_EMAILS_DESCRIPTION,
   SETTINGS_MARKETING_EMAILS_LABEL,
   SETTINGS_SUPPORT_PANEL_DESCRIPTION,
 } from "src/constants/settingsCopy.constants";
-import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
 import { useFilterViews } from "src/hooks/useFilterViews.hook";
@@ -32,36 +38,59 @@ import {
   type SettingsAccountEmailFormValues,
   settingsAccountEmailFormSchema,
 } from "src/lib/validation/userContact.schemas";
+import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
+import { ClockThinIcon } from "src/styles/icons/ClockThinIcon.component";
+import accountDeletionCard from "src/styles/modules/account-deletion-card.module.css";
 import type { CollectionSidePanelPreference } from "src/types/userPreferences.types";
 import {
   type FilterView,
   formatFilterViewSummary,
 } from "src/utils/filterViews";
+import { getEmailVerificationUiState } from "src/utils/settingsEmailVerificationUi";
+import { contactEmailsMatch } from "src/utils/userContact.helpers";
 import styles from "./SettingsClient.module.css";
 
 type SettingsAccountPanelProps = {
   authState: AuthState;
   savedEmail: string | null;
+  pendingEmail: string | null;
+  emailVerified: boolean;
   marketingEmailsOptIn: boolean;
   isContactLoading: boolean;
   isContactSaving: boolean;
   onPersistEmail: (email: string) => void;
+  onResendEmailVerification: () => void;
   onMarketingEmailsOptInChange: (enabled: boolean) => void;
-  onCompleteLogout: () => void;
 };
 
 export const SettingsAccountPanel = ({
   authState,
   savedEmail,
+  pendingEmail,
+  emailVerified,
   marketingEmailsOptIn,
   isContactLoading,
   isContactSaving,
   onPersistEmail,
+  onResendEmailVerification,
   onMarketingEmailsOptInChange,
-  onCompleteLogout,
 }: SettingsAccountPanelProps) => {
   const contactFieldsDisabled = isContactLoading || isContactSaving;
-  const normalizedSavedEmail = savedEmail ?? "";
+  const displayEmail = pendingEmail ?? savedEmail ?? "";
+  const marketingDisabled =
+    contactFieldsDisabled || !emailVerified || pendingEmail != null;
+  const emailVerificationUi = getEmailVerificationUiState({
+    email: savedEmail,
+    pendingEmail,
+    emailVerified,
+    marketingEmailsOptIn,
+  });
+  const {
+    emailStatusMessage,
+    icon: emailStatusIcon,
+    iconTitle: emailStatusIconTitle,
+    showResendVerification,
+  } = emailVerificationUi;
   const isFocusedRef = useRef(false);
 
   const {
@@ -72,15 +101,15 @@ export const SettingsAccountPanel = ({
     formState: { errors },
   } = useForm<SettingsAccountEmailFormValues>({
     resolver: zodResolver(settingsAccountEmailFormSchema),
-    defaultValues: { email: normalizedSavedEmail },
+    defaultValues: { email: displayEmail },
     mode: "onBlur",
   });
 
   useEffect(() => {
     if (!(isFocusedRef.current || isContactLoading)) {
-      reset({ email: normalizedSavedEmail });
+      reset({ email: displayEmail });
     }
-  }, [isContactLoading, normalizedSavedEmail, reset]);
+  }, [isContactLoading, displayEmail, reset]);
 
   const persistEmailIfChanged = useCallback(
     async (trimmedEmail: string) => {
@@ -94,15 +123,13 @@ export const SettingsAccountPanel = ({
         return;
       }
 
-      const savedTrimmed = normalizedSavedEmail.trim();
-
-      if (trimmedEmail === savedTrimmed) {
+      if (contactEmailsMatch(trimmedEmail, displayEmail)) {
         return;
       }
 
       onPersistEmail(trimmedEmail);
     },
-    [isContactSaving, normalizedSavedEmail, onPersistEmail, trigger],
+    [isContactSaving, displayEmail, onPersistEmail, trigger],
   );
 
   const { onBlur, onChange, ...emailFieldProps } = register("email");
@@ -140,24 +167,52 @@ export const SettingsAccountPanel = ({
           <span className={styles.fieldLabel}>
             {SETTINGS_EMAIL_FIELD_LABEL}
           </span>
-          <input
-            id="settings-account-email"
-            type="email"
-            autoComplete="email"
-            data-1p-ignore
-            className={classNames(styles.emailInput, {
-              [styles.emailInputInvalid]: emailErrorMessage != null,
-            })}
-            disabled={contactFieldsDisabled}
-            aria-invalid={emailErrorMessage != null ? true : undefined}
-            aria-describedby={
-              emailErrorMessage ? "settings-account-email-error" : undefined
-            }
-            onBlur={handleEmailBlur}
-            onChange={onChange}
-            onFocus={handleEmailFocus}
-            {...emailFieldProps}
-          />
+          <div className={styles.emailFieldRow}>
+            <input
+              id="settings-account-email"
+              type="email"
+              autoComplete="email"
+              data-1p-ignore
+              className={classNames(styles.emailInput, {
+                [styles.emailInputInvalid]: emailErrorMessage != null,
+              })}
+              disabled={contactFieldsDisabled}
+              aria-invalid={emailErrorMessage != null ? true : undefined}
+              aria-describedby={
+                [
+                  emailErrorMessage ? "settings-account-email-error" : null,
+                  emailStatusMessage ? "settings-account-email-status" : null,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined
+              }
+              onBlur={handleEmailBlur}
+              onChange={onChange}
+              onFocus={handleEmailFocus}
+              {...emailFieldProps}
+            />
+            <div className={styles.emailFieldStatus}>
+              {emailStatusIcon === "verified" ? (
+                <span
+                  className={styles.emailStatusIconVerified}
+                  title={
+                    emailStatusIconTitle ?? SETTINGS_EMAIL_STATUS_VERIFIED_LABEL
+                  }
+                >
+                  <CheckThinIcon width={18} height={18} aria-hidden />
+                </span>
+              ) : null}
+              {emailStatusIcon === "pending" ||
+              emailStatusIcon === "unverified" ? (
+                <span
+                  className={styles.emailStatusIconPending}
+                  title={emailStatusIconTitle ?? undefined}
+                >
+                  <ClockThinIcon width={18} height={18} aria-hidden />
+                </span>
+              ) : null}
+            </div>
+          </div>
         </label>
         {emailErrorMessage ? (
           <p
@@ -171,44 +226,59 @@ export const SettingsAccountPanel = ({
         <p className={styles.sectionDescription}>
           {SETTINGS_EMAIL_FIELD_DESCRIPTION}
         </p>
+        {emailStatusMessage ? (
+          <p
+            id="settings-account-email-status"
+            className={styles.sectionDescription}
+            role="status"
+          >
+            {emailStatusMessage}
+          </p>
+        ) : null}
+        {showResendVerification ? (
+          <div className={styles.actions}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={contactFieldsDisabled}
+              onPress={onResendEmailVerification}
+            >
+              {SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL}
+            </Button>
+          </div>
+        ) : null}
       </div>
       <SettingsBooleanPreferenceToggle
         checked={marketingEmailsOptIn}
         label={SETTINGS_MARKETING_EMAILS_LABEL}
         description={SETTINGS_MARKETING_EMAILS_DESCRIPTION}
-        disabled={contactFieldsDisabled}
+        disabled={marketingDisabled}
         onChange={onMarketingEmailsOptInChange}
       />
-      <div className={styles.panelBlock}>
-        <h3 className={styles.panelBlockTitle}>Support the app</h3>
-        <p className={styles.sectionDescription}>
-          {SETTINGS_SUPPORT_PANEL_DESCRIPTION}
-        </p>
-        <div className={styles.actions}>
-          <SupportProjectNavLink className={styles.supportPanelLink}>
-            {SUPPORT_PROJECT_NAV_LABEL}
-          </SupportProjectNavLink>
-        </div>
-      </div>
-      <div className={styles.panelBlock}>
-        <h3 className={styles.panelBlockTitle}>Complete logout</h3>
-        <p className={styles.sectionDescription}>
-          {SETTINGS_COMPLETE_LOGOUT_PANEL_DESCRIPTION}
-        </p>
-        <div className={styles.actions}>
-          <Button
-            variant="secondary"
-            size="md"
-            onPress={onCompleteLogout}
-            disabled={authState.isLoggingOut}
-          >
-            {authState.isLoggingOut ? "Logging out..." : "Complete logout"}
-          </Button>
-        </div>
-      </div>
     </>
   );
 };
+
+type SettingsAccountCompleteLogoutPanelProps = {
+  authState: AuthState;
+  onCompleteLogout: () => void;
+};
+
+export const SettingsAccountCompleteLogoutPanel = ({
+  authState,
+  onCompleteLogout,
+}: SettingsAccountCompleteLogoutPanelProps) => (
+  <div className={styles.actions}>
+    <Button
+      variant="secondary"
+      size="md"
+      onPress={onCompleteLogout}
+      disabled={authState.isLoggingOut}
+    >
+      {authState.isLoggingOut ? "Logging out..." : "Complete logout"}
+    </Button>
+  </div>
+);
 
 type SettingsAppearancePanelProps = {
   settingsViewValue: "card" | "list";
@@ -475,15 +545,20 @@ export const SettingsCollectionPanel = ({
   );
 };
 
-type SettingsDataPanelProps = {
-  isClearing: boolean;
-  onClearData: () => void;
-};
+export const SettingsSupportPanel = () => (
+  <div className={styles.panelBlock}>
+    <p className={styles.sectionDescription}>
+      {SETTINGS_SUPPORT_PANEL_DESCRIPTION}
+    </p>
+    <DonationCheckoutForm
+      embedded
+      returnTo="settings"
+      customAmountInputId="settings-donation-custom-amount"
+    />
+  </div>
+);
 
-export const SettingsDataPanel = ({
-  isClearing,
-  onClearData,
-}: SettingsDataPanelProps) => {
+export const SettingsDataPanel = () => {
   const {
     isAnalyticsEnabled,
     isReady: isAnalyticsConsentReady,
@@ -491,46 +566,56 @@ export const SettingsDataPanel = ({
   } = useAnalyticsConsent();
 
   return (
-    <>
-      <SettingsBooleanPreferenceToggle
-        checked={isAnalyticsEnabled}
-        label="Allow analytics cookies"
-        description={
-          <>
-            When enabled, Google Tag Manager may set analytics cookies to
-            measure page views and interactions. Similar events may also be
-            stored on our server (page path, event name, and label) to
-            understand product usage, linked to your account when signed in.
-            Essential Discogs login cookies always apply. See the{" "}
-            <a href="/legal#cookies" className={styles.inlineLink}>
-              cookie notice
-            </a>{" "}
-            for details. Disabling analytics reloads the page so tracking
-            scripts stop running.
-          </>
-        }
-        disabled={!isAnalyticsConsentReady}
-        onChange={setAnalyticsEnabled}
-      />
-      <div className={styles.panelBlock}>
-        <h3 className={styles.panelBlockTitle}>Clear all stored data</h3>
-        <p className={styles.sectionDescription}>
-          Delete your crates, product analytics events linked to your account,
-          clear local preferences (including your analytics cookie choice), and
-          sign out. You will need to authorize the app again to continue using
-          Filter My Discogs.
-        </p>
-        <div className={styles.actions}>
-          <Button
-            variant="danger"
-            size="md"
-            onPress={onClearData}
-            disabled={isClearing}
-          >
-            {isClearing ? "Clearing..." : "Clear all stored data"}
-          </Button>
-        </div>
-      </div>
-    </>
+    <SettingsBooleanPreferenceToggle
+      checked={isAnalyticsEnabled}
+      label="Allow analytics cookies"
+      description={
+        <>
+          When enabled, Google Tag Manager may set analytics cookies to measure
+          page views and interactions. Similar events may also be stored on our
+          server (page path, event name, and label) to understand product usage,
+          linked to your account when signed in. Essential Discogs login cookies
+          always apply. See the{" "}
+          <a href="/legal#cookies" className={styles.inlineLink}>
+            cookie notice
+          </a>{" "}
+          for details. Disabling analytics reloads the page so tracking scripts
+          stop running.
+        </>
+      }
+      disabled={!isAnalyticsConsentReady}
+      onChange={setAnalyticsEnabled}
+    />
   );
 };
+
+type SettingsDeleteAccountPanelProps = {
+  isClearing: boolean;
+  onClearData: () => void;
+};
+
+export const SettingsDeleteAccountPanel = ({
+  isClearing,
+  onClearData,
+}: SettingsDeleteAccountPanelProps) => (
+  <>
+    <p className={styles.sectionDescription}>{CLEAR_ALL_DATA_PANEL_LEAD}</p>
+    <ul className={accountDeletionCard["deletion-list"]}>
+      {ABOUT_DATA_DELETION_ITEMS.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+    <div className={accountDeletionCard["deletion-actions"]}>
+      <Button
+        variant="danger"
+        size="md"
+        onPress={onClearData}
+        disabled={isClearing}
+      >
+        {isClearing
+          ? CLEAR_ALL_DATA_ACTION_LOADING_LABEL
+          : CLEAR_ALL_DATA_ACTION_LABEL}
+      </Button>
+    </div>
+  </>
+);

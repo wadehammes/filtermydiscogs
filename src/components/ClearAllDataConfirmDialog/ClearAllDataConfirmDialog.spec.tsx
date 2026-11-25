@@ -31,7 +31,7 @@ describe("ClearAllDataConfirmDialog", () => {
     po.renderClearAllDataConfirmDialog();
 
     const confirmButton = screen.getByRole("button", {
-      name: "Clear all data",
+      name: "Delete account",
     });
     expect(confirmButton).toBeDisabled();
 
@@ -57,7 +57,7 @@ describe("ClearAllDataConfirmDialog", () => {
     po.renderClearAllDataConfirmDialog();
 
     const confirmButton = screen.getByRole("button", {
-      name: "Clear all data",
+      name: "Delete account",
     });
 
     await user.type(
@@ -82,7 +82,7 @@ describe("ClearAllDataConfirmDialog", () => {
       }),
       CLEAR_ALL_DATA_CONFIRM_PHRASE,
     );
-    await user.click(screen.getByRole("button", { name: "Clear all data" }));
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
@@ -94,7 +94,7 @@ describe("ClearAllDataConfirmDialog", () => {
     po.renderClearAllDataConfirmDialog({ onConfirm });
 
     const confirmButton = screen.getByRole("button", {
-      name: "Clear all data",
+      name: "Delete account",
     });
     await user.click(confirmButton);
 
@@ -153,7 +153,7 @@ describe("ClearAllDataConfirmDialog", () => {
         name: /type delete my account to confirm/i,
       }),
     ).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Clearing..." })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Deleting..." })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
   });
 

@@ -207,8 +207,6 @@
 }
 
 .tileClearData {
-  background: color-mix(in srgb, var(--destructive) 6%, var(--card));
-  border-color: color-mix(in srgb, var(--destructive) 22%, var(--border));
   gap: var(--space-5);
   min-width: 0;
 
@@ -225,47 +223,13 @@
 }
 
 .clearDataList {
-  border-top: 1px solid
-    color-mix(in srgb, var(--destructive) 18%, var(--border));
-  color: var(--muted-foreground);
-  display: grid;
-  gap: var(--space-3);
-  font-size: var(--text-sm);
-  line-height: 1.5;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  composes: deletion-list from "../../styles/modules/account-deletion-card.module.css";
   padding-block-start: var(--space-5);
-
-  @media (width >= 768px) {
-    gap: var(--space-3) var(--space-8);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  li {
-    padding-inline-start: var(--space-4);
-    position: relative;
-    text-wrap: pretty;
-
-    &::before {
-      color: color-mix(
-        in srgb,
-        var(--destructive) 70%,
-        var(--muted-foreground)
-      );
-      content: "–";
-      inset-inline-start: 0;
-      position: absolute;
-    }
-  }
 }
 
 .clearDataFooter {
+  composes: deletion-actions from "../../styles/modules/account-deletion-card.module.css";
   align-items: center;
-  border-top: 1px solid
-    color-mix(in srgb, var(--destructive) 18%, var(--border));
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--space-4);
   padding-block-start: var(--space-5);
 }
@@ -307,6 +271,15 @@
 
   @media (width >= 768px) {
     font-size: var(--text-xl);
+  }
+}
+
+.tile.tileClearData {
+  background: color-mix(in srgb, var(--destructive) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--destructive) 28%, var(--border));
+
+  & .tileTitle {
+    color: color-mix(in srgb, var(--destructive) 88%, var(--foreground));
   }
 }
 
@@ -427,117 +400,6 @@
   & > * {
     position: relative;
   }
-}
-
-.donationPanel {
-  background: color-mix(in srgb, var(--background) 72%, transparent);
-  border-radius: var(--radius-ui);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-5);
-}
-
-.donationForm {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.donationAmounts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.donationCustomAmount {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.donationCustomLabel {
-  composes: label from "../../styles/modules/field-label.module.css";
-}
-
-.donationCustomControls {
-  align-items: stretch;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.donationCustomInputWrap {
-  align-items: center;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  display: flex;
-  flex: 1 1 8rem;
-  gap: var(--space-2);
-  min-height: var(--touch-target-min);
-  padding-inline: var(--space-4);
-
-  &:focus-within {
-    border-color: var(--link);
-    outline: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
-    outline-offset: 1px;
-  }
-}
-
-.donationCurrencyPrefix {
-  color: var(--secondary-foreground);
-  font-size: var(--text-lg);
-  font-weight: var(--font-medium);
-}
-
-.donationCustomInput {
-  background: transparent;
-  border: 0;
-  color: var(--foreground);
-  font-family: inherit;
-  font-size: var(--text-lg);
-  font-weight: var(--font-medium);
-  min-width: 0;
-  outline: none;
-  padding-block: var(--space-3);
-  width: 100%;
-
-  &::placeholder {
-    color: var(--muted-foreground);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-}
-
-.donationError {
-  color: var(--destructive);
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-.donationPrompt {
-  color: var(--foreground);
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-  margin: 0;
-}
-
-.donateButton {
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  padding-inline: var(--space-6);
-}
-
-.donateNote {
-  color: var(--secondary-foreground);
-  font-size: var(--text-sm);
-  font-style: italic;
-  line-height: 1.5;
-  margin: 0;
 }
 
 .contactList {

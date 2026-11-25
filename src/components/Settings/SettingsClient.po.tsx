@@ -15,6 +15,7 @@ import {
   wireDefaultUserPreferencesPageObjectMocks,
 } from "src/tests/mocks/setupSettingsClientPageObjectMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import type { UserContact } from "src/types/userContact.types";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 
@@ -70,10 +71,16 @@ export class SettingsClientPageObject extends BasePageObject {
     );
   }
 
-  mockUpdateUserContact(contact: {
-    email: string | null;
-    marketingEmailsOptIn: boolean;
-  }): void {
+  mockUserContact(contact: UserContact): void {
+    mockApiResponse(
+      true,
+      this.mockApi.userContact,
+      contact,
+      pageObjectApiError,
+    );
+  }
+
+  mockUpdateUserContact(contact: UserContact): void {
     mockApiResponse(
       true,
       this.mockApi.updateUserContact,
