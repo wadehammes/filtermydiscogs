@@ -39,12 +39,6 @@ export interface AdminUserLookupPreferences {
   savedViewsCount: number;
 }
 
-export interface AdminUserLookupAnalytics {
-  last7Days: number;
-  last30Days: number;
-  total: number;
-}
-
 export interface AdminUserLookupPlayback {
   trackRows: number;
   totalPlays: number;
@@ -83,7 +77,6 @@ export interface AdminUserLookupStats {
     playlistTracks: number;
   };
   activity: AdminUserLookupActivity;
-  analytics: AdminUserLookupAnalytics;
   playback: AdminUserLookupPlayback;
   crates: AdminUserLookupCrateSummary[];
   playlists: AdminUserLookupPlaylistSummary[];

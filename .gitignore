@@ -14,6 +14,10 @@
 .cursor/agent-registry.json
 .cursor/**/*.local.json
 
+# Skills CLI (use `npx skills add … -g` for user-level skills; do not commit lockfile or tree)
+.agents/
+skills-lock.json
+
 /.swc
 
 # dependencies

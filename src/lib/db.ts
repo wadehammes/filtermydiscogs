@@ -80,8 +80,6 @@ const PRISMA_MODEL_DELEGATES = [
   "crate",
   "crateRelease",
   "crateSetMarker",
-  "productAnalyticsEvent",
-  "productAnalyticsDailyRollup",
 ] as const;
 
 const isCachedPrismaClientCurrent = (client: PrismaClient): boolean =>

@@ -8,10 +8,8 @@ How **App Router** APIs are organized for agents: **auth tiers**, the **`api.*` 
 | ---- | ------ | -------------- |
 | **Public read** | None or IP rate limit only | `GET /api/crates/public/[id]`, `GET /api/playlists/public/[id]`, `GET /api/build-version`, public OG routes |
 | **Optional session** | `getOptionalVerifiedUserFromRequest` | Some playlist engagement (`/view`, `/play`) |
-| **Optional session + verified writes** | `getVerifiedUserFromRequest` (`allowStale`) for persisted **`user_id`**; `getOptionalVerifiedUserFromRequest` for UI-only | `POST /api/usage/events` |
 | **Verified Discogs session** | `getVerifiedUserFromRequest` / **`getVerifiedUserFromRequestWithRateLimit`** | Crate/playlist mutations, prefs, release proxy, dashboard, tracks |
 | **Admin** | `verifyAdminFromRequest` (`ADMIN_USER_ID`) | `/api/admin/*`, `GET /api/crates/health` |
-| **Cron / secret** | `Authorization: Bearer CRON_SECRET` | `GET /api/cron/product-analytics` |
 
 Mutating crate and playlist handlers scope data by **`identity.id`** from verified OAuth—never by the **`discogs_user_id`** cookie alone ([database.md](database.md)).
 
@@ -42,7 +40,6 @@ These are used via **navigation**, **`<form action>`**, **Stripe redirect**, or 
 | `/api/auth/discogs`, `/api/auth/callback` | OAuth 1.0a redirect dance |
 | `/api/image-proxy` | Mosaic / avatar image proxy (rate-limited) |
 | `/api/donate/checkout` | Stripe checkout session |
-| `/api/cron/product-analytics` | Vercel Cron rollup |
 | `/api/og/crate/[id]`, `/api/og/playlist/[id]` | OG image generation |
 
 Auth flow details: [discogs.md](discogs.md).

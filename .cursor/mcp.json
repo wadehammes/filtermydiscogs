@@ -6,6 +6,9 @@
     },
     "sentry": {
       "url": "https://mcp.sentry.dev/mcp/filtermydiscogs/javascript-nextjs"
+    },
+    "resend": {
+      "url": "https://mcp.resend.com/mcp"
     }
   }
 }

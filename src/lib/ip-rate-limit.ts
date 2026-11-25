@@ -27,19 +27,6 @@ export const IMAGE_PROXY_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   ),
 };
 
-export const ANALYTICS_EVENTS_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
-  maxRequests: parseInt(
-    process.env.ANALYTICS_EVENTS_RATE_LIMIT_MAX || "240",
-    10,
-  ),
-  windowMs: parseInt(
-    process.env.ANALYTICS_EVENTS_RATE_LIMIT_WINDOW ||
-      process.env.IP_RATE_LIMIT_WINDOW ||
-      "60000",
-    10,
-  ),
-};
-
 export const EMAIL_VERIFICATION_CONFIRM_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   maxRequests: parseInt(
     process.env.EMAIL_VERIFICATION_CONFIRM_RATE_LIMIT_MAX || "30",

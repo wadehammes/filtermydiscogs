@@ -132,7 +132,7 @@ export const LegalPageContent = () => {
               dashboard shows both; release tracklists show listen counts only.
               Counts increment when playback actually starts or you resume from
               pause, not when a paused session reopens after a page refresh.
-              This is separate from optional product analytics below.
+              This is separate from optional Google Tag Manager analytics below.
             </li>
             <li>
               <strong>Account preferences</strong> (when you&apos;re signed in):
@@ -163,17 +163,11 @@ export const LegalPageContent = () => {
               sent only after confirmation and when you opt in.
             </li>
             <li>
-              <strong>Optional analytics</strong> (only if you opt in): product
-              usage events in Postgres (for example page path, event name, and
-              interaction label). When you&apos;re signed in, events may include
-              your account ID. I use this to improve the app, not to sell data.
-            </li>
-            <li>
               <strong>Error monitoring:</strong> To diagnose bugs, the app may
               send error reports and limited performance data to Sentry when
               something fails in your browser or on the server. This is
               operational monitoring, not marketing analytics, and is separate
-              from the optional analytics choice above.
+              from the optional Google Tag Manager analytics choice in Settings.
             </li>
             <li>
               <strong>Session replay (Sentry):</strong> On a sample of visits
@@ -236,12 +230,9 @@ export const LegalPageContent = () => {
             <li>
               <strong>Optional analytics:</strong> When you opt in, Google Tag
               Manager may set analytics cookies to measure page views and basic
-              interactions. The app may also store similar interaction events in
-              Postgres (for example page path, event name, and label) to
-              understand product usage, sometimes linked to your account ID when
-              you&apos;re signed in. Analytics does not run until you accept.
-              You can change your choice anytime in Settings under Privacy, or
-              use Essential only on the consent banner.
+              interactions. Analytics does not run until you accept. You can
+              change your choice anytime in Settings under Privacy, or use
+              Essential only on the consent banner.
             </li>
           </ul>
           <h3>Third parties</h3>
@@ -253,9 +244,7 @@ export const LegalPageContent = () => {
             </li>
             <li>
               If you opt in to analytics, Google Tag Manager may set cookies;
-              Google&apos;s privacy policy applies there. First-party product
-              analytics events are stored in my Postgres database under the same
-              consent choice.
+              Google&apos;s privacy policy applies there.
             </li>
             <li>
               Cover images are proxied for performance and cached briefly; they
@@ -312,8 +301,7 @@ export const LegalPageContent = () => {
             </li>
             <li>
               In-app playback stats: per-track play and listen counts from
-              in-app playback (not optional product analytics; deleted with your
-              account row)
+              in-app playback (deleted with your account row)
             </li>
             <li>
               Saved account preferences on the server: theme, default view (grid
@@ -323,10 +311,6 @@ export const LegalPageContent = () => {
               playback settings (auto-play on queue add and extend queue with
               similar releases), and any saved or pending email contact,
               marketing opt-in choice, and in-progress email verification state
-            </li>
-            <li>
-              Product analytics events linked to your account (when analytics
-              was enabled), such as page views and interaction labels
             </li>
             <li>
               Local data on this browser: theme, view mode, filters, analytics

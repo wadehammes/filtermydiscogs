@@ -1,4 +1,3 @@
-import type { AdminStatsFeatureUsage } from "src/types/productAnalytics.types";
 import type { DiscogsRelease } from "./discogs-release.types";
 
 export interface CollectionValue {
@@ -280,7 +279,6 @@ export interface AdminStats {
   engagement: AdminStatsEngagement;
   accountContact: AdminStatsAccountContact;
   accountPreferences: AdminStatsAccountPreferences;
-  featureUsage: AdminStatsFeatureUsage;
   recentActivity: {
     last7Days: AdminStatsRecentActivityPeriod;
     last30Days: AdminStatsRecentActivityPeriod;

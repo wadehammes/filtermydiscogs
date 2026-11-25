@@ -53,17 +53,6 @@ export async function GET(request: NextRequest) {
         error instanceof Error ? error.message : String(error);
     }
 
-    try {
-      const analyticsEventCount = await prisma.productAnalyticsEvent.count();
-      diagnostics.analyticsEventsTableAccessible = true;
-      diagnostics.analyticsEventCount = analyticsEventCount;
-    } catch (error) {
-      rethrowNextInternalError(error);
-      diagnostics.analyticsEventsTableAccessible = false;
-      diagnostics.analyticsEventsTableError =
-        error instanceof Error ? error.message : String(error);
-    }
-
     const poolMetrics = getPoolMetrics();
     if (poolMetrics) {
       diagnostics.poolMetrics = poolMetrics;
