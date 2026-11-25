@@ -26,6 +26,7 @@ import {
   SETTINGS_EMAIL_FIELD_DESCRIPTION,
   SETTINGS_EMAIL_FIELD_LABEL,
   SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL,
+  SETTINGS_EMAIL_SAVE_LABEL,
   SETTINGS_EMAIL_STATUS_VERIFIED_LABEL,
   SETTINGS_MARKETING_EMAILS_DESCRIPTION,
   SETTINGS_MARKETING_EMAILS_LABEL,
@@ -41,6 +42,7 @@ import {
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ClockThinIcon } from "src/styles/icons/ClockThinIcon.component";
 import accountDeletionCard from "src/styles/modules/account-deletion-card.module.css";
+import emailVerificationNotice from "src/styles/modules/settings-email-verification-notice.module.css";
 import type { CollectionSidePanelPreference } from "src/types/userPreferences.types";
 import {
   type FilterView,
@@ -49,6 +51,7 @@ import {
 import { getEmailVerificationUiState } from "src/utils/settingsEmailVerificationUi";
 import { contactEmailsMatch } from "src/utils/userContact.helpers";
 import styles from "./SettingsClient.module.css";
+import { SETTINGS_PLAYBACK_EXTEND_QUEUE_SIMILAR_SETTING_ID } from "./settingsSections.constants";
 
 type SettingsAccountPanelProps = {
   authState: AuthState;
@@ -97,8 +100,8 @@ export const SettingsAccountPanel = ({
     register,
     reset,
     setValue,
-    trigger,
-    formState: { errors },
+    handleSubmit,
+    formState: { errors, isDirty },
   } = useForm<SettingsAccountEmailFormValues>({
     resolver: zodResolver(settingsAccountEmailFormSchema),
     defaultValues: { email: displayEmail },
@@ -111,27 +114,6 @@ export const SettingsAccountPanel = ({
     }
   }, [isContactLoading, displayEmail, reset]);
 
-  const persistEmailIfChanged = useCallback(
-    async (trimmedEmail: string) => {
-      if (isContactSaving) {
-        return;
-      }
-
-      const isValid = await trigger("email");
-
-      if (!isValid) {
-        return;
-      }
-
-      if (contactEmailsMatch(trimmedEmail, displayEmail)) {
-        return;
-      }
-
-      onPersistEmail(trimmedEmail);
-    },
-    [isContactSaving, displayEmail, onPersistEmail, trigger],
-  );
-
   const { onBlur, onChange, ...emailFieldProps } = register("email");
 
   const handleEmailBlur = useCallback(
@@ -142,19 +124,30 @@ export const SettingsAccountPanel = ({
       const trimmed = event.target.value.trim();
 
       if (trimmed !== event.target.value) {
-        setValue("email", trimmed, { shouldValidate: true });
+        setValue("email", trimmed, { shouldValidate: true, shouldDirty: true });
       }
-
-      void persistEmailIfChanged(trimmed);
     },
-    [onBlur, persistEmailIfChanged, setValue],
+    [onBlur, setValue],
   );
+
+  const emailErrorMessage = errors.email?.message;
+
+  const saveEmail = handleSubmit((values) => {
+    const trimmedEmail = values.email.trim();
+
+    if (contactEmailsMatch(trimmedEmail, displayEmail)) {
+      return;
+    }
+
+    onPersistEmail(trimmedEmail);
+  });
+
+  const saveEmailDisabled =
+    contactFieldsDisabled || !isDirty || emailErrorMessage != null;
 
   const handleEmailFocus = useCallback(() => {
     isFocusedRef.current = true;
   }, []);
-
-  const emailErrorMessage = errors.email?.message;
 
   return (
     <>
@@ -163,34 +156,51 @@ export const SettingsAccountPanel = ({
         <p className={styles.fieldValue}>{authState.username}</p>
       </div>
       <div className={styles.panelBlock}>
-        <label className={styles.field} htmlFor="settings-account-email">
-          <span className={styles.fieldLabel}>
+        <div className={styles.field}>
+          <label className={styles.fieldLabel} htmlFor="settings-account-email">
             {SETTINGS_EMAIL_FIELD_LABEL}
-          </span>
+          </label>
           <div className={styles.emailFieldRow}>
-            <input
-              id="settings-account-email"
-              type="email"
-              autoComplete="email"
-              data-1p-ignore
-              className={classNames(styles.emailInput, {
-                [styles.emailInputInvalid]: emailErrorMessage != null,
+            <div
+              className={classNames(styles.emailInputGroup, {
+                [styles.emailInputGroupInvalid]: emailErrorMessage != null,
               })}
-              disabled={contactFieldsDisabled}
-              aria-invalid={emailErrorMessage != null ? true : undefined}
-              aria-describedby={
-                [
-                  emailErrorMessage ? "settings-account-email-error" : null,
-                  emailStatusMessage ? "settings-account-email-status" : null,
-                ]
-                  .filter(Boolean)
-                  .join(" ") || undefined
-              }
-              onBlur={handleEmailBlur}
-              onChange={onChange}
-              onFocus={handleEmailFocus}
-              {...emailFieldProps}
-            />
+            >
+              <input
+                id="settings-account-email"
+                type="email"
+                autoComplete="email"
+                data-1p-ignore
+                className={styles.emailInput}
+                disabled={contactFieldsDisabled}
+                aria-invalid={emailErrorMessage != null ? true : undefined}
+                aria-describedby={
+                  [
+                    emailErrorMessage ? "settings-account-email-error" : null,
+                    emailStatusMessage ? "settings-account-email-status" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ") || undefined
+                }
+                onBlur={handleEmailBlur}
+                onChange={onChange}
+                onFocus={handleEmailFocus}
+                {...emailFieldProps}
+              />
+              <Button
+                variant="secondary"
+                size="sm"
+                className={styles.emailSaveButton}
+                disabled={saveEmailDisabled}
+                isLoading={isContactSaving}
+                loadingText="Saving..."
+                onPress={() => {
+                  void saveEmail();
+                }}
+              >
+                {SETTINGS_EMAIL_SAVE_LABEL}
+              </Button>
+            </div>
             <div className={styles.emailFieldStatus}>
               {emailStatusIcon === "verified" ? (
                 <span
@@ -213,7 +223,7 @@ export const SettingsAccountPanel = ({
               ) : null}
             </div>
           </div>
-        </label>
+        </div>
         {emailErrorMessage ? (
           <p
             id="settings-account-email-error"
@@ -227,24 +237,40 @@ export const SettingsAccountPanel = ({
           {SETTINGS_EMAIL_FIELD_DESCRIPTION}
         </p>
         {emailStatusMessage ? (
-          <p
-            id="settings-account-email-status"
-            className={styles.sectionDescription}
-            role="status"
+          <div
+            className={classNames(
+              emailVerificationNotice.shell,
+              emailStatusIcon === "unverified"
+                ? emailVerificationNotice.shellWarning
+                : emailVerificationNotice.shellInfo,
+            )}
+            data-testid="fmdSettingsEmailVerificationNotice"
           >
-            {emailStatusMessage}
-          </p>
-        ) : null}
-        {showResendVerification ? (
-          <div className={styles.actions}>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={contactFieldsDisabled}
-              onPress={onResendEmailVerification}
+            <p
+              id="settings-account-email-status"
+              className={classNames(
+                emailVerificationNotice.message,
+                emailStatusIcon === "unverified"
+                  ? emailVerificationNotice.messageWarning
+                  : emailVerificationNotice.messageInfo,
+              )}
+              role="status"
             >
-              {SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL}
-            </Button>
+              {emailStatusMessage}
+            </p>
+            {showResendVerification ? (
+              <div className={emailVerificationNotice.actions}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className={emailVerificationNotice.resendButton}
+                  disabled={contactFieldsDisabled}
+                  onPress={onResendEmailVerification}
+                >
+                  {SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL}
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -391,6 +417,7 @@ export const SettingsPlaybackPanel = ({
       <SettingsBooleanPreferenceToggle
         checked={extendQueueWithSimilarReleases}
         label="Extend queue with similar releases"
+        settingId={SETTINGS_PLAYBACK_EXTEND_QUEUE_SIMILAR_SETTING_ID}
         description={
           <>
             When enabled, one related track from your collection is added to up

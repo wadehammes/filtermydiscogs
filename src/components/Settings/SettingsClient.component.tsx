@@ -34,6 +34,7 @@ import { useUserContactQuery } from "src/hooks/queries/useUserContactQuery";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import { useCrateCollectionSync } from "src/hooks/useCrateCollectionSync.hook";
+import { useHashScrollOnMount } from "src/hooks/useHashScrollOnMount.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useCurrentView } from "src/hooks/useViewAtoms.hook";
@@ -61,6 +62,7 @@ import {
 } from "./SettingsSectionPanels.component";
 import {
   DEFAULT_SETTINGS_SECTION,
+  SETTINGS_PLAYBACK_EXTEND_QUEUE_SIMILAR_SETTING_ID,
   SETTINGS_SECTIONS,
   type SettingsSectionId,
 } from "./settingsSections.constants";
@@ -106,6 +108,8 @@ export default function SettingsClient() {
       setActiveSection(settingsSectionParam);
     }
   }, [settingsSectionParam]);
+
+  useHashScrollOnMount(SETTINGS_PLAYBACK_EXTEND_QUEUE_SIMILAR_SETTING_ID);
 
   useEffect(() => {
     if (emailVerificationParam == null) {

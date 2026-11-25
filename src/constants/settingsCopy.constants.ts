@@ -27,8 +27,10 @@ export const SETTINGS_EMAIL_VERIFICATION_INVALID_MESSAGE =
 
 export const SETTINGS_EMAIL_FIELD_LABEL = "Email";
 
+export const SETTINGS_EMAIL_SAVE_LABEL = "Save email";
+
 export const SETTINGS_EMAIL_FIELD_DESCRIPTION =
-  "Optional address for product and marketing email. We may fill this from your Discogs account email on login when empty; confirm or change it here before opting in to marketing mail.";
+  "Optional address for product and marketing email. We may fill this from your Discogs account email on login when empty; edit the address and choose Save email before opting in to marketing mail.";
 
 export const SETTINGS_EMAIL_PENDING_STATUS = (pendingEmail: string): string =>
   `Waiting for you to confirm ${pendingEmail}. Check your inbox for the verification link.`;

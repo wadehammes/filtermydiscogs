@@ -1,0 +1,78 @@
+.shell {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.shellInfo {
+  background: color-mix(in srgb, var(--link) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--link) 28%, var(--border));
+}
+
+.shellWarning {
+  background: color-mix(in srgb, var(--warning) 10%, var(--card));
+  border-color: color-mix(in srgb, var(--warning) 30%, var(--border));
+}
+
+.message {
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.messageInfo {
+  color: var(--foreground);
+}
+
+.messageWarning {
+  color: color-mix(in srgb, var(--warning) 72%, var(--foreground));
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.resendButton {
+  background: var(--card);
+}
+
+.shellInfo .resendButton {
+  border-color: color-mix(in srgb, var(--link) 45%, var(--border));
+  color: var(--link);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--link) 10%, var(--card));
+    border-color: var(--link);
+    color: var(--link-hover);
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--link) 14%, var(--card));
+    border-color: var(--link-hover);
+    color: var(--link-hover);
+  }
+}
+
+.shellWarning .resendButton {
+  border-color: color-mix(in srgb, var(--warning) 50%, var(--border));
+  color: color-mix(in srgb, var(--warning) 85%, var(--foreground));
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--warning) 12%, var(--card));
+    border-color: var(--warning);
+    color: color-mix(in srgb, var(--warning) 92%, var(--foreground));
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--warning) 16%, var(--card));
+    border-color: var(--warning-active);
+    color: var(--warning-active);
+  }
+}

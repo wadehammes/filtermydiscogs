@@ -305,8 +305,15 @@
   align-items: center;
   display: flex;
   gap: var(--space-2);
-  max-width: 20rem;
+  max-width: 26rem;
   width: 100%;
+}
+
+.emailInputGroup {
+  align-items: stretch;
+  display: flex;
+  flex: 1;
+  min-width: 0;
 }
 
 .emailFieldStatus {
@@ -329,7 +336,10 @@
 .emailInput {
   background: var(--background);
   border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
+  border-end-end-radius: 0;
+  border-end-start-radius: var(--radius-ui);
+  border-start-end-radius: 0;
+  border-start-start-radius: var(--radius-ui);
   color: var(--foreground);
   flex: 1;
   font-family: inherit;
@@ -342,16 +352,37 @@
     border-color: var(--ring);
     outline: 2px solid var(--ring);
     outline-offset: 0;
-  }
-
-  &.emailInputInvalid {
-    border-color: var(--destructive);
+    position: relative;
+    z-index: 1;
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;
   }
+}
+
+.emailInputGroup .emailSaveButton {
+  align-self: stretch;
+  border-end-end-radius: var(--radius-ui);
+  border-end-start-radius: 0;
+  border-start-end-radius: var(--radius-ui);
+  border-start-start-radius: 0;
+  flex-shrink: 0;
+  font-size: var(--text-sm);
+  height: auto;
+  margin-inline-start: -1px;
+  min-height: 0;
+  padding-block: 0;
+  padding-inline: var(--space-3);
+}
+
+.emailInputGroupInvalid .emailInput {
+  border-color: var(--destructive);
+}
+
+.emailInputGroupInvalid .emailSaveButton {
+  border-color: var(--destructive);
 }
 
 .fieldError {

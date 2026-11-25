@@ -18,14 +18,23 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import classNames from "classnames";
 import Image from "next/image";
+import Link from "next/link";
 import { memo, useCallback, useMemo } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
+import { SETTINGS_PLAYBACK_QUEUE_TAIL_HREF } from "src/components/Settings/settingsSections.constants";
 import { PLAYBACK_QUEUE_LIST_LABEL } from "src/constants/accessibilityLabels.constants";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
+import {
+  PLAYBACK_QUEUE_EMPTY_MESSAGE_DESKTOP,
+  PLAYBACK_QUEUE_EMPTY_MESSAGE_TOUCH,
+  PLAYBACK_QUEUE_TAIL_SETTINGS_LINK_LABEL,
+} from "src/constants/playbackQueueEmptyCopy.constants";
 import {
   useReleasePlaybackQueue,
   useReleasePlaybackState,
 } from "src/context/releasePlayback.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import GripVerticalIcon from "src/styles/icons/grip-vertical-thin.svg";
 import XIcon from "src/styles/icons/x-thin.svg";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
@@ -152,6 +161,10 @@ export const PlaybackQueueDrawer = ({
     isCollectionRadioQueueLoading,
     queueAutopopulateSource,
   } = useReleasePlaybackState();
+  const isCompactLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
+  const queueEmptyMessage = isCompactLayout
+    ? PLAYBACK_QUEUE_EMPTY_MESSAGE_TOUCH
+    : PLAYBACK_QUEUE_EMPTY_MESSAGE_DESKTOP;
 
   const queueStatusMessage = resolvePlaybackQueueDrawerStatusMessage({
     isAlbumQueueBuilding: isQueueBuilding,
@@ -161,6 +174,8 @@ export const PlaybackQueueDrawer = ({
   });
   const queueListBusy =
     isQueueBuilding || isSimilarQueueLoading || isCollectionRadioQueueLoading;
+  const showQueueTailSettingsLink =
+    isSimilarQueueLoading || queueAutopopulateSource === "similar-tail";
 
   const sortableIds = useMemo(
     () => queue.map((item, index) => getQueueItemListId(item, index)),
@@ -237,9 +252,9 @@ export const PlaybackQueueDrawer = ({
           className={styles.emptyMessage}
           data-testid="fmdPlaybackQueueEmpty"
           role="status"
-          aria-label="Queue is empty. Hover a track and choose Add to queue."
+          aria-label={queueEmptyMessage}
         >
-          Queue is empty. Hover a track and choose Add to queue.
+          {queueEmptyMessage}
         </p>
       ) : (
         <>
@@ -253,6 +268,17 @@ export const PlaybackQueueDrawer = ({
                 : {})}
             >
               {queueStatusMessage}
+              {showQueueTailSettingsLink ? (
+                <>
+                  {" "}
+                  <Link
+                    href={SETTINGS_PLAYBACK_QUEUE_TAIL_HREF}
+                    className={styles.queueTailSettingsLink}
+                  >
+                    {PLAYBACK_QUEUE_TAIL_SETTINGS_LINK_LABEL}
+                  </Link>
+                </>
+              ) : null}
             </p>
           ) : null}
           <DndContext

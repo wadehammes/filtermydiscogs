@@ -67,14 +67,18 @@ export async function readSupportProjectToastEligible(
 ): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: { discogs_user_id: discogsUserId },
-    select: { support_toast_dismissed: true },
+    select: { support_toast_dismissed: true, login_count: true },
   });
 
   if (user == null) {
     return true;
   }
 
-  return !user.support_toast_dismissed;
+  if (user.support_toast_dismissed) {
+    return false;
+  }
+
+  return user.login_count > 1;
 }
 
 export async function dismissSupportProjectToastForUser(
