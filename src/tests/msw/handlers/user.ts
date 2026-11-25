@@ -1,17 +1,17 @@
 import { HttpResponse, http } from "msw";
-import {
-  contactEmailsMatch,
-  defaultUserContact,
-  mergeUserContactPatch,
-  resolveEmailVerificationResendTarget,
-  shouldStartEmailVerification,
-} from "src/lib/user-contact.server";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import type {
   UserContact,
   UserContactPatch,
 } from "src/types/userContact.types";
 import type { UserPreferences } from "src/types/userPreferences.types";
+import {
+  contactEmailsMatch,
+  defaultUserContact,
+  mergeUserContactPatch,
+  shouldStartEmailVerification,
+} from "src/utils/userContact.helpers";
+import { resolveEmailVerificationResendTarget } from "src/utils/userContactVerification";
 
 const normalizePatchEmail = (
   email: UserContactPatch["email"],

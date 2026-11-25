@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   mergeUserContactPatch,
   shouldStartEmailVerification,
-} from "src/lib/user-contact.server";
+} from "src/utils/userContact.helpers";
 
 describe("mergeUserContactPatch", () => {
   it("when marketing opt-in is true without a verified email, returns an error", () => {

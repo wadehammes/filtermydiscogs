@@ -37,6 +37,8 @@ describe("SettingsClient", () => {
   it("saves a valid email on blur", async () => {
     const nextContact = {
       email: "digests@example.com",
+      pendingEmail: null,
+      emailVerified: true,
       marketingEmailsOptIn: false,
     };
 

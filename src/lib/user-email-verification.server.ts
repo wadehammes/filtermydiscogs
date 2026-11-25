@@ -6,16 +6,9 @@ import {
   EMAIL_VERIFICATION_TOKEN_BYTES,
   EMAIL_VERIFICATION_TTL_MS,
 } from "src/constants/emailVerification.constants";
+import { normalizeContactEmailForCompare } from "src/utils/userContact.helpers";
 
-export const normalizeContactEmailForCompare = (
-  email: string | null | undefined,
-): string | null => {
-  if (email == null || email.trim() === "") {
-    return null;
-  }
-
-  return email.trim().toLowerCase();
-};
+export { normalizeContactEmailForCompare };
 
 export const hashEmailVerificationToken = (token: string): string =>
   createHash("sha256").update(token, "utf8").digest("hex");
