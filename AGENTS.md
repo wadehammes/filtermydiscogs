@@ -26,6 +26,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Use [`.cursor/skills/sentry/SKILL.md`](./.cursor/skills/sentry/SKILL.md) and [platform.md → Sentry runbook](docs/handbook/platform.md#sentry-runbook). OAuth once in Cursor desktop (**Settings → MCP → sentry**).
 
+## Resend MCP (email / deliverability)
+
+Hosted server in [`.cursor/mcp.json`](./.cursor/mcp.json) (`https://mcp.resend.com/mcp`). OAuth once in Cursor desktop (**Settings → MCP → resend**), or run **`/add-plugin resend`** for the official plugin + Resend skills. App env: [platform.md → Environment variables](docs/handbook/platform.md) (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`); local smoke: **`pnpm email:send:test`**.
+
 ## Ops health (security + Sentry)
 
 | When the agent is about to…                           | Run                                                                                                                                                                                                                                                      |

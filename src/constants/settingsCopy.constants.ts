@@ -46,7 +46,7 @@ export const SETTINGS_MARKETING_EMAILS_DESCRIPTION =
 export const SETTINGS_DATA_SECTION_NAV_DESCRIPTION = "Cookies and analytics";
 
 export const SETTINGS_DATA_PANEL_LEAD =
-  "Control optional analytics cookies and server-side usage events on this device.";
+  "Control optional analytics cookies on this device.";
 
 export const SETTINGS_SUPPORT_PANEL_DESCRIPTION =
   "Optional one-time donations cover hosting and ongoing development.";

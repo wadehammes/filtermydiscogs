@@ -66,11 +66,6 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         releasesAddedLast7Days: faker.number.int({ min: 0, max: 10 }),
         releasesAddedLast30Days: faker.number.int({ min: 0, max: 30 }),
       },
-      analytics: {
-        last7Days: faker.number.int({ min: 0, max: 50 }),
-        last30Days: faker.number.int({ min: 0, max: 200 }),
-        total: faker.number.int({ min: 0, max: 500 }),
-      },
       playback: {
         trackRows: faker.number.int({ min: 0, max: 200 }),
         totalPlays: faker.number.int({ min: 0, max: 500 }),
@@ -136,11 +131,6 @@ class AdminUserLookupStatsFactory extends BaseFactory<
         lastPlaylistUpdateAt: null,
         releasesAddedLast7Days: 0,
         releasesAddedLast30Days: 0,
-      },
-      analytics: {
-        last7Days: 0,
-        last30Days: 0,
-        total: 0,
       },
       playback: {
         trackRows: 0,

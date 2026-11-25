@@ -9,7 +9,6 @@ import { createDefaultDashboardApiHandlers } from "src/tests/msw/handlers/dashbo
 import { createDefaultPlaylistApiHandlers } from "src/tests/msw/handlers/playlists";
 import { createDefaultReleaseApiHandlers } from "src/tests/msw/handlers/release";
 import { createDefaultTrackApiHandlers } from "src/tests/msw/handlers/tracks";
-import { createDefaultUsageApiHandlers } from "src/tests/msw/handlers/usage";
 import { createDefaultUserApiHandlers } from "src/tests/msw/handlers/user";
 export function createAuthenticatedE2eHandlers(options?: {
   authStatus?: AuthStatus;
@@ -25,7 +24,6 @@ export function createAuthenticatedE2eHandlers(options?: {
     ...createDefaultReleaseApiHandlers(),
     ...createDefaultUserApiHandlers(),
     ...createDefaultTrackApiHandlers(),
-    ...createDefaultUsageApiHandlers(),
     ...createDefaultPlaylistApiHandlers(),
   ];
 }

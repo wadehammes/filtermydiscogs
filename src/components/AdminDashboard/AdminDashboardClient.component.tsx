@@ -27,7 +27,6 @@ import type {
   AdminStatsTopUser,
   AdminStatsTopUserTrack,
 } from "src/types/dashboard.types";
-import type { AdminStatsFeatureUsageRow } from "src/types/productAnalytics.types";
 import type { StoredTheme } from "src/types/userPreferences.types";
 import { buildDiscogsUserProfileUrl } from "src/utils/discogsUserProfileUrl";
 import { THEME_LABELS } from "src/utils/themeAppearance";
@@ -251,36 +250,6 @@ const renderTopUserTrackLeaderboard = (
       },
     ]}
     getRowKey={(row) => `${row.user_id}:${row.track_key}:${rowKeySuffix}`}
-    rows={rows}
-  />
-);
-
-const renderFeatureUsageTable = (
-  rows: AdminStatsFeatureUsageRow[],
-  nameHeader: string,
-) => (
-  <AdminMetricTable
-    columns={[
-      {
-        key: "label",
-        header: nameHeader,
-        align: "name",
-      },
-      {
-        key: "last7Days",
-        header: "7d",
-        align: "metric",
-        render: (row) => formatCommunityStatValue(row.last7Days),
-      },
-      {
-        key: "last30Days",
-        header: "30d",
-        align: "metric",
-        render: (row) => formatCommunityStatValue(row.last30Days),
-      },
-    ]}
-    emptyMessage="No events yet"
-    getRowKey={(row) => row.key}
     rows={rows}
   />
 );
@@ -945,18 +914,6 @@ export default function AdminDashboardClient({
                       totalUsers={stats.overview.totalUsers}
                     />
                   </div>
-
-                  <article className={styles.panelCard}>
-                    <p className={styles.panelEyebrow}>Pages opened</p>
-                    <p className={styles.panelMeta}>
-                      Opted-in visitors only. Each count is a page load, not a
-                      person.
-                    </p>
-                    {renderFeatureUsageTable(
-                      stats.featureUsage.pageViews,
-                      "Page",
-                    )}
-                  </article>
                 </div>
               </DashboardSection>
 

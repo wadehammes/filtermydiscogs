@@ -2,8 +2,6 @@ import { Prisma } from "@prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
 import { fetchAdminUserTrackStats } from "src/lib/admin-user-track-stats.server";
 import { prisma } from "src/lib/db";
-import { fetchAdminFeatureUsageStats } from "src/lib/product-analytics.server";
-import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 import type {
   AdminStats,
   AdminStatsDailyCountPoint,
@@ -306,12 +304,6 @@ const buildRecentActivityPeriod = ({
   activePlaybackUsers: userTracksActivity.activePlaybackUsers,
 });
 
-const emptyFeatureUsage = (): AdminStats["featureUsage"] => ({
-  totals: { last7Days: 0, last30Days: 0 },
-  pageViews: [],
-  events: [],
-});
-
 type AccountContactOverviewRow = {
   users_with_email: number;
   marketing_opt_in: number;
@@ -498,7 +490,6 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     releaseGrowth,
     publicCrateGrowth,
     setMarkerGrowth,
-    featureUsage,
     accountContact,
     accountPreferences,
     userTrackStats,
@@ -614,13 +605,6 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
       GROUP BY 1
       ORDER BY 1
     `,
-    fetchAdminFeatureUsageStats().catch((error) => {
-      console.error("Admin feature usage stats error:", error);
-      reportInfrastructureFailure("admin_stats", error, {
-        segment: "feature_usage",
-      });
-      return emptyFeatureUsage();
-    }),
     fetchAdminAccountContactStats(),
     fetchAdminAccountPreferencesStats(),
     fetchAdminUserTrackStats({ sevenDaysAgo, thirtyDaysAgo }),
@@ -668,7 +652,6 @@ const fetchAdminStatsUncached = async (): Promise<AdminStats> => {
     engagement,
     accountContact,
     accountPreferences,
-    featureUsage,
     recentActivity: {
       last7Days: buildRecentActivityPeriod({
         users,

@@ -71,9 +71,6 @@ export const getAdminUserLookup = async (
     setMarkers,
     releasesAddedLast7Days,
     releasesAddedLast30Days,
-    analyticsLast7Days,
-    analyticsLast30Days,
-    analyticsTotal,
     lastCrateUpdate,
     lastReleaseAdded,
     lastPlaylistUpdate,
@@ -104,13 +101,6 @@ export const getAdminUserLookup = async (
     prisma.crateRelease.count({
       where: { user_id: userId, added_at: { gte: thirtyDaysAgo } },
     }),
-    prisma.productAnalyticsEvent.count({
-      where: { user_id: userId, created_at: { gte: sevenDaysAgo } },
-    }),
-    prisma.productAnalyticsEvent.count({
-      where: { user_id: userId, created_at: { gte: thirtyDaysAgo } },
-    }),
-    prisma.productAnalyticsEvent.count({ where: { user_id: userId } }),
     prisma.crate.aggregate({
       where: { user_id: userId },
       _max: { updated_at: true },
@@ -215,11 +205,6 @@ export const getAdminUserLookup = async (
       lastPlaylistUpdateAt: toIsoString(lastPlaylistUpdate._max.updated_at),
       releasesAddedLast7Days,
       releasesAddedLast30Days,
-    },
-    analytics: {
-      last7Days: analyticsLast7Days,
-      last30Days: analyticsLast30Days,
-      total: analyticsTotal,
     },
     playback: {
       trackRows: playbackAggregates._count._all,

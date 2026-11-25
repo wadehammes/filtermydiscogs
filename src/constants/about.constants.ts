@@ -16,6 +16,5 @@ export const ABOUT_DATA_DELETION_ITEMS = [
   "Every crate, playlist, and their release or track membership (permanent Postgres delete)",
   "In-app playback stats (per-track play and listen counts on our server)",
   "Saved account preferences, saved views, filter memory, playback settings, and email contact (including marketing opt-in, any unconfirmed address, and in-progress email verification)",
-  "Product analytics events when analytics was enabled",
   "Local preferences, playback queue, and IndexedDB collection cache",
 ] as const;

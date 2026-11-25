@@ -121,9 +121,9 @@ Ordered checklists for common changes—extend, do not fork, existing modules.
 3. If release/playback/crate context needed, use documented test trees ([conventions.md → TestProviders](conventions.md#testing)).
 4. No comments rule; mobile-first CSS; `data-testid` via `fmd…` on PO.
 
-### New product analytics event
+### New GTM analytics event
 
-1. [platform.md](platform.md) semantic events — add helper in [`productAnalyticsEvents.ts`](../../src/analytics/productAnalyticsEvents.ts) only.
+1. [platform.md → Analytics](platform.md#analytics) — add helper in [`productAnalyticsEvents.ts`](../../src/analytics/productAnalyticsEvents.ts) only (pushes **`dataLayer`**; no server ingest).
 2. Fire from **completed action** in hook/context success path—not raw button `onClick`.
 3. **`productAnalyticsEvents.spec.ts`** + consent gating ([patterns.md](patterns.md)).
 

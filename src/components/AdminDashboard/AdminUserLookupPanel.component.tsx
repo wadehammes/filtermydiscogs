@@ -303,18 +303,6 @@ export const AdminUserLookupPanel = () => {
                     "Last track listen",
                     formatTimestamp(data.playback.lastListenedAt),
                   )}
-                  {renderPreferenceRow(
-                    "Analytics events (7d)",
-                    formatCommunityStatValue(data.analytics.last7Days),
-                  )}
-                  {renderPreferenceRow(
-                    "Analytics events (30d)",
-                    formatCommunityStatValue(data.analytics.last30Days),
-                  )}
-                  {renderPreferenceRow(
-                    "Analytics events (total)",
-                    formatCommunityStatValue(data.analytics.total),
-                  )}
                 </dl>
               </article>
             </div>

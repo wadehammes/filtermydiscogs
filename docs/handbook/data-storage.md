@@ -6,7 +6,7 @@ Where user and session data lives, what **Delete account** ( **`POST /api/auth/c
 
 | Layer | Location | What it holds |
 | ----- | -------- | ------------- |
-| **Postgres (Prisma)** | `User`, crates, playlists, `UserTrack`, analytics events | Durable account data scoped by Discogs identity |
+| **Postgres (Prisma)** | `User`, crates, playlists, `UserTrack` | Durable account data scoped by Discogs identity |
 | **OAuth cookies** | HttpOnly session cookies (see [discogs.md](discogs.md)) | Discogs session; verified on API routes |
 | **localStorage** | Keys in [`storageKeys.ts`](../../src/constants/storageKeys.ts) | Theme, filters, view, analytics consent, table layout, legacy keys |
 | **sessionStorage** | [`SIMILAR_PAGE_INDEX_SESSION_KEY`](../../src/constants/storageKeys.ts) (`fmd:similar-page-index-by-anchor`) | JSON map of release-modal anchor **`instance_id`** → similar sidebar page index; cleared on modal **`handleCloseModal`**, **`clearClientStoredData`**, and full client clear; Playwright **`installClearClientStorage`** may preserve this key across navigations |
@@ -21,9 +21,8 @@ Defined in [`src/constants/storageKeys.ts`](../../src/constants/storageKeys.ts):
 
 **`POST /api/auth/clear-data`** (client: **`api.clearData`**):
 
-1. Deletes **`product_analytics_events`** for the user.
-2. Deletes the **`User`** row (cascades crates/playlists-related data per schema).
-3. Clears session cookies.
+1. Deletes the **`User`** row (cascades crates, playlists, and **`user_tracks`** per schema).
+2. Clears session cookies.
 
 Implementation and tests: [`src/app/api/auth/clear-data/route.ts`](../../src/app/api/auth/clear-data/route.ts). Client orchestration: [`useClearAllUserData`](../../src/hooks/useClearAllUserData.hook.ts).
 
