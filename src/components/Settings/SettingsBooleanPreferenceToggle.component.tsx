@@ -10,6 +10,7 @@ type SettingsBooleanPreferenceToggleProps = {
   descriptionFooter?: ReactNode;
   disabled: boolean;
   onChange: (enabled: boolean) => void;
+  settingId?: string;
 };
 
 export const SettingsBooleanPreferenceToggle = ({
@@ -19,9 +20,13 @@ export const SettingsBooleanPreferenceToggle = ({
   descriptionFooter,
   disabled,
   onChange,
+  settingId,
 }: SettingsBooleanPreferenceToggleProps) => {
   return (
-    <div className={styles.panelBlock}>
+    <div
+      className={styles.panelBlock}
+      {...(settingId ? { id: settingId } : {})}
+    >
       <label className={styles.settingToggle}>
         <input
           data-1p-ignore

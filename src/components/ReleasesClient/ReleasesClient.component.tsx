@@ -13,6 +13,8 @@ import { useCrate } from "src/context/crate.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { usePlaylistsQuery } from "src/hooks/queries/usePlaylistsQuery";
+import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
+import { useFilterViews } from "src/hooks/useFilterViews.hook";
 import { useIsClient } from "src/hooks/useIsClient.hook";
 import { useOfferPendingFiltersRestore } from "src/hooks/useOfferPendingFiltersRestore.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
@@ -21,7 +23,9 @@ import { useReleasesLoadingViewMode } from "src/hooks/useReleasesLoadingViewMode
 import type { PlaylistSummary } from "src/types/playlist.types";
 import { definedProps } from "src/utils/definedProps";
 import { readLastPlayedPlaylistId } from "src/utils/lastPlayedPlaylistStorage";
+import { resolveReleasesEmptyState } from "src/utils/releasesEmptyState";
 import { resolveActivePlaylistId } from "src/utils/resolveActivePlaylistId";
+import { CollectionLoadErrorPanel } from "./CollectionLoadErrorPanel.component";
 import { LoadingTrigger } from "./LoadingTrigger.component";
 import styles from "./ReleasesClient.module.css";
 import {
@@ -147,6 +151,7 @@ const ReleasesClientContent = () => {
     isFetchingNextPage,
     hasError,
     error,
+    queryError,
     hasReleases,
     showAllLoadedMessage,
     visibleReleases,
@@ -165,6 +170,13 @@ const ReleasesClientContent = () => {
     handleRandomClick,
     handleExitRandomMode,
   } = useReleasesClient({ scrollElement: scrollRoot });
+  const allReleases = useAllReleases();
+  const { hasActiveFilters } = useFilterViews();
+  const releasesEmptyState = resolveReleasesEmptyState({
+    allReleaseCount: allReleases.length,
+    hasActiveFilters,
+    isRandomMode,
+  });
 
   useRegisterPlaybackReleaseClick(handleReleaseClick);
 
@@ -192,10 +204,7 @@ const ReleasesClientContent = () => {
           allReleasesLoaded={false}
           currentPage="releases"
         >
-          <div className={styles.errorContainer}>
-            <h2>Error loading collection</h2>
-            <p>{error}</p>
-          </div>
+          <CollectionLoadErrorPanel error={queryError ?? error} />
         </CollectionPlaybackPageShell>
       </Page>
     );
@@ -311,8 +320,9 @@ const ReleasesClientContent = () => {
                 <ReleasesSkeleton isMobile={isMobile} view={loadingView} />
               ) : (
                 <EmptyState
-                  title="No releases found"
-                  description="Try adjusting your filters to see more results."
+                  variant="page"
+                  title={releasesEmptyState.title}
+                  description={releasesEmptyState.description}
                 />
               )}
 

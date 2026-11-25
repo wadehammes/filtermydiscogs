@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ApiFetchError } from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import { SortValues } from "src/constants/sortValues";
 import { VIEW_STATE_STORAGE_KEY } from "src/constants/storageKeys";
@@ -18,6 +19,24 @@ import {
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { act, renderFeatureHook, waitFor } from "test-utils";
+
+const mockUseCollectionLoadState = jest.fn<
+  ReturnType<
+    typeof import("src/hooks/useCollectionData.hook").useCollectionLoadState
+  >,
+  []
+>();
+
+jest.mock("src/hooks/useCollectionData.hook", () => {
+  const actual = jest.requireActual<
+    typeof import("src/hooks/useCollectionData.hook")
+  >("src/hooks/useCollectionData.hook");
+
+  return {
+    ...actual,
+    useCollectionLoadState: () => mockUseCollectionLoadState(),
+  };
+});
 
 jest.mock("src/api/urls", () => ({
   api: {
@@ -80,10 +99,20 @@ const triggerSentinelIntersection = (
   });
 };
 
+const restoreUseCollectionLoadStateMock = () => {
+  const actual = jest.requireActual<
+    typeof import("src/hooks/useCollectionData.hook")
+  >("src/hooks/useCollectionData.hook");
+  mockUseCollectionLoadState.mockImplementation(() =>
+    actual.useCollectionLoadState(),
+  );
+};
+
 describe("useReleasesClient", () => {
   beforeEach(() => {
     localStorage.clear();
     jest.clearAllMocks();
+    restoreUseCollectionLoadStateMock();
     mockUpdateUserPreferences.mockResolvedValue(
       userPreferencesFactory.defaultsApiResponse(),
     );
@@ -502,5 +531,22 @@ describe("useReleasesClient infinite scroll", () => {
         INITIAL_VISIBLE_RELEASES,
       );
     });
+  });
+
+  it("exposes queryError from collection load state", () => {
+    const queryError = new ApiFetchError(502, "Discogs unavailable");
+    mockUseCollectionLoadState.mockReturnValue({
+      isLoading: false,
+      isError: true,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      queryError,
+    });
+
+    const { result } = renderFeatureHook(() => useReleasesClient(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    expect(result.current.queryError).toBe(queryError);
   });
 });

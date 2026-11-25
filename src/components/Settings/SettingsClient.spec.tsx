@@ -4,6 +4,7 @@ import { SettingsClientPageObject } from "src/components/Settings/SettingsClient
 import { CLEAR_ALL_DATA_CONFIRM_PHRASE } from "src/constants/clearData.constants";
 import {
   SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL,
+  SETTINGS_EMAIL_SAVE_LABEL,
   SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE,
 } from "src/constants/settingsCopy.constants";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
@@ -39,7 +40,38 @@ describe("SettingsClient", () => {
     ).toBeInTheDocument();
   });
 
-  it("saves a valid email on blur", async () => {
+  it("does not save email when the field loses focus without Save", async () => {
+    po.mockUserContact({
+      email: "current@example.com",
+      pendingEmail: null,
+      emailVerified: true,
+      marketingEmailsOptIn: false,
+    });
+
+    const user = userEvent.setup();
+
+    po.renderSettingsClient();
+
+    const emailInput = await screen.findByRole("textbox", { name: "Email" });
+
+    await waitFor(() => {
+      expect(emailInput).toBeEnabled();
+    });
+
+    await user.clear(emailInput);
+    await user.type(emailInput, "digests@example.com");
+    await user.tab();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: SETTINGS_EMAIL_SAVE_LABEL }),
+      ).toBeEnabled();
+    });
+
+    expect(po.mockApi.updateUserContact).not.toHaveBeenCalled();
+  });
+
+  it("saves a valid email when Save email is pressed", async () => {
     const nextContact = {
       email: null,
       pendingEmail: "digests@example.com",
@@ -61,7 +93,10 @@ describe("SettingsClient", () => {
 
     await user.clear(emailInput);
     await user.type(emailInput, "digests@example.com");
-    await user.tab();
+
+    await user.click(
+      screen.getByRole("button", { name: SETTINGS_EMAIL_SAVE_LABEL }),
+    );
 
     await waitFor(() => {
       expect(po.mockApi.updateUserContact).toHaveBeenCalledWith({

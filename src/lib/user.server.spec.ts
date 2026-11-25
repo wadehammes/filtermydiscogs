@@ -50,14 +50,26 @@ describe("readSupportProjectToastEligible", () => {
     await expect(readSupportProjectToastEligible(42)).resolves.toBe(false);
   });
 
-  it("when the user has not dismissed the toast, returns true", async () => {
+  it("when the user has not dismissed the toast and has logged in before, returns true", async () => {
     mockFindUnique.mockResolvedValue(
       prismaUserFactory.build({
+        login_count: 2,
         support_toast_dismissed: false,
       }),
     );
 
     await expect(readSupportProjectToastEligible(42)).resolves.toBe(true);
+  });
+
+  it("when the user is on their first login, returns false", async () => {
+    mockFindUnique.mockResolvedValue(
+      prismaUserFactory.build({
+        login_count: 1,
+        support_toast_dismissed: false,
+      }),
+    );
+
+    await expect(readSupportProjectToastEligible(42)).resolves.toBe(false);
   });
 });
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { PlaybackQueueDrawer } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawer.component";
+import { SETTINGS_PLAYBACK_QUEUE_TAIL_HREF } from "src/components/Settings/settingsSections.constants";
+import { PLAYBACK_QUEUE_TAIL_SETTINGS_LINK_LABEL } from "src/constants/playbackQueueEmptyCopy.constants";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import type { PlaybackQueueItem } from "src/types/playbackQueue.types";
 import type { ReleasePlaybackState } from "src/types/releasePlaybackContext.types";
@@ -26,6 +28,10 @@ const basePlaybackState: Pick<
   isCollectionRadioQueueLoading: false,
   queueAutopopulateSource: null,
 };
+
+jest.mock("src/hooks/useMediaQuery.hook", () => ({
+  useMediaQuery: () => false,
+}));
 
 jest.mock("src/context/releasePlayback.context", () => ({
   useReleasePlaybackQueue: () => ({
@@ -57,6 +63,11 @@ describe("PlaybackQueueDrawer", () => {
     expect(
       screen.getByTestId("fmdPlaybackQueueBuildingStatus"),
     ).toHaveAttribute("data-queue-autopopulate-source", "similar-tail");
+    expect(
+      screen.getByRole("link", {
+        name: PLAYBACK_QUEUE_TAIL_SETTINGS_LINK_LABEL,
+      }),
+    ).toHaveAttribute("href", SETTINGS_PLAYBACK_QUEUE_TAIL_HREF);
   });
 
   it("shows collection radio loading status in the queue drawer", () => {

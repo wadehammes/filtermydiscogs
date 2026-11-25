@@ -76,7 +76,7 @@ export const useReleasesClient = ({
   const yearOperator = useYearOperator();
   const isMobile = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
 
-  const { isLoading, hasNextPage, isFetchingNextPage } =
+  const { isLoading, hasNextPage, isFetchingNextPage, queryError } =
     useCollectionLoadState();
   const { error, hasReleases, hasError } = useReleasesDisplay();
   const contextScrollElement = usePlaybackPageScrollElement();
@@ -224,6 +224,7 @@ export const useReleasesClient = ({
     isFetchingNextPage,
     hasError,
     error,
+    queryError,
     hasReleases,
     showAllLoadedMessage,
 

@@ -71,6 +71,18 @@
   }
 }
 
+.errorMessage {
+  color: var(--muted-foreground);
+  margin: 0 0 var(--space-4);
+}
+
+.errorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
 .loadingTrigger {
   display: flex;
   justify-content: center;

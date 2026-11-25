@@ -54,3 +54,19 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
 ];
 
 export const DEFAULT_SETTINGS_SECTION: SettingsSectionId = "account";
+
+export const SETTINGS_PLAYBACK_EXTEND_QUEUE_SIMILAR_SETTING_ID =
+  "settings-extend-queue-similar";
+
+export const buildSettingsSectionHref = (
+  sectionId: SettingsSectionId,
+  hash?: string,
+): string => {
+  const base = `/settings?section=${sectionId}`;
+  return hash ? `${base}#${hash}` : base;
+};
+
+export const SETTINGS_PLAYBACK_QUEUE_TAIL_HREF = buildSettingsSectionHref(
+  "playback",
+  SETTINGS_PLAYBACK_EXTEND_QUEUE_SIMILAR_SETTING_ID,
+);
