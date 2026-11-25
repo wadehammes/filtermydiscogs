@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LoginFeatureVisual } from "src/components/Login/LoginFeatureVisual.component";
 import { LOGIN_FEATURES } from "src/components/Login/loginFeatures.constants";
 import {
+  ABOUT_DATA_DELETION_ITEMS,
   ABOUT_GITHUB_LINKS,
   ABOUT_SUPPORT_EMAIL,
 } from "src/constants/about.constants";
@@ -132,7 +133,7 @@ export const AboutClient = () => {
             </article>
           </div>
 
-          <AboutClearDataSection />
+          <AboutClearDataSection deletionItems={ABOUT_DATA_DELETION_ITEMS} />
         </div>
       </div>
     </main>
