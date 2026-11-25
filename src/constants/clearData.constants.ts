@@ -8,8 +8,6 @@ export const CLEAR_ALL_DATA_ACTION_LABEL = "Delete account";
 
 export const CLEAR_ALL_DATA_ACTION_LOADING_LABEL = "Deleting...";
 
-export const CLEAR_ALL_DATA_DIALOG_CONFIRM_LABEL = "Delete account";
-
 export const CLEAR_ALL_DATA_PANEL_LEAD = `Permanently deletes your ${SITE_NAME} account and everything we store for you on our servers and in this browser. Your Discogs account, collection, and marketplace data are not affected.`;
 
 export const CLEAR_ALL_DATA_ABOUT_INTRO = `Remove your ${SITE_NAME} account and everything we store for you. Your Discogs collection and notes stay on Discogs.`;

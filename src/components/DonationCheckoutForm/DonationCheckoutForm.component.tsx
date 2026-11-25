@@ -3,11 +3,11 @@
 import classNames from "classnames";
 import Button from "src/components/Button/Button.component";
 import {
-  type DonationCheckoutReturnTo,
   DONATION_MAX_DOLLARS,
   DONATION_MIN_DOLLARS,
   DONATION_PRESET_AMOUNTS_CENTS,
   DONATION_STRIPE_CHECKOUT_NOTE,
+  type DonationCheckoutReturnTo,
 } from "src/constants/donate.constants";
 import { useDonationCheckoutForm } from "src/hooks/useDonationCheckoutForm.hook";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";

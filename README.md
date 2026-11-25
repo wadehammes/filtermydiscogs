@@ -17,7 +17,7 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Crates**: Stage picks from Collection in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
 - **Collection insights**: Dashboard milestones, style evolution, growth and artist/label charts, most-crated releases, on-this-day adds, weekly recap, and On repeat
 - **Mosaic generator**: Cover grids from your collection, crates, or playlists; export JPEG or PNG
-- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, optional account email and marketing mail preferences, clear data
+- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, optional account email (verification link by mail), marketing mail after verify, optional Stripe donation, delete account
 - **Responsive UI**: Desktop sidebar and mobile drawers; fast route transitions on authenticated pages
 - **Discogs outage notice**: Stay signed in with a link to [Discogs status](https://status.discogs.com); collection loads when Discogs is back
 - **Deploy refresh**: Toast to reload when a newer production build is available
@@ -138,25 +138,25 @@ The app will be available at `http://localhost:6767`.
 3. On **Collection**, use the side panel — **Crates** or **Playlists** — stage albums into crates or add tracks to playlists while you browse
 4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Collection
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
-6. Adjust theme, playback queue, sync options, and optional contact email in **Settings**; sign out from the user menu
+6. Adjust theme, playback queue, sync options, verified contact email, donations, privacy cookies, or delete account in **Settings**; sign out from the user menu
 
 ## Pages
 
-| Path             | Purpose                                                                  |
-| ---------------- | ------------------------------------------------------------------------ |
-| `/`              | Public landing / login                                                   |
-| `/collection`    | Browse, filter, sort collection; crates/playlists side panel             |
-| `/crates`        | Crate hub (your crates)                                                  |
-| `/crates/[id]`   | Owner crate workspace                                                    |
-| `/crate/[id]`    | Public shared crate (no login)                                           |
-| `/playlist/[id]` | Public shared playlist (no login)                                        |
-| `/release/[id]`  | Public release listen by Discogs release id (no login)                   |
-| `/dashboard`     | Collection analytics                                                     |
-| `/mosaic`        | Cover-art mosaic grid (click tiles for release details; export download) |
-| `/settings`      | Theme, sync, account contact, data preferences                           |
-| `/about`         | About, optional donations (Stripe), clear data                           |
-| `/legal`         | Terms of Service and Privacy Policy                                      |
-| `/admin`         | Admin stats (requires `ADMIN_USER_ID`)                                   |
+| Path             | Purpose                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `/`              | Public landing / login                                                       |
+| `/collection`    | Browse, filter, sort collection; crates/playlists side panel                 |
+| `/crates`        | Crate hub (your crates)                                                      |
+| `/crates/[id]`   | Owner crate workspace                                                        |
+| `/crate/[id]`    | Public shared crate (no login)                                               |
+| `/playlist/[id]` | Public shared playlist (no login)                                            |
+| `/release/[id]`  | Public release listen by Discogs release id (no login)                       |
+| `/dashboard`     | Collection analytics                                                         |
+| `/mosaic`        | Cover-art mosaic grid (click tiles for release details; export download)     |
+| `/settings`      | Theme, sync, account email (verify), donate, privacy cookies, delete account |
+| `/about`         | About, optional donations (Stripe), delete account                           |
+| `/legal`         | Terms of Service and Privacy Policy                                          |
+| `/admin`         | Admin stats (requires `ADMIN_USER_ID`)                                       |
 
 ## Tech Stack
 
@@ -177,7 +177,9 @@ Deeper stack and folder map: [`docs/handbook/architecture.md`](./docs/handbook/a
 
 ```bash
 pnpm dev              # http://localhost:6767 (Turbopack)
+pnpm dev:inspect      # same with Node --inspect
 pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
+# NEXT_FETCH_LOG=1 pnpm dev  # verbose Next server fetch URLs (off by default)
 
 mise run ci           # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e + next start)
 mise run ci-full      # same unit gates + full Playwright (all specs; phone/tablet/desktop)

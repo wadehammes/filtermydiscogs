@@ -23,7 +23,9 @@ describe("UserEmailVerificationEmailTemplate", () => {
       "href",
       "https://www.filtermydisco.gs/api/user/email-verification/confirm?token=test",
     );
-    expect(screen.getByRole("link", { name: "Account settings" })).toHaveAttribute(
+    expect(
+      screen.getByRole("link", { name: "Account settings" }),
+    ).toHaveAttribute(
       "href",
       "https://www.filtermydisco.gs/settings?section=account",
     );

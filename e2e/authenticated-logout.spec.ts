@@ -36,7 +36,7 @@ test.describe("authenticated logout and clear data (MSW)", () => {
         name: new RegExp(`type ${CLEAR_ALL_DATA_CONFIRM_PHRASE}`, "i"),
       })
       .fill(CLEAR_ALL_DATA_CONFIRM_PHRASE);
-    await page.getByRole("button", { name: "Clear all data" }).click();
+    await page.getByRole("button", { name: "Delete account" }).click();
 
     await expect(page).toHaveURL(/\//);
     await expectLoginLanding(page);

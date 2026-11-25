@@ -106,11 +106,12 @@ describe("POST /api/donate/checkout", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({ url: "https://checkout.stripe.com/settings-session" });
+    expect(body).toEqual({
+      url: "https://checkout.stripe.com/settings-session",
+    });
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        success_url:
-          "http://localhost:6767/settings?section=support&donated=1",
+        success_url: "http://localhost:6767/settings?section=support&donated=1",
         cancel_url: "http://localhost:6767/settings?section=support",
       }),
     );

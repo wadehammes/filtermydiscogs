@@ -5,8 +5,8 @@ import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { createDonateCheckoutSession } from "src/api/endpoints/donate";
 import {
-  type DonationCheckoutReturnTo,
   DONATION_PRESET_AMOUNTS_CENTS,
+  type DonationCheckoutReturnTo,
   isDonationPresetAmount,
 } from "src/constants/donate.constants";
 import { reportClientFailure } from "src/lib/sentry/reportClientFailure";

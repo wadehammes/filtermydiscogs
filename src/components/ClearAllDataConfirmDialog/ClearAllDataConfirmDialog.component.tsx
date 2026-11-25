@@ -6,8 +6,11 @@ import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
 import { FormDialog } from "src/components/FormDialog/FormDialog.component";
 import {
+  CLEAR_ALL_DATA_ACTION_LABEL,
+  CLEAR_ALL_DATA_ACTION_LOADING_LABEL,
   CLEAR_ALL_DATA_CONFIRM_PHRASE,
   CLEAR_ALL_DATA_DIALOG_MESSAGE,
+  CLEAR_ALL_DATA_TITLE,
 } from "src/constants/clearData.constants";
 import {
   type ClearAllDataConfirmFormValues,
@@ -68,7 +71,7 @@ export const ClearAllDataConfirmDialog = ({
       open={isOpen}
       onClose={handleClose}
       testId="fmdClearAllDataConfirmDialog"
-      title="Clear all stored data"
+      title={CLEAR_ALL_DATA_TITLE}
       description={CLEAR_ALL_DATA_DIALOG_MESSAGE}
       titleId={titleId}
       descriptionId={descriptionId}
@@ -91,9 +94,9 @@ export const ClearAllDataConfirmDialog = ({
             size="md"
             disabled={!isValid || isConfirming}
             isLoading={isConfirming}
-            loadingText="Clearing..."
+            loadingText={CLEAR_ALL_DATA_ACTION_LOADING_LABEL}
           >
-            Clear all data
+            {CLEAR_ALL_DATA_ACTION_LABEL}
           </Button>
         </>
       }

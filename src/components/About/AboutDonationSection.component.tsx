@@ -20,7 +20,10 @@ export const AboutDonationSection = () => (
   >
     <div className={styles.donationCopy}>
       <p
-        className={classNames(typography.sectionEyebrow, styles.donationEyebrow)}
+        className={classNames(
+          typography.sectionEyebrow,
+          styles.donationEyebrow,
+        )}
       >
         {SUPPORT_PROJECT_NAV_LABEL}
       </p>

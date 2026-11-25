@@ -156,7 +156,7 @@ const nextConfig: NextConfig = {
   ],
   logging: {
     fetches: {
-      fullUrl: process.env.NODE_ENV === "development",
+      fullUrl: process.env.NEXT_FETCH_LOG === "1",
     },
   },
   env: {

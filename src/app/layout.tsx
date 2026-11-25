@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import { Providers } from "src/components/Providers";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {

@@ -15,8 +15,12 @@ describe("DonationCheckoutForm", () => {
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "$5" })).toBeInTheDocument();
     expect(
-      screen.getByRole("spinbutton", { name: "Or enter a custom amount (USD)" }),
+      screen.getByRole("spinbutton", {
+        name: "Or enter a custom amount (USD)",
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Secure checkout powered by Stripe.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Secure checkout powered by Stripe."),
+    ).toBeInTheDocument();
   });
 });
