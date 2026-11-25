@@ -40,6 +40,19 @@ export const ANALYTICS_EVENTS_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   ),
 };
 
+export const EMAIL_VERIFICATION_CONFIRM_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
+  maxRequests: parseInt(
+    process.env.EMAIL_VERIFICATION_CONFIRM_RATE_LIMIT_MAX || "30",
+    10,
+  ),
+  windowMs: parseInt(
+    process.env.EMAIL_VERIFICATION_CONFIRM_RATE_LIMIT_WINDOW ||
+      process.env.IP_RATE_LIMIT_WINDOW ||
+      "60000",
+    10,
+  ),
+};
+
 export const AUTH_ROUTE_RATE_LIMIT_CONFIG: IpRateLimitConfig = {
   maxRequests: parseInt(process.env.AUTH_ROUTE_RATE_LIMIT_MAX || "60", 10),
   windowMs: parseInt(

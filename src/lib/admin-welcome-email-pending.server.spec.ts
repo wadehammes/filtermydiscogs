@@ -32,6 +32,7 @@ const eligibleUser = {
   discogs_user_id: 42,
   username: "crate-digger",
   email: "dig@example.com",
+  email_verified_at: new Date("2026-11-23T12:00:00.000Z"),
   welcome_email_sent: false,
   created_at: new Date("2026-11-23T12:00:00.000Z"),
   login_count: 1,
@@ -100,6 +101,7 @@ describe("sendAdminWelcomeEmailForUser", () => {
     mockFindUnique
       .mockResolvedValueOnce({
         email: eligibleUser.email,
+        email_verified_at: eligibleUser.email_verified_at,
         welcome_email_sent: false,
         created_at: eligibleUser.created_at,
       } as unknown as Awaited<
@@ -119,6 +121,7 @@ describe("sendAdminWelcomeEmailForUser", () => {
   it("rejects ineligible accounts before calling Resend", async () => {
     mockFindUnique.mockResolvedValue({
       email: eligibleUser.email,
+      email_verified_at: eligibleUser.email_verified_at,
       welcome_email_sent: true,
       created_at: eligibleUser.created_at,
     } as unknown as Awaited<
@@ -134,6 +137,7 @@ describe("sendAdminWelcomeEmailForUser", () => {
   it("maps Resend delivery errors to AdminWelcomeEmailSendFailedError", async () => {
     mockFindUnique.mockResolvedValueOnce({
       email: eligibleUser.email,
+      email_verified_at: eligibleUser.email_verified_at,
       welcome_email_sent: false,
       created_at: eligibleUser.created_at,
     } as unknown as Awaited<
@@ -155,6 +159,7 @@ describe("sendAdminWelcomeEmailForUser", () => {
     mockFindUnique
       .mockResolvedValueOnce({
         email: eligibleUser.email,
+        email_verified_at: eligibleUser.email_verified_at,
         welcome_email_sent: false,
         created_at: eligibleUser.created_at,
       } as unknown as Awaited<

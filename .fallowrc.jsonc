@@ -2,6 +2,8 @@
   "$schema": "./node_modules/fallow/schema.json",
   // Ad-hoc codebase intelligence for agents (CI dead-code gate stays on Knip — knip.json).
   "ignoreDependencies": [
+    // react-email CLI preview (`pnpm email:dev`); no src/ imports — Knip requires it listed
+    "@react-email/ui",
     "@svgr/webpack",
     "identity-obj-proxy",
     "jest-fixed-jsdom",
@@ -11,6 +13,7 @@
     "tslib"
   ],
   "ignoreDependencyOverrides": [
+    { "package": "effect", "source": "pnpm-workspace.yaml" },
     { "package": "svgo", "source": "pnpm-workspace.yaml" },
     { "package": "picomatch", "source": "pnpm-workspace.yaml" },
     { "package": "postcss", "source": "pnpm-workspace.yaml" },

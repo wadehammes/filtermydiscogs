@@ -17,7 +17,7 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Crates**: Stage picks from Collection in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
 - **Collection insights**: Dashboard milestones, style evolution, growth and artist/label charts, most-crated releases, on-this-day adds, weekly recap, and On repeat
 - **Mosaic generator**: Cover grids from your collection, crates, or playlists; export JPEG or PNG
-- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, optional account email and marketing mail preferences, clear data
+- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, optional account email (verification link by mail), marketing mail after verify, optional Stripe donation, delete account
 - **Responsive UI**: Desktop sidebar and mobile drawers; fast route transitions on authenticated pages
 - **Discogs outage notice**: Stay signed in with a link to [Discogs status](https://status.discogs.com); collection loads when Discogs is back
 - **Deploy refresh**: Toast to reload when a newer production build is available
@@ -40,6 +40,7 @@ mise bootstrap      # tools + pnpm install + Prisma generate
 mise run ci         # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e)
 mise run ci-full    # same unit gates + full Playwright (all specs × desktop/phone/tablet)
 mise run pr-prep    # lighter pre-PR: lint:all + handbook:check + test:changed + fallow:audit
+mise run ops-health # Dependabot + pnpm audit snapshot (pair with Sentry MCP — .cursor/skills/ops-health-check)
 ```
 
 **Zed:** Open the repo as a folder so [`.zed/settings.json`](./.zed/settings.json) applies — **`vtsls`** uses the **`typescript-langservice`** devDependency (TS 6 **`tsserver`**; builds use **TypeScript 7** **`tsc`**). Reload after **`pnpm install`**. In **LSP → vtsls** logs, confirm **`Using tsserver from: …/typescript-langservice/lib/tsserver.js`**.
@@ -83,7 +84,7 @@ CRON_SECRET=generate_a_long_random_secret_for_vercel_cron
 # Stripe (optional, About page donations)
 STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 
-# Resend (optional, one-time welcome email on first account creation when User.email is set)
+# Resend (optional: welcome on first signup + verification links when Settings email changes)
 # RESEND_API_KEY=re_your_resend_api_key_here
 # RESEND_FROM_EMAIL=FilterMyDisco.gs <no-reply@updates.filtermydisco.gs>
 # RESEND_REPLY_TO=noise@filtermydiscogs
@@ -137,25 +138,25 @@ The app will be available at `http://localhost:6767`.
 3. On **Collection**, use the side panel — **Crates** or **Playlists** — stage albums into crates or add tracks to playlists while you browse
 4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Collection
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
-6. Adjust theme, playback queue, sync options, and optional contact email in **Settings**; sign out from the user menu
+6. Adjust theme, playback queue, sync options, verified contact email, donations, privacy cookies, or delete account in **Settings**; sign out from the user menu
 
 ## Pages
 
-| Path             | Purpose                                                                  |
-| ---------------- | ------------------------------------------------------------------------ |
-| `/`              | Public landing / login                                                   |
-| `/collection`    | Browse, filter, sort collection; crates/playlists side panel             |
-| `/crates`        | Crate hub (your crates)                                                  |
-| `/crates/[id]`   | Owner crate workspace                                                    |
-| `/crate/[id]`    | Public shared crate (no login)                                           |
-| `/playlist/[id]` | Public shared playlist (no login)                                        |
-| `/release/[id]`  | Public release listen by Discogs release id (no login)                   |
-| `/dashboard`     | Collection analytics                                                     |
-| `/mosaic`        | Cover-art mosaic grid (click tiles for release details; export download) |
-| `/settings`      | Theme, sync, account contact, data preferences                           |
-| `/about`         | About, optional donations (Stripe), clear data                           |
-| `/legal`         | Terms of Service and Privacy Policy                                      |
-| `/admin`         | Admin stats (requires `ADMIN_USER_ID`)                                   |
+| Path             | Purpose                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `/`              | Public landing / login                                                       |
+| `/collection`    | Browse, filter, sort collection; crates/playlists side panel                 |
+| `/crates`        | Crate hub (your crates)                                                      |
+| `/crates/[id]`   | Owner crate workspace                                                        |
+| `/crate/[id]`    | Public shared crate (no login)                                               |
+| `/playlist/[id]` | Public shared playlist (no login)                                            |
+| `/release/[id]`  | Public release listen by Discogs release id (no login)                       |
+| `/dashboard`     | Collection analytics                                                         |
+| `/mosaic`        | Cover-art mosaic grid (click tiles for release details; export download)     |
+| `/settings`      | Theme, sync, account email (verify), donate, privacy cookies, delete account |
+| `/about`         | About, optional donations (Stripe), delete account                           |
+| `/legal`         | Terms of Service and Privacy Policy                                          |
+| `/admin`         | Admin stats (requires `ADMIN_USER_ID`)                                       |
 
 ## Tech Stack
 
@@ -164,7 +165,7 @@ The app will be available at `http://localhost:6767`.
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
 - **Playlists env override**: **`PLAYLISTS_FEATURE_OVERRIDE=0`** for a local/CI kill switch ([platform.md → Playlists env override](./docs/handbook/platform.md#playlists-env-override))
 - **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
-- **Email (optional)**: React Email + Resend for a one-time welcome on first signup when an address is on file (`pnpm email:dev`, `pnpm email:send:test`)
+- **Email (optional)**: React Email + Resend for a one-time welcome on first signup and address-verification mail when you change email in Settings (`pnpm email:dev`, `pnpm email:send:test`)
 - **Forms**: React Hook Form + Zod 4
 - **Tooling**: pnpm 12, mise (Node 26 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
 - **Analytics**: Google Tag Manager (consent-aware)
@@ -176,11 +177,14 @@ Deeper stack and folder map: [`docs/handbook/architecture.md`](./docs/handbook/a
 
 ```bash
 pnpm dev              # http://localhost:6767 (Turbopack)
+pnpm dev:inspect      # same with Node --inspect
 pnpm dev:webpack      # fallback if Turbopack hits lazy-chunk issues
+# NEXT_FETCH_LOG=1 pnpm dev  # verbose Next server fetch URLs (off by default)
 
 mise run ci           # PR CI: tsc, lint, handbook:check, Jest, Knip, Playwright smoke (build:e2e + next start)
 mise run ci-full      # same unit gates + full Playwright (all specs; phone/tablet/desktop)
 mise run pr-prep      # lint:all + handbook:check + test:changed + fallow:audit (before opening a PR)
+mise run ops-health   # security snapshot: Dependabot, pnpm audit (agents add Sentry via ops-health-check skill)
 mise run lint-all     # pnpm lint:all
 
 pnpm lint:all         # Biome (changed vs staging), Stylelint fix, tsc:ci, Knip

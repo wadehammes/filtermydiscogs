@@ -4,12 +4,25 @@ import classNames from "classnames";
 import Link from "next/link";
 import Button from "src/components/Button/Button.component";
 import { ClearAllDataConfirmDialog } from "src/components/ClearAllDataConfirmDialog/ClearAllDataConfirmDialog.component";
-import { ABOUT_DATA_DELETION_ITEMS } from "src/constants/about.constants";
+import type { ABOUT_DATA_DELETION_ITEMS } from "src/constants/about.constants";
+import {
+  CLEAR_ALL_DATA_ABOUT_INTRO,
+  CLEAR_ALL_DATA_ACTION_LABEL,
+  CLEAR_ALL_DATA_ACTION_LOADING_LABEL,
+  CLEAR_ALL_DATA_LOGIN_REQUIRED_NOTE,
+  CLEAR_ALL_DATA_TITLE,
+} from "src/constants/clearData.constants";
 import { useConfirmClearAllUserData } from "src/hooks/useConfirmClearAllUserData.hook";
 import typography from "src/styles/modules/typography.module.css";
 import styles from "./About.module.css";
 
-export const AboutClearDataSection = () => {
+type AboutClearDataSectionProps = {
+  deletionItems: typeof ABOUT_DATA_DELETION_ITEMS;
+};
+
+export const AboutClearDataSection = ({
+  deletionItems,
+}: AboutClearDataSectionProps) => {
   const {
     closeClearDataDialog,
     handleConfirmClear,
@@ -27,16 +40,13 @@ export const AboutClearDataSection = () => {
       <div className={styles.clearDataIntro} data-prose-flow>
         <p className={typography.sectionEyebrow}>Data</p>
         <h2 id="about-data" className={styles.tileTitle}>
-          Clear stored data
+          {CLEAR_ALL_DATA_TITLE}
         </h2>
-        <p>
-          Wipe auth, crates, playlists, preferences, and local caches on this
-          app. Your Discogs collection and notes stay on Discogs.
-        </p>
+        <p>{CLEAR_ALL_DATA_ABOUT_INTRO}</p>
       </div>
 
       <ul className={styles.clearDataList}>
-        {ABOUT_DATA_DELETION_ITEMS.map((item) => (
+        {deletionItems.map((item) => (
           <li key={item}>{item}</li>
         ))}
       </ul>
@@ -47,9 +57,11 @@ export const AboutClearDataSection = () => {
           size="md"
           onPress={openClearDataDialog}
           disabled={isClearing || !isAuthenticated}
-          aria-label="Clear all data"
+          aria-label={CLEAR_ALL_DATA_ACTION_LABEL}
         >
-          {isClearing ? "Clearing..." : "Clear All Data"}
+          {isClearing
+            ? CLEAR_ALL_DATA_ACTION_LOADING_LABEL
+            : CLEAR_ALL_DATA_ACTION_LABEL}
         </Button>
         <ClearAllDataConfirmDialog
           isOpen={isClearDataDialogOpen}
@@ -62,7 +74,7 @@ export const AboutClearDataSection = () => {
         <div className={styles.clearDataMeta}>
           {!isAuthenticated && (
             <p className={styles.clearDataNote}>
-              You must be logged in to clear data.
+              {CLEAR_ALL_DATA_LOGIN_REQUIRED_NOTE}
             </p>
           )}
           <p className={styles.clearDataNote}>

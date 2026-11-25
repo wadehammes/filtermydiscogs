@@ -44,13 +44,23 @@ export const wireDefaultUserContactPageObjectMocks = (): void => {
   mockApiResponse(
     true,
     pageObjectMockApi.userContact,
-    { email: null, marketingEmailsOptIn: false },
+    {
+      email: null,
+      pendingEmail: null,
+      emailVerified: false,
+      marketingEmailsOptIn: false,
+    },
     pageObjectApiError,
   );
   mockApiResponse(
     true,
     pageObjectMockApi.updateUserContact,
-    { email: null, marketingEmailsOptIn: false },
+    {
+      email: null,
+      pendingEmail: null,
+      emailVerified: false,
+      marketingEmailsOptIn: false,
+    },
     pageObjectApiError,
   );
 };

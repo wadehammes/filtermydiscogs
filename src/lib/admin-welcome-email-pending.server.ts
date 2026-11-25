@@ -35,6 +35,7 @@ export const listAdminWelcomeEmailPendingUsers = async (): Promise<
       discogs_user_id: true,
       username: true,
       email: true,
+      email_verified_at: true,
       welcome_email_sent: true,
       created_at: true,
       login_count: true,
@@ -65,6 +66,7 @@ export const sendAdminWelcomeEmailForUser = async (
     where: { discogs_user_id: discogsUserId },
     select: {
       email: true,
+      email_verified_at: true,
       welcome_email_sent: true,
       created_at: true,
     },
@@ -74,6 +76,7 @@ export const sendAdminWelcomeEmailForUser = async (
     before == null ||
     !isWelcomeSignupEmailEligibleAccount({
       email: before.email,
+      email_verified_at: before.email_verified_at,
       welcome_email_sent: before.welcome_email_sent,
       created_at: before.created_at,
     })

@@ -9,24 +9,9 @@ import { renderWelcomeSignupEmail } from "src/lib/renderWelcomeSignupEmail.serve
 import {
   getResendClient,
   getResendFromEmail,
+  reportResendNotConfiguredOnce,
   sendResendEmail,
 } from "src/lib/resend.server";
-import { reportTaggedAppError } from "src/lib/sentry/reportTaggedAppError.server";
-
-let reportedWelcomeResendNotConfigured = false;
-
-const reportWelcomeResendNotConfiguredOnce = (): void => {
-  if (reportedWelcomeResendNotConfigured) {
-    return;
-  }
-  reportedWelcomeResendNotConfigured = true;
-  reportTaggedAppError(
-    { area: "welcome_email", kind: "resend_not_configured" },
-    new Error(
-      "Welcome email skipped: RESEND_API_KEY or RESEND_FROM_EMAIL missing",
-    ),
-  );
-};
 
 export const sendWelcomeSignupEmailIfEligible = async (
   discogsUserId: number,
@@ -35,6 +20,7 @@ export const sendWelcomeSignupEmailIfEligible = async (
     where: { discogs_user_id: discogsUserId },
     select: {
       email: true,
+      email_verified_at: true,
       username: true,
       welcome_email_sent: true,
       created_at: true,
@@ -49,7 +35,12 @@ export const sendWelcomeSignupEmailIfEligible = async (
   const from = getResendFromEmail();
 
   if (!(resend && from)) {
-    reportWelcomeResendNotConfiguredOnce();
+    reportResendNotConfiguredOnce({
+      area: "welcome_email",
+      kind: "resend_not_configured",
+      message:
+        "Welcome email skipped: RESEND_API_KEY or RESEND_FROM_EMAIL missing",
+    });
     return;
   }
 

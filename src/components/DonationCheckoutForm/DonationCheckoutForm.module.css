@@ -1,0 +1,121 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.panel {
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.panelEmbedded {
+  background: transparent;
+  padding: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.customAmount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.customLabel {
+  composes: label from "../../styles/modules/field-label.module.css";
+}
+
+.customControls {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.customInputWrap {
+  align-items: center;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex: 1 1 8rem;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding-inline: var(--space-4);
+
+  &:focus-within {
+    border-color: var(--link);
+    outline: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
+    outline-offset: 1px;
+  }
+}
+
+.currencyPrefix {
+  color: var(--secondary-foreground);
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+}
+
+.customInput {
+  background: transparent;
+  border: 0;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  min-width: 0;
+  outline: none;
+  padding-block: var(--space-3);
+  width: 100%;
+
+  &::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.error {
+  color: var(--destructive);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.prompt {
+  color: var(--foreground);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  margin: 0;
+}
+
+.donateButton {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  padding-inline: var(--space-6);
+}
+
+.stripeNote {
+  color: var(--secondary-foreground);
+  font-size: var(--text-sm);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
+}

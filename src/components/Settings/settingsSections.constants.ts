@@ -1,9 +1,12 @@
+import { SETTINGS_DATA_SECTION_NAV_DESCRIPTION } from "src/constants/settingsCopy.constants";
+
 export type SettingsSectionId =
   | "account"
   | "appearance"
   | "playback"
   | "filters"
   | "collection"
+  | "support"
   | "data";
 
 export type SettingsSection = {
@@ -16,7 +19,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
     id: "account",
     label: "Account",
-    description: "Profile and sign-out",
+    description: "Profile and email",
   },
   {
     id: "appearance",
@@ -39,9 +42,14 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: "Crate sync tools",
   },
   {
+    id: "support",
+    label: "Donate",
+    description: "One-time donations",
+  },
+  {
     id: "data",
-    label: "Data",
-    description: "Stored app data",
+    label: "Privacy",
+    description: SETTINGS_DATA_SECTION_NAV_DESCRIPTION,
   },
 ];
 

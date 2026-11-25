@@ -169,7 +169,7 @@ export const trackAnalyticsConsentGranted = () => {
 export const trackUserDataCleared = () => {
   trackProductEvent("userDataCleared", {
     category: "account",
-    label: "Clear stored data",
+    label: "Delete account",
     value: "true",
   });
 };

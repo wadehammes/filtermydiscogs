@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 
 const mockGetResendClient = jest.fn();
 const mockGetResendFromEmail = jest.fn<() => string | null>();
+const mockReportResendNotConfiguredOnce = jest.fn();
+
 const mockSendResendEmail =
   jest.fn<
     (
@@ -19,6 +21,7 @@ const mockSendResendEmail =
 jest.mock("src/lib/resend.server", () => ({
   getResendClient: () => mockGetResendClient(),
   getResendFromEmail: () => mockGetResendFromEmail(),
+  reportResendNotConfiguredOnce: mockReportResendNotConfiguredOnce,
   sendResendEmail: (
     resend: unknown,
     input: {
@@ -103,6 +106,7 @@ beforeEach(async () => {
   }));
   mockFindUnique.mockResolvedValue({
     email: "dig@example.com",
+    email_verified_at: new Date("2026-11-22T18:00:00.000Z"),
     username: "crate-digger",
     welcome_email_sent: false,
     login_count: 1,
@@ -150,6 +154,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
     mockFindUnique.mockResolvedValue({
       email: "dig@example.com",
       username: "crate-digger",
+      email_verified_at: new Date("2026-11-22T18:00:00.000Z"),
       welcome_email_sent: true,
       login_count: 1,
       created_at: new Date("2026-11-22T18:00:00.000Z"),
@@ -166,6 +171,25 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
   it("does not send when there is no email address", async () => {
     mockFindUnique.mockResolvedValue({
       email: null,
+      username: "crate-digger",
+      email_verified_at: null,
+      welcome_email_sent: false,
+      login_count: 1,
+      created_at: new Date("2026-11-22T18:00:00.000Z"),
+    } as unknown as Awaited<
+      ReturnType<DbModule["prisma"]["user"]["findUnique"]>
+    >);
+
+    await sendWelcomeSignupEmailIfEligible(discogsUserId);
+
+    expect(mockUpdateMany).not.toHaveBeenCalled();
+    expect(mockSendResendEmail).not.toHaveBeenCalled();
+  });
+
+  it("does not send when the email address is not verified", async () => {
+    mockFindUnique.mockResolvedValue({
+      email: "dig@example.com",
+      email_verified_at: null,
       username: "crate-digger",
       welcome_email_sent: false,
       login_count: 1,
@@ -187,13 +211,14 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
 
     expect(mockUpdateMany).not.toHaveBeenCalled();
     expect(mockSendResendEmail).not.toHaveBeenCalled();
-    expect(mockReportTaggedAppError).toHaveBeenCalled();
+    expect(mockReportResendNotConfiguredOnce).toHaveBeenCalled();
   });
 
   it("sends for a returning account when welcome was never sent", async () => {
     mockFindUnique.mockResolvedValue({
       email: "dig@example.com",
       username: "crate-digger",
+      email_verified_at: new Date("2026-11-22T18:00:00.000Z"),
       welcome_email_sent: false,
       created_at: new Date("2026-11-22T18:00:00.000Z"),
     } as unknown as Awaited<
@@ -209,6 +234,7 @@ describe("sendWelcomeSignupEmailIfEligible", () => {
   it("does not send for accounts created before the rollout cutoff", async () => {
     mockFindUnique.mockResolvedValue({
       email: "dig@example.com",
+      email_verified_at: new Date("2020-01-01T00:00:00.000Z"),
       username: "crate-digger",
       welcome_email_sent: false,
       login_count: 1,

@@ -49,3 +49,7 @@ run = [
   "pnpm test:changed",
   "pnpm fallow:audit",
 ]
+
+[tasks.ops-health]
+description = "Ops snapshot: Dependabot, pnpm audit, lockfile deprecations (Sentry via agent MCP)"
+run = "bash scripts/ops-health-check.sh"

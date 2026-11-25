@@ -91,6 +91,32 @@ describe("POST /api/donate/checkout", () => {
     );
   });
 
+  it("creates a checkout session with settings return URLs when requested", async () => {
+    const create = jest.fn(async (_session: unknown) => ({
+      url: "https://checkout.stripe.com/settings-session",
+    }));
+
+    mockGetStripeClient.mockReturnValue(
+      asStripeClient(stripeCheckoutClientStubFactory.build(create)),
+    );
+
+    const response = await POST(
+      createRequest({ amountCents: 2500, returnTo: "settings" }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      url: "https://checkout.stripe.com/settings-session",
+    });
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success_url: "http://localhost:6767/settings?section=support&donated=1",
+        cancel_url: "http://localhost:6767/settings?section=support",
+      }),
+    );
+  });
+
   it("creates a checkout session for a custom amount", async () => {
     const create = jest.fn(async (_session: unknown) => ({
       url: "https://checkout.stripe.com/custom-session",
