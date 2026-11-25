@@ -35,6 +35,7 @@ export const sendWelcomeSignupEmailIfEligible = async (
     where: { discogs_user_id: discogsUserId },
     select: {
       email: true,
+      email_verified_at: true,
       username: true,
       welcome_email_sent: true,
       created_at: true,

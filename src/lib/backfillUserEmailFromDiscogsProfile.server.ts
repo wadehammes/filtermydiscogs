@@ -26,6 +26,12 @@ export const backfillUserEmailFromDiscogsProfileIfEmpty = async (
 
   await prisma.user.update({
     where: { discogs_user_id: discogsUserId },
-    data: { email },
+    data: {
+      email,
+      email_verified_at: new Date(),
+      email_pending: null,
+      email_verification_token_hash: null,
+      email_verification_expires_at: null,
+    },
   });
 };
