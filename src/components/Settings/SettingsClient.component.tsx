@@ -52,6 +52,7 @@ import {
   SettingsDataPanel,
   SettingsFiltersPanel,
   SettingsPlaybackPanel,
+  SettingsSupportPanel,
 } from "./SettingsSectionPanels.component";
 import {
   DEFAULT_SETTINGS_SECTION,
@@ -334,6 +335,8 @@ export default function SettingsClient() {
             onSyncClick={openSyncDialog}
           />
         );
+      case "support":
+        return <SettingsSupportPanel />;
       case "data":
         return (
           <SettingsDataPanel

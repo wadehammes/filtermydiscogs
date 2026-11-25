@@ -4,6 +4,7 @@ export type SettingsSectionId =
   | "playback"
   | "filters"
   | "collection"
+  | "support"
   | "data";
 
 export type SettingsSection = {
@@ -37,6 +38,11 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     id: "collection",
     label: "Collection",
     description: "Crate sync tools",
+  },
+  {
+    id: "support",
+    label: "Donate",
+    description: "One-time donations",
   },
   {
     id: "data",

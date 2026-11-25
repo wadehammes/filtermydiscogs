@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
+import { DonationCheckoutForm } from "src/components/DonationCheckoutForm/DonationCheckoutForm.component";
 import { SaveFilterViewDialog } from "src/components/SaveFilterViewDialog/SaveFilterViewDialog.component";
 import Select from "src/components/Select/Select.component";
 import { SettingsBooleanPreferenceToggle } from "src/components/Settings/SettingsBooleanPreferenceToggle.component";
@@ -26,6 +27,7 @@ import {
   SETTINGS_EMAIL_UNVERIFIED_STATUS,
   SETTINGS_MARKETING_EMAILS_DESCRIPTION,
   SETTINGS_MARKETING_EMAILS_LABEL,
+  SETTINGS_SUPPORT_PANEL_DESCRIPTION,
 } from "src/constants/settingsCopy.constants";
 import { useAnalyticsConsent } from "src/context/analyticsConsent.context";
 import type { AuthState } from "src/context/auth.context";
@@ -557,6 +559,19 @@ export const SettingsCollectionPanel = ({
     </div>
   );
 };
+
+export const SettingsSupportPanel = () => (
+  <div className={styles.panelBlock}>
+    <p className={styles.sectionDescription}>
+      {SETTINGS_SUPPORT_PANEL_DESCRIPTION}
+    </p>
+    <DonationCheckoutForm
+      embedded
+      returnTo="settings"
+      customAmountInputId="settings-donation-custom-amount"
+    />
+  </div>
+);
 
 type SettingsDataPanelProps = {
   isClearing: boolean;
