@@ -146,4 +146,12 @@ describe("Button", () => {
     const button = container.querySelector("button");
     expect(button?.className).toContain("button");
   });
+
+  it("forwards ref to the native button element", () => {
+    const buttonRef = { current: null as HTMLButtonElement | null };
+
+    po.renderButton({ ref: buttonRef });
+
+    expect(buttonRef.current).toBe(screen.getByTestId("fmdButton"));
+  });
 });
