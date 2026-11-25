@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { SettingsClientPageObject } from "src/components/Settings/SettingsClient.po";
 import { CLEAR_ALL_DATA_CONFIRM_PHRASE } from "src/constants/clearData.constants";
+import {
+  SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL,
+  SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE,
+} from "src/constants/settingsCopy.constants";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import {
@@ -10,6 +14,7 @@ import {
 } from "src/tests/filterControlTestHelpers";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
+import { toast } from "src/utils/toast";
 import { screen, waitFor, within } from "test-utils";
 
 let po: SettingsClientPageObject;
@@ -27,7 +32,7 @@ describe("SettingsClient", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Discogs username")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Account Profile and sign-out" }),
+      screen.getByRole("button", { name: "Account Profile and email" }),
     ).toHaveAttribute("aria-current", "page");
     expect(
       screen.getByRole("button", { name: "Complete logout" }),
@@ -36,9 +41,9 @@ describe("SettingsClient", () => {
 
   it("saves a valid email on blur", async () => {
     const nextContact = {
-      email: "digests@example.com",
-      pendingEmail: null,
-      emailVerified: true,
+      email: null,
+      pendingEmail: "digests@example.com",
+      emailVerified: false,
       marketingEmailsOptIn: false,
     };
 
@@ -63,6 +68,46 @@ describe("SettingsClient", () => {
         email: "digests@example.com",
       });
     });
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith(
+        SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE,
+      );
+    });
+  });
+
+  it("resends verification email from the resend control", async () => {
+    const pendingContact = {
+      email: "dig@example.com",
+      pendingEmail: "pending@example.com",
+      emailVerified: false,
+      marketingEmailsOptIn: false,
+    };
+
+    po.mockUserContact(pendingContact);
+    po.mockUpdateUserContact(pendingContact);
+
+    const user = userEvent.setup();
+
+    po.renderSettingsClient();
+
+    const resendControl = await screen.findByRole("button", {
+      name: SETTINGS_EMAIL_RESEND_VERIFICATION_LABEL,
+    });
+
+    await user.click(resendControl);
+
+    await waitFor(() => {
+      expect(po.mockApi.updateUserContact).toHaveBeenCalledWith({
+        resendEmailVerification: true,
+      });
+    });
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith(
+        SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE,
+      );
+    });
   });
 
   it("switches to the data panel and opens the clear-data dialog", async () => {
@@ -71,7 +116,9 @@ describe("SettingsClient", () => {
     po.renderSettingsClient();
 
     await user.click(
-      screen.getByRole("button", { name: "Data Stored app data" }),
+      screen.getByRole("button", {
+        name: "Data Stored app data",
+      }),
     );
 
     expect(
@@ -91,7 +138,7 @@ describe("SettingsClient", () => {
       level: 2,
       name: "Clear all stored data",
     });
-    expect(dialog).toContainOneByText(/delete all stored crates/i);
+    expect(dialog).toContainOneByText(/permanently deletes your/i);
     expect(dialog).toContainOneByRole("textbox", {
       name: /type delete my account to confirm/i,
     });
@@ -150,7 +197,9 @@ describe("SettingsClient", () => {
     po.renderSettingsClient();
 
     await user.click(
-      screen.getByRole("button", { name: "Data Stored app data" }),
+      screen.getByRole("button", {
+        name: "Data Stored app data",
+      }),
     );
 
     const checkbox = screen.getByRole("checkbox", {
@@ -170,7 +219,9 @@ describe("SettingsClient", () => {
     po.renderSettingsClient();
 
     await user.click(
-      screen.getByRole("button", { name: "Data Stored app data" }),
+      screen.getByRole("button", {
+        name: "Data Stored app data",
+      }),
     );
     await user.click(
       screen.getByRole("button", { name: "Clear all stored data" }),
@@ -203,7 +254,9 @@ describe("SettingsClient", () => {
     po.renderSettingsClient();
 
     await user.click(
-      screen.getByRole("button", { name: "Data Stored app data" }),
+      screen.getByRole("button", {
+        name: "Data Stored app data",
+      }),
     );
     await user.click(
       screen.getByRole("button", { name: "Clear all stored data" }),

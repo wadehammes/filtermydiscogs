@@ -16,7 +16,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
     id: "account",
     label: "Account",
-    description: "Profile and sign-out",
+    description: "Profile and email",
   },
   {
     id: "appearance",
