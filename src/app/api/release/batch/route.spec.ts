@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { POST } from "src/app/api/release/batch/route";
 import { DISCOGS_SESSION_COOKIE } from "src/lib/auth-request";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
+import { DiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
 import { discogsIdentityFactory } from "src/tests/factories/DiscogsIdentity.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 
@@ -131,6 +132,27 @@ describe("POST /api/release/batch", () => {
     );
   });
 
+  it("returns 503 with Retry-After when the Discogs throttle queue times out", async () => {
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
+    jest
+      .spyOn(discogsOAuthService, "makeAuthenticatedRequest")
+      .mockRejectedValue(new DiscogsThrottleQueueError());
+
+    const response = await POST(
+      createPostRequest({ ids: [RELEASE_ID] }, authenticatedCookies),
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("5");
+    await expect(response.json()).resolves.toEqual({
+      error: "Discogs request queue is busy; retry shortly",
+    });
+  });
+
   it("falls back to consumer credentials when OAuth tokens exist without an active session", async () => {
     const makeAuthenticatedRequest = jest.spyOn(
       discogsOAuthService,
@@ -159,6 +181,7 @@ describe("POST /api/release/batch", () => {
     expect(discogsOAuthService.makeConsumerRequest).toHaveBeenCalledWith(
       `https://api.discogs.com/releases/${RELEASE_ID}`,
       "GET",
+      { skipThrottle: true },
     );
     expect(makeAuthenticatedRequest).not.toHaveBeenCalled();
     expect(response.headers.get("Cache-Control")).toBe(

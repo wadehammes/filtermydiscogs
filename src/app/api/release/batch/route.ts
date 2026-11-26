@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
-import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
+import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
 import {
   DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG,
@@ -65,14 +66,15 @@ export async function POST(request: NextRequest) {
       },
     );
   } catch (error) {
-    const sanitized = logSanitizedApiRouteFailure(
-      "/api/release/batch",
+    rethrowNextInternalError(error);
+    const { body, status, rateLimitInit } = buildDiscogsProxyErrorPayload({
       error,
-      "Release batch API error:",
-    );
-    return NextResponse.json(
-      { error: "Failed to fetch releases" },
-      { status: sanitized.status },
-    );
+      fallbackMessage: "Failed to fetch releases",
+    });
+
+    return NextResponse.json(body, {
+      status,
+      ...(rateLimitInit ?? {}),
+    });
   }
 }

@@ -124,6 +124,34 @@ const schedulePump = (): void => {
   pumpPromise = pumpPromise.then(pumpThrottleQueue, pumpThrottleQueue);
 };
 
+export const runPacedDiscogsRequestInActiveSlot = async <T>(
+  work: () => Promise<T>,
+): Promise<T> => {
+  if (!throttleContext.getStore()) {
+    return runThrottledDiscogsRequest(work);
+  }
+
+  const now = Date.now();
+  const waitMs = computeDiscogsRateLimitWaitMs({
+    snapshot: getDiscogsRateLimitSnapshot(),
+    lastRequestAt,
+    now,
+    fallbackIntervalMs,
+  });
+
+  if (waitMs > 0) {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, waitMs);
+    });
+  }
+
+  try {
+    return await work();
+  } finally {
+    lastRequestAt = Date.now();
+  }
+};
+
 export const runThrottledDiscogsRequest = <T>(
   work: () => Promise<T>,
 ): Promise<T> => {

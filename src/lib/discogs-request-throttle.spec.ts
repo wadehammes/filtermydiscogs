@@ -52,6 +52,30 @@ describe("discogs-request-throttle", () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
+  it("when already in an active throttle slot, paces work before running it", async () => {
+    process.env.DISCOGS_MIN_REQUEST_INTERVAL_MS = "40";
+    jest.resetModules();
+
+    const { runPacedDiscogsRequestInActiveSlot, runThrottledDiscogsRequest } =
+      await import("./discogs-request-throttle");
+
+    const timestamps: number[] = [];
+
+    await runThrottledDiscogsRequest(async () => {
+      await runPacedDiscogsRequestInActiveSlot(async () => {
+        timestamps.push(Date.now());
+        return "first";
+      });
+      await runPacedDiscogsRequestInActiveSlot(async () => {
+        timestamps.push(Date.now());
+        return "second";
+      });
+    });
+
+    expect(timestamps).toHaveLength(2);
+    expect(timestamps[1]! - timestamps[0]!).toBeGreaterThanOrEqual(35);
+  });
+
   it("runs nested throttle calls without deadlocking the queue", async () => {
     const { runThrottledDiscogsRequest } = await import(
       "./discogs-request-throttle"

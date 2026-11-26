@@ -53,7 +53,11 @@ export const fetchDiscogsReleaseBatch = async (
     });
 
     if (!response.ok) {
-      throw new ApiFetchError(response.status);
+      throw new ApiFetchError(
+        response.status,
+        undefined,
+        parseRetryAfterMs(response),
+      );
     }
 
     const data = (await response.json()) as {

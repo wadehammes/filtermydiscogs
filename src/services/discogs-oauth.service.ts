@@ -138,8 +138,9 @@ class DiscogsOAuthService {
   async makeConsumerRequest(
     url: string,
     method: string = "GET",
+    options: { skipThrottle?: boolean } = {},
   ): Promise<unknown> {
-    return this.makeAuthenticatedRequest(url, method, "", "", {});
+    return this.makeAuthenticatedRequest(url, method, "", "", {}, options);
   }
 
   async makeAuthenticatedRequest(

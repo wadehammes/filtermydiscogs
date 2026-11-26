@@ -1,4 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
+import {
+  ApiFetchError,
+  DISCOGS_TRANSIENT_PROXY_MAX_RETRIES,
+  getRateLimitedRetryDelayMs,
+} from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import { RELEASE_BATCH_MAX_IDS } from "src/constants/collection";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
@@ -116,6 +121,39 @@ export const readDiscogsReleaseDetailFromCache = (
     discogsReleaseQueryOptions(releaseId).queryKey,
   );
 
+const fetchReleaseBatchChunkUntilCached = async (
+  queryClient: QueryClient,
+  chunk: string[],
+): Promise<void> => {
+  let remaining = chunk;
+
+  for (
+    let pass = 0;
+    pass < DISCOGS_TRANSIENT_PROXY_MAX_RETRIES && remaining.length > 0;
+    pass++
+  ) {
+    const uncachedBefore = remaining.length;
+
+    const batchReleases = await api.discogsReleaseBatch(remaining);
+    seedDiscogsReleaseDetailCache(queryClient, batchReleases ?? {});
+
+    remaining = getUncachedDiscogsReleaseIds(queryClient, remaining);
+
+    if (remaining.length === 0 || remaining.length >= uncachedBefore) {
+      break;
+    }
+
+    if (pass < DISCOGS_TRANSIENT_PROXY_MAX_RETRIES - 1) {
+      await new Promise<void>((resolve) => {
+        setTimeout(
+          resolve,
+          getRateLimitedRetryDelayMs(new ApiFetchError(503), pass),
+        );
+      });
+    }
+  }
+};
+
 export const fetchDiscogsReleaseDetailsIntoCache = async (
   queryClient: QueryClient,
   releaseIds: readonly string[],
@@ -128,7 +166,6 @@ export const fetchDiscogsReleaseDetailsIntoCache = async (
   }
 
   for (const chunk of chunkDiscogsReleaseIds(idsToFetch)) {
-    const batchReleases = await api.discogsReleaseBatch(chunk);
-    seedDiscogsReleaseDetailCache(queryClient, batchReleases ?? {});
+    await fetchReleaseBatchChunkUntilCached(queryClient, chunk);
   }
 };
