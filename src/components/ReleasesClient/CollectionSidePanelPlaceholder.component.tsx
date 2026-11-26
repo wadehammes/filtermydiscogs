@@ -1,13 +1,16 @@
-import classNames from "classnames";
-import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
+import { PageLoader } from "src/components/PageLoader/PageLoader.component";
 import styles from "./CollectionSidePanelPlaceholder.module.css";
 
 export const CollectionSidePanelPlaceholder = () => {
   return (
     <div
-      className={classNames(skeletonPulseStyles.pulsesurface, styles.root)}
+      className={styles.drawer}
       data-testid="fmdCollectionSidePanelPlaceholder"
-      aria-hidden
-    />
+    >
+      <div className={styles.header} aria-hidden />
+      <div className={styles.body}>
+        <PageLoader message="Loading..." />
+      </div>
+    </div>
   );
 };
