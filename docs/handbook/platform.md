@@ -412,6 +412,10 @@ Faker, Jotai, TanStack Table, TanStack Charts, and MSW transpilation depends on 
 
 ## Analytics
 
+**Vercel Web Analytics** — [`@vercel/analytics`](../../package.json) **`Analytics`** from **`@vercel/analytics/next`** in root [`layout.tsx`](../../src/app/layout.tsx) (same-origin **`/_vercel/insights`**; no extra CSP **`connect-src`** beyond **`'self'`**). Cookieless traffic metrics in the Vercel project **Analytics** tab; independent of the analytics-cookie banner and GTM.
+
+**Vercel Speed Insights** — [`@vercel/speed-insights`](../../package.json) **`SpeedInsights`** from **`@vercel/speed-insights/next`** beside **`Analytics`** in [`layout.tsx`](../../src/app/layout.tsx). Real Experience Score and Core Web Vitals in the project **Speed Insights** tab; also independent of GTM consent. **`WebVitalsReporter`** still forwards field CWV to GTM when analytics cookies are granted (parallel, not duplicated in-repo).
+
 Google Tag Manager (`GOOGLE_TAG_MANAGER_ID` in [`analytics.ts`](../../src/constants/analytics.ts), currently `GTM-NCP5CSG`) loads only after the visitor opts in to analytics cookies. Consent is hybrid:
 
 | Storage                                                                                           | Role                                                                                    |

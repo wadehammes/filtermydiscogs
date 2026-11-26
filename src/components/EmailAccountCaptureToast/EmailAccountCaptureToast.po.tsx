@@ -19,6 +19,7 @@ import {
   pageObjectApiError,
   pageObjectMockApi,
 } from "src/tests/mocks/pageObjectMockedApi";
+import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import type { UserContact } from "src/types/userContact.types";
@@ -45,6 +46,7 @@ export class EmailAccountCaptureToastPageObject extends BasePageObject {
   setupMocks(): void {
     jest.clearAllMocks();
     localStorage.clear();
+    setupDefaultCrateApiMocks(this.mockApi);
   }
 
   mockAuthenticatedMissingEmailContact(
