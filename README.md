@@ -231,7 +231,7 @@ pnpm type-check
 pnpm knip             # CI dead-code gate (unused exports/files)
 pnpm fallow:health    # optional — project health score (see AGENTS.md; fallow:health:full for detail)
 
-# Stacked PRs (optional): gh extension install github/gh-stack; source ~/.gh-stack.zsh — see docs/handbook/platform.md
+# Stacked PRs (required for substantive work): gh extension install github/gh-stack; source ~/.gh-stack.zsh; use `st` — see docs/handbook/platform.md#stacked-pull-requests-st
 
 pnpm build && pnpm start
 pnpm analyze          # bundle analyzer (ANALYZE=true, webpack build — e.g. after Sentry bundleSizeOptimizations changes)
@@ -262,7 +262,7 @@ Test data conventions (factories, TDD, E2E MSW): [`docs/handbook/factories.md`](
 
 Send PRs to **`staging`**. [CI](.github/workflows/ci.yml) runs unit checks and Playwright smoke on PRs; [`e2e-full.yml`](.github/workflows/e2e-full.yml) runs the full matrix on push to **`staging`**.
 
-Branch from **`staging`**, then **`mise run pr-prep`** (or **`pnpm lint:all`**, **`pnpm handbook:check`**, **`pnpm test:changed`**) before you open a PR. Release tags, production **`main`**, and **`make release`** are documented in [platform.md → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets) for maintainers only.
+Use **`st`** ([gh-stack](https://github.com/github/gh-stack); trunk **`staging`**) for substantive work — see [conventions → Non-negotiables §8](./docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents). Then **`mise run pr-prep`** (or **`pnpm lint:all`**, **`pnpm handbook:check`**, **`pnpm test:changed`**) before **`st ss --auto`**. Release tags, production **`main`**, and **`make release`** are documented in [platform.md → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets) for maintainers only.
 
 ## Cursor (optional)
 

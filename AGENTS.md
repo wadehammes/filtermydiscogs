@@ -1,6 +1,6 @@
 # Agent instructions
 
-**Before any work in this repo**, read **`docs/handbook/README.md`** and the handbook **chapter** that matches the task. Use **`docs/handbook/llms.md`** for a compact task→chapter map (helpful for routing or for pasting into other tools). When unsure which pattern to use, read **`docs/handbook/decisions.md`** first.
+**Before any work in this repo**, read **`docs/handbook/non-negotiables.md`**, then **only** the matching rows in **`docs/handbook/llms.md`** — do not load the whole handbook. When unsure which pattern to use, read **`docs/handbook/decisions.md`** first. **Context efficiency:** search before opening large files; prefer **`git diff -U20`** from the merge base for review; read each routed chapter **once** per task ([agent-workflow.md → Context efficiency](docs/handbook/agent-workflow.md#context-efficiency-tokens)).
 
 Follow documented patterns.
 
@@ -8,7 +8,7 @@ Follow documented patterns.
 
 **Keep docs accurate:** Whenever a change would make the handbook wrong or incomplete—new flows (CI, env, auth cookies), moved files, component or convention changes, Discogs/Prisma patterns, or anything a future reader would be misled by—update the relevant **`docs/handbook/*.md`** in the **same PR** when practical, or in a small follow-up right away. When the change shifts **user-facing features, routes, setup, or tech stack** listed in the root **[README.md](./README.md)**, update that file too. Do not leave docs stale on purpose. CI runs **`pnpm handbook:check`** ([`handbook-sync-check.sh`](./scripts/handbook-sync-check.sh) + [`spec-pair-check.sh`](./scripts/spec-pair-check.sh) for playback/utils/hooks); the **stop** hook [`session-stop-checks.sh`](./.cursor/hooks/session-stop-checks.sh) nudges handbook/README/spec pairing, **`lint:all`**, and **`test:changed`** on uncommitted work (one combined follow-up per turn; deduped per conversation). Locally use **`mise run pr-prep`** (**`lint:all`**, **`handbook:check`**, **`test:changed`**, Fallow audit) before opening a PR.
 
-**Stacked PRs:** For multi-part features or refactors, use **`st`** ([`gh-stack.zsh`](https://gist.github.com/wadehammes/1bcc3aad88f876e3ac68e642df2899b5) + **`gh extension install github/gh-stack`**) — **`st init`**, commit on the bottom branch, **`st add`** for each layer, **`st sync`**, **`st ss --auto`**. Trunk **`staging`**. Do not pile unrelated commits on one branch when the work was planned as a stack; see [platform.md → Stacked pull requests](docs/handbook/platform.md#stacked-pull-requests-st).
+**Stacked PRs (non-negotiable):** All substantive work uses **gh-stack** via **`st`** ([conventions.md → Non-negotiables §8](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents)) — plan layers first; **`st init`** / **`st create`** for the bottom branch (even single-layer work); **`st add`** for each dependent layer; commit with **`./scripts/git-commit.sh`**; **`st sync`**, **`st ss --auto`**. Trunk **`staging`**. Do not cut standalone feature branches off **`staging`** when the task belongs on a stack; see [platform.md → Stacked pull requests](docs/handbook/platform.md#stacked-pull-requests-st) and [`.cursor/skills/stacked-prs/SKILL.md`](./.cursor/skills/stacked-prs/SKILL.md).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

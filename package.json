@@ -114,7 +114,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.8",
+    "@biomejs/biome": "^2.6.9",
     "@faker-js/faker": "10.6.0",
     "@jest/globals": "^30.5.2",
     "@jest/types": "^30.5.1",
@@ -130,9 +130,9 @@
     "@types/d3-shape": "^3.2.0",
     "@types/jest": "^30.0.0",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^26.6.6",
+    "@types/node": "^26.6.10",
     "@types/pg": "catalog:",
-    "@types/react": "^19.3.0",
+    "@types/react": "^19.3.3",
     "@types/react-dom": "^19.3.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "dotenv-cli": "^11.1.0",

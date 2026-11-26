@@ -119,7 +119,7 @@ Local Biome “changed files” checks use **`origin/staging`** as the baseline 
 
 ## Stacked pull requests (`st`)
 
-Large or multi-theme work should land as a **stack** of dependent PRs into **`staging`** (each PR’s base is the branch below it), not one oversized branch. Use the **`st`** wrapper around the [`github/gh-stack`](https://github.com/github/gh-stack) extension ([`gh-stack.zsh` gist](https://gist.github.com/wadehammes/1bcc3aad88f876e3ac68e642df2899b5)) — install **`gh extension install github/gh-stack`**, source **`~/.gh-stack.zsh`** (or **`st upgrade`** to refresh from the gist), then **`st cheatsheet`** for the full command map.
+**Non-negotiable:** substantive work and agent sessions use **gh-stack** through **`st`** ([conventions.md → Non-negotiables §8](conventions.md#non-negotiables-substantive-work-and-agents)) — a **stack** of branches into **`staging`** (each PR’s base is the branch below it), not parallel **`git checkout -b …`** off **`staging`** or one oversized branch mixing unrelated concerns. Use the **`st`** wrapper around the [`github/gh-stack`](https://github.com/github/gh-stack) extension ([`gh-stack.zsh` gist](https://gist.github.com/wadehammes/1bcc3aad88f876e3ac68e642df2899b5)) — install **`gh extension install github/gh-stack`**, source **`~/.gh-stack.zsh`** (or **`st upgrade`** to refresh from the gist), then **`st cheatsheet`** for the full command map.
 
 | Step                                   | Command                                                                                         |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------- |

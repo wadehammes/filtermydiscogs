@@ -12,10 +12,12 @@ Source of truth: **`docs/handbook/`**. Task map: **[`llms.md`](../../docs/handbo
 
 ## Workflow
 
-1. Skim [`README.md`](../../docs/handbook/README.md) index if unfamiliar.
-2. Open **`llms.md`** → read **every row** that matches your task **before** the first code change.
+1. Read [`non-negotiables.md`](../../docs/handbook/non-negotiables.md) (rules + context efficiency).
+2. Open **`llms.md`** → read **only matching rows** **before** the first code change (each chapter **once** per task).
 3. Reuse documented patterns — extend existing hooks/components; no parallel implementations.
 4. If behavior or conventions change → update the matching **`docs/handbook/*.md`** (and root **README** if Features/Pages/Setup/Tech Stack shift).
+
+**Tokens:** Grep/Glob to locate code; **`git diff -U20`** for review; load other **`SKILL.md`** files only when **llms.md** routes there.
 
 ## Post-work (before your final reply)
 

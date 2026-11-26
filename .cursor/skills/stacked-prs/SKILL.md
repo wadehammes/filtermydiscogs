@@ -8,6 +8,8 @@ large work, dependent branches, st init/add/sync/ss, or gh stack workflows.
 
 # Stacked PRs (`st`)
 
+**Non-negotiable** for substantive work ([conventions.md → Non-negotiables §8](../../docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents)): use **`st`** / gh-stack — do not open parallel feature branches off **`staging`** when stack tooling applies.
+
 Trunk is **`staging`**, not `main`. Full policy: [platform.md → Stacked pull requests](../../docs/handbook/platform.md#stacked-pull-requests-st).
 
 ## Prerequisites
