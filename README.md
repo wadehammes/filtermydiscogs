@@ -1,8 +1,26 @@
-[![Filter My Discogs app preview](https://img.youtube.com/vi/8g-4ydF1A7U/maxresdefault.jpg)](https://youtu.be/8g-4ydF1A7U)
+<p align="center">
+  <a href="https://www.filtermydisco.gs">
+    <img src="./src/app/icon.png" width="128" height="128" alt="FilterMyDisco.gs app icon" />
+  </a>
+</p>
 
-# FilterMyDisco.gs
+<h1 align="center">FilterMyDisco.gs</h1>
 
-Free companion app for your Discogs collection: flexible filters, search, playback, crates, playlists, and stats. Every format Discogs supports.
+<p align="center">
+  <strong>Discover and play your collection</strong>
+</p>
+
+<p align="center">
+  Search and filter your Discogs collection, queue playback, build crates and playlists, and browse stats. Vinyl, CDs, tapes, and the rest.
+</p>
+
+<p align="center">
+  <a href="https://www.filtermydisco.gs"><strong>Live app</strong></a>
+  ·
+  <a href="https://youtu.be/8g-4ydF1A7U"><strong>Watch demo</strong></a>
+  ·
+  <a href="https://github.com/wadehammes/filtermydiscogs"><strong>GitHub</strong></a>
+</p>
 
 ## Features
 
@@ -21,7 +39,7 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Responsive UI**: Desktop sidebar and mobile drawers; fast route transitions on authenticated pages
 - **Discogs outage notice**: Stay signed in with a link to [Discogs status](https://status.discogs.com); collection loads when Discogs is back
 - **Deploy refresh**: Toast to reload when a newer production build is available
-- **Core Web Vitals**: With analytics consent, field metrics to GTM as `webVital` events
+- **Core Web Vitals**: Vercel Speed Insights; optional GTM `webVital` events when analytics cookies are on
 
 ## Setup
 
@@ -240,31 +258,11 @@ Authenticated Playwright specs import [`e2e/fixtures/msw.fixture.ts`](./e2e/fixt
 
 Test data conventions (factories, TDD, E2E MSW): [`docs/handbook/factories.md`](./docs/handbook/factories.md), [`docs/handbook/conventions.md`](./docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents).
 
-## Branches and production
+## Contributing
 
-| Branch        | Purpose                                                                                                                                             |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`staging`** | Default trunk — open PRs here; [CI](.github/workflows/ci.yml) (unit + Playwright smoke) on PRs; [E2E full](.github/workflows/e2e-full.yml) on push. |
-| **`main`**    | Production only — updated automatically when you cut a release tag; do **not** push or PR here.                                                     |
+Send PRs to **`staging`**. [CI](.github/workflows/ci.yml) runs unit checks and Playwright smoke on PRs; [`e2e-full.yml`](.github/workflows/e2e-full.yml) runs the full matrix on push to **`staging`**.
 
-**Vercel:** point **Production** at **`main`**, previews/staging at **`staging`**.
-
-GitHub **rulesets** enforce this on the repo (**`staging`**: PR + **`Unit gates`** / **`E2E smoke`**; **`main`**: release automation only; **`v*`** tags: maintainers). Policy and API commands: [`docs/handbook/platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets). JSON sources: [`.github/rulesets/`](.github/rulesets/).
-
-### Release checklist
-
-1. Merge your work into **`staging`** and confirm PR **`Unit gates`** + **`E2E smoke`** are green; after merge, confirm **`E2E full`** on the push to **`staging`**.
-2. Check out **`staging`** and pull latest.
-3. Tag and push from **`staging`** (tag name must start with **`v`**). Requires **`vercel login`** (or **`VERCEL_TOKEN`**) and **Member+** on the Vercel team **`worldwadeweb`**; with **`gh`** installed, the Makefile watches **`create-release`** until it finishes.
-
-```bash
-make release tag=v0.0.1
-```
-
-4. Confirm [`.github/workflows/release.yml`](.github/workflows/release.yml) (**`create-release`**) succeeded: **`main`** matches the tag and the GitHub Release exists. One-time repo setup: Actions secret **`RELEASE_PUSH_TOKEN`** — a **PAT** (fine-grained or classic) with **Contents** read/write on this repo, owned by a GitHub user on the **`Production — main`** ruleset bypass list ([`production-main.json`](.github/rulesets/production-main.json)); see [`platform.md`](./docs/handbook/platform.md#branching-and-github-rulesets).
-5. Confirm Vercel **Production** deployed from **`main`**.
-
-If **`create-release`** failed on **Reset Main**, use [`platform.md` → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets) ( **`RELEASE_PUSH_TOKEN`**, bypass list, release workflow checkout). Re-run only on a tag that includes any workflow fix. Break-glass: **`git push origin refs/tags/vX.Y.Z:main`** and **`gh release create vX.Y.Z --generate-notes`** if **`main`** or the GitHub Release was never updated.
+Branch from **`staging`**, then **`mise run pr-prep`** (or **`pnpm lint:all`**, **`pnpm handbook:check`**, **`pnpm test:changed`**) before you open a PR. Release tags, production **`main`**, and **`make release`** are documented in [platform.md → Branching and GitHub rulesets](./docs/handbook/platform.md#branching-and-github-rulesets) for maintainers only.
 
 ## Cursor (optional)
 
@@ -277,15 +275,16 @@ Agent wiring for this repo (also documented in [`docs/handbook/platform.md` → 
 
 ## Handbook
 
-The handbook under [`docs/handbook/`](./docs/handbook/) is the canonical place for structure, conventions, Discogs/Prisma patterns, and platform details. Update it when behavior or layout changes so the next reader (human or tool) is not misled.
+[`docs/handbook/`](./docs/handbook/) holds conventions, Discogs/Prisma patterns, and platform notes. Update the matching chapter when behavior changes. Start at [`docs/handbook/README.md`](./docs/handbook/README.md).
 
-**Entry point:** [`docs/handbook/README.md`](./docs/handbook/README.md)
+[Feature guides](./docs/handbook/feature-guides/README.md) cover product areas (collection, playback, public sharing, radio, crates/playlists, client state, API) with rationale and short code excerpts. Tables and route maps stay in [patterns.md](./docs/handbook/patterns.md) and [database.md](./docs/handbook/database.md).
 
-**Agents (Cursor):** [AGENTS.md](./AGENTS.md). Cursor rules and skills live under [`.cursor/`](./.cursor/). Use the task map in [`docs/handbook/llms.md`](./docs/handbook/llms.md) to route work to the right handbook chapter.
+**Agents:** [AGENTS.md](./AGENTS.md), [llms.md](./docs/handbook/llms.md) (task → chapter map).
 
 **Suggested reading order**
 
-- **New to the project:** [architecture.md](./docs/handbook/architecture.md), then [conventions.md](./docs/handbook/conventions.md), then skim [patterns.md](./docs/handbook/patterns.md).
+- **New to the project:** [architecture.md](./docs/handbook/architecture.md), then [conventions.md](./docs/handbook/conventions.md), then [patterns.md](./docs/handbook/patterns.md).
+- **Feature area (why & how):** [feature-guides/README.md](./docs/handbook/feature-guides/README.md).
 - **Agents / task routing:** [llms.md](./docs/handbook/llms.md).
 - **Discogs OAuth or API:** [discogs.md](./docs/handbook/discogs.md).
 - **Crates, playlists, or database:** [database.md](./docs/handbook/database.md).
