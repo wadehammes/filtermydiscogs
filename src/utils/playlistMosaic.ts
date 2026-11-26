@@ -67,3 +67,20 @@ export const buildPlaylistMosaicThumbUrls = ({
 
 export const playlistMosaicGridLayout = (tileCount: number) =>
   calculateOptimalGrid(tileCount, MOSAIC_CONSTANTS.ASPECT_RATIOS.SQUARE);
+
+export const uniquePlaylistReleasesInOrder = (
+  tracks: PlaylistTrackRow[],
+  releaseByInstanceId: Map<string, DiscogsRelease>,
+): DiscogsRelease[] => {
+  const instanceIds = uniqueInstanceIdsInPlaylistOrder(tracks);
+  const releases: DiscogsRelease[] = [];
+
+  for (const instanceId of instanceIds) {
+    const release = releaseByInstanceId.get(instanceId);
+    if (release) {
+      releases.push(release);
+    }
+  }
+
+  return releases;
+};

@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { api } from "src/api/urls";
 import { renderCrateDrawerTree } from "src/components/CrateDrawer/crateDrawerTestRender";
-import { setupCrateDrawerTests } from "src/components/CrateDrawer/crateDrawerTestSetup";
+import {
+  crateDrawerPartiallyPackedResponse,
+  setupCrateDrawerTests,
+} from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDetailActionsMenu } from "src/components/Crates/CrateDetailActionsMenu.component";
 import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
@@ -77,5 +80,17 @@ describe("CrateDetailActionsMenu", () => {
     expect(
       screen.getByRole("heading", { name: "Edit Crate" }),
     ).toBeInTheDocument();
+  });
+
+  it("when the crate has staged releases, enables Generate mosaic in the actions menu", async () => {
+    mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
+
+    renderCrateDrawerTree(<CrateDetailActionsMenu />);
+
+    await openCrateActionsMenu();
+
+    expect(
+      screen.getByRole("menuitem", { name: "Generate mosaic" }),
+    ).not.toHaveAttribute("aria-disabled", "true");
   });
 });

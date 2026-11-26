@@ -1,0 +1,28 @@
+.trigger {
+  width: 100%;
+}
+
+.triggerIcon {
+  flex-shrink: 0;
+}
+
+.triggerLabel {
+  flex: 1;
+  text-align: left;
+}
+
+.triggerChevron {
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+  height: 1rem;
+  width: 1rem;
+}
+
+.submenuPopup {
+  composes: popupcompact from "../../styles/modules/inline-popover-menu.module.css";
+  max-width: min(18rem, calc(100vw - var(--space-6)));
+}
+
+.submenuHeading {
+  padding-inline: var(--space-3);
+}

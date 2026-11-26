@@ -24,8 +24,6 @@ const playlistsApiError = new Error("Playlists API request failed");
 
 export class PlaylistDrawerStatsPageObject extends BasePageObject {
   public testId = "fmdPlaylistDrawerStats";
-  public statsToggleTestId = "fmdPlaylistDrawerStatsToggle";
-
   constructor(props: BasePageObjectProps = {}) {
     super(props);
     this.setupMocks();

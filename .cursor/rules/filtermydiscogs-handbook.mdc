@@ -11,8 +11,8 @@ alwaysApply: true
 
 On **substantive** work (features, refactors, auth/OAuth, crates/Prisma, App Router handlers, CSS/layout, tests for new behavior, CI/env):
 
-1. **Read** `docs/handbook/README.md` (skim index).
-2. **Route** the task via `docs/handbook/llms.md` → read **every matching chapter** before the first code change.
+1. **Read** `docs/handbook/non-negotiables.md` (digest + context efficiency).
+2. **Route** via `docs/handbook/llms.md` → read **only matching chapters** before the first code change (each chapter **once** per task; Grep/Glob before opening large files).
 3. **Reuse documented patterns** — extend existing hooks/components; do not reimplement parallel logic.
 
 **Substantive = read handbook first.** Narrow mechanical fixes (obvious typos, single-line fixes with unchanged behavior) may skip a full pass.
@@ -20,6 +20,7 @@ On **substantive** work (features, refactors, auth/OAuth, crates/Prisma, App Rou
 ## During implementation
 
 - **Testing non-negotiables** — TDD (failing spec before production code), **factories** for domain/API test data, **one flat `describe`** per hook spec (no nested `describe`), **API mocks in POs** (component **`.spec.tsx`** never wires **`mockApiResponse`** / **`api.*`**). See [conventions.md → Non-negotiables](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents) and [Hook checklist](docs/handbook/conventions.md#hook-and-feature-spec-checklist). Mock **`api.*`**, not React Query cache.
+- **Stacked branches (`st`)** — All substantive work on **gh-stack** via **`st`** (plan layers before coding; **`st init`** / **`st create`**, **`st add`** per layer, **`./scripts/git-commit.sh`**, **`st sync`**, **`st view --json`**, **`st ss --auto`**; trunk **`staging`**). See [conventions.md → Non-negotiables §8](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents) and [platform.md → Stacked pull requests](docs/handbook/platform.md#stacked-pull-requests-st).
 - **Conventions non-negotiable** — every line of production and test code follows [conventions.md](docs/handbook/conventions.md) and the routed chapters' patterns (arrow functions, public-module imports, factories, `privateRouteJson`, …). Before finishing, re-read your diff against those chapters. Don't copy a file's legacy style when it contradicts the handbook.
 - **UI state defaults** — check whether an existing hook already owns them (e.g. `useCrateDrawer`: `userToggled ?? isDesktop`; login uses `resetDrawer()`, not duplicate breakpoint checks).
 - **Optional props** — `classNames()` for module `className`; `definedProps({ ... })` for other optional spreads ([conventions.md](docs/handbook/conventions.md)).

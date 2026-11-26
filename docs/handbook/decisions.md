@@ -62,7 +62,7 @@ Details: [api-routes.md](api-routes.md), [database.md → API routes](database.m
 | Playback queue / embed contract | Themed **`releasePlayback.context.*.spec.tsx`** + [playback-embed-invariants.md](playback-embed-invariants.md) | One giant playback spec |
 | Full browser journey | **Playwright** under `e2e/` with MSW fixture | Duplicating E2E logic in Jest |
 
-Details: [conventions.md → Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents), [conventions.md → Testing](conventions.md#testing).
+Details: [conventions.md → Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents) (including **`st`** / gh-stack §8), [conventions.md → Testing](conventions.md#testing).
 
 ## Docs and agent finish
 

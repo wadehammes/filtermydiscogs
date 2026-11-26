@@ -46,9 +46,7 @@ describe("CrateDrawerFooter", () => {
       );
     });
 
-    expect(
-      screen.getByRole("button", { name: /^empty$/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^more$/i })).toBeInTheDocument();
     expect(
       screen.getByRole("switch", { name: /public link/i }),
     ).not.toBeChecked();

@@ -12,7 +12,7 @@ Arguments: **$ARGUMENTS**
 
 - If the arguments are **paths that exist**, review those files and their usual pairs (`.po.tsx`, `.spec.ts(x)`, util extracted from a hook, matching **`docs/handbook/*.md`** section if the path is under `docs/`).
 - If the argument is a **branch name**, diff against it.
-- With **no arguments**, use the PR base branch (`gh pr view --json baseRefName -q .baseRefName`); if there is no PR or **`gh` fails**, use **`staging`**.
+- With **no arguments**, use the PR base branch (`gh pr view --json baseRefName -q .baseRefName`) so a **stacked** layer diffs against its parent; if there is no PR or **`gh` fails**, use **`staging`**.
 
 Resolve the base ref: use the local branch when it exists, otherwise **`origin/<base>`**. Run **`git fetch origin <base>`** when needed.
 
@@ -37,22 +37,22 @@ If nothing relevant remains after filtering, say so and stop.
 
 Before judging any line:
 
-1. Open **`docs/handbook/llms.md`** (or [AGENTS.md](AGENTS.md) → handbook first) and read **every chapter row** that matches the changed paths.
-2. **Always** read for TS/React/test diffs:
-   - [conventions.md → Non-negotiables](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents)
+1. Route changed paths through **`docs/handbook/llms.md`** and read **every page a changed file maps to** — **each page once**, even when many files share a chapter.
+2. **Always** read [non-negotiables.md](docs/handbook/non-negotiables.md) first (includes **st**, TDD, factories, PO mocks). Report a broken non-negotiable before other findings. Canonical detail: [conventions.md → Non-negotiables](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents).
+3. **Always** for TS/React/test diffs, when not covered by the digest:
    - [conventions.md → Hook and feature spec checklist](docs/handbook/conventions.md#hook-and-feature-spec-checklist) when hooks, utils, or specs changed
    - [conventions.md → Page object pattern](docs/handbook/conventions.md#page-object-pattern) when `src/components/**` specs changed
-3. Add routed chapters: **`components.md`**, **`patterns.md`**, **`factories.md`**, **`api-routes.md`**, **`database.md`**, **`discogs.md`**, **`data-storage.md`**, **`platform.md`**, etc., per **`llms.md`**.
-4. Read project skills when the diff touches those areas (read each **`SKILL.md`** under **`.cursor/skills/`**):
+4. Add routed chapters: **`components.md`**, **`patterns.md`**, **`factories.md`**, **`api-routes.md`**, **`database.md`**, **`discogs.md`**, **`data-storage.md`**, **`platform.md`**, etc., per **`llms.md`**.
+5. Read project skills when the diff touches those areas (read each **`SKILL.md`** under **`.cursor/skills/`** only as routed — do not load every skill):
    - **`handbook-routing`**, **`hook-feature-specs`**, **`component-and-po-specs`**, **`typescript-react-guardrails`**
    - Domain skills as routed (e.g. **`api-routes`**, **`oauth-and-session`**, **`release-playback`** — playback hooks are never TDD-exempt per handbook)
-5. **Edit guard (hooks miss human intent):** Skim [`.cursor/hooks/README.md`](.cursor/hooks/README.md) → **`enforce-handbook-edit.sh`** and blocking **`preToolUse`** hooks. Code written in one shot never hit the guard — check for the same classes of issues:
+6. **Edit guard (hooks miss human intent):** Skim [`.cursor/hooks/README.md`](.cursor/hooks/README.md) → **`enforce-handbook-edit.sh`** and blocking **`preToolUse`** hooks. Code written in one shot never hit the guard — check for the same classes of issues:
    - **`jest.mock`** on **`src/hooks/queries/*`** or **`src/hooks/mutations/*`** (mock **`src/api/urls`** instead)
    - **`mockApiResponse`** / API mock wiring in **`.spec.tsx`** instead of **`.po.tsx`**
    - Nested top-level **`describe`** in hook/util specs
    - New **`export function`** in app code (prefer **`export const`** arrows)
    - New code **comments**, hand-created component folders (use **`pnpm scaffold`**), factories outside **`src/tests/factories/`**
-6. Read the **whole** changed file when needed to separate new code from pre-existing patterns.
+7. Read changes with **`git diff -U20 $(git merge-base HEAD <base>) -- <file>`** (enough context to separate new from existing code). Open the **whole** file only when the diff is not enough: new file, rename, or cross-file behavior.
 
 ## 3. Run the linters (read-only)
 
@@ -69,7 +69,7 @@ Optional sanity (only when the diff is small): **`pnpm handbook:check`** reports
 
 Check each **added or changed** line against the chapters you read. Look for:
 
-- **Non-negotiables** ([conventions.md](docs/handbook/conventions.md)): TDD for substantive behavior, **factories**, flat hook **`describe`**, mocks in POs, **`src/…`** imports, **`classNames`** / **`definedProps`**, literal user-visible strings in specs (not re-reading constants from the PO).
+- **Non-negotiables** ([non-negotiables.md](docs/handbook/non-negotiables.md), [conventions.md](docs/handbook/conventions.md)): TDD, **factories**, flat hook **`describe`**, mocks in POs, **`st`** / gh-stack, **`src/…`** imports, **`classNames`** / **`definedProps`**, literal user-visible strings in specs (not re-reading constants from the PO).
 - **Tests:** behavior/fix with no spec change; missing **spec pair** for new production modules ([`spec-pair-check.sh`](scripts/spec-pair-check.sh)); integration gaps (priority, dismiss, API outcomes) that unit tests alone do not cover.
 - **Components:** watcher toast helper vs component spec split ([components.md → Testing](docs/handbook/components.md#testing)); **`BrowserOnly`** / toast host patterns.
 - **Jotai / state:** atoms under **`src/atoms/`** vs feature folders ([patterns.md](docs/handbook/patterns.md)); no duplicate parallel helpers when handbook names one.
