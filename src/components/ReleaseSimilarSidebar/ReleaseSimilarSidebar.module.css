@@ -1,6 +1,8 @@
 .sidebarAside {
   background: var(--background);
   border-left: 1px solid var(--border);
+  container-name: similar-sidebar;
+  container-type: inline-size;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -13,6 +15,8 @@
   background: transparent;
   border: none;
   border-radius: 0;
+  container-name: similar-sidebar;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -337,4 +341,20 @@
 .loadingState {
   composes: loadingpanel from "../../styles/modules/empty-state.module.css";
   flex: 1 1 0;
+}
+
+@container similar-sidebar (max-width: 18rem) {
+  .sidebarActions .similarCountSegmentWithPageNav {
+    border-inline-end: none;
+  }
+
+  .sidebarActions .similarPageSegment {
+    min-width: 0;
+  }
+}
+
+@container similar-sidebar (min-width: 22rem) {
+  .sidebarActions .similarCountSegment {
+    padding-inline: var(--space-4);
+  }
 }
