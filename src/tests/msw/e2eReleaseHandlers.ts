@@ -133,3 +133,64 @@ export const createE2eDelayedReleaseBatchHandler = (
     );
   });
 };
+
+export const createE2eTransient503ThenOkReleaseBatchHandler = (
+  retryAfterSeconds = 0,
+): RequestHandler => {
+  const releaseDetails = buildE2eReleaseDetailByDiscogsId();
+  let postCount = 0;
+
+  return http.post("/api/release/batch", async ({ request }) => {
+    const body = (await request.json()) as { ids?: string[] };
+    const ids = body.ids ?? [];
+
+    postCount += 1;
+
+    if (postCount === 1) {
+      return HttpResponse.json(
+        { error: "Discogs throttle queue timeout" },
+        {
+          status: 503,
+          headers: {
+            "Retry-After": String(retryAfterSeconds),
+          },
+        },
+      );
+    }
+
+    return HttpResponse.json(
+      buildE2eReleaseBatchResponseBody(ids, releaseDetails),
+    );
+  });
+};
+
+export const createE2ePartialThenRemainderReleaseBatchHandler =
+  (): RequestHandler => {
+    const releaseDetails = buildE2eReleaseDetailByDiscogsId();
+
+    return http.post("/api/release/batch", async ({ request }) => {
+      const body = (await request.json()) as { ids?: string[] };
+      const ids = body.ids ?? [];
+
+      if (ids.length > 1) {
+        const firstId = ids[0];
+
+        if (firstId === undefined) {
+          return HttpResponse.json({ releases: {} });
+        }
+
+        const detail = releaseDetails.get(firstId);
+        const releases: Record<string, DiscogsReleaseDetail> = {};
+
+        if (detail) {
+          releases[firstId] = detail;
+        }
+
+        return HttpResponse.json({ releases });
+      }
+
+      return HttpResponse.json(
+        buildE2eReleaseBatchResponseBody(ids, releaseDetails),
+      );
+    });
+  };
