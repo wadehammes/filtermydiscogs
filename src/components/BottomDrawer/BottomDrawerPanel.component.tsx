@@ -85,11 +85,11 @@ export const BottomDrawerPanel = ({
       >
         {children}
       </div>
+      {footer ? (
+        <div className={styles.footer} data-bottom-drawer-footer>
+          {footer}
+        </div>
+      ) : null}
     </OverlayStack>
-    {footer ? (
-      <div className={styles.footer} data-bottom-drawer-footer>
-        {footer}
-      </div>
-    ) : null}
   </div>
 );

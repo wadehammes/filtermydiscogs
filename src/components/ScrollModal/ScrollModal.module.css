@@ -27,14 +27,16 @@
 }
 
 :global([data-playback-overlay-portal]) .modal {
+  --scroll-modal-horizontal-inset: calc(2 * var(--space-4));
+
   flex: 0 0 auto;
   max-height: min(
     calc(100% - var(--space-8)),
     calc(var(--release-modal-available-height, 100%) - var(--space-8))
   );
-  max-width: 100%;
+  max-width: calc(100% - var(--scroll-modal-horizontal-inset));
   min-height: 0;
-  width: 100%;
+  width: calc(100% - var(--scroll-modal-horizontal-inset));
 
   @media (width >= 1024px) {
     max-height: min(

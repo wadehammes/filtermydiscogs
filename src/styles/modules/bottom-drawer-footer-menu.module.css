@@ -1,0 +1,52 @@
+.drawerFooterMenuPositioner {
+  z-index: calc(var(--z-10-bottom-drawer) + 2);
+}
+
+.menuRoot {
+  align-self: stretch;
+  display: flex;
+  flex: 1;
+  isolation: isolate;
+  min-width: 0;
+  position: relative;
+
+  @media (width < 1024px) {
+    min-height: calc(var(--touch-target-min) - var(--space-2));
+  }
+
+  &:has([data-popup-open]) {
+    z-index: 1;
+  }
+}
+
+.menuTrigger {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  width: 100%;
+
+  @media (width < 1024px) {
+    min-height: calc(var(--touch-target-min) - var(--space-2));
+  }
+
+  @media (width >= 1024px) {
+    height: auto;
+  }
+}
+
+.menuPopup {
+  min-width: 12.5rem;
+}
+
+.menuPopupWide {
+  min-width: 15rem;
+}
+
+.menuFooterInset {
+  padding-block: 0;
+  padding-inline: var(--space-2);
+
+  @media (width >= 1024px) {
+    padding-inline: var(--space-1);
+  }
+}

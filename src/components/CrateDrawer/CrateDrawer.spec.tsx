@@ -24,9 +24,13 @@ describe("CrateDrawer", () => {
 
     expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).not.toBeVisible();
 
-    await userEvent
-      .setup()
-      .click(screen.getByRole("button", { name: /^notes$/i }));
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    expect(
+      screen.queryByRole("button", { name: /^empty$/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /^notes$/i }));
 
     expect(
       screen.getByPlaceholderText("Add set notes for this gig"),

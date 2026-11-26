@@ -34,6 +34,11 @@
   flex: 1;
   min-width: 0;
   padding: var(--space-2) var(--space-2);
+
+  @media (width < 1024px) {
+    min-height: calc(var(--touch-target-min) - var(--space-2));
+    padding-block: var(--space-1);
+  }
 }
 
 .footerSegmentIcon {
@@ -52,22 +57,4 @@
 
 .playSegment {
   flex: 1;
-}
-
-.editMenuPopup {
-  min-width: 11rem;
-}
-
-.editMenuItemIcon {
-  align-items: center;
-  display: flex;
-  flex-shrink: 0;
-  height: 1rem;
-  justify-content: center;
-  width: 1rem;
-
-  svg {
-    height: 100%;
-    width: 100%;
-  }
 }

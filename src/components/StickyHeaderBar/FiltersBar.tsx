@@ -13,6 +13,7 @@ import { useCollectionContext } from "src/context/collection.context";
 import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import { useIsClient } from "src/hooks/useIsClient.hook";
+import { useListenBottomDrawerDismiss } from "src/hooks/useListenBottomDrawerDismiss.hook";
 import styles from "./FiltersBar.module.css";
 
 interface FiltersBarProps {
@@ -58,6 +59,7 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
   }, []);
 
   useCloseMobileDrawerOnDesktop(closeFiltersDrawer);
+  useListenBottomDrawerDismiss(closeFiltersDrawer);
 
   const isDisabled = disabled || fetchingCollection || !collection || error;
 

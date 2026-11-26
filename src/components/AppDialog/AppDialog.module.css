@@ -39,13 +39,16 @@
     calc(100% - var(--space-8)),
     calc(var(--release-modal-available-height, 100%) - var(--space-8))
   );
-  max-width: 100%;
+
+  --scroll-modal-horizontal-inset: calc(2 * var(--space-4));
+
+  max-width: calc(100% - var(--scroll-modal-horizontal-inset));
   overflow: hidden;
   pointer-events: auto;
   position: absolute;
   top: 50%;
   translate: -50% -50%;
-  width: 100%;
+  width: calc(100% - var(--scroll-modal-horizontal-inset));
   z-index: calc(var(--z-5-modal) + 1);
 
   @media (width >= 1024px) {

@@ -58,17 +58,7 @@
 }
 
 .menuItemIcon {
-  align-items: center;
-  display: inline-flex;
-  flex-shrink: 0;
-  height: 1.25rem;
-  justify-content: center;
-  width: 1rem;
-
-  svg {
-    height: 0.875rem;
-    width: 0.875rem;
-  }
+  composes: itemicon from "../../styles/modules/inline-popover-menu-item-icon.module.css";
 }
 
 .menuItemDangerMultiline .menuItemIcon {

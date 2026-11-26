@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { Activity, useEffect, useState } from "react";
+import { Activity, useCallback, useEffect, useState } from "react";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
@@ -71,10 +71,16 @@ export const ReleaseMiniPlayer = ({
   const filtersDrawerOpen = useFiltersDrawerOpen();
   const crateDrawerOpen = useCrateDrawerOpen();
   const [isQueueOpen, setIsQueueOpen] = useState(false);
-  const { openRelease, prefetchPointerProps } = useReleaseCardOpenHandler({
-    release,
-    onReleaseClick,
-  });
+  const { openRelease: openReleaseBase, prefetchPointerProps } =
+    useReleaseCardOpenHandler({
+      release,
+      onReleaseClick,
+    });
+
+  const openRelease = useCallback(() => {
+    setIsQueueOpen(false);
+    openReleaseBase();
+  }, [openReleaseBase]);
 
   const { isVideoPanelExpanded, handleVideoToggle } =
     useReleaseMiniPlayerVideoPanelState({
