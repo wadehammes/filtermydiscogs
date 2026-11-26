@@ -22,19 +22,18 @@
 
 .viewportTopCenter {
   composes: viewport;
-  inset: calc(1rem + env(safe-area-inset-top, 0px)) auto auto 50%;
+  inset: calc(
+      var(--sticky-header-total-height) +
+      env(safe-area-inset-top, 0px) +
+      0.5rem
+    )
+    auto auto 50%;
   transform: translateX(-50%);
   max-width: min(calc(100vw - 2rem), 36rem);
   overflow: visible;
 
-  @media (width <= 768px) {
-    inset: calc(
-        var(--sticky-header-total-height) +
-        env(safe-area-inset-top, 0px) +
-        0.5rem
-      )
-      auto auto 50%;
-    transform: translateX(-50%);
+  @media (width >= 768px) {
+    inset: calc(1rem + env(safe-area-inset-top, 0px)) auto auto 50%;
   }
 }
 
@@ -523,10 +522,10 @@
   }
 
   & .actions {
+    align-items: stretch;
     display: flex;
     flex-shrink: 0;
-    align-items: stretch;
-    margin-left: auto;
+    margin-inline-start: auto;
     min-width: 0;
   }
 
@@ -544,26 +543,22 @@
 }
 
 .root:global(.fmd-playback-skip-log-toast) {
-  width: 100%;
-  min-width: min(100%, 22rem);
-  max-width: min(calc(100vw - 2rem), 32rem);
   align-items: flex-start;
+  max-width: 100%;
+  min-width: 0;
   overflow: visible;
-
-  @media (width <= 768px) {
-    min-width: 0;
-    max-width: 100%;
-    padding-block-start: 0.375rem;
-
-    & :global(.fmd-playback-skip-log-list) {
-      max-height: min(32vh, 11rem);
-      padding-inline-start: 1rem;
-    }
-  }
+  padding-block-start: 0.375rem;
+  width: 100%;
 
   @media (width >= 480px) {
-    width: max-content;
+    max-width: min(calc(100vw - 2rem), 32rem);
     min-width: min(100%, 26rem);
+    width: max-content;
+  }
+
+  @media (width >= 768px) {
+    min-width: min(100%, 22rem);
+    padding-block-start: 0;
   }
 
   & .content {
@@ -598,10 +593,15 @@
     display: flex;
     flex-direction: column;
     gap: 0.875rem;
-    max-height: min(40vh, 14rem);
     margin: 0;
+    max-height: min(32vh, 11rem);
     overflow-y: auto;
-    padding-inline: 1.125rem 0.25rem;
+    padding-inline: 1rem 0.25rem;
+
+    @media (width >= 768px) {
+      max-height: min(40vh, 14rem);
+      padding-inline: 1.125rem 0.25rem;
+    }
   }
 
   & :global(.fmd-playback-skip-log-entry) {
