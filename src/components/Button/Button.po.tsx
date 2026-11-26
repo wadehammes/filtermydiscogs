@@ -1,8 +1,8 @@
+import type { Ref } from "react";
 import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
-import type { Ref } from "react";
 import type { RenderResult } from "test-utils";
 import { render } from "test-utils";
 import Button from "./Button.component";
