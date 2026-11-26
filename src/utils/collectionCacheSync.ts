@@ -1,6 +1,7 @@
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { api } from "src/api/urls";
 import {
+  COLLECTION_CACHE_STALE_MS,
   COLLECTION_CACHE_VALIDATION_TIMEOUT_MS,
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
@@ -132,10 +133,41 @@ export const validatePersistedCollectionCache = async (
 
   await clearPersistedCollectionCache(username);
   resetCollectionCacheReady(username);
-  queryClient.removeQueries({
+  await queryClient.invalidateQueries({
     queryKey: DiscogsCollectionQueryKeys.byUsername(username),
   });
   return false;
+};
+
+const isPersistedCollectionCacheStaleByAge = (
+  cached: PersistedCollectionCache,
+): boolean => Date.now() - cached.fetchedAt >= COLLECTION_CACHE_STALE_MS;
+
+const scheduleBackgroundCollectionCacheRevalidation = (
+  queryClient: QueryClient,
+  username: string,
+  cached: PersistedCollectionCache,
+): void => {
+  const cacheKey = normalizeCollectionCacheUsername(username);
+  if (validatePromises.has(cacheKey)) {
+    return;
+  }
+
+  const promise = (async (): Promise<void> => {
+    if (isPersistedCollectionCacheStaleByAge(cached)) {
+      await queryClient.invalidateQueries({
+        queryKey: DiscogsCollectionQueryKeys.byUsername(username),
+      });
+      return;
+    }
+
+    await validatePersistedCollectionCache(queryClient, username, cached);
+  })().finally(() => {
+    validatePromises.delete(cacheKey);
+  });
+
+  validatePromises.set(cacheKey, promise);
+  void promise;
 };
 
 export const prepareCollectionQueryFromCache = async (
@@ -161,17 +193,12 @@ export const prepareCollectionQueryFromCache = async (
       return { hydratedFromCache: false };
     }
 
-    const cacheStillValid = await validatePersistedCollectionCache(
+    hydrateCollectionQueryFromCache(queryClient, username, cached);
+    scheduleBackgroundCollectionCacheRevalidation(
       queryClient,
       username,
       cached,
     );
-
-    if (!cacheStillValid) {
-      return { hydratedFromCache: false };
-    }
-
-    hydrateCollectionQueryFromCache(queryClient, username, cached);
     return { hydratedFromCache: true };
   })().finally(() => {
     preparePromises.delete(cacheKey);

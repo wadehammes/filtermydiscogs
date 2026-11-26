@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { api } from "src/api/urls";
 import {
+  COLLECTION_CACHE_STALE_MS,
   COLLECTION_CACHE_VALIDATION_TIMEOUT_MS,
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
+import { waitFor } from "test-utils";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { formatFactory } from "src/tests/factories/Format.factory";
@@ -193,7 +195,7 @@ describe("collectionCacheSync", () => {
     jest.useRealTimers();
   });
 
-  it("clears cache and query data when Discogs total items changed", async () => {
+  it("clears persisted cache and invalidates React Query when Discogs total items changed", async () => {
     const queryClient = createTestQueryClient();
     const cached = buildPersistedCache(1500);
     hydrateCollectionQueryFromCache(queryClient, "testuser", cached);
@@ -201,43 +203,35 @@ describe("collectionCacheSync", () => {
     mockFetchDiscogsCollection.mockResolvedValue(
       collectionFactory.build({}, { totalItems: 1501 }),
     );
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
 
     await expect(
       validatePersistedCollectionCache(queryClient, "testuser", cached),
     ).resolves.toBe(false);
 
+    expect(invalidateSpy).toHaveBeenCalledWith({
+      queryKey: DiscogsCollectionQueryKeys.byUsername("testuser"),
+    });
     expect(
       queryClient.getQueryData(
         DiscogsCollectionQueryKeys.byUsername("testuser"),
       ),
-    ).toBeUndefined();
+    ).not.toBeUndefined();
+    invalidateSpy.mockRestore();
   });
 
-  it("validates before hydrating so stale cache never enters React Query", async () => {
+  it("hydrates React Query before validation finishes", async () => {
     const queryClient = createTestQueryClient();
     await writePersistedCollectionCache("testuser", buildPersistedCache(1500));
-    mockFetchDiscogsCollection.mockResolvedValue(
-      collectionFactory.build({}, { totalItems: 1501 }),
-    );
 
-    const result = await prepareCollectionQueryFromCache(
-      queryClient,
-      "testuser",
-    );
-
-    expect(result.hydratedFromCache).toBe(false);
-    expect(
-      queryClient.getQueryData(
-        DiscogsCollectionQueryKeys.byUsername("testuser"),
-      ),
-    ).toBeUndefined();
-  });
-
-  it("hydrates React Query only after validation succeeds", async () => {
-    const queryClient = createTestQueryClient();
-    await writePersistedCollectionCache("testuser", buildPersistedCache(1500));
-    mockFetchDiscogsCollection.mockResolvedValue(
-      collectionFactory.build({}, { totalItems: 1500 }),
+    let resolveValidation:
+      | ((value: ReturnType<typeof collectionFactory.build>) => void)
+      | undefined;
+    mockFetchDiscogsCollection.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveValidation = resolve;
+        }),
     );
 
     const result = await prepareCollectionQueryFromCache(
@@ -251,6 +245,62 @@ describe("collectionCacheSync", () => {
         DiscogsCollectionQueryKeys.byUsername("testuser"),
       ),
     ).not.toBeUndefined();
+    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(1);
+
+    resolveValidation?.(collectionFactory.build({}, { totalItems: 1500 }));
+    await mockFetchDiscogsCollection.mock.results[0]?.value;
+  });
+
+  it("invalidates the collection query in the background when Discogs total items changed", async () => {
+    const queryClient = createTestQueryClient();
+    await writePersistedCollectionCache("testuser", buildPersistedCache(1500));
+    mockFetchDiscogsCollection.mockResolvedValue(
+      collectionFactory.build({}, { totalItems: 1501 }),
+    );
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const result = await prepareCollectionQueryFromCache(
+      queryClient,
+      "testuser",
+    );
+
+    expect(result.hydratedFromCache).toBe(true);
+    expect(
+      queryClient.getQueryData(
+        DiscogsCollectionQueryKeys.byUsername("testuser"),
+      ),
+    ).not.toBeUndefined();
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: DiscogsCollectionQueryKeys.byUsername("testuser"),
+      });
+    });
+
+    invalidateSpy.mockRestore();
+  });
+
+  it("invalidates the collection query when persisted cache is older than 24 hours", async () => {
+    const queryClient = createTestQueryClient();
+    const cached = buildPersistedCache(1500);
+    cached.fetchedAt = Date.now() - COLLECTION_CACHE_STALE_MS - 60_000;
+    await writePersistedCollectionCache("testuser", cached);
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const result = await prepareCollectionQueryFromCache(
+      queryClient,
+      "testuser",
+    );
+
+    expect(result.hydratedFromCache).toBe(true);
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: DiscogsCollectionQueryKeys.byUsername("testuser"),
+      });
+    });
+    expect(mockFetchDiscogsCollection).not.toHaveBeenCalled();
+
+    invalidateSpy.mockRestore();
   });
 
   it("re-hydrates React Query after user-scoped queries are cleared", async () => {
