@@ -1,10 +1,6 @@
 import classNames from "classnames";
 import Link, { type LinkProps } from "next/link";
-import {
-  type AnchorHTMLAttributes,
-  type ReactNode,
-  type Ref,
-} from "react";
+import type { AnchorHTMLAttributes, ReactNode, Ref } from "react";
 import { definedProps } from "src/utils/definedProps";
 import {
   type IconButtonVariant,
@@ -14,8 +10,8 @@ import {
 } from "./iconButtonClasses";
 
 export interface IconButtonLinkProps
-  extends AnchorHTMLAttributes<HTMLAnchorElement> {
-  ref?: Ref<HTMLAnchorElement>;
+  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "ref"> {
+  ref?: Ref<HTMLAnchorElement> | undefined;
   variant?: IconButtonVariant;
   iconClassName?: string | undefined;
   label?: ReactNode;

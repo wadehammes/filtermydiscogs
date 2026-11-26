@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { type ButtonHTMLAttributes, type ReactNode, type Ref } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import {
   type IconButtonVariant,
   iconButtonClasses,
@@ -10,8 +10,8 @@ import {
 export type { IconButtonVariant };
 
 export interface IconButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
-  ref?: Ref<HTMLButtonElement>;
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref"> {
+  ref?: Ref<HTMLButtonElement> | undefined;
   variant?: IconButtonVariant;
   iconClassName?: string | undefined;
   label?: ReactNode;

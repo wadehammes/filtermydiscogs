@@ -3,7 +3,7 @@ import type { PropsWithChildrenOnly } from "src/@types/react";
 import styles from "./Page.module.css";
 
 interface PageProps extends PropsWithChildrenOnly {
-  ref?: Ref<HTMLDivElement>;
+  ref?: Ref<HTMLDivElement> | undefined;
 }
 
 export const Page = ({ children, ref }: PageProps) => {

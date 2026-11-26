@@ -2,8 +2,8 @@ import type { ComponentProps, ReactNode, Ref } from "react";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./Button.module.css";
 
-interface ButtonProps extends ComponentProps<"button"> {
-  ref?: Ref<HTMLButtonElement>;
+interface ButtonProps extends Omit<ComponentProps<"button">, "ref"> {
+  ref?: Ref<HTMLButtonElement> | undefined;
   variant?:
     | "primary"
     | "secondary"
