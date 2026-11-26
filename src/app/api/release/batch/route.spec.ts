@@ -181,7 +181,6 @@ describe("POST /api/release/batch", () => {
     expect(discogsOAuthService.makeConsumerRequest).toHaveBeenCalledWith(
       `https://api.discogs.com/releases/${RELEASE_ID}`,
       "GET",
-      { skipThrottle: true },
     );
     expect(makeAuthenticatedRequest).not.toHaveBeenCalled();
     expect(response.headers.get("Cache-Control")).toBe(
