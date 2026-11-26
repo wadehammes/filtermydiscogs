@@ -17,8 +17,9 @@ const CollectionLoadingToastInner = () => {
     state: { username, isAuthenticated, isCheckingAuth },
   } = useAuth();
   const {
-    state: { collection, fetchingCollection, error },
+    state: { collection, error },
   } = useCollectionContext();
+  const { isLoading: isCollectionPaginationLoading } = useCollectionLoadState();
   const allReleases = useAllReleases();
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const CollectionLoadingToastInner = () => {
     const totalItems = resolveCollectionTotalItems(username, collection);
     const isLargeLoad = totalItems !== null && isLargeCollection(totalItems);
 
-    if (!(shouldTrackLoading && fetchingCollection && isLargeLoad)) {
+    if (!(shouldTrackLoading && isCollectionPaginationLoading && isLargeLoad)) {
       dismissCollectionLoadingToast();
       return;
     }
@@ -39,7 +40,7 @@ const CollectionLoadingToastInner = () => {
     allReleases.length,
     collection,
     error,
-    fetchingCollection,
+    isCollectionPaginationLoading,
     isAuthenticated,
     isCheckingAuth,
     username,
