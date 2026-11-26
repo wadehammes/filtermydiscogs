@@ -6,8 +6,16 @@
   [data-theme="amber"],
   [data-theme="slate"],
   [data-theme="discogs"],
+  [data-theme="ocean"],
+  [data-theme="lavender"],
+  [data-theme="terracotta"],
+  [data-theme="sunset"],
+  [data-theme="prism"],
   [data-theme="midnight"],
   [data-theme="codex"],
+  [data-theme="ember"],
+  [data-theme="aurora"],
+  [data-theme="summer"],
   [data-theme="futuristic"],
   [data-theme="high-contrast"]
 ) {
@@ -19,5 +27,11 @@
 [data-theme="wine"] {
   --link: color-mix(in srgb, var(--primary) 72%, white 28%);
   --link-hover: color-mix(in srgb, var(--link) 82%, white 18%);
+  --link-active: color-mix(in srgb, var(--link) 72%, black 28%);
+}
+
+[data-theme="sunset"] {
+  --link: color-mix(in srgb, var(--foreground) 78%, var(--primary) 22%);
+  --link-hover: color-mix(in srgb, var(--link) 82%, black 18%);
   --link-active: color-mix(in srgb, var(--link) 72%, black 28%);
 }

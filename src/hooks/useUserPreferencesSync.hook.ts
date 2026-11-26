@@ -15,6 +15,7 @@ import { useTheme } from "src/context/theme.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import type { PersistedFiltersState } from "src/types/filters.types";
+import { applySquareCornersToDocument } from "src/utils/applySquareCornersToDocument";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import {
   defaultPersistedFilters,
@@ -71,6 +72,7 @@ export const useUserPreferencesSync = () => {
       setFilterPersistenceEnabled(true);
       appliedPreferencesKeyRef.current = null;
       hasSeededLocalPreferencesRef.current = false;
+      applySquareCornersToDocument(false);
 
       if (!isCheckingAuth && themeRef.current !== "system") {
         setTheme("system");

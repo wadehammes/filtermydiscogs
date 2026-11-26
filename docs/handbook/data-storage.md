@@ -6,7 +6,7 @@ Where user and session data lives, what **Delete account** ( **`POST /api/auth/c
 
 | Layer | Location | What it holds |
 | ----- | -------- | ------------- |
-| **Postgres (Prisma)** | `User`, crates, playlists, `UserTrack` | Durable account data scoped by Discogs identity |
+| **Postgres (Prisma)** | `User`, crates, playlists, `UserTrack` | Durable account data scoped by Discogs identity; **`User.preferences`** JSON (theme, **`squareCorners`**, view, filters, playback toggles, etc. — see [patterns.md → Settings](patterns.md#settings)) |
 | **OAuth cookies** | HttpOnly session cookies (see [discogs.md](discogs.md)) | Discogs session; verified on API routes |
 | **localStorage** | Keys in [`storageKeys.ts`](../../src/constants/storageKeys.ts) | Theme, filters, view, analytics consent, table layout, legacy keys |
 | **sessionStorage** | [`SIMILAR_PAGE_INDEX_SESSION_KEY`](../../src/constants/storageKeys.ts) (`fmd:similar-page-index-by-anchor`) | JSON map of release-modal anchor **`instance_id`** → similar sidebar page index; cleared on modal **`handleCloseModal`**, **`clearClientStoredData`**, and full client clear; Playwright **`installClearClientStorage`** may preserve this key across navigations |

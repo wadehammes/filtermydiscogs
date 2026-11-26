@@ -1,7 +1,7 @@
 .spinner {
   animation: spin 0.7s linear infinite;
   border: 3px solid var(--border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-spinner);
   border-top-color: var(--primary);
   display: inline-block;
   vertical-align: middle;

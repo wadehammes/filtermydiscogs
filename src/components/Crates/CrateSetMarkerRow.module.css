@@ -9,7 +9,8 @@
   padding: var(--space-3) var(--space-4);
   position: relative;
   width: 100%;
-  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  border-radius: var(--radius-card) var(--radius-card) var(--radius-none)
+    var(--radius-none);
 
   @media (width >= 1024px) {
     grid-column: 1 / -1;

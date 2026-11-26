@@ -87,7 +87,7 @@
 
     & > * > [data-filter-control-trigger] {
       border-color: transparent;
-      border-radius: 0;
+      border-radius: var(--radius-none);
       height: 100%;
       max-height: none;
       min-height: 0;
@@ -106,11 +106,13 @@
     }
 
     & > :first-child:not(:only-child) > [data-filter-control-trigger] {
-      border-radius: var(--radius-ui) 0 0 var(--radius-ui);
+      border-radius: var(--radius-ui) var(--radius-none) var(--radius-none)
+        var(--radius-ui);
     }
 
     & > :last-child:not(:only-child) > [data-filter-control-trigger] {
-      border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
+      border-radius: var(--radius-none) var(--radius-ui) var(--radius-ui)
+        var(--radius-none);
     }
 
     & > * > [data-filter-control-trigger]:hover:not(:disabled) {

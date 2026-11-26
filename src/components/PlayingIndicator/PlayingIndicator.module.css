@@ -21,7 +21,7 @@
 
 .bar {
   background: var(--playing-indicator-bar-color, var(--primary));
-  border-radius: 1px;
+  border-radius: var(--radius-hairline);
   height: 100%;
   width: 2px;
 }

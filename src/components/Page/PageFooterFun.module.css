@@ -152,7 +152,7 @@
 
 .pulseRing {
   border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   height: 2.25rem;
   left: 50%;
   opacity: 0;

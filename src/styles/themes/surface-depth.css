@@ -1,0 +1,50 @@
+html[data-theme]:not([data-theme="light"]) {
+  --page-background: color-mix(in srgb, var(--background) 85%, black 15%);
+  --sticky-header-background: var(--page-background);
+  --card: color-mix(in srgb, var(--background) 98%, black 2%);
+  --card-foreground: contrast-color(var(--card));
+  --muted: color-mix(in srgb, var(--background) 89%, black 11%);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --secondary: color-mix(in srgb, var(--background) 93%, black 7%);
+  --accent: color-mix(in srgb, var(--secondary) 86%, var(--primary) 14%);
+  --accent-foreground: var(--foreground);
+}
+
+[data-theme="aurora"] {
+  --accent: color-mix(in srgb, var(--secondary) 82%, var(--primary) 18%);
+}
+
+[data-theme="summer"] {
+  --accent: color-mix(in srgb, var(--secondary) 62%, #ffb703 38%);
+  --card-foreground: var(--foreground);
+  --popover-foreground: var(--card-foreground);
+}
+
+[data-theme="futuristic"] {
+  --accent: color-mix(in srgb, var(--secondary) 70%, var(--primary) 30%);
+  --secondary: color-mix(in srgb, var(--secondary) 72%, var(--primary) 28%);
+  --card-foreground: var(--foreground);
+}
+
+[data-theme="high-contrast"] {
+  --page-background: #000;
+  --sticky-header-background: var(--page-background);
+  --card: color-mix(in srgb, var(--background) 92%, var(--foreground) 8%);
+  --card-foreground: contrast-color(var(--card));
+  --muted: color-mix(in srgb, var(--background) 90%, var(--foreground) 10%);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --secondary: var(--muted);
+  --accent: color-mix(in srgb, var(--background) 84%, var(--foreground) 16%);
+}
+
+[data-theme="codex"] {
+  --card-foreground: #e6edf3;
+  --popover-foreground: #e6edf3;
+}
+
+[data-theme="sunset"] {
+  --card-foreground: var(--foreground);
+  --popover-foreground: var(--card-foreground);
+}

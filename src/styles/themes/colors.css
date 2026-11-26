@@ -20,14 +20,20 @@
   --foreground: light-dark(#171717, #fafafa);
 
   /* Muted colors */
-  --muted: light-dark(#f8fafc, #131316);
+  --muted: light-dark(
+    #f8fafc,
+    color-mix(in srgb, var(--background) 92%, black 8%)
+  );
   --muted-foreground: light-dark(
     #475569,
     #a1a1aa
   ); /* WCAG AA compliant: ~4.7:1 contrast on white */
 
   /* Accent colors */
-  --accent: light-dark(#f1f5f9, #1a1a1e);
+  --accent: light-dark(
+    #f1f5f9,
+    color-mix(in srgb, var(--background) 84%, black 16%)
+  );
   --accent-foreground: light-dark(#0f172a, #fafafa);
 
   /* Border and input */
@@ -38,14 +44,17 @@
   --ring: var(--link);
 
   /* Card */
-  --card: light-dark(#fff, #0f0f12);
+  --card: light-dark(
+    #fff,
+    color-mix(in srgb, var(--background) 88%, black 12%)
+  );
   --card-foreground: light-dark(#171717, #fafafa);
 
   /* Sticky Header */
   --sticky-header-background: var(--background);
 
   /* Popover */
-  --popover: light-dark(#fff, #0f0f12);
+  --popover: light-dark(#fff, var(--card));
   --popover-foreground: light-dark(#171717, #fafafa);
 
   /* Primary */
@@ -73,7 +82,10 @@
   );
 
   /* Secondary */
-  --secondary: light-dark(#f1f5f9, #161619);
+  --secondary: light-dark(
+    #f1f5f9,
+    color-mix(in srgb, var(--background) 84%, black 16%)
+  );
   --secondary-foreground: light-dark(#334155, #e4e4e7);
   --secondary-hover: light-dark(#e2e8f0, #1f1f23);
   --secondary-active: light-dark(#cbd5e0, #27272a);

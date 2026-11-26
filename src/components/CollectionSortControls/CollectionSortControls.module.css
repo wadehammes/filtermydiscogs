@@ -23,7 +23,7 @@
 
   & > * > [data-filter-control-trigger] {
     border-color: transparent;
-    border-radius: 0;
+    border-radius: var(--radius-none);
     height: 100%;
     max-height: none;
     min-height: 0;
@@ -47,11 +47,13 @@
   }
 
   & > [data-testid="fmdSelect"]:first-of-type > [data-filter-control-trigger] {
-    border-radius: var(--radius-ui) 0 0 var(--radius-ui);
+    border-radius: var(--radius-ui) var(--radius-none) var(--radius-none)
+      var(--radius-ui);
   }
 
   & > [data-testid="fmdSelect"]:last-of-type > [data-filter-control-trigger] {
-    border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
+    border-radius: var(--radius-none) var(--radius-ui) var(--radius-ui)
+      var(--radius-none);
   }
 }
 

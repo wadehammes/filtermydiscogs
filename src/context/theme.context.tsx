@@ -18,7 +18,6 @@ import type {
   PaletteTheme,
   StoredTheme,
 } from "src/types/userPreferences.types";
-import { runDomViewTransition } from "src/utils/runDomViewTransition";
 import {
   isPaletteTheme,
   isStoredTheme,
@@ -63,18 +62,14 @@ const applyThemeToDocument = (paletteTheme: PaletteTheme) => {
     return;
   }
 
-  const applyPaletteTheme = () => {
-    rootElement.setAttribute("data-theme", paletteTheme);
+  rootElement.setAttribute("data-theme", paletteTheme);
 
-    if (currentTheme) {
-      rootElement.classList.add("theme-transitioning");
-      requestAnimationFrame(() => {
-        rootElement.classList.remove("theme-transitioning");
-      });
-    }
-  };
-
-  runDomViewTransition(applyPaletteTheme);
+  if (currentTheme) {
+    rootElement.classList.add("theme-transitioning");
+    requestAnimationFrame(() => {
+      rootElement.classList.remove("theme-transitioning");
+    });
+  }
 };
 
 const getInitialPaletteThemeFromDOM = (): PaletteTheme | null => {

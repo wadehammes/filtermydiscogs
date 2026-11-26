@@ -86,11 +86,11 @@
 }
 
 .styleFilterPrimaryShell {
-  border-radius: 0;
+  border-radius: var(--radius-none);
 }
 
 .operatorShell {
-  border-radius: 0;
+  border-radius: var(--radius-none);
 }
 
 .viewsLine,

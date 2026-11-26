@@ -1,0 +1,18 @@
+html[data-ui-radius="square"] {
+  --radius-spinner: 9999px;
+  --radius-ui: var(--radius-none);
+  --radius-card: var(--radius-none);
+  --radius-circle: var(--radius-none);
+  --radius-full: var(--radius-none);
+  --radius-hairline: var(--radius-none);
+  --radius-xs: var(--radius-none);
+  --radius-sm: var(--radius-none);
+  --radius-md: var(--radius-none);
+  --radius-lg: var(--radius-none);
+  --radius-xl: var(--radius-none);
+  --radius-2xl: var(--radius-none);
+  --radius-card-inner: var(--radius-none);
+  --radius-card-frame: var(--radius-none);
+  --radius-ui-raised: var(--radius-none);
+  --segment-inset-radius: var(--radius-none);
+}

@@ -1,4 +1,6 @@
 @import url("./base.css");
+@import url("./ui-radius.css");
+@import url("./background-surface.css");
 @import url("./colors.css");
 @import url("./rating-star.css");
 @import url("./primary.css");
@@ -10,9 +12,18 @@
 @import url("./sepia.css");
 @import url("./forest.css");
 @import url("./amber.css");
+@import url("./ocean.css");
+@import url("./lavender.css");
+@import url("./terracotta.css");
+@import url("./ember.css");
+@import url("./sunset.css");
+@import url("./summer.css");
+@import url("./aurora.css");
+@import url("./prism.css");
 @import url("./wine.css");
 @import url("./codex.css");
 @import url("./discogs.css");
 @import url("./palette-derivations.css");
+@import url("./surface-depth.css");
 @import url("./futuristic.css");
 @import url("../global/theming.css");

@@ -28,6 +28,9 @@ export const userPreferencesPatchSchema = z
       .refine((value) => value === undefined || isValidStoredTheme(value), {
         message: "theme must be a supported theme value",
       }),
+    squareCorners: z
+      .boolean({ error: "squareCorners must be a boolean" })
+      .optional(),
     view: z
       .object({
         currentView: z.string(),
@@ -62,6 +65,7 @@ export const userPreferencesPatchSchema = z
       patch.extendQueueWithSimilarReleases !== undefined ||
       patch.defaultCollectionSidePanel !== undefined ||
       patch.theme !== undefined ||
+      patch.squareCorners !== undefined ||
       patch.view !== undefined ||
       patch.filters !== undefined ||
       patch.filterViews !== undefined ||

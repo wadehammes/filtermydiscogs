@@ -136,15 +136,16 @@ export const LegalPageContent = () => {
             </li>
             <li>
               <strong>Account preferences</strong> (when you&apos;re signed in):
-              theme, default view (grid or table), whether to remember filter
-              selections, whether to auto-play when adding to an empty queue,
-              whether to extend the playback queue with similar releases from
-              your collection when up next runs low (opt-in; default off), your
-              analytics cookie choice (when set), named saved views from the
-              Views menu on Collection, and, when enabled, saved filter and sort
-              choices (styles, years, formats, sort order, genre/style, format,
-              and release year match mode, and search text). These sync across
-              browsers; your full collection is not stored in Postgres.
+              theme, square-corners preference, default view (grid or table),
+              whether to remember filter selections, whether to auto-play when
+              adding to an empty queue, whether to extend the playback queue
+              with similar releases from your collection when up next runs low
+              (opt-in; default off), your analytics cookie choice (when set),
+              named saved views from the Views menu on Collection, and, when
+              enabled, saved filter and sort choices (styles, years, formats,
+              sort order, genre/style, format, and release year match mode, and
+              search text). These sync across browsers; your full collection is
+              not stored in Postgres.
             </li>
             <li>
               <strong>Email contact</strong> (optional): a confirmed email
@@ -304,13 +305,14 @@ export const LegalPageContent = () => {
               in-app playback (deleted with your account row)
             </li>
             <li>
-              Saved account preferences on the server: theme, default view (grid
-              or table), analytics cookie choice, named saved views from the
-              Views menu on Collection, filter/sort selections when
-              &quot;Remember filter selections&quot; is enabled in Settings, and
-              playback settings (auto-play on queue add and extend queue with
-              similar releases), and any saved or pending email contact,
-              marketing opt-in choice, and in-progress email verification state
+              Saved account preferences on the server: theme, square-corners
+              preference, default view (grid or table), analytics cookie choice,
+              named saved views from the Views menu on Collection, filter/sort
+              selections when &quot;Remember filter selections&quot; is enabled
+              in Settings, and playback settings (auto-play on queue add and
+              extend queue with similar releases), and any saved or pending
+              email contact, marketing opt-in choice, and in-progress email
+              verification state
             </li>
             <li>
               Local data on this browser: theme, view mode, filters, analytics

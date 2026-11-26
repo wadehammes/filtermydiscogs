@@ -75,7 +75,7 @@
   appearance: none;
   background: transparent;
   border: none;
-  border-radius: 0;
+  border-radius: var(--radius-none);
   bottom: 0;
   color: inherit;
   cursor: col-resize;
@@ -215,7 +215,7 @@
   }
 
   img {
-    border-radius: 0;
+    border-radius: var(--radius-none);
     display: block;
     height: var(--button-height-md);
     object-fit: cover;
@@ -296,7 +296,7 @@
   }
 
   img {
-    border-radius: 0;
+    border-radius: var(--radius-none);
     display: block;
     height: var(--button-height-md);
     object-fit: cover;

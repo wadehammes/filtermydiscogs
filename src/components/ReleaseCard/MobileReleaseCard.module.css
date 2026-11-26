@@ -1,5 +1,9 @@
 .releaseCard {
   --release-card-border-width: 1px;
+  --radius-card-cover: calc(
+    var(--radius-card) -
+    var(--release-card-border-width)
+  );
 
   align-items: stretch;
   background: var(--card);
@@ -74,8 +78,8 @@
 
 .imageContainer > img,
 .imageContainer img {
-  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
-    calc(var(--radius-card) - var(--release-card-border-width));
+  border-radius: var(--radius-card-cover) var(--radius-none) var(--radius-none)
+    var(--radius-card-cover);
   height: 100%;
   max-width: 100%;
   object-fit: cover;
@@ -85,16 +89,16 @@
 }
 
 .coverPlaceholder {
-  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
-    calc(var(--radius-card) - var(--release-card-border-width));
+  border-radius: var(--radius-card-cover) var(--radius-none) var(--radius-none)
+    var(--radius-card-cover);
   height: 100%;
   min-height: 100%;
   width: 100%;
 }
 
 .releaseImage {
-  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
-    calc(var(--radius-card) - var(--release-card-border-width));
+  border-radius: var(--radius-card-cover) var(--radius-none) var(--radius-none)
+    var(--radius-card-cover);
   display: block;
   height: 100%;
   overflow: hidden;
@@ -103,8 +107,8 @@
 }
 
 .releaseImage :global(span) {
-  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
-    calc(var(--radius-card) - var(--release-card-border-width));
+  border-radius: var(--radius-card-cover) var(--radius-none) var(--radius-none)
+    var(--radius-card-cover);
   display: block;
   height: 100%;
   overflow: hidden;
@@ -113,8 +117,8 @@
 }
 
 .releaseImage :global(span > img) {
-  border-radius: calc(var(--radius-card) - var(--release-card-border-width)) 0 0
-    calc(var(--radius-card) - var(--release-card-border-width));
+  border-radius: var(--radius-card-cover) var(--radius-none) var(--radius-none)
+    var(--radius-card-cover);
   display: block;
   height: 100%;
   object-fit: cover;

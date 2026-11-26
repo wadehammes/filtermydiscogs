@@ -40,7 +40,7 @@
 .textareaembedded {
   background: transparent;
   border: none;
-  border-radius: 0;
+  border-radius: var(--radius-none);
   color: var(--foreground);
   font-family: inherit;
   font-size: 16px;

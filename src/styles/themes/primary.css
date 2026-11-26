@@ -18,13 +18,38 @@
   --primary: #173248;
 }
 
+[data-theme="ocean"] {
+  --primary: #0f4a68;
+}
+
+[data-theme="lavender"] {
+  --primary: #4a3280;
+}
+
+[data-theme="terracotta"] {
+  --primary: #6b3320;
+}
+
+[data-theme="sunset"] {
+  --primary: #c4382e;
+}
+
+[data-theme="prism"] {
+  --primary: #2858a0;
+}
+
 :is(
   [data-theme="dim"],
   [data-theme="sepia"],
   [data-theme="forest"],
   [data-theme="amber"],
   [data-theme="slate"],
-  [data-theme="discogs"]
+  [data-theme="discogs"],
+  [data-theme="ocean"],
+  [data-theme="lavender"],
+  [data-theme="terracotta"],
+  [data-theme="sunset"],
+  [data-theme="prism"]
 ) {
   --primary-hover: color-mix(in srgb, var(--primary) 85%, black 15%);
   --primary-active: color-mix(in srgb, var(--primary) 72%, black 28%);
@@ -51,6 +76,18 @@
   --primary: #c45a7a;
 }
 
+[data-theme="ember"] {
+  --primary: #d87840;
+}
+
+[data-theme="aurora"] {
+  --primary: #48c0a0;
+}
+
+[data-theme="summer"] {
+  --primary: #fb8500;
+}
+
 [data-theme="high-contrast"] {
   --primary: #6eb5ff;
 }
@@ -59,6 +96,9 @@
   [data-theme="midnight"],
   [data-theme="codex"],
   [data-theme="wine"],
+  [data-theme="ember"],
+  [data-theme="aurora"],
+  [data-theme="summer"],
   [data-theme="high-contrast"]
 ) {
   --primary-hover: color-mix(in srgb, var(--primary) 82%, white 18%);
@@ -78,6 +118,9 @@
   [data-theme="midnight"],
   [data-theme="codex"],
   [data-theme="wine"],
+  [data-theme="ember"],
+  [data-theme="aurora"],
+  [data-theme="summer"],
   [data-theme="futuristic"],
   [data-theme="high-contrast"]
 ) {

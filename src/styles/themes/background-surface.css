@@ -1,0 +1,10 @@
+:root {
+  --background-gradient: none;
+}
+
+html {
+  background-attachment: fixed;
+  background-color: var(--page-background, var(--background));
+  background-image: var(--background-gradient);
+  background-size: cover;
+}

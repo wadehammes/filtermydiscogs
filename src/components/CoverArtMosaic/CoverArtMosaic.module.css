@@ -7,7 +7,7 @@
 }
 
 .rootFill {
-  border-radius: 0;
+  border-radius: var(--radius-none);
   box-shadow: none;
   height: 100%;
   width: 100%;

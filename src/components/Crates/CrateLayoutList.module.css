@@ -93,6 +93,10 @@
 
 .sectionGroup {
   --crate-section-nest-inset: var(--space-3);
+  --radius-card-nested: max(
+    0px,
+    calc(var(--radius-card) - var(--crate-section-nest-inset))
+  );
   --crate-section-inner-border: var(--border);
   --crate-section-inner-border-dashed: var(--border);
   --crate-section-inner-border-emphasis: var(--border);
@@ -181,7 +185,7 @@
 }
 
 .sectionGroupNested {
-  border-radius: calc(var(--radius-card) - 4px);
+  border-radius: var(--radius-card-inner);
   margin: var(--crate-section-nest-inset);
 }
 
@@ -214,23 +218,18 @@
 }
 
 .sectionGroup:has(> .sectionBody:not([data-section-empty])) > .sectionHead {
-  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  border-radius: var(--radius-card) var(--radius-card) var(--radius-none)
+    var(--radius-none);
 }
 
 .sectionGroupNested:has(> .sectionBody[data-section-empty]) > .sectionHead {
-  border-radius: max(
-    0px,
-    calc(var(--radius-card) - var(--crate-section-nest-inset))
-  );
+  border-radius: var(--radius-card-nested);
 }
 
 .sectionGroupNested:has(> .sectionBody:not([data-section-empty]))
   > .sectionHead {
-  border-radius: max(
-      0px,
-      calc(var(--radius-card) - var(--crate-section-nest-inset))
-    )
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset))) 0 0;
+  border-radius: var(--radius-card-nested) var(--radius-card-nested)
+    var(--radius-none) var(--radius-none);
 }
 
 .sectionBody {
@@ -243,7 +242,8 @@
   position: relative;
 
   & > .layoutReleaseRow.layoutReleaseRowPacked:not(:has(~ .layoutReleaseRow)) {
-    border-radius: 0 0 var(--radius-card) var(--radius-card);
+    border-radius: var(--radius-none) var(--radius-none) var(--radius-card)
+      var(--radius-card);
   }
 }
 
@@ -307,7 +307,8 @@
 
 .sectionBody > .insertZoneSectionMemberEnd.insertZoneEmptySectionDragging {
   border: 0;
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-card)
+    var(--radius-card);
   bottom: 0;
   height: 3rem;
   left: 0;
@@ -347,9 +348,8 @@
 }
 
 .sectionGroupNested .sectionBody > .insertZoneSectionMemberEnd {
-  border-radius: 0 0
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-card-nested)
+    var(--radius-card-nested);
 }
 
 .sectionBody > .insertZoneSectionMemberEnd.insertZoneEmptySectionActive {
@@ -359,15 +359,15 @@
     var(--background)
   );
   border: 1px dashed var(--crate-section-inner-border-dashed);
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-card)
+    var(--radius-card);
 }
 
 .sectionGroupNested
   .sectionBody
   > .insertZoneSectionMemberEnd.insertZoneEmptySectionActive {
-  border-radius: 0 0
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-card-nested)
+    var(--radius-card-nested);
 }
 
 .sectionBody > .insertZoneEmptySectionDragging {
@@ -383,21 +383,20 @@
     var(--background)
   );
   border: 1px dashed var(--crate-section-inner-border-dashed);
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-card)
+    var(--radius-card);
 }
 
 .sectionGroupNested .sectionBody > .insertZoneEmptySectionActive {
-  border-radius: 0 0
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-card-nested)
+    var(--radius-card-nested);
 }
 
 .sectionGroupNested
   > .sectionBody
   > .layoutReleaseRow.layoutReleaseRowPacked:not(:has(~ .layoutReleaseRow)) {
-  border-radius: 0 0
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)))
-    max(0px, calc(var(--radius-card) - var(--crate-section-nest-inset)));
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-card-nested)
+    var(--radius-card-nested);
 }
 
 .insertZone,

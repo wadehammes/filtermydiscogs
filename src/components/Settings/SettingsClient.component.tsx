@@ -43,8 +43,10 @@ import {
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
   DEFAULT_COLLECTION_SIDE_PANEL,
   DEFAULT_EXTEND_QUEUE_WITH_SIMILAR_RELEASES,
+  DEFAULT_SQUARE_CORNERS,
   type StoredViewState,
 } from "src/types/userPreferences.types";
+import { applySquareCornersToDocument } from "src/utils/applySquareCornersToDocument";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import { clearPersistedFilters } from "src/utils/filtersStorage";
 import { toast } from "src/utils/toast";
@@ -219,6 +221,22 @@ export default function SettingsClient() {
     });
   };
 
+  const handleSquareCornersChange = (enabled: boolean) => {
+    applySquareCornersToDocument(enabled);
+    persistPreferences(
+      { squareCorners: enabled },
+      {
+        onSuccess: showPreferencesSavedToast,
+        onError: () => {
+          applySquareCornersToDocument(
+            preferences?.squareCorners ?? DEFAULT_SQUARE_CORNERS,
+          );
+          showPreferencesSaveErrorToast();
+        },
+      },
+    );
+  };
+
   const handleDefaultCollectionSidePanelChange = (
     panel: CollectionSidePanelPreference,
   ) => {
@@ -319,12 +337,14 @@ export default function SettingsClient() {
               preferences?.defaultCollectionSidePanel ??
               DEFAULT_COLLECTION_SIDE_PANEL
             }
+            squareCorners={preferences?.squareCorners ?? DEFAULT_SQUARE_CORNERS}
             isPreferencesLoading={isPreferencesLoading}
             isPreferencesSaving={isPreferencesSaving}
             onViewChange={handleViewChange}
             onDefaultCollectionSidePanelChange={
               handleDefaultCollectionSidePanelChange
             }
+            onSquareCornersChange={handleSquareCornersChange}
             onThemePersisted={showPreferencesSavedToast}
             onThemePersistError={showPreferencesSaveErrorToast}
           />

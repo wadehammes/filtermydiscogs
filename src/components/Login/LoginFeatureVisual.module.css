@@ -5,7 +5,7 @@
   aspect-ratio: 1;
   background: var(--muted);
   border: 2px solid var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   composes: theme-surface-elevated from global;
   margin: 0 auto;
   max-width: min(100%, 27.5rem);
