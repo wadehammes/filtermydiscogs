@@ -1,41 +1,20 @@
 import { useCallback, useRef, useState } from "react";
-import {
-  trackMosaicDownload,
-  trackMosaicError,
-} from "src/analytics/productAnalyticsEvents";
-import { calculateOptimalGrid, MOSAIC_CONSTANTS } from "src/constants/mosaic";
-import { reportMosaicFailureToSentry } from "src/lib/sentry/reportMosaicFailure";
+import { MOSAIC_CONSTANTS } from "src/constants/mosaic";
 import type { DiscogsRelease } from "src/types";
-import { getReleaseImageUrl } from "src/utils/helpers";
 import {
-  createOptimizedImageLoader,
+  generateMosaicImage,
+  type MosaicAspectRatioKey,
+} from "src/utils/generateMosaicImage";
+import {
   getCacheMemoryUsage,
   getCircuitBreakerStatus,
 } from "src/utils/imageLoader";
-
-// URL validation function
-function isValidImageUrl(url: string): boolean {
-  try {
-    const parsedUrl = new URL(url);
-    const hasValidProtocol = ["http:", "https:"].includes(parsedUrl.protocol);
-    const hasImageExtension = !!parsedUrl.pathname
-      .toLowerCase()
-      .match(/\.(jpg|jpeg|png|gif|webp)$/);
-    const isTrustedHost =
-      parsedUrl.hostname.includes("discogs") ||
-      parsedUrl.hostname.includes("amazon");
-
-    return hasValidProtocol && (hasImageExtension || isTrustedHost);
-  } catch {
-    return false;
-  }
-}
 
 interface UseMosaicGeneratorOptions {
   releases: DiscogsRelease[];
   imageFormat: "jpeg" | "png";
   imageQuality: number;
-  aspectRatio?: keyof typeof MOSAIC_CONSTANTS.ASPECT_RATIOS;
+  aspectRatio?: MosaicAspectRatioKey;
 }
 
 interface MosaicGenerationState {
@@ -96,9 +75,12 @@ export const useMosaicGenerator = ({
       return;
     }
 
-    // Create abort controller for cancellation
+    const isVeryLargeCollection =
+      releases.length > MOSAIC_CONSTANTS.MAX_RECOMMENDED_COLLECTION_SIZE;
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
+
     setState({
       isGenerating: true,
       generationProgress: 0,
@@ -108,7 +90,6 @@ export const useMosaicGenerator = ({
       successfulImages: 0,
     });
 
-    // Reset stats
     statsRef.current = {
       totalImages: releases.length,
       successfulImages: 0,
@@ -119,16 +100,7 @@ export const useMosaicGenerator = ({
       memoryUsage: getCacheMemoryUsage(),
     };
 
-    // Performance monitoring and warnings
-    const isLargeCollection =
-      releases.length > MOSAIC_CONSTANTS.LARGE_COLLECTION_THRESHOLD;
-    const isVeryLargeCollection =
-      releases.length > MOSAIC_CONSTANTS.MAX_RECOMMENDED_COLLECTION_SIZE;
-
     if (isVeryLargeCollection) {
-      console.warn(
-        `Very large collection detected (${releases.length} items). Performance may be degraded.`,
-      );
       setState((prev) => ({
         ...prev,
         error: `Warning: Very large collection (${releases.length} items) may cause performance issues. Consider using filters to reduce the number of items.`,
@@ -136,250 +108,53 @@ export const useMosaicGenerator = ({
     }
 
     try {
-      trackMosaicDownload(releases.length);
-
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        console.error("Failed to get canvas context");
-        return;
-      }
-
-      // Calculate optimal grid dimensions based on aspect ratio
-      const aspectRatioConfig = MOSAIC_CONSTANTS.ASPECT_RATIOS[aspectRatio];
-      const optimalGrid = calculateOptimalGrid(
-        releases.length,
-        aspectRatioConfig,
-      );
-
-      const { cols, cellSize, canvasWidth, canvasHeight } = optimalGrid;
-
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-
-      // Fill background
-      ctx.fillStyle = MOSAIC_CONSTANTS.CANVAS_BACKGROUND_COLOR;
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-      // Create optimized image loader
-      const imageLoader = createOptimizedImageLoader();
-
-      // Create a simplified image loading function using our proxy
-      const loadImageForCanvas = async (
-        release: DiscogsRelease,
-        index: number,
-      ): Promise<void> => {
-        // Check for cancellation
-        if (signal.aborted) {
-          throw new Error("Generation cancelled");
-        }
-
-        const col = index % cols;
-        const row = Math.floor(index / cols);
-        const x = col * cellSize;
-        const y = row * cellSize;
-
-        const originalImageUrl = getReleaseImageUrl({
-          thumb: release.basic_information.thumb,
-          cover_image: release.basic_information.cover_image,
-          width: cellSize,
-          height: cellSize,
-          preferCoverImage: releases.length <= 100,
-          fallbackToPlaceholder: false,
-        });
-
-        const drawPlaceholder = () => {
-          ctx.fillStyle = MOSAIC_CONSTANTS.PLACEHOLDER_COLOR;
-          ctx.fillRect(x, y, cellSize, cellSize);
-          ctx.strokeStyle = MOSAIC_CONSTANTS.PLACEHOLDER_BORDER_COLOR;
-          ctx.lineWidth = 1;
-          ctx.strokeRect(x, y, cellSize, cellSize);
-          ctx.fillStyle = MOSAIC_CONSTANTS.PLACEHOLDER_TEXT_COLOR;
-          ctx.font = `${cellSize * MOSAIC_CONSTANTS.PLACEHOLDER_FONT_RATIO}px Arial`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(
-            MOSAIC_CONSTANTS.PLACEHOLDER_SYMBOL,
-            x + cellSize / 2,
-            y + cellSize / 2,
-          );
-        };
-
-        if (!originalImageUrl) {
-          drawPlaceholder();
-          statsRef.current.failedImages++;
+      await generateMosaicImage(canvasRef.current, {
+        releases,
+        imageFormat,
+        imageQuality,
+        aspectRatio,
+        signal,
+        onProgress: (progress) => {
           setState((prev) => ({
             ...prev,
-            failedImages: prev.failedImages + 1,
+            generationProgress: progress,
+            error: null,
           }));
-          return;
-        }
-
-        if (!isValidImageUrl(originalImageUrl)) {
-          console.warn(
-            `Invalid image URL for ${release.basic_information.title}: ${originalImageUrl}`,
-          );
-          drawPlaceholder();
-          statsRef.current.failedImages++;
-          setState((prev) => ({
-            ...prev,
-            failedImages: prev.failedImages + 1,
-          }));
-          return;
-        }
-
-        try {
-          const result = await imageLoader({
-            url: originalImageUrl,
-            cellSize,
-            imageQuality,
-            imageFormat,
-          });
-
-          // Update stats
-          if (result.retryCount) {
-            statsRef.current.retryCount += result.retryCount;
-          }
-
-          if (result.success && result.image) {
-            ctx.drawImage(result.image, x, y, cellSize, cellSize);
+          statsRef.current.memoryUsage = getCacheMemoryUsage();
+        },
+        onImageResult: ({ successful }) => {
+          if (successful) {
             statsRef.current.successfulImages++;
             setState((prev) => ({
               ...prev,
               successfulImages: prev.successfulImages + 1,
             }));
           } else {
-            drawPlaceholder();
             statsRef.current.failedImages++;
             setState((prev) => ({
               ...prev,
               failedImages: prev.failedImages + 1,
             }));
           }
-        } catch (error) {
-          console.warn(
-            `Error loading image for ${release.basic_information.title}:`,
-            error,
-          );
-          drawPlaceholder();
-          statsRef.current.failedImages++;
-          setState((prev) => ({
-            ...prev,
-            failedImages: prev.failedImages + 1,
-          }));
-        }
-      };
-
-      // Process images in smaller batches for faster processing
-      // Adaptive batch sizing based on collection size
-      let batchSize: number = MOSAIC_CONSTANTS.BATCH_SIZE;
-      if (isLargeCollection) {
-        batchSize = Math.max(3, Math.floor(MOSAIC_CONSTANTS.BATCH_SIZE / 2)); // Smaller batches for large collections
-      }
-      if (isVeryLargeCollection) {
-        batchSize = Math.max(2, Math.floor(MOSAIC_CONSTANTS.BATCH_SIZE / 3)); // Even smaller batches
-      }
-
-      const totalBatches = Math.ceil(releases.length / batchSize);
-
-      for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-        // Check for cancellation before each batch
-        if (signal.aborted) {
-          throw new Error("Generation cancelled");
-        }
-
-        const startIndex = batchIndex * batchSize;
-        const endIndex = Math.min(startIndex + batchSize, releases.length);
-        const batch = releases.slice(startIndex, endIndex);
-
-        const batchPromises = batch.map((release, batchItemIndex) =>
-          loadImageForCanvas(release, startIndex + batchItemIndex),
-        );
-
-        try {
-          await Promise.all(batchPromises);
-
-          // Update progress with more granular tracking
-          const progress = Math.round(((batchIndex + 1) / totalBatches) * 100);
-
-          setState((prev) => ({
-            ...prev,
-            generationProgress: progress,
-            error: null, // Clear any previous errors on successful batch
-          }));
-
-          // Update memory usage stats
-          statsRef.current.memoryUsage = getCacheMemoryUsage();
-
-          // Small delay between batches to prevent overwhelming the server
-          if (batchIndex < totalBatches - 1) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, MOSAIC_CONSTANTS.BATCH_DELAY),
-            );
-          }
-        } catch (error) {
-          console.error(`Error in batch ${batchIndex + 1}:`, error);
-
-          // If it's a cancellation error, re-throw it
-          if (
-            error instanceof Error &&
-            error.message === "Generation cancelled"
-          ) {
-            throw error;
-          }
-
-          // For other errors, continue with next batch but track the error
-          setState((prev) => ({
-            ...prev,
-            error: `Batch ${batchIndex + 1} failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-          }));
-        }
-      }
-
-      // Add watermark footer
-      addWatermarkFooter(ctx, canvasWidth, canvasHeight);
-
-      // Use selected format and quality for optimal compression
-      const mimeType = imageFormat === "png" ? "image/png" : "image/jpeg";
-      const quality = imageFormat === "png" ? undefined : imageQuality / 100;
-      const fileExtension = imageFormat === "png" ? "png" : "jpg";
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `discogs-mosaic-${new Date().toISOString().split("T")[0]}.${fileExtension}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          } else {
-            console.error("Canvas toBlob returned null blob");
-          }
         },
-        mimeType,
-        quality,
-      );
+      });
     } catch (error) {
       console.error("Error generating mosaic:", error);
 
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
-      setState((prev) => ({
-        ...prev,
-        error: errorMessage,
-        isGenerating: false,
-      }));
 
-      trackMosaicError(errorMessage);
-      reportMosaicFailureToSentry(error, {
-        releaseCount: releases.length,
-        imageFormat,
-        imageQuality,
-        aspectRatio,
-      });
+      if (errorMessage === "Generation cancelled") {
+        setState((prev) => ({
+          ...prev,
+          isCancelled: true,
+        }));
+      } else {
+        setState((prev) => ({
+          ...prev,
+          error: errorMessage,
+        }));
+      }
     } finally {
       setState((prev) => ({
         ...prev,
@@ -397,38 +172,3 @@ export const useMosaicGenerator = ({
     stats: statsRef.current,
   };
 };
-
-// Watermark function
-function addWatermarkFooter(
-  ctx: CanvasRenderingContext2D,
-  canvasWidth: number,
-  canvasHeight: number,
-): void {
-  const watermarkText = "https://filtermydisco.gs/mosaic";
-  const fontSize = Math.max(12, canvasWidth * 0.015); // Responsive font size
-  const padding = 8;
-
-  // Set font properties
-  ctx.font = `${fontSize}px Arial, sans-serif`;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; // Semi-transparent white
-  ctx.textAlign = "right";
-  ctx.textBaseline = "bottom";
-
-  // Add subtle background for better readability
-  const textMetrics = ctx.measureText(watermarkText);
-  const textWidth = textMetrics.width;
-  const textHeight = fontSize;
-
-  // Draw background rectangle
-  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-  ctx.fillRect(
-    canvasWidth - textWidth - padding * 2,
-    canvasHeight - textHeight - padding,
-    textWidth + padding * 2,
-    textHeight + padding,
-  );
-
-  // Draw watermark text
-  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-  ctx.fillText(watermarkText, canvasWidth - padding, canvasHeight - padding);
-}

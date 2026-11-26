@@ -11,50 +11,32 @@ describe("PlaylistDrawerStats", () => {
     po = new PlaylistDrawerStatsPageObject();
   });
 
-  it("opens the stats panel from the footer Stats segment on desktop", async () => {
-    setupMockMatchMedia({ desktop: true });
-    const user = userEvent.setup({ pointerEventsCheck: 0 });
-    po.renderPlaylistDrawerStats();
+  it.each([
+    { label: "desktop", desktop: true },
+    { label: "mobile", desktop: false },
+  ])(
+    "opens the stats panel from the More menu on $label",
+    async ({ desktop }) => {
+      setupMockMatchMedia({ desktop });
+      const user = userEvent.setup({ pointerEventsCheck: 0 });
+      po.renderPlaylistDrawerStats();
 
-    const toggle = await screen.findByTestId(po.statsToggleTestId);
+      await user.click(screen.getByRole("button", { name: "More" }));
 
-    await waitFor(() => {
-      expect(toggle).toBeEnabled();
-    });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByRole("region", { name: "Playlist stats" })).toBeNull();
+      await waitFor(() => {
+        expect(
+          screen.getByRole("menuitem", { name: "Stats" }),
+        ).toBeInTheDocument();
+      });
 
-    await user.click(toggle);
+      await user.click(screen.getByRole("menuitem", { name: "Stats" }));
 
-    await waitFor(() => {
-      expect(toggle).toHaveAttribute("aria-expanded", "true");
-      expect(
-        screen.getByRole("region", { name: "Playlist stats" }),
-      ).toBeInTheDocument();
-    });
-    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
-  });
-
-  it("opens the stats panel from the mobile footer actions menu", async () => {
-    setupMockMatchMedia({ desktop: false });
-    const user = userEvent.setup({ pointerEventsCheck: 0 });
-    po.renderPlaylistDrawerStats();
-
-    await user.click(screen.getByRole("button", { name: "More" }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByRole("menuitem", { name: "Stats" }),
-      ).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByRole("menuitem", { name: "Stats" }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByRole("region", { name: "Playlist stats" }),
-      ).toBeInTheDocument();
-    });
-    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
-  });
+      await waitFor(() => {
+        expect(
+          screen.getByRole("region", { name: "Playlist stats" }),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+    },
+  );
 });

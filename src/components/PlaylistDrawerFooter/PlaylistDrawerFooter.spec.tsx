@@ -11,13 +11,13 @@ describe("PlaylistDrawerFooter", () => {
     po = new PlaylistDrawerFooterPageObject();
   });
 
-  it("opens the rename dialog from the edit menu on desktop", async () => {
+  it("opens the rename dialog from the More menu on desktop", async () => {
     setupMockMatchMedia({ desktop: true });
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     const playlist = po.mockActivePlaylist();
     po.renderPlaylistDrawerFooter(playlist.id);
 
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: "More" }));
     await waitFor(() => {
       expect(
         screen.getByRole("menuitem", { name: "Rename" }),
@@ -50,13 +50,13 @@ describe("PlaylistDrawerFooter", () => {
     expect(screen.getByTestId(po.renameDialogTestId)).toBeInTheDocument();
   });
 
-  it("opens the delete confirm dialog from the edit menu on desktop", async () => {
+  it("opens the delete confirm dialog from the More menu on desktop", async () => {
     setupMockMatchMedia({ desktop: true });
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     const playlist = po.mockActivePlaylist();
     po.renderPlaylistDrawerFooter(playlist.id);
 
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: "More" }));
     await waitFor(() => {
       expect(
         screen.getByRole("menuitem", { name: "Delete" }),

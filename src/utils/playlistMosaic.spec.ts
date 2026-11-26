@@ -4,6 +4,7 @@ import {
   buildPlaylistMosaicThumbUrls,
   PLAYLIST_HERO_MOSAIC_MAX_TILES,
   uniqueInstanceIdsInPlaylistOrder,
+  uniquePlaylistReleasesInOrder,
 } from "src/utils/playlistMosaic";
 
 describe("uniqueInstanceIdsInPlaylistOrder", () => {
@@ -16,6 +17,29 @@ describe("uniqueInstanceIdsInPlaylistOrder", () => {
     ];
 
     expect(uniqueInstanceIdsInPlaylistOrder(tracks)).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("uniquePlaylistReleasesInOrder", () => {
+  it("when some tracks lack collection releases, returns only resolved unique releases in order", () => {
+    const releaseA = releaseFactory.build({ instance_id: "inst-a" });
+    const releaseB = releaseFactory.build({ instance_id: "inst-b" });
+    const tracks = [
+      playlistTrackRowFactory.build({ instance_id: "inst-a" }),
+      playlistTrackRowFactory.build({ instance_id: "inst-missing" }),
+      playlistTrackRowFactory.build({ instance_id: "inst-b" }),
+      playlistTrackRowFactory.build({ instance_id: "inst-a" }),
+    ];
+
+    const releases = uniquePlaylistReleasesInOrder(
+      tracks,
+      new Map([
+        ["inst-a", releaseA],
+        ["inst-b", releaseB],
+      ]),
+    );
+
+    expect(releases).toEqual([releaseA, releaseB]);
   });
 });
 

@@ -20,18 +20,26 @@ describe("CrateDrawerDialogs", () => {
     setupCrateDrawerTests(mockApi);
   });
 
-  it("opens the empty crate confirm dialog from the footer", async () => {
+  it("opens the empty crate confirm dialog from the footer More menu", async () => {
     mockApi.crate.mockResolvedValue(crateDrawerPartiallyPackedResponse);
 
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
 
     renderCrateDrawerTree(<CrateDrawerFooter />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /^empty$/i })).toBeEnabled();
+      expect(screen.getByRole("button", { name: /^more$/i })).toBeEnabled();
     });
 
-    await user.click(screen.getByRole("button", { name: /^empty$/i }));
+    await user.click(screen.getByRole("button", { name: /^more$/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("menuitem", { name: /^empty$/i }),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("menuitem", { name: /^empty$/i }));
 
     const dialog = screen.getByRole("dialog");
     expect(dialog).toContainOneByRole("heading", { name: "Empty Crate" });

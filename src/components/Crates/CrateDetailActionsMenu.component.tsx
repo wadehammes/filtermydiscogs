@@ -7,6 +7,7 @@ import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.co
 import { CrateShareControls } from "src/components/CrateShareControls/CrateShareControls.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
 import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
+import { MosaicExportMenuSubmenu } from "src/components/MosaicExportMenu/MosaicExportMenuSubmenu.component";
 import EditIcon from "src/styles/icons/edit-thin.svg";
 import MenuIcon from "src/styles/icons/menu-thin.svg";
 import StarIcon from "src/styles/icons/star-thin.svg";
@@ -30,6 +31,8 @@ export const CrateDetailActionsMenu = ({
     setShowDeleteDialog,
     setShowEditCrateDialog,
     setShowMakeDefaultDialog,
+    selectedReleases,
+    crateName,
   } = useCrateDrawerContext();
 
   const isBusy = isUpdatingCrate || isDeletingCrate;
@@ -102,6 +105,12 @@ export const CrateDetailActionsMenu = ({
                 </span>
               </InlinePopoverMenu.Item>
             ) : null}
+            <MosaicExportMenuSubmenu
+              releases={selectedReleases}
+              disabled={isBusy}
+              fileNamePrefix={crateName}
+              onAfterExport={closeMenu}
+            />
           </InlinePopoverMenu.List>
           <InlinePopoverMenu.Footer>
             <InlinePopoverMenu.ItemDanger

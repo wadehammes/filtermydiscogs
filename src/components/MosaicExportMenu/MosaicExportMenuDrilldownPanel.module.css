@@ -1,0 +1,48 @@
+.submenuHeading {
+  padding-inline: var(--space-3);
+}
+
+.viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.track {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  transition: transform 0.2s ease;
+  width: 200%;
+
+  &[data-page="format"] {
+    transform: translateX(0);
+  }
+
+  &[data-page="aspect"] {
+    transform: translateX(-50%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.page {
+  min-width: 0;
+}
+
+.formatLabel {
+  flex: 1;
+  text-align: left;
+}
+
+.rowChevron {
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+  height: 1rem;
+  width: 1rem;
+}
+
+.backItem {
+  color: var(--muted-foreground);
+}

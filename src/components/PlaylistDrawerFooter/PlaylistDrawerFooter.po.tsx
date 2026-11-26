@@ -20,7 +20,6 @@ const playlistsApiError = new Error("Playlists API request failed");
 
 export class PlaylistDrawerFooterPageObject extends BasePageObject {
   public testId = "fmdPlaylistDrawerFooter";
-  public editMenuTestId = "fmdPlaylistDrawerEditMenu";
   public renameDialogTestId = "fmdCreatePlaylistDialog";
 
   constructor(props: BasePageObjectProps = {}) {
