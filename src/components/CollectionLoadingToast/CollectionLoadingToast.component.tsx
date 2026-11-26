@@ -9,6 +9,7 @@ import {
 import { isLargeCollection } from "src/constants/collection";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
+import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 
 const CollectionLoadingToastInner = () => {
