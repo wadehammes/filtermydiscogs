@@ -1,5 +1,6 @@
 export const DISCOGS_THROTTLE_CALLERS = {
   publicPlaylistHydrate: "public_playlist_hydrate",
+  apiCollection: "api_collection",
   apiRelease: "api_release",
   apiReleaseBatch: "api_release_batch",
   publicReleasePage: "public_release_page",

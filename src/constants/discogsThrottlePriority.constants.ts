@@ -12,8 +12,8 @@ export type DiscogsThrottlePriority =
   keyof typeof DISCOGS_THROTTLE_PRIORITY_VALUES;
 
 const INTERACTIVE_DISCOGS_THROTTLE_CALLERS = new Set<DiscogsThrottleCaller>([
+  DISCOGS_THROTTLE_CALLERS.apiCollection,
   DISCOGS_THROTTLE_CALLERS.apiRelease,
-  DISCOGS_THROTTLE_CALLERS.apiReleaseBatch,
   DISCOGS_THROTTLE_CALLERS.publicReleasePage,
 ]);
 

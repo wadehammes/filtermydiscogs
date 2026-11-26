@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { COLLECTION_PAGE_SIZE } from "src/constants/collection";
+import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import { requireReadOnlyDiscogsUser } from "src/lib/auth-request";
 import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
+import { runWithDiscogsThrottleCaller } from "src/lib/discogs-throttle-caller";
 import { isValidDiscogsUsername } from "src/lib/discogs-username";
 import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { discogsOAuthService } from "src/services/discogs-oauth.service";
 
-// Valid sort values from Discogs API
 const VALID_SORT_VALUES = [
   "added",
   "artist",
@@ -28,7 +29,6 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort") || "added";
     const sortOrder = searchParams.get("sort_order") || "desc";
 
-    // Validate username
     if (!username) {
       return NextResponse.json(
         { error: "Username is required" },
@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate and sanitize page parameter
     const page = Math.max(1, Math.min(1000, parseInt(pageParam || "1", 10)));
     if (Number.isNaN(page) || page < 1) {
       return NextResponse.json(
@@ -52,7 +51,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate and sanitize perPage parameter (Discogs allows 1-100)
     const perPage = Math.max(
       1,
       Math.min(
@@ -69,7 +67,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate sort parameter
     if (
       !VALID_SORT_VALUES.includes(sort as (typeof VALID_SORT_VALUES)[number])
     ) {
@@ -81,7 +78,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate sortOrder parameter
     if (
       !VALID_SORT_ORDERS.includes(
         sortOrder as (typeof VALID_SORT_ORDERS)[number],
@@ -97,14 +93,18 @@ export async function GET(request: NextRequest) {
       return session.error;
     }
 
-    const collection = await discogsOAuthService.getCollection(
-      session.user.username,
-      session.accessToken,
-      session.accessTokenSecret,
-      page,
-      perPage,
-      sort,
-      sortOrder,
+    const collection = await runWithDiscogsThrottleCaller(
+      DISCOGS_THROTTLE_CALLERS.apiCollection,
+      () =>
+        discogsOAuthService.getCollection(
+          session.user.username,
+          session.accessToken,
+          session.accessTokenSecret,
+          page,
+          perPage,
+          sort,
+          sortOrder,
+        ),
     );
 
     return NextResponse.json(collection, {
