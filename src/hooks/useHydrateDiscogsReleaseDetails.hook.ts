@@ -5,6 +5,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useMemo } from "react";
+import {
+  discogsTransientProxyRetryDelay,
+  discogsTransientProxyShouldRetry,
+} from "src/api/apiFetchError";
 import { DiscogsReleaseBatchQueryKeys } from "src/hooks/queries/querykeys.constants";
 import {
   DISCOGS_RELEASE_DETAIL_GC_MS,
@@ -35,6 +39,8 @@ export const hydrateDiscogsReleaseDetailsQueryOptions = (
     },
     staleTime: DISCOGS_RELEASE_DETAIL_STALE_MS,
     gcTime: DISCOGS_RELEASE_DETAIL_GC_MS,
+    retry: discogsTransientProxyShouldRetry,
+    retryDelay: discogsTransientProxyRetryDelay,
   });
 };
 

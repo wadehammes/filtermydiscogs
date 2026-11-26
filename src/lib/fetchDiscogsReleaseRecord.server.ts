@@ -11,6 +11,7 @@ export interface FetchDiscogsReleaseRecordParams {
   accessToken?: string | undefined;
   accessTokenSecret?: string | undefined;
   throttleCaller?: DiscogsThrottleCaller | undefined;
+  skipDiscogsThrottle?: boolean | undefined;
 }
 
 const fetchDiscogsReleaseRecordInner = async ({
@@ -18,18 +19,28 @@ const fetchDiscogsReleaseRecordInner = async ({
   useAuthenticatedSession,
   accessToken,
   accessTokenSecret,
+  skipDiscogsThrottle,
 }: Omit<
   FetchDiscogsReleaseRecordParams,
   "throttleCaller"
 >): Promise<unknown> => {
   if (useAuthenticatedSession && accessToken && accessTokenSecret) {
     try {
-      return await discogsOAuthService.makeAuthenticatedRequest(
-        releaseUrl,
-        "GET",
-        accessToken,
-        accessTokenSecret,
-      );
+      return skipDiscogsThrottle
+        ? await discogsOAuthService.makeAuthenticatedRequest(
+            releaseUrl,
+            "GET",
+            accessToken,
+            accessTokenSecret,
+            {},
+            { skipThrottle: true },
+          )
+        : await discogsOAuthService.makeAuthenticatedRequest(
+            releaseUrl,
+            "GET",
+            accessToken,
+            accessTokenSecret,
+          );
     } catch (error) {
       if (getDiscogsApiErrorStatus(error) !== 404) {
         throw error;
@@ -37,7 +48,11 @@ const fetchDiscogsReleaseRecordInner = async ({
     }
   }
 
-  return discogsOAuthService.makeConsumerRequest(releaseUrl, "GET");
+  return skipDiscogsThrottle
+    ? discogsOAuthService.makeConsumerRequest(releaseUrl, "GET", {
+        skipThrottle: true,
+      })
+    : discogsOAuthService.makeConsumerRequest(releaseUrl, "GET");
 };
 
 export const fetchDiscogsReleaseRecord = async (

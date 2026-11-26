@@ -9,7 +9,8 @@ export const COLLECTION_RATING_MIN = 1;
 export const COLLECTION_RATING_MAX = 5;
 export const SIMILAR_RELEASES_LIMIT = 8;
 export const RELEASE_MODAL_SIMILAR_LIMIT = 50;
-export const RELEASE_BATCH_MAX_IDS = 25;
+export const RELEASE_BATCH_MAX_IDS = 12;
+export const RELEASE_BATCH_MAX_DURATION_MS = 90_000;
 
 export const isLargeCollection = (totalItems: number): boolean => {
   return totalItems > COLLECTION_LARGE_MIN_ITEMS;

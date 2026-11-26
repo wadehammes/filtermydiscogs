@@ -90,6 +90,40 @@ describe("discogsReleaseBatchCache", () => {
     );
   });
 
+  it("when a batch response omits some ids, requests the remaining uncached ids", async () => {
+    const detailA = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 249504,
+    });
+    const detailB = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 900002,
+    });
+
+    jest
+      .mocked(api.discogsReleaseBatch)
+      .mockResolvedValueOnce({ "249504": detailA })
+      .mockResolvedValueOnce({ "900002": detailB });
+
+    await fetchDiscogsReleaseDetailsIntoCache(queryClient, [
+      "249504",
+      "900002",
+    ]);
+
+    expect(api.discogsReleaseBatch).toHaveBeenCalledTimes(2);
+    expect(api.discogsReleaseBatch).toHaveBeenNthCalledWith(1, [
+      "249504",
+      "900002",
+    ]);
+    expect(api.discogsReleaseBatch).toHaveBeenNthCalledWith(2, ["900002"]);
+    expect(
+      readDiscogsReleaseDetailsFromCache(queryClient, ["249504", "900002"]),
+    ).toEqual(
+      new Map([
+        ["249504", detailA],
+        ["900002", detailB],
+      ]),
+    );
+  });
+
   it("when all ids are cached, fetchDiscogsReleaseDetailsIntoCache skips the batch API", async () => {
     const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
       id: 249504,

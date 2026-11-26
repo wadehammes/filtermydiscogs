@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { QueryClient } from "@tanstack/react-query";
+import { ApiFetchError } from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import { discogsReleaseQueryOptions } from "src/hooks/queries/useDiscogsReleaseQuery";
 import { useHydrateDiscogsReleaseDetails } from "src/hooks/useHydrateDiscogsReleaseDetails.hook";
@@ -72,6 +73,35 @@ describe("useHydrateDiscogsReleaseDetails", () => {
     });
 
     expect(mockApi.discogsReleaseBatch).not.toHaveBeenCalled();
+  });
+
+  it("when batch hydrate returns transient 503, retries and loads release details", async () => {
+    jest.useFakeTimers();
+
+    const detail = discogsReleaseJsonFactory.withTracklistAndVideos({
+      id: 249504,
+    });
+
+    jest
+      .mocked(mockApi.discogsReleaseBatch)
+      .mockRejectedValueOnce(new ApiFetchError(503, undefined, 100))
+      .mockResolvedValueOnce({ "249504": detail });
+
+    const { result } = renderFeatureHook(() =>
+      useHydrateDiscogsReleaseDetails({
+        releaseIds: ["249504"],
+        enabled: true,
+      }),
+    );
+
+    await jest.advanceTimersByTimeAsync(100);
+
+    await waitFor(() => {
+      expect(result.current.data?.get("249504")?.id).toBe(249504);
+    });
+
+    expect(mockApi.discogsReleaseBatch).toHaveBeenCalledTimes(2);
+    jest.useRealTimers();
   });
 
   it("when releaseIds array identity changes but normalized ids match, does not start another batch fetch", async () => {

@@ -50,7 +50,7 @@
 
 ### `POST /api/release/batch` for client hydrate
 
-**Decision:** Accept up to [`RELEASE_BATCH_MAX_IDS`](../../../src/constants/collection.ts) (25) ids; return a map of details; client writes React Query cache per id.
+**Decision:** Accept up to [`RELEASE_BATCH_MAX_IDS`](../../../src/constants/collection.ts) (12) ids; return a map of details (partial when the server batch duration cap hits); client writes React Query cache per id and retries transient **503** / **429**.
 
 **Why:** One round trip per chunk instead of N release routes; cache shared by modal and playlist rows.
 

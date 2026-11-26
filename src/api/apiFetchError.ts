@@ -25,6 +25,8 @@ export const parseRetryAfterMs = (response: Response): number | undefined => {
   return undefined;
 };
 
+export const DISCOGS_TRANSIENT_PROXY_MAX_RETRIES = 3;
+
 export const isTransientRateLimitError = (
   error: unknown,
 ): error is ApiFetchError => {
@@ -33,6 +35,18 @@ export const isTransientRateLimitError = (
     (error.status === 502 || error.status === 503 || error.status === 429)
   );
 };
+
+export const discogsTransientProxyShouldRetry = (
+  failureCount: number,
+  error: unknown,
+): boolean =>
+  isTransientRateLimitError(error) &&
+  failureCount < DISCOGS_TRANSIENT_PROXY_MAX_RETRIES;
+
+export const discogsTransientProxyRetryDelay = (
+  attemptIndex: number,
+  error: unknown,
+): number => getRateLimitedRetryDelayMs(error, attemptIndex);
 
 export const isDiscogsUpstreamOutageApiError = (
   error: unknown,
