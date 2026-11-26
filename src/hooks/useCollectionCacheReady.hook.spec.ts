@@ -88,7 +88,7 @@ describe("useCollectionCacheReady", () => {
     expect(result.current.ready).toBe(true);
   });
 
-  it("does not mark hydratedFromCache when validation fails", async () => {
+  it("marks hydratedFromCache when disk data exists even if background validation will fail", async () => {
     const page = collectionFactory.build(
       {},
       { totalItems: 1500, totalPages: 15 },
@@ -119,7 +119,7 @@ describe("useCollectionCacheReady", () => {
       expect(result.current.ready).toBe(true);
     });
 
-    expect(result.current.hydratedFromCache).toBe(false);
+    expect(result.current.hydratedFromCache).toBe(true);
   });
 
   it("shares ready state across hook instances for the same username", async () => {
