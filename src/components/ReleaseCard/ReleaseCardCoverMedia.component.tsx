@@ -1,8 +1,11 @@
+"use client";
+
 import classNames from "classnames";
 import Image from "next/image";
-import type { CSSProperties } from "react";
+import { type CSSProperties, useCallback, useState } from "react";
 import skeletonPulseStyles from "src/styles/modules/skeleton-pulse.module.css";
 import { hasReleaseCoverImageUrl } from "src/utils/releaseAlbumCover";
+import styles from "./ReleaseCardCoverMedia.module.css";
 
 type ReleaseCardCoverMediaProps = {
   thumbUrl: string;
@@ -25,6 +28,11 @@ export const ReleaseCardCoverMedia = ({
   imageStyle,
   sizes,
 }: ReleaseCardCoverMediaProps) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const handleLoad = useCallback(() => {
+    setIsLoaded(true);
+  }, []);
+
   if (!hasReleaseCoverImageUrl(thumbUrl)) {
     return (
       <span
@@ -38,19 +46,36 @@ export const ReleaseCardCoverMedia = ({
   }
 
   return (
-    <Image
-      key={thumbUrl}
-      src={thumbUrl}
-      height={sizePx}
-      width={sizePx}
-      quality={85}
-      alt={title}
-      {...(priority
-        ? { priority: true, loading: "eager" as const }
-        : { loading: "lazy" as const })}
-      {...(imageClassName ? { className: imageClassName } : {})}
-      {...(imageStyle ? { style: imageStyle } : {})}
-      sizes={sizes}
-    />
+    <span className={styles.mediaFrame}>
+      {!isLoaded ? (
+        <span
+          className={classNames(
+            skeletonPulseStyles.pulsesurface,
+            placeholderClassName,
+            styles.coverPlaceholderLayer,
+          )}
+          aria-hidden
+        />
+      ) : null}
+      <Image
+        key={thumbUrl}
+        src={thumbUrl}
+        height={sizePx}
+        width={sizePx}
+        quality={85}
+        alt={title}
+        onLoad={handleLoad}
+        {...(priority
+          ? { priority: true, loading: "eager" as const }
+          : { loading: "lazy" as const })}
+        className={classNames(
+          styles.coverImage,
+          imageClassName,
+          isLoaded ? styles.loaded : undefined,
+        )}
+        {...(imageStyle ? { style: imageStyle } : {})}
+        sizes={sizes}
+      />
+    </span>
   );
 };

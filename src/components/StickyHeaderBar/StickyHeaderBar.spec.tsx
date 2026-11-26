@@ -64,10 +64,28 @@ describe("StickyHeaderBar", () => {
   });
 
   it("renders the filters skeleton while releases are still loading", () => {
-    po.renderStickyHeaderBar({ allReleasesLoaded: false });
+    render(
+      <FetchingCollectionHarness>
+        <StickyHeaderBar
+          allReleasesLoaded={false}
+          part="filters"
+          currentPage="releases"
+        />
+      </FetchingCollectionHarness>,
+      { authInitialState: testAuthenticatedAuthState },
+    );
 
     expect(screen.getByTestId(po.filtersSkeletonTestId)).toBeInTheDocument();
     expect(screen.queryByTestId(po.searchBarTestId)).not.toBeInTheDocument();
+  });
+
+  it("renders the filters bar while pagination continues when collection metadata exists", () => {
+    po.renderStickyHeaderBar({ allReleasesLoaded: false, part: "filters" });
+
+    expect(screen.getByTestId(po.searchBarTestId)).toBeInTheDocument();
+    expect(
+      screen.queryByTestId(po.filtersSkeletonTestId),
+    ).not.toBeInTheDocument();
   });
 
   it("renders the filters skeleton when pages are loaded but collection metadata is still fetching", () => {

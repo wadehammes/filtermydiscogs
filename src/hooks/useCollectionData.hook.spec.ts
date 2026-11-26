@@ -254,7 +254,7 @@ describe("useCollectionData", () => {
 
     await waitFor(() => {
       expect(result.current.releaseCount).toBe(4);
-      expect(result.current.fetchingCollection).toBe(true);
+      expect(result.current.fetchingCollection).toBe(false);
       expect(result.current.isLoading).toBe(true);
       expect(result.current.error).toBeNull();
     });

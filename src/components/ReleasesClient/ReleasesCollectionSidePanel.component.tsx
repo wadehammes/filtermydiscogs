@@ -3,6 +3,7 @@
 import { Activity } from "react";
 import { CrateDrawer } from "src/components/CrateDrawer/CrateDrawer.component";
 import { PlaylistDrawer } from "src/components/PlaylistDrawer/PlaylistDrawer.component";
+import { CollectionSidePanelPlaceholder } from "src/components/ReleasesClient/CollectionSidePanelPlaceholder.component";
 import type { CollectionSidePanelMode } from "src/hooks/useCrateDrawer.hook";
 
 interface ReleasesCollectionSidePanelProps {
@@ -21,11 +22,8 @@ interface ReleasesCollectionSidePanelProps {
 export const showCollectionSideColumn = ({
   isDrawerOpen,
   isClient,
-  isSidePanelDefaultPending,
-}: Pick<
-  ReleasesCollectionSidePanelProps,
-  "isDrawerOpen" | "isClient" | "isSidePanelDefaultPending"
->) => isDrawerOpen && isClient && !isSidePanelDefaultPending;
+}: Pick<ReleasesCollectionSidePanelProps, "isDrawerOpen" | "isClient">) =>
+  isDrawerOpen && isClient;
 
 export const ReleasesCollectionSidePanel = ({
   isClient,
@@ -43,9 +41,17 @@ export const ReleasesCollectionSidePanel = ({
     return null;
   }
 
+  if (isSidePanelDefaultPending) {
+    return (
+      <Activity mode={isDrawerOpen ? "visible" : "hidden"}>
+        <CollectionSidePanelPlaceholder />
+      </Activity>
+    );
+  }
+
   let drawer = null;
 
-  if (!isSidePanelDefaultPending && sidePanel === "crates") {
+  if (sidePanel === "crates") {
     drawer = (
       <CrateDrawer
         isOpen={isDrawerOpen}
@@ -53,7 +59,7 @@ export const ReleasesCollectionSidePanel = ({
         aboveMiniPlayer={aboveMiniPlayer}
       />
     );
-  } else if (!isSidePanelDefaultPending) {
+  } else {
     drawer = (
       <PlaylistDrawer
         isOpen={isDrawerOpen}

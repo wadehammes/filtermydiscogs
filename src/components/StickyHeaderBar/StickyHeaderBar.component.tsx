@@ -25,18 +25,12 @@ export const StickyHeaderBar = ({
   const { state: collectionState } = useCollectionContext();
   const { fetchingCollection, collection, error } = collectionState;
 
-  const isCollectionReady = !(fetchingCollection || error);
   const hasCollection = Boolean(collection);
-  const hasValidCollection = isCollectionReady && hasCollection;
-  const shouldShowFiltersSkeleton = !(
-    hideFilters ||
-    (allReleasesLoaded && isCollectionReady)
-  );
+  const shouldShowFiltersSkeleton =
+    !(hideFilters || hasCollection) &&
+    (fetchingCollection || !allReleasesLoaded);
   const shouldShowFilters =
-    !hideFilters &&
-    hasValidCollection &&
-    allReleasesLoaded &&
-    !shouldShowFiltersSkeleton;
+    !hideFilters && hasCollection && !error && !shouldShowFiltersSkeleton;
 
   if (part === "filters") {
     return (

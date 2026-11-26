@@ -265,6 +265,10 @@ export const useCollectionData = ({
         dispatchFetchingCollection(false);
         dispatchDiscogsUpstreamOutage(false);
         setCollectionFiltersActive(true);
+      } else if (allReleases.length > 0) {
+        dispatchFetchingCollection(false);
+        dispatchDiscogsUpstreamOutage(false);
+        setCollectionFiltersActive(true);
       } else {
         dispatchFetchingCollection(true);
         setCollectionFiltersActive(false);

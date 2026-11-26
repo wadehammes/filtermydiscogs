@@ -75,7 +75,6 @@ const ReleasesClientContent = () => {
   const showSidePanel = showCollectionSideColumn({
     isDrawerOpen,
     isClient,
-    isSidePanelDefaultPending,
   });
   const activeCrate = crates.find((c) => c.id === activeCrateId);
   const crateName = activeCrate?.name;
