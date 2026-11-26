@@ -65,14 +65,4 @@ Choose **which markdown file to read first**. Paths below are relative to **`doc
 | Cursor hooks, rules, skills, MCP; Zed `.zed/settings.json`                                     | [platform.md](platform.md) (Cursor (agents), TypeScript bullet) + [`.cursor/skills/README.md`](../../.cursor/skills/README.md) + [`.cursor/hooks/README.md`](../../.cursor/hooks/README.md)                                                        |
 | Where a file category lives under `src/`                                                       | [source-layout.md](source-layout.md)                                                                                                                                                                                                               |
 
-## Outside this folder
-
-| Task                                                | Location                                   |
-| --------------------------------------------------- | ------------------------------------------ |
-| Install Node/pnpm, Discogs app, database, first run | Repo root **[README.md](../../README.md)** |
-
-## Suggested instruction blurb (copy-paste)
-
-```text
-Before any work, read docs/handbook/non-negotiables.md, then only the matching rows in docs/handbook/llms.md (do not load the whole handbook). When unsure which pattern to use, read docs/handbook/decisions.md first. Follow documented patterns. When your change affects behavior, setup, or conventions, update the relevant docs/handbook/*.md in the same PR or an immediate follow-up so the handbook stays accurate. When user-facing features, routes, setup, or tech stack listed in the root README change, update README.md too. For reviews, use git diff -U20 from the merge base; open full files only when the diff is not enough.
-```
+**Session load:** agents use **table rows only** (not this intro or other sections). Setup lives in the root [README.md](../../README.md). Copy-paste blurb: [agent-workflow.md](agent-workflow.md).

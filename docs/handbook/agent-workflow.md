@@ -64,7 +64,9 @@ Same patterns as rhythm-app’s frontend handbook (compact digest, thin routing,
 
 | Do | Avoid |
 | -- | ----- |
-| [non-negotiables.md](non-negotiables.md) + targeted **llms.md** rows | Pasting or re-reading entire **conventions.md** / **patterns.md** when a section link suffices |
+| [non-negotiables.md](non-negotiables.md) + targeted **llms.md** table rows (not the whole file) | Pasting entire **conventions.md** / **patterns.md** when one section link suffices |
+
+**Token budgets (CI):** `handbookTokenBudgets.spec.ts` in `pnpm handbook:audit`. Aspirational target ~2k for `AGENTS.md` + `llms.md` table rows (enforced with headroom until the routing table is shortened); ~1.5k per handbook page with **grandfathered** mega-chapters until topical splits land.
 | **Grep** / **Glob** to find symbols, then open one file | Broad directory reads and huge file dumps into the thread |
 | **`git diff -U20 $(git merge-base HEAD <base>) -- path`** for review | Whole-file reads when the diff is enough ([handbook-review](../../.cursor/commands/handbook-review.md)) |
 | **`st view --json`**, short **`git log parent..HEAD`** for stack scope | Full **`git log`**, repeating **`st view`** every turn |
