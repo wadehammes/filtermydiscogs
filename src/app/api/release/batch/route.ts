@@ -2,12 +2,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { DISCOGS_THROTTLE_CALLERS } from "src/constants/discogsThrottleCaller.constants";
 import { getReadOnlyVerifiedUserFromRequest } from "src/lib/auth-request";
 import { buildDiscogsProxyErrorPayload } from "src/lib/discogs-api-error";
-import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { fetchDiscogsReleaseRecordsSequential } from "src/lib/fetchDiscogsReleaseRecordsSequential.server";
 import {
   DISCOGS_RELEASE_PROXY_RATE_LIMIT_CONFIG,
   getIpRateLimitResponse,
 } from "src/lib/ip-rate-limit";
+import { rethrowNextInternalError } from "src/lib/rethrowNextInternalError";
 import { parseRequestBody } from "src/lib/validation/parseRequestBody";
 import { releaseBatchBodySchema } from "src/lib/validation/release.schemas";
 

@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest, NextResponse } from "next/server";
 import { POST } from "src/app/api/release/batch/route";
 import { DISCOGS_SESSION_COOKIE } from "src/lib/auth-request";
-import { discogsOAuthService } from "src/services/discogs-oauth.service";
 import { DiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
+import { discogsOAuthService } from "src/services/discogs-oauth.service";
 import { discogsIdentityFactory } from "src/tests/factories/DiscogsIdentity.factory";
 import { discogsReleaseJsonFactory } from "src/tests/factories/DiscogsReleaseJson.factory";
 

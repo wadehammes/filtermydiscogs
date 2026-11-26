@@ -2,11 +2,11 @@ import "server-only";
 
 import { RELEASE_BATCH_MAX_DURATION_MS } from "src/constants/collection";
 import type { DiscogsThrottleCaller } from "src/constants/discogsThrottleCaller.constants";
-import { runWithDiscogsThrottleCaller } from "src/lib/discogs-throttle-caller";
 import {
   runPacedDiscogsRequestInActiveSlot,
   runThrottledDiscogsRequest,
 } from "src/lib/discogs-request-throttle";
+import { runWithDiscogsThrottleCaller } from "src/lib/discogs-throttle-caller";
 import { isDiscogsThrottleQueueError } from "src/lib/discogsThrottleQueueError";
 import { fetchDiscogsReleaseRecord } from "src/lib/fetchDiscogsReleaseRecord.server";
 import type { DiscogsReleaseDetail } from "src/types/discogs-release-detail.types";
