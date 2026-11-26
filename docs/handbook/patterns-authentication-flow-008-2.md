@@ -1,0 +1,4 @@
+4. **Logout**: **`POST /api/auth/logout`** ends the app session and clears display cookies by default while **preserving OAuth tokens** for quick re-login on the same browser. Pass **`?preserve_tokens=false`** to revoke stored tokens. Server also clears the in-memory Discogs avatar cache ([`clearCachedUserAvatarUrl`](../../src/lib/user-profile-cache.ts)) for the session **`discogs_user_id`**. Client calls **`toast.dismiss()`** (both toast viewports) before the request, sets the auth query to unauthenticated (including **`avatarUrl: null`**), runs **`clearUserScopedQueries`**, and shows **`LogoutOverlay`**. **Delete account** (Settings, About, Legal) deletes the user's **`User`** row (cascades crates and **`user_tracks`**) and wipes OAuth tokens.
+
+Cookie names and security flags: [discogs.md](discogs.md).
+

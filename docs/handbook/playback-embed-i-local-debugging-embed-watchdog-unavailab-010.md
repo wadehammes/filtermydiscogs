@@ -1,0 +1,4 @@
+## Local debugging (embed watchdog / unavailable skip)
+
+In the browser console on **`localhost`** / preview: set **`localStorage.setItem("fmd_debug_playback_embed", "1")`** and reload. The client logs prefixed **`[fmd playback embed]`** when the embed-start watchdog arms, **defer**/**rearm**/**sync-probe**/finish paths run, **`onError`**-driven skips are considered, and unavailable-skip **`handleFailure`** appends (or is blocked / deduped). Clear with **`localStorage.removeItem("fmd_debug_playback_embed")`**. Implementation: [`playbackEmbedWatchdogDebug.ts`](../../src/utils/playbackEmbedWatchdogDebug.ts), wired from [`useReleasePlaybackProvider.hook.ts`](../../src/hooks/useReleasePlaybackProvider.hook.ts) and [`playbackEmbedUnavailableSkip.ts`](../../src/utils/playbackEmbedUnavailableSkip.ts).
+

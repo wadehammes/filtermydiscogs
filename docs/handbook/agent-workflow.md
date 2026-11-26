@@ -15,9 +15,9 @@ Unfamiliar with the repo? Skim the [README.md](README.md) index for orientation 
 
 | Concern | Handbook |
 | ------- | -------- |
-| Branches / PRs | [conventions.md → Non-negotiables §8](conventions.md#non-negotiables-substantive-work-and-agents) + [platform.md → Stacked pull requests](platform.md#stacked-pull-requests-st) — **`st`** / gh-stack; plan layers before the first edit |
-| Tests | [conventions.md → Non-negotiables](conventions.md#non-negotiables-substantive-work-and-agents) (TDD, factories, flat hook `describe`, mocks in POs) |
-| CSS / layout | [conventions.md](conventions.md) mobile-first, Stylelint nesting |
+| Branches / PRs | [non-negotiables.md](non-negotiables.md) + [platform.md](platform.md) — **`st`** / gh-stack |
+| Tests | [testing.md](testing.md), [non-negotiables.md](non-negotiables.md) |
+| CSS / layout | [css.md](css.md) |
 | New API | [api-routes.md](api-routes.md) + [database.md](database.md) |
 | Storage / privacy | [data-storage.md](data-storage.md) |
 
@@ -50,7 +50,7 @@ Dedupe state: **`.cursor/hooks-state/`** (gitignored); fingerprint hashes **chan
 
 | Goal | Command / tool |
 | ---- | ---------------- |
-| Dead code / impact before delete | `pnpm fallow:dead-code`, `pnpm fallow:audit` — map in [AGENTS.md](../../AGENTS.md) |
+| Dead code / impact before delete | `pnpm fallow:dead-code`, `pnpm fallow:audit` — [agent-workflow-fallow.md](agent-workflow-fallow.md) |
 | Unsure which chapter applies | [decisions.md](decisions.md) → [llms.md](llms.md) |
 | Production errors | [platform.md → Sentry runbook](platform.md#error-monitoring-sentry), Sentry MCP skill |
 
@@ -64,11 +64,13 @@ Same patterns as rhythm-app’s frontend handbook (compact digest, thin routing,
 
 | Do | Avoid |
 | -- | ----- |
-| [non-negotiables.md](non-negotiables.md) + targeted **llms.md** rows | Pasting or re-reading entire **conventions.md** / **patterns.md** when a section link suffices |
+| [non-negotiables.md](non-negotiables.md) + targeted **llms.md** rows | Loading full split indexes or every part file when one routed page suffices |
 | **Grep** / **Glob** to find symbols, then open one file | Broad directory reads and huge file dumps into the thread |
 | **`git diff -U20 $(git merge-base HEAD <base>) -- path`** for review | Whole-file reads when the diff is enough ([handbook-review](../../.cursor/commands/handbook-review.md)) |
 | **`st view --json`**, short **`git log parent..HEAD`** for stack scope | Full **`git log`**, repeating **`st view`** every turn |
 | Load a **`.cursor/skills/*/SKILL.md`** only when **llms.md** routes there | Pulling every skill into context “just in case” |
 | One handbook chapter per topic **per task** | Re-reading the same chapter for each file in a batch edit |
 
-**`/handbook-review`:** default base is the PR’s parent branch (`gh pr view --json baseRefName`) so stacked layers compare to the branch below — not always **`staging`**.
+**`/handbook-review`:** stack parent base via `gh pr view --json baseRefName` — full steps in [agent-workflow-review.md](agent-workflow-review.md).
+
+**Fallow:** [agent-workflow-fallow.md](agent-workflow-fallow.md).

@@ -1,0 +1,8 @@
+## Collection notes (scoped provider)
+
+Release-card notes use a **feature-local provider**, not a global entry in **`Providers.tsx`**:
+1. **`ReleaseNotesEditorProvider`** wraps each **`ReleaseCard`** / **`MobileReleaseCard`** (and release modal notes) and calls **`useReleaseNotesEditor(release)`** once; it mounts **`ReleaseNotesEditorDialog`**, which renders **`NoteEditDialog`** only while the overlay dialog is open (even when the card body omits inline notes).
+2. **`ReleaseNotesCardAction`** (desktop grid overlay) and **`ReleaseNotes`** (modal / other surfaces) read **`useReleaseNotesEditorContext()`** to open the same **`NoteEditDialog`**. Desktop **`ReleaseCard`** shows the notes icon on the overlay action strip (primary dot badge when notes exist); **`MobileReleaseCard`** omits that control — notes are edited in **`ReleaseModal`** only. No inline note preview on card bodies.
+3. Saves go through **`api.updateCollectionNote`** in [`src/api/urls.ts`](../../src/api/urls.ts) → **`POST /api/collection/instances/.../fields/...`** → **`discogsOAuthService.updateCollectionInstanceField`**. **`useSaveReleaseNotesMutation`** optimistically patches the in-memory collection query and IndexedDB (same pattern as rating saves) — it does **not** invalidate the full paginated collection query after each note write.
+
+Colocate feature hooks under the component folder ([`useReleaseNotesEditor.hook.ts`](../../src/components/ReleaseNotes/useReleaseNotesEditor.hook.ts)); keep shared React Query read hooks in [`src/hooks/queries/`](../../src/hooks/queries/) and write hooks in [`src/hooks/mutations/`](../../src/hooks/mutations/).
