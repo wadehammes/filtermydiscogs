@@ -1,6 +1,4 @@
 .container {
-  --segment-inset-radius: calc(var(--radius-ui) - 2px);
-
   align-items: stretch;
   background: var(--muted);
   border: 1px solid var(--border);
@@ -34,7 +32,7 @@
   background: transparent;
   border: none;
   border-inline-start: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--radius-none);
   color: var(--muted-foreground);
   cursor: pointer;
   display: flex;
@@ -66,25 +64,29 @@
   .containerVertical > legend + &,
   .containerVertical > legend + * & {
     border-inline-start: none;
-    border-radius: var(--segment-inset-radius) var(--segment-inset-radius) 0 0;
+    border-radius: var(--segment-inset-radius) var(--segment-inset-radius)
+      var(--radius-none) var(--radius-none);
     border-top: none;
   }
 
   .container > legend + &,
   .container > legend + * & {
     border-inline-start: none;
-    border-radius: var(--segment-inset-radius) 0 0 var(--segment-inset-radius);
+    border-radius: var(--segment-inset-radius) var(--radius-none)
+      var(--radius-none) var(--segment-inset-radius);
     border-top: none;
   }
 
   .containerVertical > &:last-child,
   .containerVertical > :last-child & {
-    border-radius: 0 0 var(--segment-inset-radius) var(--segment-inset-radius);
+    border-radius: var(--radius-none) var(--radius-none)
+      var(--segment-inset-radius) var(--segment-inset-radius);
   }
 
   .container > &:last-child,
   .container > :last-child & {
-    border-radius: 0 var(--segment-inset-radius) var(--segment-inset-radius) 0;
+    border-radius: var(--radius-none) var(--segment-inset-radius)
+      var(--segment-inset-radius) var(--radius-none);
   }
 
   &:hover:not(.active) {

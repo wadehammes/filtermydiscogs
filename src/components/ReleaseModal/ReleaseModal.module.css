@@ -56,7 +56,7 @@
 
 .modalCard {
   border: none;
-  border-radius: 0;
+  border-radius: var(--radius-none);
   overflow: visible;
 
   @media (width >= 768px) {

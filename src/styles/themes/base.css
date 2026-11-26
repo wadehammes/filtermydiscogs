@@ -109,16 +109,29 @@
   --font-bold: 700;
 
   /* Border radius */
-  --radius-ui: 0.375rem; /* For UI elements: inputs, selects, buttons */
-  --radius-card: 0.75rem; /* For ReleaseCard and other cards */
-  --radius-full: 9999px; /* For circular elements */
-
-  /* Legacy border radius variables - deprecated, use --radius-ui or --radius-card instead */
+  --radius-none: 0;
+  --radius-ui: 0.375rem;
+  --radius-card: 0.75rem;
+  --radius-full: 9999px;
+  --radius-spinner: 9999px;
+  --radius-circle: 50%;
+  --radius-hairline: 1px;
+  --radius-xs: 0.25rem;
+  --radius-inset-sm: 1px;
+  --radius-inset-md: 4px;
+  --radius-inset-segment: 2px;
+  --radius-card-inner: calc(var(--radius-card) - var(--radius-inset-md));
+  --radius-card-frame: calc(var(--radius-card) - var(--radius-inset-sm));
+  --radius-ui-raised: calc(var(--radius-ui) + var(--radius-inset-sm));
   --radius-sm: var(--radius-ui);
   --radius-md: var(--radius-ui);
   --radius-lg: var(--radius-card);
   --radius-xl: var(--radius-card);
   --radius-2xl: var(--radius-card);
+  --segment-inset-radius: max(
+    0px,
+    calc(var(--radius-ui) - var(--radius-inset-segment))
+  );
 
   /* Transitions */
   --transition-fast: 150ms ease;

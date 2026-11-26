@@ -42,6 +42,27 @@ describe("applyUserPreferencesToClient", () => {
     expect(setViewState).toHaveBeenCalledWith(preferences.view);
   });
 
+  it("applies square corners when enabled on server preferences", () => {
+    const store = createStore();
+    const preferences = userPreferencesFactory.build({ squareCorners: true });
+
+    applyUserPreferencesToClient({
+      store,
+      preferences,
+      setPersistedFilters: jest.fn(),
+      setPendingFiltersRestore: jest.fn(),
+      setTheme: jest.fn(),
+      setViewState: jest.fn(),
+      syncFromServerPreference: jest.fn(),
+      syncPendingFiltersRestoreOffer: jest.fn(),
+      currentTheme: preferences.theme,
+    });
+
+    expect(document.documentElement.getAttribute("data-ui-radius")).toBe(
+      "square",
+    );
+  });
+
   it("clears local filters when persistFilters is disabled on the server", () => {
     const store = createStore();
     const customFilters = {

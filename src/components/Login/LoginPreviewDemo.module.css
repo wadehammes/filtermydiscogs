@@ -22,7 +22,7 @@
 
 .trafficLight {
   background: var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   height: 0.625rem;
   width: 0.625rem;
 }

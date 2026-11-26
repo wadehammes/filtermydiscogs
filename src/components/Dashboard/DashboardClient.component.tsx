@@ -8,6 +8,7 @@ import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/Co
 import { ReleaseModalLazyOverlay } from "src/components/ReleaseModal/ReleaseModalLazyOverlay.component";
 import { DASHBOARD_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import { useAuth } from "src/context/auth.context";
+import { useCollectionContext } from "src/context/collection.context";
 import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClick.context";
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
@@ -40,6 +41,9 @@ import { WeeklyRecap } from "./WeeklyRecap.component";
 
 function DashboardClientContent() {
   const { state: authState } = useAuth();
+  const {
+    state: { fetchingCollection },
+  } = useCollectionContext();
   const { shouldRedirectHome, isCheckingAuth } = useRedirectIfUnauthenticated();
   const {
     isLoading: collectionLoading,
@@ -52,7 +56,8 @@ function DashboardClientContent() {
     isFetchingNextPage,
   });
   const allReleases = useAllReleases();
-  const showLoading = isCheckingAuth || needsCollectionLoad;
+  const showLoading =
+    isCheckingAuth || needsCollectionLoad || fetchingCollection;
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     useLocalSelectedReleaseModal({
       collectionUsername: authState.username,
@@ -134,7 +139,7 @@ function DashboardClientContent() {
           data-testid="fmdDashboardClient"
           aria-label={DASHBOARD_PAGE_MAIN_LABEL}
         >
-          {!(collectionLoading || analytics) && (
+          {!fetchingCollection && allReleases.length === 0 && !analytics && (
             <EmptyState
               variant="page"
               title="Nothing on the shelf yet"
@@ -142,7 +147,7 @@ function DashboardClientContent() {
             />
           )}
 
-          {!collectionLoading && analytics && story && (
+          {!fetchingCollection && analytics && story && (
             <div className={styles.content}>
               <DashboardHero
                 story={story}

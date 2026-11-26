@@ -1,0 +1,20 @@
+[data-theme="summer"] {
+  color-scheme: dark;
+
+  --gradientPink: #219ebc;
+  --gradientTeal: #023047;
+  --background: #023047;
+  --background-gradient: linear-gradient(
+    180deg,
+    color-mix(in srgb, #219ebc 38%, #023047) 0%,
+    var(--background) 42%,
+    color-mix(in srgb, #023047 78%, #fb8500 22%) 100%
+  );
+  --gradient-surface: color-mix(in oklch, var(--gradientPink) 44%, #8ecae6);
+  --pattern-microdot-mix: 6.5%;
+  --pill-style-foreground: #8ecae6;
+  --pill-style-border: #219ebc;
+  --pill-style-selected-foreground: #023047;
+  --pill-format-foreground: #ffb703;
+  --pill-format-border: #fb8500;
+}

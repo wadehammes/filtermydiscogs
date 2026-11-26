@@ -1,0 +1,17 @@
+[data-theme="ocean"] {
+  color-scheme: light;
+
+  --background: #b8d2df;
+  --gradientPink: #a8c6d6;
+  --gradientTeal: #8ab0c4;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 52%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #1e4a62;
+  --pill-style-border: #0f3850;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #0d5c78;
+  --pill-format-border: #16708e;
+}

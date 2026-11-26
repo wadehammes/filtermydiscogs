@@ -76,7 +76,7 @@
 .overlayactioncard {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: calc(var(--radius-ui) + 1px);
+  border-radius: var(--radius-ui-raised);
   box-sizing: border-box;
   flex: none;
   min-height: 1.75rem;

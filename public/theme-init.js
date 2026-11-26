@@ -4,17 +4,25 @@
     const stored = localStorage.getItem(storageKey);
     const paletteThemes = new Set([
       "amber",
+      "aurora",
       "codex",
       "dark",
       "dim",
       "discogs",
+      "ember",
       "forest",
       "futuristic",
       "high-contrast",
+      "lavender",
       "light",
       "midnight",
+      "ocean",
+      "prism",
       "sepia",
       "slate",
+      "sunset",
+      "summer",
+      "terracotta",
       "wine",
     ]);
     const systemDarkPalette = "dark";

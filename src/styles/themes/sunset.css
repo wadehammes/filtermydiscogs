@@ -1,0 +1,22 @@
+[data-theme="sunset"] {
+  color-scheme: light;
+
+  --gradientPink: #ff8a5b;
+  --gradientTeal: #7a2648;
+  --background: #fff1d6;
+  --background-gradient: linear-gradient(
+    165deg,
+    #ffd93d 0%,
+    #ffb75e 16%,
+    var(--background) 40%,
+    #ff8a5b 68%,
+    color-mix(in srgb, #ff3d77 42%, #7a2648 58%) 100%
+  );
+  --gradient-surface: color-mix(in oklch, #ffb75e 56%, #ff3d77);
+  --pattern-microdot-mix: 9%;
+  --pill-style-foreground: #7b2d42;
+  --pill-style-border: #5a1c32;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #c83838;
+  --pill-format-border: #e0554a;
+}

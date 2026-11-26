@@ -1,0 +1,17 @@
+[data-theme="terracotta"] {
+  color-scheme: light;
+
+  --background: #e4c4b0;
+  --gradientPink: #d8b4a0;
+  --gradientTeal: #c49880;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 52%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #5c3020;
+  --pill-style-border: #4a2418;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #8b4a28;
+  --pill-format-border: #a05830;
+}

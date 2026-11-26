@@ -309,12 +309,14 @@ export const SettingsAccountCompleteLogoutPanel = ({
 type SettingsAppearancePanelProps = {
   settingsViewValue: "card" | "list";
   defaultCollectionSidePanel: CollectionSidePanelPreference;
+  squareCorners: boolean;
   isPreferencesLoading: boolean;
   isPreferencesSaving: boolean;
   onViewChange: (view: "card" | "list") => void;
   onDefaultCollectionSidePanelChange: (
     panel: CollectionSidePanelPreference,
   ) => void;
+  onSquareCornersChange: (enabled: boolean) => void;
   onThemePersisted: () => void;
   onThemePersistError: () => void;
 };
@@ -322,10 +324,12 @@ type SettingsAppearancePanelProps = {
 export const SettingsAppearancePanel = ({
   settingsViewValue,
   defaultCollectionSidePanel,
+  squareCorners,
   isPreferencesLoading,
   isPreferencesSaving,
   onViewChange,
   onDefaultCollectionSidePanelChange,
+  onSquareCornersChange,
   onThemePersisted,
   onThemePersistError,
 }: SettingsAppearancePanelProps) => {
@@ -340,6 +344,18 @@ export const SettingsAppearancePanel = ({
           onThemePersistError={onThemePersistError}
         />
       </div>
+      <SettingsBooleanPreferenceToggle
+        checked={squareCorners}
+        label="Square corners"
+        description={
+          <>
+            When enabled, cards, buttons, fields, and panels use sharp corners
+            instead of rounded ones.
+          </>
+        }
+        disabled={isPreferencesLoading || isPreferencesSaving}
+        onChange={onSquareCornersChange}
+      />
       <div className={styles.field}>
         <span className={styles.fieldLabel}>Default view</span>
         <Select

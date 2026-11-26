@@ -17,7 +17,7 @@ Free companion app for your Discogs collection: flexible filters, search, playba
 - **Crates**: Stage picks from Collection in the side panel; gig lists and themed sets; reorder, sections, set notes, packing checklist, public share
 - **Collection insights**: Dashboard milestones, style evolution, growth and artist/label charts, most-crated releases, on-this-day adds, weekly recap, and On repeat
 - **Mosaic generator**: Cover grids from your collection, crates, or playlists; export JPEG or PNG
-- **Settings**: Theme, default side panel, playback queue options, collection sync, filter persistence, analytics consent, optional account email (verification link by mail), marketing mail after verify, optional Stripe donation, delete account
+- **Settings**: Theme, square corners, default side panel, playback queue options, collection sync, filter persistence, analytics consent, optional account email (verification link by mail), marketing mail after verify, optional Stripe donation, delete account
 - **Responsive UI**: Desktop sidebar and mobile drawers; fast route transitions on authenticated pages
 - **Discogs outage notice**: Stay signed in with a link to [Discogs status](https://status.discogs.com); collection loads when Discogs is back
 - **Deploy refresh**: Toast to reload when a newer production build is available

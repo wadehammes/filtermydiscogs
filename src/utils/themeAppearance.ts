@@ -7,47 +7,78 @@ export type { PaletteTheme, StoredTheme };
 
 export const THEME_LABELS: Record<StoredTheme, string> = {
   amber: "Amber",
+  aurora: "Aurora",
   codex: "Codex",
   dark: "Dark",
   dim: "Dim",
   discogs: "Discogs",
+  ember: "Ember",
   forest: "Forest",
   futuristic: "Futuristic",
   "high-contrast": "High contrast",
+  lavender: "Lavender",
   light: "Light",
   midnight: "Midnight",
+  ocean: "Ocean",
+  prism: "Prism",
   sepia: "Sepia",
   slate: "Slate",
+  sunset: "Sunset",
+  summer: "Summer",
   system: "System",
+  terracotta: "Terracotta",
   wine: "Wine",
 };
 
 export const PALETTE_THEMES = [
   "amber",
+  "aurora",
   "codex",
   "dark",
   "dim",
   "discogs",
+  "ember",
   "forest",
   "futuristic",
   "high-contrast",
+  "lavender",
   "light",
   "midnight",
+  "ocean",
+  "prism",
   "sepia",
   "slate",
+  "sunset",
+  "summer",
+  "terracotta",
   "wine",
 ] as const satisfies readonly PaletteTheme[];
+
+export const MULTI_HUE_PALETTE_THEMES = new Set<PaletteTheme>([
+  "aurora",
+  "discogs",
+  "futuristic",
+  "prism",
+  "summer",
+  "sunset",
+]);
 
 export const SYSTEM_DARK_PALETTE: PaletteTheme = "dark";
 
 export const DARK_ASSET_THEMES = new Set<PaletteTheme>([
+  "aurora",
   "codex",
   "dark",
+  "ember",
   "futuristic",
   "high-contrast",
   "midnight",
+  "summer",
   "wine",
 ]);
+
+export const isMultiHuePaletteTheme = (theme: PaletteTheme): boolean =>
+  MULTI_HUE_PALETTE_THEMES.has(theme);
 
 export const STORED_THEMES: StoredTheme[] = [...PALETTE_THEMES, "system"];
 

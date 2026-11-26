@@ -1,0 +1,17 @@
+[data-theme="ember"] {
+  color-scheme: dark;
+
+  --background: #120e0c;
+  --gradientPink: #1c1612;
+  --gradientTeal: #161210;
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 46%,
+    var(--gradientTeal)
+  );
+  --pill-style-foreground: #e8a878;
+  --pill-style-border: #c07848;
+  --pill-style-selected-foreground: #1a1008;
+  --pill-format-foreground: #e8c070;
+  --pill-format-border: #c89840;
+}

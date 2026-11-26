@@ -19,6 +19,32 @@
   composes: popup;
   max-height: min(24rem, 70dvh);
   overflow-y: auto;
+  scrollbar-color: var(--input) var(--popover);
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--popover);
+    border-radius: var(--radius-sm);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--input);
+    border: 2px solid var(--popover);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+
+  &::-webkit-scrollbar-thumb:active {
+    background: var(--primary);
+  }
 }
 
 .popupwide {

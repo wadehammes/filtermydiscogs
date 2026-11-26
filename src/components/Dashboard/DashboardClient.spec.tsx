@@ -1,15 +1,59 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import {
   COLLECTION_LOADING_TOAST_ID,
   DashboardClientPageObject,
 } from "src/components/Dashboard/DashboardClient.po";
 import { screen, waitFor } from "test-utils";
 
+type CollectionLoadState = ReturnType<
+  typeof import("src/hooks/useCollectionData.hook").useCollectionLoadState
+>;
+
+const mockUseCollectionLoadState: jest.Mock<() => CollectionLoadState> =
+  jest.fn();
+
+jest.mock("src/hooks/useCollectionData.hook", () => {
+  const actual = jest.requireActual<
+    typeof import("src/hooks/useCollectionData.hook")
+  >("src/hooks/useCollectionData.hook");
+
+  return {
+    ...actual,
+    useCollectionLoadState: () => mockUseCollectionLoadState(),
+  };
+});
+
+const restoreUseCollectionLoadStateMock = () => {
+  const actual = jest.requireActual<
+    typeof import("src/hooks/useCollectionData.hook")
+  >("src/hooks/useCollectionData.hook");
+  mockUseCollectionLoadState.mockImplementation(() =>
+    actual.useCollectionLoadState(),
+  );
+};
+
 let po: DashboardClientPageObject;
 
 describe("DashboardClient", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+    restoreUseCollectionLoadStateMock();
     po = new DashboardClientPageObject();
+  });
+
+  it("does not flash empty state while collection context is still fetching", () => {
+    mockUseCollectionLoadState.mockReturnValue({
+      isLoading: false,
+      isError: false,
+      queryError: null,
+      hasNextPage: false,
+      isFetchingNextPage: false,
+    });
+
+    po.renderDashboardClient({ releaseCount: 3 });
+
+    expect(screen.queryByTestId("fmdEmptyState")).not.toBeInTheDocument();
+    expect(screen.queryByTestId(po.testId)).not.toBeInTheDocument();
   });
 
   it("renders the dashboard with stats after the collection loads", async () => {

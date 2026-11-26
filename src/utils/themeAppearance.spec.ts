@@ -4,12 +4,15 @@ import { describe, expect, it } from "@jest/globals";
 import {
   cycleTheme,
   DARK_ASSET_THEMES,
+  isMultiHuePaletteTheme,
   isStoredTheme,
+  MULTI_HUE_PALETTE_THEMES,
   PALETTE_THEMES,
   resolvePaletteTheme,
   resolveThemeInitAttribute,
   STORED_THEMES,
   SYSTEM_DARK_PALETTE,
+  THEME_LABELS,
   themeUsesDarkAssets,
 } from "./themeAppearance";
 
@@ -78,6 +81,28 @@ describe("themeAppearance", () => {
     expect(resolvePaletteTheme("wine", false)).toBe("wine");
     expect(resolvePaletteTheme("dark", true)).toBe("dark");
     expect(resolvePaletteTheme("codex", false)).toBe("codex");
+    expect(resolvePaletteTheme("ocean", false)).toBe("ocean");
+    expect(resolvePaletteTheme("sunset", false)).toBe("sunset");
+    expect(resolvePaletteTheme("aurora", true)).toBe("aurora");
+    expect(resolvePaletteTheme("prism", false)).toBe("prism");
+    expect(resolvePaletteTheme("summer", true)).toBe("summer");
+  });
+
+  it("labels every stored theme with a display name", () => {
+    expect(Object.keys(THEME_LABELS).sort()).toEqual([...STORED_THEMES].sort());
+    for (const theme of STORED_THEMES) {
+      expect(THEME_LABELS[theme].length).toBeGreaterThan(0);
+    }
+  });
+
+  it("tracks multi-hue palettes separately from the full palette list", () => {
+    for (const theme of MULTI_HUE_PALETTE_THEMES) {
+      expect(PALETTE_THEMES).toContain(theme);
+      expect(isMultiHuePaletteTheme(theme)).toBe(true);
+    }
+    expect(isMultiHuePaletteTheme("light")).toBe(false);
+    expect(isMultiHuePaletteTheme("ember")).toBe(false);
+    expect(isMultiHuePaletteTheme("summer")).toBe(true);
   });
 
   it.each([
@@ -116,6 +141,18 @@ describe("themeAppearance", () => {
       prefersDark: true,
       hasSession: true,
       expected: "sepia",
+    },
+    {
+      stored: "sunset",
+      prefersDark: false,
+      hasSession: true,
+      expected: "sunset",
+    },
+    {
+      stored: "aurora",
+      prefersDark: true,
+      hasSession: true,
+      expected: "aurora",
     },
     {
       stored: "not-a-theme",

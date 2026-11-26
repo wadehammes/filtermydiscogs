@@ -1,0 +1,24 @@
+[data-theme="prism"] {
+  color-scheme: light;
+
+  --gradientPink: #ffd0b0;
+  --gradientTeal: #90c8f8;
+  --background: #d4e0ec;
+  --background-gradient: linear-gradient(
+    128deg,
+    color-mix(in srgb, var(--gradientPink) 72%, var(--background)) 0%,
+    var(--background) 38%,
+    color-mix(in srgb, var(--gradientTeal) 68%, var(--background)) 100%
+  );
+  --gradient-surface: color-mix(
+    in oklch,
+    var(--gradientPink) 46%,
+    var(--gradientTeal)
+  );
+  --pattern-microdot-mix: 10%;
+  --pill-style-foreground: #3058a0;
+  --pill-style-border: #204080;
+  --pill-style-selected-foreground: #fff;
+  --pill-format-foreground: #b85028;
+  --pill-format-border: #d06838;
+}

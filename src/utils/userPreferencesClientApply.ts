@@ -7,6 +7,7 @@ import { viewStateAtom } from "src/atoms/view.atoms";
 import type { PersistedFiltersState } from "src/types/filters.types";
 import type { UserPreferences } from "src/types/userPreferences.types";
 import type { ViewState } from "src/types/view.types";
+import { applySquareCornersToDocument } from "src/utils/applySquareCornersToDocument";
 import { setFilterPersistenceEnabled } from "src/utils/filterPersistence";
 import {
   clearPersistedFilters,
@@ -72,6 +73,8 @@ export const applyUserPreferencesToClient = ({
   if (currentTheme !== preferences.theme) {
     setTheme(preferences.theme);
   }
+
+  applySquareCornersToDocument(preferences.squareCorners);
 
   if (!viewStateMatches(currentView, preferences.view)) {
     setViewState(preferences.view);

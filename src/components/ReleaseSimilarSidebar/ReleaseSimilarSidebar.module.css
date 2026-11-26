@@ -14,7 +14,7 @@
 .sidebarInline {
   background: transparent;
   border: none;
-  border-radius: 0;
+  border-radius: var(--radius-none);
   container-name: similar-sidebar;
   container-type: inline-size;
   display: flex;
@@ -107,7 +107,7 @@
   align-items: stretch;
   background: var(--muted);
   border: none;
-  border-radius: 0;
+  border-radius: var(--radius-none);
   border-top: 1px solid var(--border);
   width: 100%;
 }
@@ -127,7 +127,7 @@
 
 .sidebarActions .sidebarSegment {
   align-self: stretch;
-  border-radius: 0;
+  border-radius: var(--radius-none);
 }
 
 .sidebarActions :is(.similarCountSegment, .similarPageSegment) {

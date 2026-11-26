@@ -17,7 +17,10 @@ import {
   userPreferencesFactory,
 } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
-import { testAuthenticatedAuthState } from "src/tests/utils/testProviders";
+import {
+  testAuthenticatedAuthState,
+  testUnauthenticatedAuthState,
+} from "src/tests/utils/testProviders";
 import { resetFilterPersistenceCache } from "src/utils/filterPersistence";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { resetUserPreferencesPersistQueue } from "src/utils/userPreferencesPersistQueue";
@@ -40,6 +43,7 @@ describe("useUserPreferencesSync", () => {
     resetFilterPersistenceCache();
     resetUserPreferencesPersistQueue();
     document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-ui-radius");
     jest.clearAllMocks();
   });
 
@@ -68,6 +72,43 @@ describe("useUserPreferencesSync", () => {
     await waitFor(() => {
       expect(mockUpdateUserPreferences).toHaveBeenCalledWith(
         expect.objectContaining({ theme: "dark" }),
+      );
+    });
+  });
+
+  it("clears square corners on the document when the user is unauthenticated", async () => {
+    document.documentElement.setAttribute("data-ui-radius", "square");
+
+    renderFeatureHook(() => useUserPreferencesSync(), {
+      authInitialState: testUnauthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(
+        document.documentElement.getAttribute("data-ui-radius"),
+      ).toBeNull();
+    });
+  });
+
+  it("hydrates square corners from GET preferences", async () => {
+    const serverPreferences = userPreferencesFactory.build({
+      squareCorners: true,
+    });
+
+    mockApiResponse(
+      true,
+      mockFetchUserPreferences,
+      { preferences: serverPreferences },
+      new Error("fail"),
+    );
+
+    renderFeatureHook(() => useUserPreferencesSync(), {
+      authInitialState: testAuthenticatedAuthState,
+    });
+
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-ui-radius")).toBe(
+        "square",
       );
     });
   });

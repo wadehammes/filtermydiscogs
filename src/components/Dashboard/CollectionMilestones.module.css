@@ -163,7 +163,7 @@
 .zigzagDot {
   background: var(--primary);
   border: 2px solid var(--background);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   flex-shrink: 0;
   height: 0.75rem;
   width: 0.75rem;
