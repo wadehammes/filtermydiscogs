@@ -1,10 +1,41 @@
 # Playback embed simplification (stacked work)
 
-Split for token budget (~1500 tokens per page). Open one section.
+Global **queue + session** logic in [`playbackSessionState.ts`](../../src/utils/playbackSessionState.ts) and queue hooks is in good shape. **Embed lifecycle** (confirm, loading UI, watchdog, hidden tab, grace, similar-queue guards) grew as ad hoc refs and effects in [`useReleasePlaybackProvider.hook.ts`](../../src/hooks/useReleasePlaybackProvider.hook.ts) and [`useReleasePlaybackYoutubeEmbed.hook.ts`](../../src/hooks/useReleasePlaybackYoutubeEmbed.hook.ts). This stack replaces that layer with a **pure embed session** module and thinner hooks.
 
-| Section | ~tokens |
-| ------- | ------- |
-| [playback-embed-s-stack-order-bottom-top-001.md](playback-embed-s-stack-order-bottom-top-001.md) | 1100 |
-| [playback-embed-s-stack-status-after-phase-5-002.md](playback-embed-s-stack-status-after-phase-5-002.md) | 230 |
-| [playback-embed-s-phase-goals-summary-003.md](playback-embed-s-phase-goals-summary-003.md) | 260 |
-| [playback-embed-s-agents-004.md](playback-embed-s-agents-004.md) | 88 |
+**Contract:** [`playback-embed-invariants.md`](playback-embed-invariants.md) + provider integration specs under **`src/context/releasePlayback.context.*.spec.tsx`** (shared helpers in [`releasePlayback.context.spec.harness.tsx`](../../src/context/releasePlayback.context.spec.harness.tsx); + E2E embed specs). No behavior change until a phase explicitly wires production code and keeps the contract green.
+
+## Stack order (bottom → top)
+
+| Layer         | Branch (example)                                    | PR focus                                                                                                                                                                                                                                                                                                                                                     |
+| ------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Trunk         | **`staging`**                                       | —                                                                                                                                                                                                                                                                                                                                                            |
+| Fix in flight | **`10-17-fix_background_queue_advance_regression`** | Hidden-tab poll while transport paused ([PR #1208](https://github.com/wadehammes/filtermydiscogs/pull/1208))                                                                                                                                                                                                                                                 |
+| **Phase 0**   | **`10-17-playback_embed_phase_0_invariants`**       | Invariants doc + handbook routing (no production changes)                                                                                                                                                                                                                                                                                                    |
+| **Phase 1**   | **`10-17-playback_embed_phase_1_session_module`**   | Pure [`playbackEmbedSession.ts`](../../src/utils/playbackEmbedSession.ts) + [`playbackEmbedSession.spec.ts`](../../src/utils/playbackEmbedSession.spec.ts) — hidden-tab poll selectors, visible audible-sync poll policy, load/confirm reducer (not wired to hooks yet)                                                                                      |
+| **Phase 2**   | **`10-17-playback_embed_phase_2_confirm_gate`**     | **`tryConfirmPlaybackEmbedFromSignal`** + confirm helpers live in [`playbackEmbedSession.ts`](../../src/utils/playbackEmbedSession.ts); embed hook + provider call the gate (legacy [`releasePlaybackEmbedConfirm.ts`](../../src/utils/releasePlaybackEmbedConfirm.ts) re-exports remaining helpers/constants — not **`tryConfirmPlaybackEmbedFromSignal`**) |
+| **Phase 3**   | **`10-17-playback_embed_phase_3_thin_hooks`**       | [`applyPlaybackEmbedSessionEvent`](../../src/utils/applyPlaybackEmbedSessionEvent.ts) + [`syncPlaybackEmbedSessionRefs`](../../src/utils/syncPlaybackEmbedSessionRefs.ts) drive legacy refs; provider loading/confirm/imperative-load and embed poll effects use session selectors                                                                           |
+| **Phase 4**   | **`10-17-playback_embed_phase_4_dead_paths`**       | **`resetEmbedSession`** on **`stopPlayback`**; **`embed/load/started`** on imperative load; confirm reads from session; handbook/patterns updated                                                                                                                                                                                                            |
+| **Phase 5**   | **`10-17-playback_embed_phase_5_spec_split`**       | Split context spec by invariant group ([`releasePlayback.context.*.spec.tsx`](../../src/context/) + shared [`releasePlayback.context.spec.harness.tsx`](../../src/context/releasePlayback.context.spec.harness.tsx))                                                                                                                                         |
+
+Use **`st add <branch>`** from the layer below, then **`st ss --auto --open`** after each phase. Rebase with **`st sync`** before push.
+
+## Stack status (after phase 5)
+
+Phases 0–5 landed the **embed session module**, unified **`tryConfirmPlaybackEmbedFromSignal`**, session-driven loading/confirm refs, spec split, and **`resetEmbedSession`** on stop. **Provider and embed hooks are not fully “thin” yet** — watchdog arming, tab-visible recovery, and skip orchestration still live in [`useReleasePlaybackProvider.hook.ts`](../../src/hooks/useReleasePlaybackProvider.hook.ts) beside session events. Treat further embed work as either **bug fixes at documented choke points** (iframe sync, shared confirm gate) or a **future stack** that moves watchdog/visibility into session transitions and deletes duplicate refs.
+
+**Follow-up stack (example):** `10-19-playback_embed_iframe_loaded_switch` → iframe unchanged-upload + loading defers; `10-19-playback_embed_unified_confirm` → **`shouldAllowAudibleEmbedPlaybackConfirm`** shared by provider + embed hook.
+
+## Phase goals (summary)
+
+- **Phase 0** — Name invariants and spec search strings so refactors have a checklist ([playback-embed-invariants.md](playback-embed-invariants.md)).
+- **Phase 1** — Discriminated embed session state + `reduceEmbedSession` / selectors (hidden poll, watchdog arm policy, confirm pending).
+- **Phase 2** — One `tryConfirmFromSignal(...)` instead of parallel confirm utils at the iframe boundary.
+- **Phase 3** — Provider owns queue/session only; embed hook posts messages → session events.
+- **Phase 4** — Delete superseded utils/refs; update [patterns.md → Release playback queue](patterns.md#release-playback-queue) to describe session module as source of truth. _(Partially done: session wired; ref deletion deferred.)_
+- **Phase 5** — Provider integration specs split by invariant theme (one flat **`describe`** per file). **`jest.mock`** and **`beforeEach`** stay in each spec file; shared factories and helpers live in **`releasePlayback.context.spec.harness.tsx`** (edit those files directly — no codegen).
+
+## Agents
+
+- Read this chapter + [playback-embed-invariants.md](playback-embed-invariants.md) before embed refactors.
+- **TDD:** extend [`playbackEmbedSession.spec.ts`](../../src/utils/playbackEmbedSession.spec.ts) (Phase 1+) before changing hooks.
+- Do not add new one-off confirm/watchdog refs in the provider without a matching session transition.

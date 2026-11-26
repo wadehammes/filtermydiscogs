@@ -19,12 +19,12 @@ On **substantive** work (features, refactors, auth/OAuth, crates/Prisma, App Rou
 
 ## During implementation
 
-- **Testing non-negotiables** — TDD, **factories**, flat hook **`describe`**, **API mocks in POs** (not in **`.spec.tsx`**). See [non-negotiables.md](docs/handbook/non-negotiables.md) and [testing.md](docs/handbook/testing.md).
-- **Stacked branches (`st`)** — **`st`** / gh-stack on **`staging`**. See [non-negotiables.md](docs/handbook/non-negotiables.md) and [platform.md](docs/handbook/platform.md).
-- **Conventions** — follow routed chapters ([conventions.md](docs/handbook/conventions.md), [react.md](docs/handbook/react.md), [css.md](docs/handbook/css.md), [testing.md](docs/handbook/testing.md)).
+- **Testing non-negotiables** — TDD (failing spec before production code), **factories** for domain/API test data, **one flat `describe`** per hook spec (no nested `describe`), **API mocks in POs** (component **`.spec.tsx`** never wires **`mockApiResponse`** / **`api.*`**). See [conventions.md → Non-negotiables](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents) and [Hook checklist](docs/handbook/conventions.md#hook-and-feature-spec-checklist). Mock **`api.*`**, not React Query cache.
+- **Stacked branches (`st`)** — All substantive work on **gh-stack** via **`st`** (plan layers before coding; **`st init`** / **`st create`**, **`st add`** per layer, **`./scripts/git-commit.sh`**, **`st sync`**, **`st view --json`**, **`st ss --auto`**; trunk **`staging`**). See [conventions.md → Non-negotiables §8](docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents) and [platform.md → Stacked pull requests](docs/handbook/platform.md#stacked-pull-requests-st).
+- **Conventions non-negotiable** — every line of production and test code follows [conventions.md](docs/handbook/conventions.md) and the routed chapters' patterns (arrow functions, public-module imports, factories, `privateRouteJson`, …). Before finishing, re-read your diff against those chapters. Don't copy a file's legacy style when it contradicts the handbook.
 - **UI state defaults** — check whether an existing hook already owns them (e.g. `useCrateDrawer`: `userToggled ?? isDesktop`; login uses `resetDrawer()`, not duplicate breakpoint checks).
-- **Optional props** — `classNames()` / `definedProps()` ([react.md](docs/handbook/react.md)).
-- **CSS** — mobile-first `(width >= …)`; nest under blocks ([css.md](docs/handbook/css.md)).
+- **Optional props** — `classNames()` for module `className`; `definedProps({ ... })` for other optional spreads ([conventions.md](docs/handbook/conventions.md)).
+- **CSS** — mobile-first `(width >= …)`; nest under block classes per Stylelint ([conventions.md](docs/handbook/conventions.md)).
 - **Auth/session** — verified OAuth on data routes; patterns in [discogs.md](docs/handbook/discogs.md) + [patterns.md](docs/handbook/patterns.md).
 
 ## Before finishing

@@ -1,2 +1,0 @@
-Card/table specs and shared timer helpers: [conventions.md → Testing](conventions.md#testing) (**Release open hover prefetch** bullet). Release route contracts: **`release/[id]/route.spec.ts`** (OAuth **404** consumer fallback — search **`when OAuth returns 404 but consumer credentials resolve the release`**). UI spread rules: [components.md → ReleaseCard](components.md#feature-example-releasecard-desktop-grid) (**Open detail modal** row).
-

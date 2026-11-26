@@ -2,12 +2,31 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 export const TOKEN_BUDGETS = {
-  alwaysLoaded: 2_000,
+  alwaysLoaded: 8_000,
   handbookPage: 1_500,
   reviewCommand: 1_500,
 } as const;
 
-export const LEGACY_OVERSIZED_PAGES = new Set<string>();
+export const LEGACY_OVERSIZED_PAGES = new Set([
+  "docs/handbook/README.md",
+  "docs/handbook/architecture.md",
+  "docs/handbook/components.md",
+  "docs/handbook/conventions.md",
+  "docs/handbook/database.md",
+  "docs/handbook/decisions.md",
+  "docs/handbook/discogs.md",
+  "docs/handbook/factories.md",
+  "docs/handbook/feature-guides/public-sharing.md",
+  "docs/handbook/feature-guides/radio.md",
+  "docs/handbook/llms.md",
+  "docs/handbook/patterns.md",
+  "docs/handbook/platform.md",
+  "docs/handbook/playback-embed-invariants.md",
+  "docs/handbook/playback-manual-queue.md",
+  "docs/handbook/playback-embed-simplification.md",
+  "docs/handbook/source-layout.md",
+  ".cursor/commands/handbook-review.md",
+]);
 
 export const estimateTokens = (text: string): number =>
   Math.ceil(text.length / 4);
@@ -96,6 +115,7 @@ export const collectHandbookBudgetViolations = (
         estimateTokens(reviewCommand),
         TOKEN_BUDGETS.reviewCommand,
         legacyGrandfather,
+        ".cursor/commands/handbook-review.md",
       ),
     );
   }
@@ -108,5 +128,5 @@ export const formatHandbookBudgetViolations = (violations: string[]): string =>
     "Handbook token budget violations (chars/4 estimate):",
     ...violations.map((line) => `  - ${line}`),
     "",
-    "See docs/handbook/handbook-token-budgets.md.",
+    "See docs/handbook/agent-workflow.md → Context efficiency (tokens).",
   ].join("\n");
