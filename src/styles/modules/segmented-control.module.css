@@ -1,12 +1,16 @@
 .container {
-  align-items: center;
+  --segment-inset-radius: calc(var(--radius-ui) - 2px);
+
+  align-items: stretch;
   background: var(--muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-ui);
   display: flex;
   gap: 0;
+  margin: 0;
   min-width: 0;
   overflow: hidden;
+  padding: 1px;
   position: relative;
 }
 
@@ -26,6 +30,7 @@
 
 .segment {
   align-items: center;
+  align-self: stretch;
   background: transparent;
   border: none;
   border-inline-start: 1px solid var(--border);
@@ -58,20 +63,28 @@
     outline-offset: 2px;
   }
 
-  .container > legend + &,
-  .container > legend + * & {
+  .containerVertical > legend + &,
+  .containerVertical > legend + * & {
     border-inline-start: none;
+    border-radius: var(--segment-inset-radius) var(--segment-inset-radius) 0 0;
     border-top: none;
   }
 
-  .containerAllowOverflow > legend + &,
-  .containerAllowOverflow > legend + * & {
-    border-radius: var(--radius-ui) 0 0 var(--radius-ui);
+  .container > legend + &,
+  .container > legend + * & {
+    border-inline-start: none;
+    border-radius: var(--segment-inset-radius) 0 0 var(--segment-inset-radius);
+    border-top: none;
   }
 
-  .containerAllowOverflow > :last-child &,
-  .containerAllowOverflow > &:last-child {
-    border-radius: 0 var(--radius-ui) var(--radius-ui) 0;
+  .containerVertical > &:last-child,
+  .containerVertical > :last-child & {
+    border-radius: 0 0 var(--segment-inset-radius) var(--segment-inset-radius);
+  }
+
+  .container > &:last-child,
+  .container > :last-child & {
+    border-radius: 0 var(--segment-inset-radius) var(--segment-inset-radius) 0;
   }
 
   &:hover:not(.active) {
@@ -84,14 +97,14 @@
     color: var(--primary-foreground);
   }
 
-  .containerAllowOverflow.containerVertical > legend + &,
-  .containerAllowOverflow.containerVertical > legend + * & {
-    border-radius: var(--radius-ui) var(--radius-ui) 0 0;
+  .containerVertical > legend + &:last-child,
+  .containerVertical > legend + * &:last-child {
+    border-radius: var(--segment-inset-radius);
   }
 
-  .containerAllowOverflow.containerVertical > :last-child &,
-  .containerAllowOverflow.containerVertical > &:last-child {
-    border-radius: 0 0 var(--radius-ui) var(--radius-ui) 0;
+  .container > legend + &:last-child,
+  .container > legend + * &:last-child {
+    border-radius: var(--segment-inset-radius);
   }
 }
 

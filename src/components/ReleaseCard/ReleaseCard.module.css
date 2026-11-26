@@ -278,16 +278,6 @@
   border-inline-start: 1px solid var(--border);
 }
 
-.actionSegmented .segmentSlot:first-child .actionSegment {
-  border-bottom-left-radius: calc(var(--radius-ui) + 1px);
-  border-top-left-radius: calc(var(--radius-ui) + 1px);
-}
-
-.actionSegmented .segmentSlot:last-child .actionSegment {
-  border-bottom-right-radius: calc(var(--radius-ui) + 1px);
-  border-top-right-radius: calc(var(--radius-ui) + 1px);
-}
-
 .crateActionSlot {
   align-items: stretch;
   display: flex;
