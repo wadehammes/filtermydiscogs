@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import Link, { type LinkProps } from "next/link";
-import { type AnchorHTMLAttributes, forwardRef, type ReactNode } from "react";
+import type { AnchorHTMLAttributes, ReactNode, Ref } from "react";
 import { definedProps } from "src/utils/definedProps";
 import {
   type IconButtonVariant,
@@ -10,7 +10,8 @@ import {
 } from "./iconButtonClasses";
 
 export interface IconButtonLinkProps
-  extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "ref"> {
+  ref?: Ref<HTMLAnchorElement> | undefined;
   variant?: IconButtonVariant;
   iconClassName?: string | undefined;
   label?: ReactNode;
@@ -21,25 +22,20 @@ export interface IconButtonLinkProps
   internal?: boolean;
 }
 
-export const IconButtonLink = forwardRef<
-  HTMLAnchorElement,
-  IconButtonLinkProps
->(function IconButtonLink(
-  {
-    variant = "default",
-    className,
-    iconClassName,
-    label,
-    labelClassName,
-    addon,
-    addonClassName,
-    children,
-    internal = false,
-    href,
-    ...props
-  },
+export const IconButtonLink = ({
   ref,
-) {
+  variant = "default",
+  className,
+  iconClassName,
+  label,
+  labelClassName,
+  addon,
+  addonClassName,
+  children,
+  internal = false,
+  href,
+  ...props
+}: IconButtonLinkProps) => {
   const isLabeled = label != null || addon != null;
   const classes = classNames(
     iconButtonClasses(variant),
@@ -76,4 +72,6 @@ export const IconButtonLink = forwardRef<
       {content}
     </a>
   );
-});
+};
+
+IconButtonLink.displayName = "IconButtonLink";

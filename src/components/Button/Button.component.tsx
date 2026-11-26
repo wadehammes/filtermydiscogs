@@ -1,9 +1,9 @@
-import type { ComponentProps, ReactNode } from "react";
-import { forwardRef } from "react";
+import type { ComponentProps, ReactNode, Ref } from "react";
 import { Spinner } from "src/components/Spinner/Spinner.component";
 import styles from "./Button.module.css";
 
-interface ButtonProps extends ComponentProps<"button"> {
+interface ButtonProps extends Omit<ComponentProps<"button">, "ref"> {
+  ref?: Ref<HTMLButtonElement> | undefined;
   variant?:
     | "primary"
     | "secondary"
@@ -23,7 +23,8 @@ interface ButtonProps extends ComponentProps<"button"> {
   "aria-labelledby"?: string;
 }
 
-const ButtonComponent = ({
+const Button = ({
+  ref,
   variant = "secondary",
   size = "md",
   children,
@@ -51,6 +52,7 @@ const ButtonComponent = ({
   return (
     <button
       {...props}
+      ref={ref}
       onClick={handleClick}
       disabled={isDisabled}
       className={buttonClasses}
@@ -66,10 +68,6 @@ const ButtonComponent = ({
     </button>
   );
 };
-
-const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, _ref) => (
-  <ButtonComponent {...props} />
-));
 
 Button.displayName = "Button";
 

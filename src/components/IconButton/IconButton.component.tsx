@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import {
   type IconButtonVariant,
   iconButtonClasses,
@@ -10,7 +10,8 @@ import {
 export type { IconButtonVariant };
 
 export interface IconButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref"> {
+  ref?: Ref<HTMLButtonElement> | undefined;
   variant?: IconButtonVariant;
   iconClassName?: string | undefined;
   label?: ReactNode;
@@ -20,44 +21,42 @@ export interface IconButtonProps
   children?: ReactNode;
 }
 
-export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  function IconButton(
-    {
-      variant = "default",
-      className,
-      iconClassName,
-      label,
-      labelClassName,
-      addon,
-      addonClassName,
-      children,
-      type = "button",
-      ...props
-    },
-    ref,
-  ) {
-    const isLabeled = label != null || addon != null;
+export const IconButton = ({
+  ref,
+  variant = "default",
+  className,
+  iconClassName,
+  label,
+  labelClassName,
+  addon,
+  addonClassName,
+  children,
+  type = "button",
+  ...props
+}: IconButtonProps) => {
+  const isLabeled = label != null || addon != null;
 
-    return (
-      <button
-        ref={ref}
-        type={type}
-        className={classNames(
-          iconButtonClasses(variant),
-          iconButtonLayoutClass(isLabeled),
-          className,
-        )}
-        data-testid="fmdIconButton"
-        {...props}
-      >
-        {children != null ? (
-          <span className={iconButtonIconClasses(iconClassName)} aria-hidden>
-            {children}
-          </span>
-        ) : null}
-        {label != null ? <span className={labelClassName}>{label}</span> : null}
-        {addon != null ? <span className={addonClassName}>{addon}</span> : null}
-      </button>
-    );
-  },
-);
+  return (
+    <button
+      ref={ref}
+      type={type}
+      className={classNames(
+        iconButtonClasses(variant),
+        iconButtonLayoutClass(isLabeled),
+        className,
+      )}
+      data-testid="fmdIconButton"
+      {...props}
+    >
+      {children != null ? (
+        <span className={iconButtonIconClasses(iconClassName)} aria-hidden>
+          {children}
+        </span>
+      ) : null}
+      {label != null ? <span className={labelClassName}>{label}</span> : null}
+      {addon != null ? <span className={addonClassName}>{addon}</span> : null}
+    </button>
+  );
+};
+
+IconButton.displayName = "IconButton";
