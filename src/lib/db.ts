@@ -8,6 +8,7 @@ import {
   readRuntimeDatabaseUrlFromEnv,
   sanitizePostgresConnectionStringForPg,
 } from "src/lib/databaseUrlEnv";
+import { extendPrismaClientWithConnectionRetry } from "src/lib/prismaConnectionRetryExtension.server";
 import { reportInfrastructureFailure } from "src/lib/sentry/reportInfrastructureFailure";
 
 const globalForPrisma = globalThis as unknown as {
@@ -49,12 +50,15 @@ const getPoolConfig = (connectionString: string): PoolConfig => {
     minConnections = 0;
   }
 
+  const isPooledHost = isPrismaPostgresPooledConnectionString(connectionString);
+  const defaultIdleTimeoutMs = isPooledHost ? "10000" : "30000";
+
   const poolConfig: PoolConfig = {
     connectionString,
     max: maxConnections,
     min: minConnections,
     idleTimeoutMillis: parseInt(
-      process.env.DB_POOL_IDLE_TIMEOUT || "30000",
+      process.env.DB_POOL_IDLE_TIMEOUT || defaultIdleTimeoutMs,
       10,
     ),
     connectionTimeoutMillis: parseInt(
@@ -62,9 +66,19 @@ const getPoolConfig = (connectionString: string): PoolConfig => {
       10,
     ),
     allowExitOnIdle: true,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10_000,
   };
 
-  if (!isPrismaPostgresPooledConnectionString(connectionString)) {
+  if (isPooledHost) {
+    poolConfig.maxUses = parseInt(process.env.DB_POOL_MAX_USES || "500", 10);
+    poolConfig.maxLifetimeSeconds = parseInt(
+      process.env.DB_POOL_MAX_LIFETIME_SEC || "1800",
+      10,
+    );
+  }
+
+  if (!isPooledHost) {
     poolConfig.statement_timeout = parseInt(
       process.env.DB_STATEMENT_TIMEOUT || "30000",
       10,
@@ -106,6 +120,7 @@ const initializePrismaClient = (): PrismaClient => {
 
   const connectionString =
     sanitizePostgresConnectionStringForPg(rawConnectionString);
+  const isPooledHost = isPrismaPostgresPooledConnectionString(connectionString);
 
   if (process.env.NODE_ENV === "development") {
     console.log(
@@ -167,12 +182,20 @@ const initializePrismaClient = (): PrismaClient => {
     globalForPrisma.prisma = undefined;
   }
 
-  const prismaInstance =
-    globalForPrisma.prisma ??
-    new PrismaClient({
+  let prismaInstance: PrismaClient;
+
+  if (globalForPrisma.prisma) {
+    prismaInstance = globalForPrisma.prisma;
+  } else {
+    const basePrisma = new PrismaClient({
       adapter,
       log: [...prismaClientLog],
     });
+
+    prismaInstance = isPooledHost
+      ? extendPrismaClientWithConnectionRetry(basePrisma)
+      : basePrisma;
+  }
 
   let healthCheckAttempts = 0;
   const maxHealthCheckAttempts = 3;

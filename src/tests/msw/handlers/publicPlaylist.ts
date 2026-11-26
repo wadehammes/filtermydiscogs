@@ -160,6 +160,48 @@ const requireE2eDemoPublicPlaylistId = ({
   return playlistId;
 };
 
+const stripE2eDiscogsReleaseDisplayArt = (
+  release: DiscogsRelease,
+): DiscogsRelease => ({
+  ...release,
+  basic_information: {
+    ...release.basic_information,
+    thumb: "",
+    cover_image: "",
+  },
+});
+
+export const buildE2eDemoPublicPlaylistResponseWithoutDisplayArt =
+  (): PublicPlaylistResponse => {
+    const payload = buildE2eDemoPublicPlaylistResponse();
+
+    return {
+      ...payload,
+      releases: payload.releases.map(stripE2eDiscogsReleaseDisplayArt),
+      mosaicThumbUrls: [],
+    };
+  };
+
+export const createE2eDemoPublicPlaylistMissingDisplayArtHandlers = () =>
+  E2E_PUBLIC_PLAYLIST_API_PATHS.map((path) =>
+    http.get(path, (context) => {
+      const playlistIdOrResponse = requireE2eDemoPublicPlaylistId(context);
+
+      if (typeof playlistIdOrResponse !== "string") {
+        return playlistIdOrResponse;
+      }
+
+      return HttpResponse.json(
+        buildE2eDemoPublicPlaylistResponseWithoutDisplayArt(),
+        {
+          headers: {
+            "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+          },
+        },
+      );
+    }),
+  );
+
 const respondPublicPlaylistEngagementPost = (
   context: PublicPlaylistRouteParams,
   recordEngagement: () => PublicPlaylistShareStats,

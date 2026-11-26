@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { LOGIN_DEMO_PUBLIC_PLAYLIST_ID } from "src/constants/publicPlaylist.constants";
 import {
   buildE2eDemoPublicPlaylistResponse,
+  buildE2eDemoPublicPlaylistResponseWithoutDisplayArt,
   resetE2eDemoPublicPlaylistEngagement,
 } from "src/tests/msw/handlers/publicPlaylist";
 
@@ -23,5 +24,21 @@ describe("buildE2eDemoPublicPlaylistResponse", () => {
       publicViewCount: 0,
       publicPlayCount: 0,
     });
+  });
+
+  it("buildE2eDemoPublicPlaylistResponseWithoutDisplayArt strips release thumbs for batch hydrate E2E", () => {
+    const payload = buildE2eDemoPublicPlaylistResponseWithoutDisplayArt();
+
+    expect(payload.releases).toHaveLength(2);
+    expect(
+      payload.releases.every(
+        (release) =>
+          !(
+            (release.basic_information.thumb?.trim() ?? "") ||
+            (release.basic_information.cover_image?.trim() ?? "")
+          ),
+      ),
+    ).toBe(true);
+    expect(payload.mosaicThumbUrls).toEqual([]);
   });
 });
