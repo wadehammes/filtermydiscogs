@@ -1,4 +1,5 @@
 ---
+
 description: Review branch changes against docs/handbook and AGENTS.md conventions.
 argument-hint: "[base branch or file paths]"
 ---

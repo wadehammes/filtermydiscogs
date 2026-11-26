@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 export const TOKEN_BUDGETS = {
@@ -103,9 +103,7 @@ export const collectHandbookBudgetViolations = (
   return violations;
 };
 
-export const formatHandbookBudgetViolations = (
-  violations: string[],
-): string =>
+export const formatHandbookBudgetViolations = (violations: string[]): string =>
   [
     "Handbook token budget violations (chars/4 estimate):",
     ...violations.map((line) => `  - ${line}`),

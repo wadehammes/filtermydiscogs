@@ -1,9 +1,9 @@
-import { describe, expect, it } from "@jest/globals";
 import path from "node:path";
+import { describe, expect, it } from "@jest/globals";
 import {
-  LEGACY_OVERSIZED_PAGES,
   collectHandbookBudgetViolations,
   formatHandbookBudgetViolations,
+  LEGACY_OVERSIZED_PAGES,
 } from "src/tests/utils/handbookTokenBudgets";
 
 describe("handbookTokenBudgets", () => {
