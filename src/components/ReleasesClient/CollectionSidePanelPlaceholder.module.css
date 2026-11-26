@@ -1,0 +1,38 @@
+.drawer {
+  background: var(--background);
+  border-inline-start: 1px solid var(--border);
+  display: none;
+  flex-direction: column;
+  height: calc(100dvh - var(--sticky-header-total-height));
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+
+  @media (width >= 1024px) {
+    display: flex;
+  }
+}
+
+:global([data-releases-workspace]) .drawer {
+  flex: 1;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  position: static;
+  top: auto;
+}
+
+.header {
+  border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-height: 72px;
+}
+
+.body {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+}

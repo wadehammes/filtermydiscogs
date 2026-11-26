@@ -13,6 +13,17 @@ import type { DiscogsCollection } from "src/types";
 import { toast } from "src/utils/toast";
 import { render, waitFor } from "test-utils";
 
+jest.mock("src/hooks/useCollectionData.hook", () => ({
+  useCollectionLoadState: jest.fn(() => ({
+    isLoading: false,
+    isError: false,
+    queryError: null,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+  })),
+  useCollectionData: jest.fn(),
+}));
+
 jest.mock("src/utils/toast", () => ({
   toast: {
     loading: jest.fn(),
@@ -22,6 +33,10 @@ jest.mock("src/utils/toast", () => ({
 
 const mockToastLoading = jest.mocked(toast.loading);
 const mockToastDismiss = jest.mocked(toast.dismiss);
+const { useCollectionLoadState } = jest.requireMock<
+  typeof import("src/hooks/useCollectionData.hook")
+>("src/hooks/useCollectionData.hook");
+const mockUseCollectionLoadState = jest.mocked(useCollectionLoadState);
 
 function CollectionLoadingToastHarness({
   collection,
@@ -57,6 +72,13 @@ function CollectionLoadingToastHarness({
 describe("CollectionLoadingToast", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseCollectionLoadState.mockReturnValue({
+      isLoading: true,
+      isError: false,
+      queryError: null,
+      hasNextPage: true,
+      isFetchingNextPage: false,
+    });
   });
 
   it("shows a bottom-center loading toast while a large collection is fetching", async () => {
@@ -101,6 +123,14 @@ describe("CollectionLoadingToast", () => {
 
     await waitFor(() => {
       expect(mockToastLoading).toHaveBeenCalled();
+    });
+
+    mockUseCollectionLoadState.mockReturnValue({
+      isLoading: false,
+      isError: false,
+      queryError: null,
+      hasNextPage: false,
+      isFetchingNextPage: false,
     });
 
     rerender(

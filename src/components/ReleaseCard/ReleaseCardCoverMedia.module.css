@@ -1,0 +1,23 @@
+.mediaFrame {
+  display: block;
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.coverPlaceholderLayer {
+  inset: 0;
+  position: absolute;
+}
+
+.coverImage {
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+  width: 100%;
+
+  &.loaded {
+    opacity: 1;
+  }
+}
