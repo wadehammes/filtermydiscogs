@@ -5,7 +5,6 @@ import {
   COLLECTION_CACHE_VALIDATION_TIMEOUT_MS,
   COLLECTION_PAGE_SIZE,
 } from "src/constants/collection";
-import { waitFor } from "test-utils";
 import { DiscogsCollectionQueryKeys } from "src/hooks/queries/querykeys.constants";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { formatFactory } from "src/tests/factories/Format.factory";
@@ -31,6 +30,7 @@ import {
   validatePersistedCollectionCache,
 } from "src/utils/collectionCacheSync";
 import { COLLECTION_FULL_PAGE_PARAM } from "src/utils/collectionPagination";
+import { waitFor } from "test-utils";
 
 jest.mock("src/api/urls", () => ({
   api: {

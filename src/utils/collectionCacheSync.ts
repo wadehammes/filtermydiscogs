@@ -30,6 +30,7 @@ const preparePromises = new Map<
   Promise<CollectionCachePrepareResult>
 >();
 const validatePromises = new Map<string, Promise<boolean>>();
+const backgroundRevalidationPromises = new Map<string, Promise<void>>();
 
 export interface CollectionCachePrepareResult {
   hydratedFromCache: boolean;
@@ -58,6 +59,7 @@ export const resetCollectionCacheReady = (username: string): void => {
   cacheLoadPromises.delete(cacheKey);
   preparePromises.delete(cacheKey);
   validatePromises.delete(cacheKey);
+  backgroundRevalidationPromises.delete(cacheKey);
 };
 
 export const hydrateCollectionQueryFromCache = (
@@ -149,7 +151,7 @@ const scheduleBackgroundCollectionCacheRevalidation = (
   cached: PersistedCollectionCache,
 ): void => {
   const cacheKey = normalizeCollectionCacheUsername(username);
-  if (validatePromises.has(cacheKey)) {
+  if (backgroundRevalidationPromises.has(cacheKey)) {
     return;
   }
 
@@ -161,12 +163,12 @@ const scheduleBackgroundCollectionCacheRevalidation = (
       return;
     }
 
-    await validatePersistedCollectionCache(queryClient, username, cached);
+    await ensureCollectionCacheValidated(queryClient, username);
   })().finally(() => {
-    validatePromises.delete(cacheKey);
+    backgroundRevalidationPromises.delete(cacheKey);
   });
 
-  validatePromises.set(cacheKey, promise);
+  backgroundRevalidationPromises.set(cacheKey, promise);
   void promise;
 };
 
