@@ -311,9 +311,11 @@ describe("collectionCacheSync", () => {
     );
 
     await prepareCollectionQueryFromCache(queryClient, "testuser");
+    await mockFetchDiscogsCollection.mock.results[0]?.value;
     queryClient.removeQueries({
       queryKey: DiscogsCollectionQueryKeys.byUsername("testuser"),
     });
+    resetCollectionCacheReady("testuser");
 
     const result = await prepareCollectionQueryFromCache(
       queryClient,
@@ -326,7 +328,11 @@ describe("collectionCacheSync", () => {
         DiscogsCollectionQueryKeys.byUsername("testuser"),
       ),
     ).not.toBeUndefined();
-    expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(2);
+
+    await waitFor(() => {
+      expect(mockFetchDiscogsCollection).toHaveBeenCalledTimes(2);
+    });
+    await mockFetchDiscogsCollection.mock.results[1]?.value;
   });
 
   it("deduplicates concurrent validate calls", async () => {
