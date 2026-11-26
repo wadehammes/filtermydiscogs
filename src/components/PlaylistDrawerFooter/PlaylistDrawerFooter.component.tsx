@@ -1,38 +1,39 @@
 "use client";
 
-import { Menu } from "@base-ui/react/menu";
 import classNames from "classnames";
 import { useCallback, useMemo, useState } from "react";
 import { ConfirmDialog } from "src/components/ConfirmDialog/ConfirmDialog.component";
 import { CreatePlaylistDialog } from "src/components/CreatePlaylistDialog/CreatePlaylistDialog.component";
 import { IconButton } from "src/components/IconButton/IconButton.component";
-import { InlinePopoverMenu } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
 import { usePlaylistDrawerContext } from "src/components/PlaylistDrawer/PlaylistDrawer.context";
+import { PlaylistDrawerFooterActionsMenu } from "src/components/PlaylistDrawerFooterActionsMenu/PlaylistDrawerFooterActionsMenu.component";
 import { PlaylistDrawerStats } from "src/components/PlaylistDrawerStats/PlaylistDrawerStats.component";
 import { PlaylistShareControls } from "src/components/PlaylistShareControls/PlaylistShareControls.component";
 import {
   SegmentedControl,
   segmentedStyles,
 } from "src/components/SegmentedControl/SegmentedControl.component";
+import { BELOW_DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useAuth } from "src/context/auth.context";
 import {
   useDeletePlaylistMutation,
   useUpdatePlaylistMutation,
 } from "src/hooks/mutations/usePlaylistMutations";
 import { useActivePlaylistDetail } from "src/hooks/useActivePlaylistDetail.hook";
+import { useInlinePopoverMenuClose } from "src/hooks/useInlinePopoverMenuClose.hook";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePlaylistPlayback } from "src/hooks/usePlaylistPlayback.hook";
 import type { CreatePlaylistFormValues } from "src/lib/validation/playlist.schemas";
-import EditIcon from "src/styles/icons/edit-thin.svg";
 import { ListPlusThinIcon } from "src/styles/icons/ListPlusThinIcon.component";
 import PlayIcon from "src/styles/icons/play-thin.svg";
 import TableIcon from "src/styles/icons/table-thin.svg";
-import TrashOpenIcon from "src/styles/icons/trash-open-thin.svg";
 import { writeLastPlayedPlaylistId } from "src/utils/lastPlayedPlaylistStorage";
 import { listPlaylistDrawerStatEntriesFromDetail } from "src/utils/playlistDrawerStats";
 import { normalizePlaylistPublicDescriptionForStorage } from "src/utils/publicPlaylistDescription";
 import styles from "./PlaylistDrawerFooter.module.css";
 
 export const PlaylistDrawerFooter = () => {
+  const isBelowDesktop = useMediaQuery(BELOW_DESKTOP_LAYOUT_MEDIA_QUERY);
   const {
     state: { userId },
   } = useAuth();
@@ -46,7 +47,7 @@ export const PlaylistDrawerFooter = () => {
   const { addPlaylistToQueue, playPlaylistTracks } = usePlaylistPlayback();
   const deletePlaylistMutation = useDeletePlaylistMutation();
   const updatePlaylistMutation = useUpdatePlaylistMutation();
-  const [editMenuOpen, setEditMenuOpen] = useState(false);
+  const desktopEditMenu = useInlinePopoverMenuClose();
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const trackCount = playlist?.tracks.length ?? 0;
@@ -57,18 +58,6 @@ export const PlaylistDrawerFooter = () => {
   const hasDrawerStats = drawerStatEntries.length > 0;
   const isBusy =
     deletePlaylistMutation.isPending || updatePlaylistMutation.isPending;
-
-  const closeEditMenu = useCallback(() => {
-    setEditMenuOpen(false);
-  }, []);
-
-  const runEditMenuAction = useCallback(
-    (action: () => void) => {
-      closeEditMenu();
-      action();
-    },
-    [closeEditMenu],
-  );
 
   const handleConfirmDelete = useCallback(async () => {
     if (!activePlaylistId) {
@@ -123,6 +112,49 @@ export const PlaylistDrawerFooter = () => {
     ],
   );
 
+  const playButton = (
+    <IconButton
+      className={classNames(
+        segmentedStyles.segment,
+        styles.footerSegment,
+        styles.playSegment,
+      )}
+      iconClassName={styles.footerSegmentIcon}
+      label="Play"
+      disabled={!playlist || trackCount === 0}
+      onClick={() => {
+        if (!playlist) {
+          return;
+        }
+
+        if (userId && activePlaylistId) {
+          writeLastPlayedPlaylistId(userId, activePlaylistId);
+        }
+
+        playPlaylistTracks(playlist.tracks);
+      }}
+    >
+      <PlayIcon />
+    </IconButton>
+  );
+
+  const queueButton = (
+    <IconButton
+      className={classNames(segmentedStyles.segment, styles.footerSegment)}
+      iconClassName={styles.footerSegmentIcon}
+      label="Queue"
+      disabled={!playlist || trackCount === 0}
+      onClick={() => {
+        if (playlist) {
+          addPlaylistToQueue(playlist.tracks);
+        }
+      }}
+      data-testid="fmdPlaylistDrawerAddToQueueButton"
+    >
+      <ListPlusThinIcon />
+    </IconButton>
+  );
+
   return (
     <>
       <div className={styles.footer} data-testid="fmdPlaylistDrawerFooter">
@@ -133,151 +165,79 @@ export const PlaylistDrawerFooter = () => {
             allowOverflow
             className={styles.footerSegmented}
           >
-            {activePlaylistId ? (
-              <Menu.Root
-                open={editMenuOpen}
-                onOpenChange={(open) => {
-                  setEditMenuOpen(open);
-                  if (open) {
-                    setStatsPanelOpen(false);
-                  }
-                }}
-                modal={false}
-              >
-                <Menu.Trigger
-                  render={(props) => (
-                    <IconButton
-                      {...props}
-                      className={classNames(
-                        segmentedStyles.segment,
-                        styles.footerSegment,
-                        {
-                          [segmentedStyles.active]: editMenuOpen,
-                        },
-                      )}
-                      iconClassName={styles.footerSegmentIcon}
-                      label="Edit"
-                      disabled={isBusy}
-                    >
-                      <EditIcon />
-                    </IconButton>
+            {isBelowDesktop ? (
+              <>
+                {queueButton}
+                {playButton}
+                <PlaylistDrawerFooterActionsMenu
+                  hasDrawerStats={hasDrawerStats}
+                  isBusy={isBusy}
+                  onRename={() => {
+                    setShowRenameDialog(true);
+                  }}
+                  onDelete={() => {
+                    setShowDeleteDialog(true);
+                  }}
+                  triggerClassName={classNames(
+                    segmentedStyles.segment,
+                    styles.footerSegment,
                   )}
+                  triggerIconClassName={styles.footerSegmentIcon}
                 />
-                <InlinePopoverMenu.Panel
-                  align="start"
-                  side="top"
-                  popupClassName={styles.editMenuPopup}
-                  testId="fmdPlaylistDrawerEditMenu"
-                  useOverlayStack={false}
-                >
-                  <InlinePopoverMenu.List>
-                    <InlinePopoverMenu.Item
-                      disabled={isBusy}
-                      onClick={() => {
-                        runEditMenuAction(() => {
-                          setShowRenameDialog(true);
-                        });
-                      }}
-                    >
-                      <span className={styles.editMenuItemIcon} aria-hidden>
-                        <EditIcon />
-                      </span>
-                      <span>Rename</span>
-                    </InlinePopoverMenu.Item>
-                    <InlinePopoverMenu.ItemDanger
-                      disabled={isBusy}
-                      onClick={() => {
-                        runEditMenuAction(() => {
-                          setShowDeleteDialog(true);
-                        });
-                      }}
-                    >
-                      <span className={styles.editMenuItemIcon} aria-hidden>
-                        <TrashOpenIcon />
-                      </span>
-                      <span>Delete</span>
-                    </InlinePopoverMenu.ItemDanger>
-                  </InlinePopoverMenu.List>
-                </InlinePopoverMenu.Panel>
-              </Menu.Root>
+              </>
             ) : (
-              <span
-                className={classNames(
-                  segmentedStyles.segment,
-                  styles.footerSegment,
-                )}
-                aria-disabled="true"
-              >
-                <span className={styles.footerSegmentIcon} aria-hidden>
-                  <EditIcon />
-                </span>
-                <span>Edit</span>
-              </span>
+              <>
+                <PlaylistDrawerFooterActionsMenu
+                  layout="edit"
+                  hasDrawerStats={hasDrawerStats}
+                  isBusy={isBusy}
+                  isOpen={desktopEditMenu.isOpen}
+                  onOpenChange={(open) => {
+                    desktopEditMenu.setIsOpen(open);
+                    if (open) {
+                      setStatsPanelOpen(false);
+                    }
+                  }}
+                  onRename={() => {
+                    setShowRenameDialog(true);
+                  }}
+                  onDelete={() => {
+                    setShowDeleteDialog(true);
+                  }}
+                  triggerClassName={classNames(
+                    segmentedStyles.segment,
+                    styles.footerSegment,
+                  )}
+                  triggerIconClassName={styles.footerSegmentIcon}
+                />
+                <IconButton
+                  className={classNames(
+                    segmentedStyles.segment,
+                    styles.footerSegment,
+                    {
+                      [segmentedStyles.active]: statsPanelOpen,
+                    },
+                  )}
+                  iconClassName={styles.footerSegmentIcon}
+                  label="Stats"
+                  disabled={!hasDrawerStats}
+                  aria-expanded={statsPanelOpen}
+                  aria-controls="fmdPlaylistDrawerStatsPanel"
+                  onClick={() => {
+                    desktopEditMenu.closeMenu();
+                    setStatsPanelOpen(!statsPanelOpen);
+                  }}
+                  data-testid="fmdPlaylistDrawerStatsToggle"
+                >
+                  <TableIcon />
+                </IconButton>
+                {queueButton}
+                {playButton}
+              </>
             )}
-            <IconButton
-              className={classNames(
-                segmentedStyles.segment,
-                styles.footerSegment,
-                {
-                  [segmentedStyles.active]: statsPanelOpen,
-                },
-              )}
-              iconClassName={styles.footerSegmentIcon}
-              label="Stats"
-              disabled={!hasDrawerStats}
-              aria-expanded={statsPanelOpen}
-              aria-controls="fmdPlaylistDrawerStatsPanel"
-              onClick={() => {
-                closeEditMenu();
-                setStatsPanelOpen(!statsPanelOpen);
-              }}
-              data-testid="fmdPlaylistDrawerStatsToggle"
-            >
-              <TableIcon />
-            </IconButton>
-            <IconButton
-              className={classNames(
-                segmentedStyles.segment,
-                styles.footerSegment,
-              )}
-              iconClassName={styles.footerSegmentIcon}
-              label="Queue"
-              disabled={!playlist || trackCount === 0}
-              onClick={() => {
-                if (playlist) {
-                  addPlaylistToQueue(playlist.tracks);
-                }
-              }}
-              data-testid="fmdPlaylistDrawerAddToQueueButton"
-            >
-              <ListPlusThinIcon />
-            </IconButton>
-            <IconButton
-              className={classNames(
-                segmentedStyles.segment,
-                styles.footerSegment,
-                styles.playSegment,
-              )}
-              iconClassName={styles.footerSegmentIcon}
-              label="Play"
-              disabled={!playlist || trackCount === 0}
-              onClick={() => {
-                if (!playlist) {
-                  return;
-                }
-
-                if (userId && activePlaylistId) {
-                  writeLastPlayedPlaylistId(userId, activePlaylistId);
-                }
-
-                playPlaylistTracks(playlist.tracks);
-              }}
-            >
-              <PlayIcon />
-            </IconButton>
           </SegmentedControl>
         </div>
-        <PlaylistShareControls />
+        {isBelowDesktop ? null : <PlaylistShareControls />}
       </div>
       <CreatePlaylistDialog
         isOpen={showRenameDialog}

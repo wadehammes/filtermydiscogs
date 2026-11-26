@@ -1,9 +1,10 @@
 "use client";
 
-import classNames from "classnames";
 import { type ChangeEvent, useId } from "react";
 import Button from "src/components/Button/Button.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
+import { PublicLinkShareControlsView } from "src/components/ShareControls/PublicLinkShareControlsView.component";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./CrateShareControls.module.css";
 
 interface CrateShareControlsProps {
@@ -49,7 +50,6 @@ export const CrateShareControls = ({
     variant === "menu" ? (
       <button
         type="button"
-        role="menuitem"
         className={styles.inlineCopyButton}
         disabled={isDisabled}
         onClick={handleCopyPress}
@@ -83,46 +83,17 @@ export const CrateShareControls = ({
     />
   );
 
-  const shareActions = (
-    <div className={styles.shareActions}>
-      {shareSwitch}
-      {isPublic ? copyButton : null}
-    </div>
-  );
-
-  if (variant === "menu") {
-    return (
-      <div
-        className={classNames(styles.shareRow, styles.shareRowMenu, className)}
-      >
-        <div className={styles.shareMenuHeader}>
-          <label className={styles.shareMenuTitle} htmlFor={shareSwitchId}>
-            <span id={shareLabelId}>Public link</span>
-          </label>
-          {shareActions}
-        </div>
-        <p id={shareDescriptionId} className={styles.shareDescription}>
-          {shareDescription}
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className={classNames(styles.shareRow, styles.shareRowFooter, className)}
-    >
-      <label className={styles.shareLabel} htmlFor={shareSwitchId}>
-        <span className={styles.shareText}>
-          <span id={shareLabelId} className={styles.shareTitle}>
-            Public link
-          </span>
-          <span id={shareDescriptionId} className={styles.shareDescription}>
-            {shareDescription}
-          </span>
-        </span>
-      </label>
-      {shareActions}
-    </div>
+    <PublicLinkShareControlsView
+      {...definedProps({ className })}
+      copyControl={isPublic ? copyButton : null}
+      shareDescription={shareDescription}
+      shareDescriptionId={shareDescriptionId}
+      shareLabelId={shareLabelId}
+      shareSwitch={shareSwitch}
+      shareSwitchId={shareSwitchId}
+      testId="fmdCrateShareControls"
+      variant={variant}
+    />
   );
 };

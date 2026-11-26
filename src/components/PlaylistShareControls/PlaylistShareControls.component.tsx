@@ -1,22 +1,27 @@
 "use client";
 
-import classNames from "classnames";
 import { type ChangeEvent, useCallback, useId } from "react";
 import Button from "src/components/Button/Button.component";
 import shareStyles from "src/components/CrateShareControls/CrateShareControls.module.css";
 import { usePlaylistDrawerContext } from "src/components/PlaylistDrawer/PlaylistDrawer.context";
+import { PublicLinkShareControlsView } from "src/components/ShareControls/PublicLinkShareControlsView.component";
 import { useUpdatePlaylistMutation } from "src/hooks/mutations/usePlaylistMutations";
 import { useActivePlaylistDetail } from "src/hooks/useActivePlaylistDetail.hook";
 import { copyToClipboard } from "src/utils/copyToClipboard";
+import { definedProps } from "src/utils/definedProps";
 import { getSiteUrl } from "src/utils/helpers";
 import { toast } from "src/utils/toast";
 
 interface PlaylistShareControlsProps {
   className?: string;
+  onAfterCopy?: () => void;
+  variant?: "footer" | "menu";
 }
 
 export const PlaylistShareControls = ({
   className,
+  onAfterCopy,
+  variant = "footer",
 }: PlaylistShareControlsProps) => {
   const shareSwitchId = useId();
   const shareLabelId = useId();
@@ -30,6 +35,7 @@ export const PlaylistShareControls = ({
   const shareDescription = isPublic
     ? "Anyone with the link can view this playlist."
     : "Only you can view this playlist.";
+
   const handleCopyPress = useCallback(async () => {
     if (!activePlaylistId) {
       return;
@@ -40,10 +46,11 @@ export const PlaylistShareControls = ({
 
     if (success) {
       toast.success("Link copied to clipboard");
+      onAfterCopy?.();
     } else {
       toast.error("Failed to copy link to clipboard");
     }
-  }, [activePlaylistId]);
+  }, [activePlaylistId, onAfterCopy]);
 
   const handlePublicChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (!activePlaylistId) {
@@ -71,46 +78,43 @@ export const PlaylistShareControls = ({
     />
   );
 
-  const copyButton = (
-    <Button
-      variant="secondary"
-      size="sm"
-      className={shareStyles.inlineCopyButton}
-      onPress={() => {
-        void handleCopyPress();
-      }}
-      disabled={isDisabled}
-    >
-      Copy link
-    </Button>
-  );
+  const copyButton =
+    variant === "menu" ? (
+      <button
+        type="button"
+        className={shareStyles.inlineCopyButton}
+        disabled={isDisabled}
+        onClick={() => {
+          void handleCopyPress();
+        }}
+      >
+        Copy link
+      </button>
+    ) : (
+      <Button
+        variant="secondary"
+        size="sm"
+        className={shareStyles.inlineCopyButton}
+        onPress={() => {
+          void handleCopyPress();
+        }}
+        disabled={isDisabled}
+      >
+        Copy link
+      </Button>
+    );
 
   return (
-    <div
-      className={classNames(
-        shareStyles.shareRow,
-        shareStyles.shareRowFooter,
-        className,
-      )}
-      data-testid="fmdPlaylistShareControls"
-    >
-      <label className={shareStyles.shareLabel} htmlFor={shareSwitchId}>
-        <span className={shareStyles.shareText}>
-          <span id={shareLabelId} className={shareStyles.shareTitle}>
-            Public link
-          </span>
-          <span
-            id={shareDescriptionId}
-            className={shareStyles.shareDescription}
-          >
-            {shareDescription}
-          </span>
-        </span>
-      </label>
-      <div className={shareStyles.shareActions}>
-        {shareSwitch}
-        {isPublic ? copyButton : null}
-      </div>
-    </div>
+    <PublicLinkShareControlsView
+      {...definedProps({ className })}
+      copyControl={isPublic ? copyButton : null}
+      shareDescription={shareDescription}
+      shareDescriptionId={shareDescriptionId}
+      shareLabelId={shareLabelId}
+      shareSwitch={shareSwitch}
+      shareSwitchId={shareSwitchId}
+      testId="fmdPlaylistShareControls"
+      variant={variant}
+    />
   );
 };

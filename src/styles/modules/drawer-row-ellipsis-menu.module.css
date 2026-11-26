@@ -1,0 +1,36 @@
+.menuRoot {
+  align-items: stretch;
+  display: flex;
+  flex: 1;
+  height: 100%;
+  isolation: isolate;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+}
+
+.menuTrigger {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.menuTrigger[data-popup-open] {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  color: var(--foreground);
+}
+
+.menuTriggerIcon {
+  display: block;
+  height: 0.875rem;
+  width: 0.875rem;
+}
+
+.menuPopup {
+  min-width: 12.5rem;
+}

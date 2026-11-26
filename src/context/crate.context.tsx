@@ -35,6 +35,9 @@ export const useCrateActions = (): CrateActions => {
   return context;
 };
 
+export const useOptionalCrateActions = (): CrateActions | undefined =>
+  useContext(CrateActionsContext);
+
 export const useCrate = (): CrateContextType => {
   const state = useContext(CrateStateContext);
   const actions = useContext(CrateActionsContext);

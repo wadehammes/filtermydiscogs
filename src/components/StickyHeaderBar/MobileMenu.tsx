@@ -12,6 +12,7 @@ import {
   useFiltersDispatch,
   useIsRandomMode,
 } from "src/hooks/useFilterAtoms.hook";
+import { useListenBottomDrawerDismiss } from "src/hooks/useListenBottomDrawerDismiss.hook";
 import { useViewDispatch } from "src/hooks/useViewAtoms.hook";
 import styles from "./MobileMenu.module.css";
 import { MobileMenuDrawerFooter } from "./MobileMenuDrawerFooter";
@@ -56,8 +57,14 @@ export const MobileMenu = ({
     setIsFiltersDrawerOpen(false);
   }, []);
 
+  const dismissOverlayDrawers = useCallback(() => {
+    closeMenuDrawer();
+    closeFiltersDrawer();
+  }, [closeFiltersDrawer, closeMenuDrawer]);
+
   useCloseMobileDrawerOnDesktop(closeMenuDrawer);
   useCloseMobileDrawerOnDesktop(closeFiltersDrawer);
+  useListenBottomDrawerDismiss(dismissOverlayDrawers);
 
   const handleNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isDisabled) {
@@ -91,18 +98,6 @@ export const MobileMenu = ({
       type: FiltersActionTypes.ToggleRandomMode,
       payload: undefined,
     });
-  };
-
-  const handleAboutClick = () => {
-    setIsOpen(false);
-  };
-
-  const handleSupportClick = () => {
-    setIsOpen(false);
-  };
-
-  const handleSettingsClick = () => {
-    setIsOpen(false);
   };
 
   const hasValidCollection =
@@ -146,9 +141,7 @@ export const MobileMenu = ({
           <MobileMenuDrawerFooter
             username={authState.username || null}
             onLogout={handleLogout}
-            onAboutClick={handleAboutClick}
-            onSupportClick={handleSupportClick}
-            onSettingsClick={handleSettingsClick}
+            onNavigate={closeMenuDrawer}
           />
         </div>
       </BottomDrawer>

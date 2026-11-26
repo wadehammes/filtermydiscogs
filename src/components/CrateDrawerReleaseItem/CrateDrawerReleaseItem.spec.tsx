@@ -1,5 +1,6 @@
 import { beforeEach, describe, it } from "@jest/globals";
 import { CrateDrawerReleaseItemPageObject } from "src/components/CrateDrawerReleaseItem/CrateDrawerReleaseItem.po";
+import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import {
   expectNoReleaseOpenPrefetchAfterHover,
   expectReleaseOpenPrefetchAfterHover,
@@ -33,6 +34,7 @@ describe("CrateDrawerReleaseItem", () => {
   });
 
   it("prefetches release detail when a row action is hovered", async () => {
+    setupMockMatchMedia({ desktop: true });
     const onReleaseClick = jest.fn();
     const user = setupReleaseOpenPrefetchHoverTimers();
 

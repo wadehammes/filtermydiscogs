@@ -4,6 +4,7 @@ import { api } from "src/api/urls";
 import { CrateDrawerProvider } from "src/components/CrateDrawer/CrateDrawer.context";
 import { setupCrateDrawerTests } from "src/components/CrateDrawer/crateDrawerTestSetup";
 import { CrateDrawerFooter } from "src/components/CrateDrawerFooter/CrateDrawerFooter.component";
+import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
 import {
   TestProviders,
   testAuthenticatedAuthState,
@@ -19,7 +20,9 @@ describe("CrateDrawerFooter", () => {
     setupCrateDrawerTests(mockApi);
   });
 
-  it("renders crate management actions and open crate link", async () => {
+  it("renders crate management actions and open crate link on desktop", async () => {
+    setupMockMatchMedia({ desktop: true });
+
     render(
       <CrateDrawerProvider>
         <CrateDrawerFooter />
@@ -62,7 +65,8 @@ describe("CrateDrawerFooter", () => {
     ).toBeInTheDocument();
   });
 
-  it("toggles set notes scratchpad visibility", async () => {
+  it("toggles set notes scratchpad visibility on desktop", async () => {
+    setupMockMatchMedia({ desktop: true });
     const user = userEvent.setup();
 
     render(
@@ -97,5 +101,37 @@ describe("CrateDrawerFooter", () => {
 
     expect(screen.getByRole("button", { name: /^notes$/i })).not.toBePressed();
     expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).not.toBeVisible();
+  });
+
+  it("toggles set notes from the mobile footer segment", async () => {
+    setupMockMatchMedia({ desktop: false });
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+
+    render(
+      <CrateDrawerProvider>
+        <CrateDrawerFooter />
+      </CrateDrawerProvider>,
+      {
+        wrapper: ({ children }) => (
+          <TestProviders
+            authInitialState={testAuthenticatedAuthState}
+            includeCollectionSync={false}
+          >
+            {children}
+          </TestProviders>
+        ),
+      },
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^notes$/i })).toBeEnabled();
+    });
+
+    await user.click(screen.getByRole("button", { name: /^notes$/i }));
+
+    expect(screen.getByTestId("fmdCrateSetNotesScratchpad")).toBeVisible();
+    expect(
+      screen.queryByRole("switch", { name: /public link/i }),
+    ).not.toBeInTheDocument();
   });
 });

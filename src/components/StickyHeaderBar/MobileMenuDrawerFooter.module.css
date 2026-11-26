@@ -1,0 +1,46 @@
+.footerActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.footerSegmented {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.footerSegment {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-2);
+
+  @media (width < 1024px) {
+    min-height: calc(var(--touch-target-min) - var(--space-2));
+    padding-block: var(--space-1);
+  }
+}
+
+.footerSegmentIcon {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.logoutSegment {
+  color: var(--destructive);
+
+  &:hover {
+    background: color-mix(in srgb, var(--destructive) 12%, var(--background));
+    color: var(--destructive);
+  }
+}
