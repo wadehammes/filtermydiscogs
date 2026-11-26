@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
@@ -72,6 +74,8 @@ export default function RootLayout({
         <div className="appRoot">
           <Providers>{children}</Providers>
         </div>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

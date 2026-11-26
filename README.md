@@ -168,7 +168,7 @@ The app will be available at `http://localhost:6767`.
 - **Email (optional)**: React Email + Resend for a one-time welcome on first signup and address-verification mail when you change email in Settings (`pnpm email:dev`, `pnpm email:send:test`)
 - **Forms**: React Hook Form + Zod 4
 - **Tooling**: pnpm 12, mise (Node 26 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))
-- **Analytics**: Google Tag Manager (consent-aware)
+- **Analytics**: Vercel Web Analytics + Speed Insights (Vercel dashboard) + Google Tag Manager product events (consent-aware; CWV also to GTM when opted in)
 - **Error monitoring**: Sentry 11 ([`@sentry/nextjs`](./package.json); optional via env — Session Replay, in-app bug report, **`/monitoring`** tunnel). Production **`pnpm build`** applies SDK **`bundleSizeOptimizations`** in [`next.config.ts`](./next.config.ts) (see [platform.md → Error monitoring](./docs/handbook/platform.md#error-monitoring-sentry)).
 
 Deeper stack and folder map: [`docs/handbook/architecture.md`](./docs/handbook/architecture.md).

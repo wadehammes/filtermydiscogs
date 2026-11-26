@@ -167,6 +167,8 @@ Use **`useQuery` / `useInfiniteQuery`** for server-backed reads; use **`useMutat
 | Cache hydration     | [`collectionCacheSync.ts`](../../src/utils/collectionCacheSync.ts) page-1 validation      | **Direct helper** — must not seed the infinite collection cache                                         |
 | Client-only UI      | `useCrateDrawer`, `useMediaQuery`, filter/view atoms                                      | **No**                                                                                                  |
 | Derived client data | `useSimilarReleasesInCollection`, `useCollectionAnalytics`                                | **No**                                                                                                  |
+| Vercel Web Analytics | **`Analytics`** in [`layout.tsx`](../../src/app/layout.tsx) (`@vercel/analytics/next`) | **No** (cookieless page views; not gated by analytics consent) |
+| Vercel Speed Insights | **`SpeedInsights`** in [`layout.tsx`](../../src/app/layout.tsx) (`@vercel/speed-insights/next`) | **No** (RUM CWV to Vercel; not gated by analytics consent) |
 | GTM / dataLayer     | [`analytics.ts`](../../src/analytics/analytics.ts) + [`productAnalyticsEvents.ts`](../../src/analytics/productAnalyticsEvents.ts) | **No** (consent-gated; no server queue)                                                                 |
 | OAuth redirect      | `AuthProvider.login`                                                                      | **No** — full navigation                                                                                |
 
