@@ -1,5 +1,7 @@
 "use client";
 
+"use memo";
+
 import type { DraggableAttributes } from "@dnd-kit/core";
 import classNames from "classnames";
 import Image from "next/image";
