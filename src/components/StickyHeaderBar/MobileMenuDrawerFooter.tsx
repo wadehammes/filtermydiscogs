@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import { IconButton } from "src/components/IconButton/IconButton.component";
 import { IconButtonLink } from "src/components/IconButton/IconButtonLink.component";
 import {
   SegmentedControl,
@@ -7,7 +6,6 @@ import {
 } from "src/components/SegmentedControl/SegmentedControl.component";
 import { MobileMenuFooterMoreMenu } from "src/components/StickyHeaderBar/MobileMenuFooterMoreMenu.component";
 import GearIcon from "src/styles/icons/gear-thin.svg";
-import LogOutIcon from "src/styles/icons/log-out-thin.svg";
 import menuStyles from "./MobileMenu.module.css";
 import styles from "./MobileMenuDrawerFooter.module.css";
 
@@ -51,17 +49,9 @@ export const MobileMenuDrawerFooter = ({
           <MobileMenuFooterMoreMenu
             triggerClassName={segmentClassName}
             triggerIconClassName={styles.footerSegmentIcon}
+            onLogout={onLogout}
             onNavigate={onNavigate}
           />
-          <IconButton
-            type="button"
-            className={classNames(segmentClassName, styles.logoutSegment)}
-            iconClassName={styles.footerSegmentIcon}
-            label="Logout"
-            onClick={onLogout}
-          >
-            <LogOutIcon />
-          </IconButton>
         </SegmentedControl>
       </div>
     </section>
