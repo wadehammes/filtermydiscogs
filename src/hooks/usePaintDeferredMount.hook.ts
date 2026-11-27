@@ -3,6 +3,7 @@ import { scheduleAfterNextPaint } from "src/utils/scheduleIdleWork";
 
 export type UsePaintDeferredMountOptions = {
   immediate?: boolean;
+  retainMountedWhenNotReady?: boolean;
 };
 
 export const usePaintDeferredMount = (
@@ -10,14 +11,16 @@ export const usePaintDeferredMount = (
   options?: UsePaintDeferredMountOptions,
 ): boolean => {
   const immediate = options?.immediate ?? false;
+  const retainMountedWhenNotReady = options?.retainMountedWhenNotReady ?? false;
   const [mounted, setMounted] = useState(false);
   const deferredOnceRef = useRef(false);
 
   useEffect(() => {
     if (!ready) {
-      if (!deferredOnceRef.current) {
-        setMounted(false);
+      if (retainMountedWhenNotReady && deferredOnceRef.current) {
+        return;
       }
+      setMounted(false);
       return;
     }
 
@@ -43,7 +46,7 @@ export const usePaintDeferredMount = (
 
     setMounted(true);
     return undefined;
-  }, [immediate, ready]);
+  }, [immediate, ready, retainMountedWhenNotReady]);
 
   return mounted;
 };

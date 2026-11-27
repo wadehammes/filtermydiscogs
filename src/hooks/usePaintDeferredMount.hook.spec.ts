@@ -48,7 +48,32 @@ describe("usePaintDeferredMount", () => {
     expect(result.current).toBe(true);
   });
 
-  it("keeps mounted after ready blips false once defer has completed", () => {
+  it("keeps mounted after ready blips false when retainMountedWhenNotReady is set", () => {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    jest
+      .spyOn(globalThis, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        rafCallbacks.push(callback);
+        return rafCallbacks.length;
+      });
+
+    const { result, rerender } = renderHook(
+      ({ ready }: { ready: boolean }) =>
+        usePaintDeferredMount(ready, { retainMountedWhenNotReady: true }),
+      { initialProps: { ready: true } },
+    );
+
+    act(() => {
+      rafCallbacks.shift()?.(0);
+      rafCallbacks.shift()?.(0);
+    });
+    expect(result.current).toBe(true);
+
+    rerender({ ready: false });
+    expect(result.current).toBe(true);
+  });
+
+  it("clears mounted after ready blips false by default", () => {
     const rafCallbacks: FrameRequestCallback[] = [];
     jest
       .spyOn(globalThis, "requestAnimationFrame")
@@ -69,6 +94,6 @@ describe("usePaintDeferredMount", () => {
     expect(result.current).toBe(true);
 
     rerender({ ready: false });
-    expect(result.current).toBe(true);
+    expect(result.current).toBe(false);
   });
 });

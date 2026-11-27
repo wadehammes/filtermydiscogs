@@ -111,6 +111,7 @@ function DashboardClientContent() {
     !showLoading && analytics !== null && story !== null;
   const mountBelowFold = usePaintDeferredMount(dashboardContentReady, {
     immediate: shelfHydrated,
+    retainMountedWhenNotReady: true,
   });
   const openCollectionDrilldown = useDashboardCollectionDrilldown();
 
