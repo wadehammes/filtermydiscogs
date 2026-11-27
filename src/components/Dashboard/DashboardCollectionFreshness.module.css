@@ -1,0 +1,8 @@
+.freshness {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  margin: 0;
+  width: 100%;
+}
