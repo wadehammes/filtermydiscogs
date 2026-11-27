@@ -6,7 +6,10 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import { scheduleIdleWork } from "src/utils/scheduleIdleWork";
+import {
+  scheduleAfterNextPaint,
+  scheduleIdleWork,
+} from "src/utils/scheduleIdleWork";
 
 describe("scheduleIdleWork", () => {
   const originalRequestIdleCallback = globalThis.requestIdleCallback;
@@ -47,5 +50,24 @@ describe("scheduleIdleWork", () => {
     expect(work).toHaveBeenCalledTimes(1);
 
     globalThis.requestIdleCallback = originalRequestIdleCallback;
+  });
+
+  it("when scheduleAfterNextPaint, runs work after two animation frames", () => {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    jest
+      .spyOn(globalThis, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        rafCallbacks.push(callback);
+        return rafCallbacks.length;
+      });
+    const work = jest.fn();
+
+    scheduleAfterNextPaint(work);
+
+    expect(work).not.toHaveBeenCalled();
+    rafCallbacks.shift()?.(0);
+    expect(work).not.toHaveBeenCalled();
+    rafCallbacks.shift()?.(0);
+    expect(work).toHaveBeenCalledTimes(1);
   });
 });

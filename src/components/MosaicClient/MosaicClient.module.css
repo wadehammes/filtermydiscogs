@@ -266,6 +266,8 @@
   aspect-ratio: 1;
   background: none;
   border: none;
+  contain-intrinsic-size: auto 4rem;
+  content-visibility: auto;
   cursor: pointer;
   display: block;
   height: 100%;

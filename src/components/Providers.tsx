@@ -6,6 +6,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { preconnect } from "react-dom";
 import { JotaiProvider } from "src/atoms/JotaiProvider";
 import { AuthenticatedCollectionSyncGate } from "src/components/AuthenticatedCollectionSyncGate.component";
 import { AuthenticatedProvidersGate } from "src/components/AuthenticatedProvidersGate.component";
@@ -34,6 +35,12 @@ import { useUserPreferencesSync } from "src/hooks/useUserPreferencesSync.hook";
 interface ProvidersProps {
   children: React.ReactNode;
 }
+
+const DiscogsImagePreconnect = () => {
+  preconnect("https://i.discogs.com", { crossOrigin: "anonymous" });
+  preconnect("https://img.discogs.com", { crossOrigin: "anonymous" });
+  return null;
+};
 
 const LogoutOverlayWrapper = () => {
   const { state: authState } = useAuth();
@@ -93,6 +100,7 @@ export const Providers = ({ children }: ProvidersProps) => {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <DiscogsImagePreconnect />
       <JotaiProvider>
         <ThemeProvider>
           <AuthProvider>

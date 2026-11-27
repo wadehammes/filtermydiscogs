@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import MosaicControls from "src/components/MosaicClient/MosaicControls.component";
@@ -23,6 +23,8 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { useGridDimensions } from "src/hooks/useGridDimensions.hook";
 import { useMosaicGenerator } from "src/hooks/useMosaicGenerator.hook";
+import { useMosaicGridIdleMount } from "src/hooks/useMosaicGridIdleMount.hook";
+import { useMosaicVisibleTileIndices } from "src/hooks/useMosaicVisibleTileIndices.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
 import { useLocalSelectedReleaseModal } from "src/hooks/useSelectedReleaseModal.hook";
@@ -94,6 +96,30 @@ export default function MosaicClient() {
       aspectRatio,
     });
 
+  const mountMosaicGrid = useMosaicGridIdleMount(
+    !showLoading && releasesToDisplay.length > 0,
+  );
+  const [mosaicScrollContainer, setMosaicScrollContainer] =
+    useState<HTMLDivElement | null>(null);
+  const mosaicScrollContainerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      setMosaicScrollContainer(node);
+    },
+    [],
+  );
+  const visibleTileIndices = useMosaicVisibleTileIndices(
+    mosaicScrollContainer,
+    {
+      cols: gridDimensions.cols,
+      cellSize: gridDimensions.cellSize,
+      itemCount: releasesToDisplay.length,
+      enabled:
+        mountMosaicGrid &&
+        gridDimensions.cols > 0 &&
+        gridDimensions.cellSize > 0,
+    },
+  );
+
   if (shouldRedirectHome) {
     return null;
   }
@@ -160,8 +186,13 @@ export default function MosaicClient() {
               onDownload={downloadMosaic}
             />
 
-            <div className={styles.mosaicContainer}>
-              {gridDimensions.cols > 0 &&
+            <div
+              ref={mosaicScrollContainerRef}
+              className={styles.mosaicContainer}
+              aria-busy={!mountMosaicGrid}
+            >
+              {mountMosaicGrid &&
+                gridDimensions.cols > 0 &&
                 gridDimensions.cellSize &&
                 gridDimensions.cellSize > 0 && (
                   <div
@@ -172,14 +203,25 @@ export default function MosaicClient() {
                       maxWidth: "100%",
                     }}
                   >
-                    {releasesToDisplay.map((release) => (
-                      <MosaicItem
-                        key={release.instance_id}
-                        release={release}
-                        totalReleases={releasesToDisplay.length}
-                        onReleaseClick={handleReleaseClick}
-                      />
-                    ))}
+                    {visibleTileIndices.map((index) => {
+                      const release = releasesToDisplay[index];
+                      if (!release) {
+                        return null;
+                      }
+                      const gridColumn = (index % gridDimensions.cols) + 1;
+                      const gridRow =
+                        Math.floor(index / gridDimensions.cols) + 1;
+                      return (
+                        <MosaicItem
+                          key={release.instance_id}
+                          release={release}
+                          totalReleases={releasesToDisplay.length}
+                          onReleaseClick={handleReleaseClick}
+                          gridColumn={gridColumn}
+                          gridRow={gridRow}
+                        />
+                      );
+                    })}
                   </div>
                 )}
             </div>

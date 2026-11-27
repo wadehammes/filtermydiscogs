@@ -4,6 +4,7 @@ import { discogsOAuthService } from "src/services/discogs-oauth.service";
 import { discogsIdentityFactory } from "src/tests/factories/DiscogsIdentity.factory";
 import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsUser.factory";
 import {
+  DISCOGS_RECONNECT_USERNAME_COOKIE,
   DISCOGS_SESSION_COOKIE,
   getDisplayIdentityFromCookies,
   getOptionalVerifiedUserFromRequest,
@@ -34,14 +35,21 @@ describe("auth-request", () => {
   const accessToken = "access-token";
   const accessTokenSecret = "access-secret";
   const cacheKey = getIdentityCacheKey({ accessToken, accessTokenSecret });
+  let responseCookieSets: Array<{ name: string; value: string }>;
 
   beforeEach(() => {
     jest.restoreAllMocks();
     clearCachedIdentity(cacheKey);
+    responseCookieSets = [];
     jest.spyOn(NextResponse, "json").mockImplementation(
       (_body, init) =>
         ({
           status: init?.status ?? 200,
+          cookies: {
+            set: (name: string, value: string) => {
+              responseCookieSets.push({ name, value });
+            },
+          },
         }) as NextResponse,
     );
   });
@@ -171,6 +179,18 @@ describe("auth-request", () => {
 
     expect(consoleError).not.toHaveBeenCalled();
     expect(getCachedIdentity({ cacheKey })).toBeNull();
+    expect(responseCookieSets.map(({ name }) => name)).toEqual(
+      expect.arrayContaining([
+        DISCOGS_SESSION_COOKIE,
+        "discogs_access_token",
+        "discogs_username",
+      ]),
+    );
+    expect(
+      responseCookieSets.find(
+        ({ name }) => name === DISCOGS_RECONNECT_USERNAME_COOKIE,
+      )?.value,
+    ).toBe("");
   });
 
   it("returns 502 instead of unauthorized when Discogs is down", async () => {
@@ -261,8 +281,12 @@ describe("auth-request", () => {
     expect(getIdentity).not.toHaveBeenCalled();
   });
 
-  it("uses session cookies on read-only routes when identity cache is cold", async () => {
-    const getIdentity = jest.spyOn(discogsOAuthService, "getIdentity");
+  it("calls Discogs identity on read-only routes when identity cache is cold", async () => {
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockResolvedValue(
+        discogsIdentityFactory.forUser({ id: 42, username: "crate-digger" }),
+      );
 
     const request = createRequest({
       [DISCOGS_SESSION_COOKIE]: "1",
@@ -282,11 +306,21 @@ describe("auth-request", () => {
         username: "crate-digger",
       }),
     );
-    expect(getIdentity).not.toHaveBeenCalled();
+    expect(discogsOAuthService.getIdentity).toHaveBeenCalledWith(
+      accessToken,
+      accessTokenSecret,
+    );
   });
 
-  it("does not cache cookie fallback identity under the OAuth token key", async () => {
-    jest.spyOn(discogsOAuthService, "getIdentity");
+  it("clears session cookies on read-only routes when Discogs rejects tokens", async () => {
+    jest
+      .spyOn(discogsOAuthService, "getIdentity")
+      .mockRejectedValue(
+        Object.assign(
+          new Error("You must authenticate to access this resource."),
+          { status: 401 },
+        ),
+      );
 
     const request = createRequest({
       [DISCOGS_SESSION_COOKIE]: "1",
@@ -296,9 +330,23 @@ describe("auth-request", () => {
       discogs_username: "crate-digger",
     });
 
-    await getVerifiedUserFromRequest(request, { allowStale: true });
+    const result = await getVerifiedUserFromRequest(request, {
+      allowStale: true,
+    });
 
-    expect(getCachedIdentity({ cacheKey, allowStale: true })).toBeNull();
+    expect("error" in result).toBe(true);
+    if ("error" in result) {
+      expect(result.error.status).toBe(401);
+    }
+    expect(
+      responseCookieSets.find(({ name }) => name === DISCOGS_SESSION_COOKIE)
+        ?.value,
+    ).toBe("");
+    expect(
+      responseCookieSets.find(
+        ({ name }) => name === DISCOGS_RECONNECT_USERNAME_COOKIE,
+      )?.value,
+    ).toBe("crate-digger");
   });
 
   it("still calls Discogs identity for write routes when cache is cold", async () => {

@@ -6,3 +6,17 @@ export const scheduleIdleWork = (work: () => void): void => {
 
   setTimeout(work, 0);
 };
+
+export const scheduleAfterNextPaint = (work: () => void): (() => void) => {
+  let innerFrameId = 0;
+  const outerFrameId = requestAnimationFrame(() => {
+    innerFrameId = requestAnimationFrame(work);
+  });
+
+  return () => {
+    cancelAnimationFrame(outerFrameId);
+    if (innerFrameId) {
+      cancelAnimationFrame(innerFrameId);
+    }
+  };
+};

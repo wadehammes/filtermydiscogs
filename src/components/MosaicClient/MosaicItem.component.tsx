@@ -11,12 +11,16 @@ interface MosaicItemProps {
   release: DiscogsRelease;
   totalReleases: number;
   onReleaseClick?: (instanceId: string) => void;
+  gridColumn: number;
+  gridRow: number;
 }
 
 export default function MosaicItem({
   release,
   totalReleases,
   onReleaseClick,
+  gridColumn,
+  gridRow,
 }: MosaicItemProps) {
   const { openRelease, prefetchReleaseOpen, prefetchPointerProps, canOpen } =
     useReleaseCardOpenHandler({
@@ -36,6 +40,7 @@ export default function MosaicItem({
     <button
       type="button"
       className={styles.mosaicItem}
+      style={{ gridColumn, gridRow }}
       onClick={canOpen ? openRelease : undefined}
       aria-label={`Open release details for ${release.basic_information.title}`}
       data-release-id={release.instance_id}
