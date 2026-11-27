@@ -15,6 +15,7 @@
   color: var(--foreground);
   cursor: pointer;
   display: flex;
+  flex-shrink: 0;
   font-size: var(--text-lg);
   height: var(--button-height-sm);
   justify-content: center;
