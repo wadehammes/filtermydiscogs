@@ -96,9 +96,9 @@ test.describe("authenticated dashboard (MSW)", () => {
 
 test.describe("authenticated dashboard duplicate shelf (MSW)", () => {
   test.use({
-    handlers: createAuthenticatedE2eHandlers({
+    authenticatedE2eHandlerOptions: {
       releases: buildE2eCollectionReleasesWithExactDuplicate(),
-    }),
+    },
   });
 
   test("opens exact duplicates modal", async ({ page }) => {
