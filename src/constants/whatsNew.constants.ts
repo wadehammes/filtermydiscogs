@@ -44,9 +44,14 @@ export const WHATS_NEW_RELEASES: readonly WhatsNewRelease[] = [
     version: "v2026.11.27",
     highlights: [
       {
+        id: "whats-new-modal",
+        badge: "new",
+        text: "What's New? in the account menu summarizes recent releases. After a production deploy refresh, it can open when you have not seen the latest notes.",
+      },
+      {
         id: "collection-command-palette",
         badge: "new",
-        text: `On the collection page, open Ask in the filters bar (or ${WHATS_NEW_SHORTCUT_PLACEHOLDER}), type what you want, run it, then apply filters, save a view, or create a crate from the preview.`,
+        text: `On the collection page, open Ask in the filters bar, the mobile header, or press ${WHATS_NEW_SHORTCUT_PLACEHOLDER}, type what you want, run it, then apply filters, save a view, or create a crate from the preview.`,
       },
     ],
   },

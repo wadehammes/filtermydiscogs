@@ -22,7 +22,10 @@ describe("WhatsNewModal", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("v2026.11.27")).toBeInTheDocument();
     expect(
-      screen.getByText(/open Ask in the filters bar/i),
+      screen.getByText(/What's New\? in the account menu/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/open Ask in the filters bar, the mobile header/i),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/apply filters, save a view, or create a crate/i),
