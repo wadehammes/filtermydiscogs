@@ -28,5 +28,8 @@ export const buildEmailAccountToastDismissedStorageKey = (
   userId: string,
 ): string => `fmd_email_account_toast_dismissed_${userId}`;
 
+export const buildWhatsNewLastSeenStorageKey = (userId: string): string =>
+  `fmd_whats_new_last_seen_${userId}`;
+
 export const COLLECTION_CACHE_DB_NAME = "filtermydiscogs";
 export const COLLECTION_CACHE_STORE_NAME = "collection_cache";

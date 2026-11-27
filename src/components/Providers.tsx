@@ -21,6 +21,7 @@ import {
   RootToastManager,
   SessionToastManager,
 } from "src/components/ToastManager/ToastManager.component";
+import { WhatsNewDialogHost } from "src/components/WhatsNewModal/WhatsNewDialogHost.component";
 import { AnalyticsConsentProvider } from "src/context/analyticsConsent.context";
 import { AuthProvider, useAuth } from "src/context/auth.context";
 import { CollectionContextProvider } from "src/context/collection.context";
@@ -118,6 +119,7 @@ export const Providers = ({ children }: ProvidersProps) => {
                           <LogoutOverlayWrapper />
                           <SessionToastManager />
                           <SentryUserFeedbackDialogHost />
+                          <WhatsNewDialogHost />
                         </AnalyticsShell>
                       </AuthenticatedProvidersGate>
                     </CrateProvider>

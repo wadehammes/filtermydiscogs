@@ -3,7 +3,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import classNames from "classnames";
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
+import { ThemeInitScript } from "src/app/ThemeInitScript.server";
 import { Providers } from "src/components/Providers";
 import { DEFAULT_OPEN_GRAPH_IMAGE, DEFAULT_TWITTER_IMAGE } from "src/constants";
 import {
@@ -71,7 +71,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body suppressHydrationWarning>
-        <Script src="/theme-init.js" strategy="beforeInteractive" />
+        <ThemeInitScript />
         <div className="appRoot">
           <Providers>{children}</Providers>
         </div>

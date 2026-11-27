@@ -111,7 +111,13 @@ describe("useSimilarReleasesInCollection", () => {
 
     await waitFor(() => {
       expect(result.current.similarPageIndex).toBe(1);
-      expect(result.current.similarReleases).toHaveLength(5);
+      const expectedSecondPageLength = Math.min(
+        RELEASE_MODAL_SIMILAR_LIMIT,
+        result.current.totalSimilarMatchCount - RELEASE_MODAL_SIMILAR_LIMIT,
+      );
+      expect(result.current.similarReleases).toHaveLength(
+        expectedSecondPageLength,
+      );
       expect(
         result.current.similarReleases.map((release) => release.instance_id),
       ).not.toEqual(initialInstanceIds);

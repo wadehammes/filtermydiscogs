@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useRouter } from "next/navigation";
 import { api } from "src/api/urls";
-import { THEME_STORAGE_KEY } from "src/constants/storageKeys";
+import {
+  buildWhatsNewLastSeenStorageKey,
+  THEME_STORAGE_KEY,
+} from "src/constants/storageKeys";
+import { WHATS_NEW_LATEST_VERSION } from "src/constants/whatsNew.constants";
 import { useClearAllUserData } from "src/hooks/useClearAllUserData.hook";
 import { crateMutationSuccessFactory } from "src/tests/factories/CrateMutationSuccess.factory";
 import { createMockAppRouter } from "src/tests/mocks/mockAppRouter.mock";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
+import { persistWhatsNewLastSeenForUser } from "src/utils/whatsNewLastSeen";
 import { act, renderHookWithTestProviders, waitFor } from "test-utils";
 
 jest.mock("src/api/urls", () => ({
@@ -53,6 +58,37 @@ describe("useClearAllUserData", () => {
     expect(mockLogout).toHaveBeenCalled();
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
     expect(mockReplace).toHaveBeenCalledWith("/");
+  });
+
+  it("when clear succeeds, removes whats new last seen for the signed-in user", async () => {
+    const mockReplace = jest.fn();
+    mockUseRouter.mockReturnValue(
+      createMockAppRouter({ replace: mockReplace }),
+    );
+
+    persistWhatsNewLastSeenForUser(
+      testAuthenticatedAuthState.userId ?? "",
+      WHATS_NEW_LATEST_VERSION,
+    );
+
+    const { result } = renderHookWithTestProviders(
+      () => useClearAllUserData(),
+      {
+        authInitialState: testAuthenticatedAuthState,
+      },
+    );
+
+    await act(async () => {
+      await result.current.clearAllUserData();
+    });
+
+    expect(
+      localStorage.getItem(
+        buildWhatsNewLastSeenStorageKey(
+          testAuthenticatedAuthState.userId ?? "",
+        ),
+      ),
+    ).toBeNull();
   });
 
   it("resets isClearing when clearData fails", async () => {

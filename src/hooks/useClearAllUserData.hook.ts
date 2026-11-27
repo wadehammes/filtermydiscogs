@@ -7,9 +7,13 @@ import { useCrate } from "src/context/crate.context";
 import { useClearDataMutation } from "src/hooks/mutations/useAuthMutations";
 import { useCollectionReset } from "src/hooks/useCollectionReset.hook";
 import { clearClientStoredData } from "src/utils/clearClientStoredData";
+import { clearWhatsNewLastSeenForUser } from "src/utils/whatsNewLastSeen";
 
 export const useClearAllUserData = () => {
-  const { logout } = useAuth();
+  const {
+    logout,
+    state: { userId },
+  } = useAuth();
   const resetCollection = useCollectionReset();
   const { clearCrate } = useCrate();
   const queryClient = useQueryClient();
@@ -23,6 +27,9 @@ export const useClearAllUserData = () => {
     try {
       trackUserDataCleared();
       await clearDataMutation.mutateAsync();
+      if (userId) {
+        clearWhatsNewLastSeenForUser(userId);
+      }
       clearClientStoredData();
       queryClient.clear();
       resetCollection();
@@ -40,6 +47,7 @@ export const useClearAllUserData = () => {
     queryClient,
     resetCollection,
     router,
+    userId,
   ]);
 
   return {

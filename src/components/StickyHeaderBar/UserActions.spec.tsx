@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { UserActionsPageObject } from "src/components/StickyHeaderBar/UserActions.po";
 import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
+import { WHATS_NEW_NAV_LABEL } from "src/constants/whatsNew.constants";
 import { expectPortaledPopupAttachedToBody } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 
@@ -51,6 +52,9 @@ describe("UserActions", () => {
       "href",
       "/about",
     );
+    expect(
+      screen.getByRole("menuitem", { name: WHATS_NEW_NAV_LABEL }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("menuitem", { name: SUPPORT_PROJECT_NAV_LABEL }),
     ).toHaveAttribute("href", "/about#support");

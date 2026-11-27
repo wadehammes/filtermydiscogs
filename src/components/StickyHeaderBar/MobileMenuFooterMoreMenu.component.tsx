@@ -7,10 +7,12 @@ import { inlinePopoverMenuStyles } from "src/components/InlinePopoverMenu/Inline
 import { InlinePopoverMenuItemIcon } from "src/components/InlinePopoverMenu/InlinePopoverMenuItemIcon.component";
 import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
+import { WHATS_NEW_NAV_LABEL } from "src/constants/whatsNew.constants";
 import { useInlinePopoverMenuClose } from "src/hooks/useInlinePopoverMenuClose.hook";
 import HeartIcon from "src/styles/icons/heart-thin.svg";
 import InfoCircleIcon from "src/styles/icons/info-circle-thin.svg";
 import { definedProps } from "src/utils/definedProps";
+import { openWhatsNewDialog } from "src/utils/whatsNewDialogBridge";
 
 type MobileMenuFooterMoreMenuProps = {
   onNavigate: () => void;
@@ -51,6 +53,16 @@ export const MobileMenuFooterMoreMenu = ({
         </InlinePopoverMenuItemIcon>
         About
       </Menu.LinkItem>
+      <Menu.Item
+        className={inlinePopoverMenuStyles.item}
+        onClick={() => {
+          runAction(() => {
+            openWhatsNewDialog();
+          });
+        }}
+      >
+        {WHATS_NEW_NAV_LABEL}
+      </Menu.Item>
       <Menu.LinkItem
         closeOnClick
         render={
