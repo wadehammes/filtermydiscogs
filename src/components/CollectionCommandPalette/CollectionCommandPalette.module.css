@@ -312,7 +312,11 @@
 }
 
 .panelFooterStart {
+  align-items: center;
+  display: flex;
   flex: 1;
+  flex-wrap: wrap;
+  gap: var(--space-3);
   min-width: 0;
   text-align: start;
 }

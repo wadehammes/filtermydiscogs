@@ -39,6 +39,29 @@ describe("CollectionCommandPalette", () => {
     }
   });
 
+  it("calls startOver when Start over is pressed", async () => {
+    const startOver = jest.fn();
+    const user = userEvent.setup();
+
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withQuery("techno vinyl", {
+        startOver,
+      }),
+    ).renderCollectionCommandPalette();
+
+    await user.click(screen.getByRole("button", { name: "Start over" }));
+
+    expect(startOver).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides Start over when the command input and preview are empty", () => {
+    po.renderCollectionCommandPalette();
+
+    expect(
+      screen.queryByRole("button", { name: "Start over" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("calls clearPromptHistory when Clear recent is pressed", async () => {
     const clearPromptHistory = jest.fn();
     const user = userEvent.setup();

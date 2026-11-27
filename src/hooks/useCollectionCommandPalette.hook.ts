@@ -382,10 +382,13 @@ export const useCollectionCommandPalette = () => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [paletteEnabled, resetPaletteState, shortcut]);
 
+  const startOver = resetPaletteState;
+
   return {
     open,
     query,
     setQuery,
+    startOver,
     openPalette,
     closePalette,
     shortcut,

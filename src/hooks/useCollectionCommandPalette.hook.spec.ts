@@ -109,6 +109,46 @@ describe("useCollectionCommandPalette", () => {
     });
   });
 
+  it("when startOver is called, clears query and preview without closing", async () => {
+    const intent = collectionCommandIntentFactory.withStyles(["Techno"], {
+      selectedYears: [2018],
+    });
+    mockApiResponse(
+      true,
+      mockApi.interpretCollectionCommand,
+      { intent },
+      new Error("interpret failed"),
+    );
+
+    const { result } = renderPaletteHook();
+
+    act(() => {
+      result.current.openPalette();
+    });
+
+    act(() => {
+      result.current.setQuery("techno from 2018");
+    });
+
+    act(() => {
+      result.current.runInterpret();
+    });
+
+    await waitFor(() => {
+      expect(result.current.previewFilters).not.toBeNull();
+    });
+
+    act(() => {
+      result.current.startOver();
+    });
+
+    await waitFor(() => {
+      expect(result.current.query).toBe("");
+      expect(result.current.previewFilters).toBeNull();
+      expect(result.current.open).toBe(true);
+    });
+  });
+
   it("when runInterpret succeeds, calls the interpret API with a trimmed prompt", async () => {
     const intent = collectionCommandIntentFactory.withStyles(["Techno"]);
     mockApiResponse(

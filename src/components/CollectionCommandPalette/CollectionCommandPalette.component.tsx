@@ -17,6 +17,7 @@ import {
   COLLECTION_COMMAND_INPUT_PLACEHOLDER,
   COLLECTION_COMMAND_PROMPT_MAX_LENGTH,
   COLLECTION_COMMAND_REPORT_ISSUE_LABEL,
+  COLLECTION_COMMAND_START_OVER_LABEL,
 } from "src/constants/collectionCommand.constants";
 import { useCollectionCommandPalette } from "src/hooks/useCollectionCommandPalette.hook";
 import { openCollectionCommandSentryFeedback } from "src/lib/sentry/openCollectionCommandSentryFeedback.client";
@@ -50,6 +51,7 @@ export const CollectionCommandPalette = () => {
     preferCreateCrateAction,
     shortcut,
     examplePrompts,
+    startOver,
   } = useCollectionCommandPalette();
 
   return open ? (
@@ -85,6 +87,7 @@ export const CollectionCommandPalette = () => {
         shortcut={shortcut}
         examplePrompts={examplePrompts}
         closePalette={closePalette}
+        startOver={startOver}
       />
     </div>
   ) : null;
@@ -118,6 +121,7 @@ type CollectionCommandPanelProps = {
   shortcut: string;
   examplePrompts: string[];
   closePalette: () => void;
+  startOver: () => void;
 };
 
 const CollectionCommandPanel = ({
@@ -140,11 +144,20 @@ const CollectionCommandPanel = ({
   shortcut,
   examplePrompts,
   closePalette,
+  startOver,
 }: CollectionCommandPanelProps) => {
   const commandInputRef = useRef<HTMLInputElement>(null);
   const primaryPreviewActionRef = useRef<HTMLButtonElement>(null);
   const [highlightedValue, setHighlightedValue] = useState("");
   const queryIsEmpty = query.trim().length === 0;
+  const canStartOver =
+    !queryIsEmpty || preview !== null || interpretMutation.isError;
+
+  const handleStartOver = useCallback(() => {
+    startOver();
+    setHighlightedValue("");
+    commandInputRef.current?.focus();
+  }, [startOver]);
 
   const interpretErrorMessage =
     interpretMutation.isError && interpretMutation.error
@@ -518,6 +531,19 @@ const CollectionCommandPanel = ({
           data-testid="fmdCollectionCommandPanelFooter"
         >
           <div className={styles.panelFooterStart}>
+            {canStartOver ? (
+              <button
+                type="button"
+                className={classNames(
+                  textActionStyles.subtlelink,
+                  styles.panelFooterAction,
+                )}
+                data-testid="fmdCollectionCommandStartOver"
+                onClick={handleStartOver}
+              >
+                {COLLECTION_COMMAND_START_OVER_LABEL}
+              </button>
+            ) : null}
             {promptHistory.length > 0 ? (
               <button
                 type="button"

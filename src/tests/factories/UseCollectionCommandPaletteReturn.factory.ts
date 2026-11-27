@@ -20,6 +20,7 @@ const createUseCollectionCommandPaletteReturn = (
     open: false,
     query: "",
     setQuery: jest.fn(),
+    startOver: jest.fn(),
     openPalette: jest.fn(),
     closePalette: jest.fn(),
     shortcut: DEFAULT_COLLECTION_COMMAND_SHORTCUT,

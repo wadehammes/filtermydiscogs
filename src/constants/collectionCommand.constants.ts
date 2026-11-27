@@ -16,6 +16,8 @@ export const COLLECTION_COMMAND_CHIP_LABEL = "Ask";
 
 export const COLLECTION_COMMAND_CLEAR_RECENT_LABEL = "Clear recent";
 
+export const COLLECTION_COMMAND_START_OVER_LABEL = "Start over";
+
 export const COLLECTION_COMMAND_INPUT_PLACEHOLDER = "What should we do?";
 
 export const COLLECTION_COMMAND_OPEN_TOOLTIP_LEDE =
