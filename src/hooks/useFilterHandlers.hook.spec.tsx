@@ -384,4 +384,34 @@ describe("useFilterHandlers", () => {
 
     expect(result.current.yearOperator).toBe("OR");
   });
+
+  it("keeps selected styles in styleOptions when they are absent from loaded facet options", () => {
+    const releases = [releaseFactory.withStyles(["Rock"])];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers();
+
+        return { handlers };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters releases={releases}>
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleStyleChange(["Techno", "Rock"]);
+    });
+
+    expect(result.current.handlers.styleOptions).toEqual(
+      expect.arrayContaining([
+        { value: "Rock", label: "Rock" },
+        { value: "Techno", label: "Techno" },
+      ]),
+    );
+  });
 });
