@@ -1,3 +1,8 @@
+const COLLECTION_COMMAND_CRATE_PROMPT_PATTERN = /\b(?:crate|crates)\b/i;
+
+export const promptMentionsCollectionCrate = (prompt: string): boolean =>
+  COLLECTION_COMMAND_CRATE_PROMPT_PATTERN.test(prompt.trim());
+
 export const shouldClearCollectionCommandPreview = ({
   query,
   previewSourcePrompt,

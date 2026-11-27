@@ -23,10 +23,13 @@ export type CollectionRadioStartPlan = {
 export const shouldShowCollectionRadioPlayButton = ({
   hasActiveFilters,
   matchingViewActive,
+  matchingReleaseCount,
 }: {
   hasActiveFilters: boolean;
   matchingViewActive: boolean;
-}): boolean => hasActiveFilters || matchingViewActive;
+  matchingReleaseCount: number;
+}): boolean =>
+  matchingReleaseCount > 0 && (hasActiveFilters || matchingViewActive);
 
 export const resolveIsCollectionRadioSelectionStale = ({
   isCollectionRadioSession,

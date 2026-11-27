@@ -1,3 +1,4 @@
+import { CRATE_NAME_MAX_LENGTH } from "src/constants/crate";
 import type { CollectionCommandIntent } from "src/lib/validation/collectionCommand.schemas";
 import type { PersistedFiltersJson } from "src/types/filters.types";
 import {
@@ -155,4 +156,23 @@ export const buildCollectionCommandViewName = ({
   }
 
   return truncateViewName(normalizedPrompt);
+};
+
+const truncateCrateName = (name: string): string => {
+  if (name.length <= CRATE_NAME_MAX_LENGTH) {
+    return name;
+  }
+
+  return `${name.slice(0, CRATE_NAME_MAX_LENGTH - 1)}…`;
+};
+
+export const buildCollectionCommandCrateName = (
+  params: Parameters<typeof buildCollectionCommandViewName>[0],
+): string => {
+  const suggested = params.suggestedViewName?.trim();
+  if (suggested) {
+    return truncateCrateName(suggested);
+  }
+
+  return truncateCrateName(buildCollectionCommandViewName(params));
 };

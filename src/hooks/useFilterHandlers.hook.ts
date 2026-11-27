@@ -25,6 +25,7 @@ import {
   isFilterMatchOperator,
   isYearMatchOperator,
 } from "src/types/filters.types";
+import { withSelectedFilterSelectOptions } from "src/utils/filterSelectOptions";
 
 const createMatchOperatorHandler =
   <T extends "AND" | "OR" | "NONE">({
@@ -170,18 +171,18 @@ export const useFilterHandlers = () => {
     handleStyleOperatorChange,
     handleFormatOperatorChange,
     handleYearOperatorChange,
-    styleOptions: availableStyles.map((style) => ({
-      value: style,
-      label: style,
-    })),
-    yearOptions: availableYears.map((year) => ({
-      value: year.toString(),
-      label: year.toString(),
-    })),
-    formatOptions: availableFormats.map((format) => ({
-      value: format,
-      label: format,
-    })),
+    styleOptions: withSelectedFilterSelectOptions(
+      availableStyles,
+      selectedStyles,
+    ),
+    yearOptions: withSelectedFilterSelectOptions(
+      availableYears.map(String),
+      selectedYears.map(String),
+    ),
+    formatOptions: withSelectedFilterSelectOptions(
+      availableFormats,
+      selectedFormats,
+    ),
     selectedStyles,
     selectedYears,
     selectedFormats,

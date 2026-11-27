@@ -23,6 +23,7 @@ describe("collectionRadioPlayback", () => {
       shouldShowCollectionRadioPlayButton({
         hasActiveFilters: true,
         matchingViewActive: false,
+        matchingReleaseCount: 3,
       }),
     ).toBe(true);
   });
@@ -32,6 +33,7 @@ describe("collectionRadioPlayback", () => {
       shouldShowCollectionRadioPlayButton({
         hasActiveFilters: false,
         matchingViewActive: true,
+        matchingReleaseCount: 2,
       }),
     ).toBe(true);
   });
@@ -66,6 +68,17 @@ describe("collectionRadioPlayback", () => {
       shouldShowCollectionRadioPlayButton({
         hasActiveFilters: false,
         matchingViewActive: false,
+        matchingReleaseCount: 0,
+      }),
+    ).toBe(false);
+  });
+
+  it("hides the play button when filters match no releases", () => {
+    expect(
+      shouldShowCollectionRadioPlayButton({
+        hasActiveFilters: true,
+        matchingViewActive: false,
+        matchingReleaseCount: 0,
       }),
     ).toBe(false);
   });

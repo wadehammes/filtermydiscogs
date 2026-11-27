@@ -96,6 +96,25 @@ export const formatCollectionCommandPreviewDetails = (
   return facts;
 };
 
+export const listCollectionCommandMatchedReleases = ({
+  releases,
+  filters,
+}: {
+  releases: readonly DiscogsRelease[];
+  filters: PersistedFiltersJson;
+}): DiscogsRelease[] => {
+  const filtered = filterReleases({
+    releases: [...releases],
+    ...filters,
+  });
+
+  return sortReleases(
+    filtered,
+    filters.selectedSort,
+    filters.selectedSortSecondary,
+  );
+};
+
 export const previewCollectionCommandFilters = ({
   releases,
   filters,
@@ -104,17 +123,7 @@ export const previewCollectionCommandFilters = ({
   filters: PersistedFiltersJson;
 }): {
   matchCount: number;
-} => {
-  const filtered = filterReleases({
-    releases: [...releases],
-    ...filters,
-  });
-
-  const sorted = sortReleases(
-    filtered,
-    filters.selectedSort,
-    filters.selectedSortSecondary,
-  );
-
-  return { matchCount: sorted.length };
-};
+} => ({
+  matchCount: listCollectionCommandMatchedReleases({ releases, filters })
+    .length,
+});

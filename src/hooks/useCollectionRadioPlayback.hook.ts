@@ -46,6 +46,7 @@ export const useCollectionRadioPlayback = () => {
   const prefetchEnabled = shouldShowCollectionRadioPlayButton({
     hasActiveFilters,
     matchingViewActive: matchingView !== null,
+    matchingReleaseCount: sortedReleases.length,
   });
 
   const filteredReleaseIdsKey = useMemo(

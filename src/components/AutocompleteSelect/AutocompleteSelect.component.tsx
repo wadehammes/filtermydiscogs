@@ -75,7 +75,18 @@ const AutocompleteSelectComponent = ({
     }
 
     if (Array.isArray(value)) {
-      return options.filter((option) => value.includes(option.value));
+      const fromOptions = options.filter((option) =>
+        value.includes(option.value),
+      );
+      const orphanValues = value.filter(
+        (selected) => !options.some((option) => option.value === selected),
+      );
+      const orphanOptions = orphanValues.map((selected) => ({
+        value: selected,
+        label: selected,
+      }));
+
+      return [...fromOptions, ...orphanOptions];
     }
 
     const option = options.find((item) => item.value === value);

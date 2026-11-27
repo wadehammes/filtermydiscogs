@@ -4,7 +4,7 @@
 
 ## User-visible behavior (v1)
 
-A **play** control appears when **any collection filter is applied** or a **saved filter view** is active — on the **desktop filters bar** (≥1024px) and in the **mobile [`FiltersDrawer`](../../src/components/FiltersDrawer/FiltersDrawer.component.tsx)** footer (opened from the mobile menu). Pressing play:
+A **play** control appears when **any collection filter is applied** or a **saved filter view** is active **and at least one release matches** — on the **desktop filters bar** (≥1024px) and in the **mobile [`FiltersDrawer`](../../src/components/FiltersDrawer/FiltersDrawer.component.tsx)** footer (opened from the mobile menu). Pressing play:
 
 1. **Prefetch** release details while the control is visible (filters or saved view active) via **[`useHydrateDiscogsReleaseDetails`](../../src/hooks/useHydrateDiscogsReleaseDetails.hook.ts)** — **one** React Query observer per filtered **release-id set**, batching uncached ids through **`/api/discogsReleaseBatch`** (**[`RELEASE_BATCH_MAX_IDS`](../../src/constants/collection.ts)** per chunk) instead of one HTTP call per release.
 2. Enables **Play** only when every filtered release detail is **cached** (spinner + “Preparing…” until then).
