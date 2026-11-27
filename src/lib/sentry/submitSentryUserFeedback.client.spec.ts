@@ -9,6 +9,7 @@ import {
 import type { captureFeedback } from "@sentry/react";
 import {
   SENTRY_CLIENT_DELIVERY_FAILED_TOAST_MESSAGE,
+  SENTRY_COLLECTION_COMMAND_FEEDBACK_SOURCE_TAG,
   SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE,
 } from "src/constants/sentryUserFeedbackForm.constants";
 import type { deliverSentryClientCapture } from "src/lib/sentry/deliverSentryClientCapture.client";
@@ -31,6 +32,18 @@ jest.mock("src/utils/toast", () => ({
     success: jest.fn(),
     error: jest.fn(),
   },
+}));
+
+const mockNotifyBugReportReceiptAfterSubmit =
+  jest.fn<
+    (
+      values: { message: string; name: string; email: string },
+      feedbackSourceTag?: string,
+    ) => Promise<void>
+  >();
+
+jest.mock("src/lib/sentry/notifyBugReportReceipt.client", () => ({
+  notifyBugReportReceiptAfterSubmit: mockNotifyBugReportReceiptAfterSubmit,
 }));
 
 const mockCaptureFeedback = getMockedExport<typeof captureFeedback>(
@@ -68,6 +81,7 @@ describe("submitSentryUserFeedback", () => {
       capture();
       return true;
     });
+    mockNotifyBugReportReceiptAfterSubmit.mockResolvedValue(undefined);
   });
 
   it("when delivery fails, shows an error toast and returns false", async () => {
@@ -118,6 +132,29 @@ describe("submitSentryUserFeedback", () => {
     );
   });
 
+  it("sends feedback with a custom feedback_source tag when provided", async () => {
+    await expect(
+      submitSentryUserFeedback(
+        {
+          message: "Wrong filters",
+          name: "",
+          email: "",
+        },
+        undefined,
+        { feedbackSourceTag: SENTRY_COLLECTION_COMMAND_FEEDBACK_SOURCE_TAG },
+      ),
+    ).resolves.toBe(true);
+
+    expect(mockCaptureFeedback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tags: {
+          feedback_source: SENTRY_COLLECTION_COMMAND_FEEDBACK_SOURCE_TAG,
+        },
+      }),
+      { includeReplay: true },
+    );
+  });
+
   it("sends feedback with replay and user_menu tag", async () => {
     await expect(
       submitSentryUserFeedback({
@@ -141,5 +178,27 @@ describe("submitSentryUserFeedback", () => {
     expect(mockToastSuccess).toHaveBeenCalledWith(
       SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE,
     );
+    expect(mockNotifyBugReportReceiptAfterSubmit).toHaveBeenCalledWith(
+      {
+        message: " Playback failed ",
+        name: " Wade ",
+        email: " wade@example.com ",
+      },
+      "user_menu",
+    );
+  });
+
+  it("does not enqueue receipt email when Sentry delivery fails", async () => {
+    mockDeliverSentryClientCapture.mockResolvedValue(false);
+
+    await expect(
+      submitSentryUserFeedback({
+        message: "No delivery",
+        name: "",
+        email: "",
+      }),
+    ).resolves.toBe(false);
+
+    expect(mockNotifyBugReportReceiptAfterSubmit).not.toHaveBeenCalled();
   });
 });

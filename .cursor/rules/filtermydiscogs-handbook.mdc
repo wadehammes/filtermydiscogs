@@ -11,9 +11,10 @@ alwaysApply: true
 
 On **substantive** work (features, refactors, auth/OAuth, crates/Prisma, App Router handlers, CSS/layout, tests for new behavior, CI/env):
 
-1. **Read** `docs/handbook/non-negotiables.md` (digest + context efficiency).
-2. **Route** via `docs/handbook/llms.md` → read **only matching chapters** before the first code change (each chapter **once** per task; Grep/Glob before opening large files).
-3. **Reuse documented patterns** — extend existing hooks/components; do not reimplement parallel logic.
+1. **`st view --json`** then **`st add`** / **`st init`** / **`st checkout`** as needed — [**gh-stack always**](../../.cursor/rules/gh-stack-always.mdc) (never **`git checkout -b`** for feature layers).
+2. **Read** `docs/handbook/non-negotiables.md` (digest + context efficiency).
+3. **Route** via `docs/handbook/llms.md` → read **only matching chapters** before the first code change (each chapter **once** per task; Grep/Glob before opening large files).
+4. **Reuse documented patterns** — extend existing hooks/components; do not reimplement parallel logic.
 
 **Substantive = read handbook first.** Narrow mechanical fixes (obvious typos, single-line fixes with unchanged behavior) may skip a full pass.
 

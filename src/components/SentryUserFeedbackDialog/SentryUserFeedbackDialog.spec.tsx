@@ -145,6 +145,39 @@ describe("SentryUserFeedbackDialog", () => {
     );
   });
 
+  it("shows collection command context with issue radios and an empty details field", async () => {
+    po.renderSentryUserFeedbackDialog({
+      open: true,
+      collectionCommandContext: {
+        prompt: "jazz on vinyl",
+        preview: { matchCount: 4, facts: [] },
+      },
+      onClose: jest.fn(),
+      onSubmitFeedback: mockSubmitFeedback(),
+    });
+
+    expect(screen.getByText("jazz on vinyl")).toBeInTheDocument();
+    expect(screen.getByLabelText("Details (optional)")).toHaveValue("");
+    expect(
+      screen.getByRole("radio", {
+        name: "Preview count or facts look wrong",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("prefills the message field when defaultMessage is provided", async () => {
+    po.renderSentryUserFeedbackDialog({
+      open: true,
+      defaultMessage: "Steps fail on mobile",
+      onClose: jest.fn(),
+      onSubmitFeedback: mockSubmitFeedback(),
+    });
+
+    expect(await screen.findByLabelText("What went wrong?")).toHaveValue(
+      "Steps fail on mobile",
+    );
+  });
+
   it("when dialog closes and reopens, clears the message field", async () => {
     const user = userEvent.setup();
     const { rerender } = po.renderSentryUserFeedbackDialog({

@@ -56,6 +56,26 @@ describe("useFilterHandlers", () => {
     expect(result.current.selectedStyles).toEqual(["Rock"]);
   });
 
+  it("includes active session styles in styleOptions when facets are empty", () => {
+    const releases = [releaseFactory.withStyles(["Rock"])];
+
+    const { result } = renderFeatureHook(() => useFilterHandlers(), {
+      wrapper: ({ children }) => (
+        <SeedCollectionFilters
+          releases={releases}
+          sessionFilters={{ selectedStyles: ["Techno"] }}
+        >
+          {children}
+        </SeedCollectionFilters>
+      ),
+    });
+
+    expect(result.current.selectedStyles).toEqual(["Techno"]);
+    expect(result.current.styleOptions).toEqual([
+      { value: "Techno", label: "Techno" },
+    ]);
+  });
+
   it("updates selected years from string values", () => {
     const releases = [
       releaseFactory.withDisplayDefaults({

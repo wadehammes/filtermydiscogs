@@ -1,4 +1,14 @@
-type OpenSentryUserFeedbackDialog = () => void;
+import type { CollectionCommandSentryFeedbackContext } from "src/utils/buildCollectionCommandSentryFeedbackMessage";
+
+export type SentryUserFeedbackDialogOpenRequest = {
+  defaultMessage?: string;
+  feedbackSourceTag?: string;
+  collectionCommandContext?: CollectionCommandSentryFeedbackContext;
+};
+
+type OpenSentryUserFeedbackDialog = (
+  request: SentryUserFeedbackDialogOpenRequest,
+) => void;
 
 let openSentryUserFeedbackDialogImpl: OpenSentryUserFeedbackDialog | null =
   null;
@@ -13,6 +23,8 @@ export const registerSentryUserFeedbackDialogOpen = (
   };
 };
 
-export const openSentryUserFeedbackDialog = (): void => {
-  openSentryUserFeedbackDialogImpl?.();
+export const openSentryUserFeedbackDialog = (
+  request: SentryUserFeedbackDialogOpenRequest = {},
+): void => {
+  openSentryUserFeedbackDialogImpl?.(request);
 };

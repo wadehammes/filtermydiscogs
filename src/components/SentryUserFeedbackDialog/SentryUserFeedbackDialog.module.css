@@ -60,3 +60,40 @@
   line-height: 1.35;
   margin: 0;
 }
+
+.commandPrompt {
+  color: var(--foreground);
+  line-height: 1.4;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.commandMeta {
+  color: var(--muted-foreground);
+  font-size: var(--text-meta-sm);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.categoryFieldset {
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.categoryLegend {
+  margin-bottom: var(--space-2);
+  width: 100%;
+}
+
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

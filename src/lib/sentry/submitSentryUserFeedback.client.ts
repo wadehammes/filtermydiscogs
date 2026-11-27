@@ -8,9 +8,14 @@ import {
 } from "src/constants/sentryUserFeedbackForm.constants";
 import { captureSentryUserFeedbackWithReplay } from "src/lib/sentry/captureSentryUserFeedbackWithReplay.client";
 import { deliverSentryClientCapture } from "src/lib/sentry/deliverSentryClientCapture.client";
+import { notifyBugReportReceiptAfterSubmit } from "src/lib/sentry/notifyBugReportReceipt.client";
 import type { SentryUserFeedbackFormValues } from "src/lib/validation/sentryUserFeedback.schemas";
 import { definedProps } from "src/utils/definedProps";
 import { toast } from "src/utils/toast";
+
+export type SubmitSentryUserFeedbackOptions = {
+  feedbackSourceTag?: string;
+};
 
 const toOptionalField = (value: string): string | undefined => {
   const trimmed = value.trim();
@@ -20,7 +25,10 @@ const toOptionalField = (value: string): string | undefined => {
 export const submitSentryUserFeedback = async (
   values: SentryUserFeedbackFormValues,
   screenshot?: Attachment,
+  options: SubmitSentryUserFeedbackOptions = {},
 ): Promise<boolean> => {
+  const feedbackSourceTag =
+    options.feedbackSourceTag ?? SENTRY_USER_FEEDBACK_SOURCE_TAG;
   const name = toOptionalField(values.name);
   const email = toOptionalField(values.email);
 
@@ -29,7 +37,7 @@ export const submitSentryUserFeedback = async (
       {
         message: values.message.trim(),
         tags: {
-          feedback_source: SENTRY_USER_FEEDBACK_SOURCE_TAG,
+          feedback_source: feedbackSourceTag,
         },
         ...definedProps({
           name,
@@ -45,6 +53,7 @@ export const submitSentryUserFeedback = async (
   });
 
   if (delivered) {
+    void notifyBugReportReceiptAfterSubmit(values, feedbackSourceTag);
     toast.success(SENTRY_USER_FEEDBACK_SUCCESS_TOAST_MESSAGE);
     return true;
   }

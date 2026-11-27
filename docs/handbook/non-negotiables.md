@@ -6,6 +6,8 @@ Applies to code you add or rewrite. Legacy code in a file can stay until you tou
 
 ## Branches and PRs
 
+**Session gate (agents):** **`st view --json`** before the first file read/edit or branch switch. New layer → **`st add`**. New stack → **`st init`** / **`st create`**. Never **`git checkout -b`** for feature work.
+
 | Always | Never | Details |
 | ------ | ----- | ------- |
 | **`st`** / gh-stack into **`staging`**; plan layers before coding | Parallel **`git checkout -b …`** off **`staging`** for multi-theme or stacked work | [conventions §8](conventions.md#non-negotiables-substantive-work-and-agents), [platform.md → Stacked pull requests](platform.md#stacked-pull-requests-st) |

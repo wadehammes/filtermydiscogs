@@ -70,6 +70,7 @@ export type ResendSendEmailInput = {
   subject: string;
   text: string;
   html: string;
+  replyTo?: string;
 };
 
 export const sendResendEmail = async (
@@ -79,9 +80,17 @@ export const sendResendEmail = async (
   let deliveryError: Error | null = null;
 
   try {
+    const replyFields = input.replyTo
+      ? { reply_to: input.replyTo }
+      : resendReplyToSendFields();
+
     const result = await resend.emails.send({
-      ...input,
-      ...resendReplyToSendFields(),
+      from: input.from,
+      to: input.to,
+      subject: input.subject,
+      text: input.text,
+      html: input.html,
+      ...replyFields,
     });
 
     if (result.error) {

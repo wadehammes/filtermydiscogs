@@ -1,6 +1,8 @@
 # Agent instructions
 
-**Before any work in this repo**, read **`docs/handbook/non-negotiables.md`**, then **only** the matching rows in **`docs/handbook/llms.md`** — do not load the whole handbook. When unsure which pattern to use, read **`docs/handbook/decisions.md`** first. **Context efficiency:** search before opening large files; prefer **`git diff -U20`** from the merge base for review; read each routed chapter **once** per task ([agent-workflow.md → Context efficiency](docs/handbook/agent-workflow.md#context-efficiency-tokens)).
+**Before any work in this repo** (including before creating or switching branches): run **`st view --json`**, then use **`st init`**, **`st create`**, **`st add`**, or **`st checkout`** for stack layers — **never `git checkout -b`** for substantive/feature work. Trunk **`staging`**. See [`.cursor/rules/gh-stack-always.mdc`](./.cursor/rules/gh-stack-always.mdc) and [`.cursor/skills/stacked-prs/SKILL.md`](./.cursor/skills/stacked-prs/SKILL.md).
+
+Then read **`docs/handbook/non-negotiables.md`**, then **only** the matching rows in **`docs/handbook/llms.md`** — do not load the whole handbook. When unsure which pattern to use, read **`docs/handbook/decisions.md`** first. **Context efficiency:** search before opening large files; prefer **`git diff -U20`** from the merge base for review; read each routed chapter **once** per task ([agent-workflow.md → Context efficiency](docs/handbook/agent-workflow.md#context-efficiency-tokens)).
 
 Follow documented patterns.
 

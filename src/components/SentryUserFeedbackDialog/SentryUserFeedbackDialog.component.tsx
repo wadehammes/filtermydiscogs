@@ -2,11 +2,15 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Attachment } from "@sentry/core";
+import classNames from "classnames";
 import Image from "next/image";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import Button from "src/components/Button/Button.component";
-import { FormDialog } from "src/components/FormDialog/FormDialog.component";
+import {
+  FormDialog,
+  formDialogStyles,
+} from "src/components/FormDialog/FormDialog.component";
 import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
 import {
   SENTRY_USER_FEEDBACK_ADD_SCREENSHOT_LABEL,
@@ -18,10 +22,17 @@ import {
   SENTRY_USER_FEEDBACK_UPLOAD_IMAGE_LABEL,
 } from "src/constants/sentryUserFeedbackForm.constants";
 import { useAuth } from "src/context/auth.context";
+import { useUserContactQuery } from "src/hooks/queries/useUserContactQuery";
 import { captureSentryFeedbackScreenshot } from "src/lib/sentry/captureSentryFeedbackScreenshot.client";
 import { isSentryFeedbackScreenshotSupported } from "src/lib/sentry/isSentryFeedbackScreenshotSupported.client";
 import { readSentryFeedbackScreenshotFile } from "src/lib/sentry/readSentryFeedbackScreenshotFile.client";
 import { submitSentryUserFeedback } from "src/lib/sentry/submitSentryUserFeedback.client";
+import {
+  COLLECTION_COMMAND_USER_REPORT_DETAILS_MAX_LENGTH,
+  type CollectionCommandSentryFeedbackFormInput,
+  collectionCommandSentryFeedbackFormResolverSchema,
+  parseCollectionCommandSentryFeedbackForm,
+} from "src/lib/validation/collectionCommandUserReport.schemas";
 import {
   type SentryUserFeedbackFormValues,
   sentryUserFeedbackFormSchema,
@@ -29,7 +40,19 @@ import {
 import accessibilityStyles from "src/styles/modules/accessibility.module.css";
 import modalFormFieldStyles from "src/styles/modules/modal-form-field.module.css";
 import modalInputStyles from "src/styles/modules/modal-input.module.css";
-import { registerSentryUserFeedbackDialogOpen } from "src/utils/sentryUserFeedbackDialogBridge";
+import {
+  buildCollectionCommandSentryFeedbackMessage,
+  type CollectionCommandSentryFeedbackContext,
+} from "src/utils/buildCollectionCommandSentryFeedbackMessage";
+import {
+  COLLECTION_COMMAND_USER_REPORT_CATEGORY_LABELS,
+  COLLECTION_COMMAND_USER_REPORT_CATEGORY_OPTIONS,
+} from "src/utils/collectionCommandUserReportLabels";
+import { definedProps } from "src/utils/definedProps";
+import {
+  registerSentryUserFeedbackDialogOpen,
+  type SentryUserFeedbackDialogOpenRequest,
+} from "src/utils/sentryUserFeedbackDialogBridge";
 import { validatedFieldClass } from "src/utils/validatedFieldClass";
 import styles from "./SentryUserFeedbackDialog.module.css";
 
@@ -128,6 +151,10 @@ const SentryUserFeedbackScreenshotSection = ({
 export type SentryUserFeedbackDialogProps = {
   open: boolean;
   defaultName?: string;
+  defaultEmail?: string;
+  defaultMessage?: string;
+  collectionCommandContext?: CollectionCommandSentryFeedbackContext;
+  feedbackSourceTag?: string;
   onClose: () => void;
   onSubmitFeedback?: (
     values: SentryUserFeedbackFormValues,
@@ -140,12 +167,20 @@ export type SentryUserFeedbackDialogProps = {
 export const SentryUserFeedbackDialog = ({
   open,
   defaultName = "",
+  defaultEmail = "",
+  defaultMessage = "",
+  collectionCommandContext,
+  feedbackSourceTag,
   onClose,
-  onSubmitFeedback = submitSentryUserFeedback,
+  onSubmitFeedback,
   onCaptureScreenshot = captureSentryFeedbackScreenshot,
   screenshotCaptureSupported = isSentryFeedbackScreenshotSupported(),
 }: SentryUserFeedbackDialogProps) => {
+  const isCollectionCommand = collectionCommandContext !== undefined;
+  const categoryGroupId = useId();
+  const commandPromptId = useId();
   const messageFieldId = useId();
+  const detailsFieldId = useId();
   const nameFieldId = useId();
   const emailFieldId = useId();
   const uploadFieldId = useId();
@@ -163,15 +198,53 @@ export const SentryUserFeedbackDialog = ({
   const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
-  const { register, handleSubmit, reset, formState } =
-    useForm<SentryUserFeedbackFormValues>({
-      resolver: zodResolver(sentryUserFeedbackFormSchema),
-      defaultValues: {
-        message: "",
-        name: defaultName,
-        email: "",
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: defaultFormState,
+  } = useForm<SentryUserFeedbackFormValues>({
+    resolver: zodResolver(sentryUserFeedbackFormSchema),
+    defaultValues: {
+      message: defaultMessage,
+      name: defaultName,
+      email: defaultEmail,
+    },
+  });
+
+  const {
+    register: registerCollectionCommand,
+    handleSubmit: handleSubmitCollectionCommand,
+    reset: resetCollectionCommand,
+    formState: collectionCommandFormState,
+  } = useForm<CollectionCommandSentryFeedbackFormInput>({
+    resolver: zodResolver(collectionCommandSentryFeedbackFormResolverSchema),
+    defaultValues: {
+      category: undefined,
+      details: "",
+      name: defaultName,
+      email: defaultEmail,
+    },
+  });
+
+  const formState = isCollectionCommand
+    ? collectionCommandFormState
+    : defaultFormState;
+
+  const submitFeedback = useCallback(
+    (values: SentryUserFeedbackFormValues, screenshot?: Attachment) => {
+      if (onSubmitFeedback) {
+        return onSubmitFeedback(values, screenshot);
+      }
+
+      return submitSentryUserFeedback(
+        values,
+        screenshot,
+        definedProps({ feedbackSourceTag }),
+      );
+    },
+    [feedbackSourceTag, onSubmitFeedback],
+  );
 
   const clearScreenshot = useCallback(() => {
     setScreenshotAttachment(undefined);
@@ -205,13 +278,27 @@ export const SentryUserFeedbackDialog = ({
   useEffect(() => {
     if (open) {
       reset({
-        message: "",
+        message: defaultMessage,
         name: defaultName,
-        email: "",
+        email: defaultEmail,
+      });
+      resetCollectionCommand({
+        category: undefined,
+        details: "",
+        name: defaultName,
+        email: defaultEmail,
       });
       clearScreenshot();
     }
-  }, [clearScreenshot, defaultName, open, reset]);
+  }, [
+    clearScreenshot,
+    defaultMessage,
+    defaultEmail,
+    defaultName,
+    open,
+    reset,
+    resetCollectionCommand,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -288,43 +375,162 @@ export const SentryUserFeedbackDialog = ({
       <form
         id={SENTRY_USER_FEEDBACK_FORM_ID}
         className={styles.form}
-        onSubmit={handleSubmit(async (values) => {
-          setIsSubmittingReport(true);
+        onSubmit={(event) => {
+          if (isCollectionCommand && collectionCommandContext) {
+            void handleSubmitCollectionCommand(async (values) => {
+              setIsSubmittingReport(true);
 
-          try {
-            const delivered = await onSubmitFeedback(
-              values,
-              screenshotAttachment,
-            );
+              try {
+                const parsed = parseCollectionCommandSentryFeedbackForm(values);
+                const message = buildCollectionCommandSentryFeedbackMessage({
+                  context: collectionCommandContext,
+                  categoryLabel:
+                    COLLECTION_COMMAND_USER_REPORT_CATEGORY_LABELS[
+                      parsed.category
+                    ],
+                  ...definedProps({ details: parsed.details }),
+                });
 
-            if (delivered) {
-              onClose();
-            }
-          } finally {
-            setIsSubmittingReport(false);
+                const delivered = await submitFeedback(
+                  {
+                    message,
+                    name: parsed.name,
+                    email: parsed.email,
+                  },
+                  screenshotAttachment,
+                );
+
+                if (delivered) {
+                  onClose();
+                }
+              } finally {
+                setIsSubmittingReport(false);
+              }
+            })(event);
+            return;
           }
-        })}
+
+          void handleSubmit(async (values) => {
+            setIsSubmittingReport(true);
+
+            try {
+              const delivered = await submitFeedback(
+                values,
+                screenshotAttachment,
+              );
+
+              if (delivered) {
+                onClose();
+              }
+            } finally {
+              setIsSubmittingReport(false);
+            }
+          })(event);
+        }}
       >
-        <FormDialog.Field label="What went wrong?" htmlFor={messageFieldId}>
-          <textarea
-            {...register("message")}
-            aria-invalid={Boolean(formState.errors.message)}
-            className={validatedFieldClass(
-              modalFormFieldStyles.textarea,
-              modalInputStyles.textarea,
-            )}
-            data-1p-ignore
-            id={messageFieldId}
-            maxLength={SENTRY_USER_FEEDBACK_MESSAGE_MAX_LENGTH}
-            placeholder="Steps to reproduce, what you expected, and what happened instead"
-            rows={4}
-          />
-          {formState.errors.message?.message ? (
-            <p className={styles.fieldError} role="alert">
-              {formState.errors.message.message}
-            </p>
-          ) : null}
-        </FormDialog.Field>
+        {isCollectionCommand && collectionCommandContext ? (
+          <>
+            {collectionCommandContext.prompt.trim().length > 0 ? (
+              <FormDialog.Field label="Your command" htmlFor={commandPromptId}>
+                <p className={styles.commandPrompt} id={commandPromptId}>
+                  {collectionCommandContext.prompt.trim()}
+                </p>
+              </FormDialog.Field>
+            ) : null}
+            {collectionCommandContext.interpretError ? (
+              <p className={styles.commandMeta} role="status">
+                Interpret error: {collectionCommandContext.interpretError}
+              </p>
+            ) : null}
+            {collectionCommandContext.preview ? (
+              <p className={styles.commandMeta} role="status">
+                Matches: {collectionCommandContext.preview.matchCount}
+                {collectionCommandContext.preview.facts.length > 0
+                  ? ` · ${collectionCommandContext.preview.facts.map((fact) => `${fact.label}: ${fact.value}`).join(" · ")}`
+                  : ""}
+              </p>
+            ) : null}
+            <fieldset className={styles.categoryFieldset} id={categoryGroupId}>
+              <legend
+                className={classNames(
+                  formDialogStyles.label,
+                  styles.categoryLegend,
+                )}
+              >
+                What went wrong?
+              </legend>
+              <ul className={styles.categoryList}>
+                {COLLECTION_COMMAND_USER_REPORT_CATEGORY_OPTIONS.map(
+                  (option) => {
+                    const inputId = `${categoryGroupId}-${option.value}`;
+
+                    return (
+                      <li key={option.value}>
+                        <label
+                          className={formDialogStyles.checkboxLabel}
+                          htmlFor={inputId}
+                        >
+                          <input
+                            {...registerCollectionCommand("category")}
+                            className={formDialogStyles.checkbox}
+                            data-1p-ignore
+                            id={inputId}
+                            type="radio"
+                            value={option.value}
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      </li>
+                    );
+                  },
+                )}
+              </ul>
+              {collectionCommandFormState.errors.category?.message ? (
+                <p className={styles.fieldError} role="alert">
+                  {collectionCommandFormState.errors.category.message}
+                </p>
+              ) : null}
+            </fieldset>
+            <FormDialog.Field
+              label="Details (optional)"
+              htmlFor={detailsFieldId}
+            >
+              <textarea
+                {...registerCollectionCommand("details")}
+                className={validatedFieldClass(
+                  modalFormFieldStyles.textarea,
+                  modalInputStyles.textarea,
+                )}
+                data-1p-ignore
+                id={detailsFieldId}
+                maxLength={COLLECTION_COMMAND_USER_REPORT_DETAILS_MAX_LENGTH}
+                placeholder="Anything else we should know?"
+                rows={3}
+              />
+            </FormDialog.Field>
+          </>
+        ) : (
+          <FormDialog.Field label="What went wrong?" htmlFor={messageFieldId}>
+            <textarea
+              {...register("message")}
+              aria-invalid={Boolean(defaultFormState.errors.message)}
+              className={validatedFieldClass(
+                modalFormFieldStyles.textarea,
+                modalInputStyles.textarea,
+              )}
+              data-1p-ignore
+              id={messageFieldId}
+              maxLength={SENTRY_USER_FEEDBACK_MESSAGE_MAX_LENGTH}
+              placeholder="Steps to reproduce, what you expected, and what happened instead"
+              rows={4}
+            />
+            {defaultFormState.errors.message?.message ? (
+              <p className={styles.fieldError} role="alert">
+                {defaultFormState.errors.message.message}
+              </p>
+            ) : null}
+          </FormDialog.Field>
+        )}
         <div className={styles.screenshotSection}>
           <SentryUserFeedbackScreenshotSection
             onAddScreenshot={() => {
@@ -350,7 +556,9 @@ export const SentryUserFeedbackDialog = ({
           htmlFor={nameFieldId}
         >
           <input
-            {...register("name")}
+            {...(isCollectionCommand
+              ? registerCollectionCommand("name")
+              : register("name"))}
             className={validatedFieldClass(
               modalFormFieldStyles.input,
               modalInputStyles.field,
@@ -363,7 +571,9 @@ export const SentryUserFeedbackDialog = ({
         </FormDialog.Field>
         <FormDialog.Field label="Email (optional)" htmlFor={emailFieldId}>
           <input
-            {...register("email")}
+            {...(isCollectionCommand
+              ? registerCollectionCommand("email")
+              : register("email"))}
             aria-invalid={Boolean(formState.errors.email)}
             className={validatedFieldClass(
               modalFormFieldStyles.input,
@@ -387,25 +597,42 @@ export const SentryUserFeedbackDialog = ({
 
 export const SentryUserFeedbackDialogHost = () => {
   const {
-    state: { username },
+    state: { username, userId },
   } = useAuth();
+  const { data: userContact } = useUserContactQuery({
+    userId,
+    enabled: userId != null,
+  });
+  const accountEmail = userContact?.email?.trim() ?? "";
   const [open, setOpen] = useState(false);
   const [defaultName, setDefaultName] = useState("");
+  const [defaultEmail, setDefaultEmail] = useState("");
+  const [dialogRequest, setDialogRequest] =
+    useState<SentryUserFeedbackDialogOpenRequest>({});
 
   useEffect(() => {
-    return registerSentryUserFeedbackDialogOpen(() => {
+    return registerSentryUserFeedbackDialogOpen((request) => {
+      setDialogRequest(request);
       setDefaultName(username ?? "");
+      setDefaultEmail(accountEmail);
       setOpen(true);
     });
-  }, [username]);
+  }, [accountEmail, username]);
 
   return (
     <SentryUserFeedbackDialog
+      defaultEmail={defaultEmail}
       defaultName={defaultName}
       open={open}
       onClose={() => {
         setOpen(false);
+        setDialogRequest({});
       }}
+      {...definedProps({
+        collectionCommandContext: dialogRequest.collectionCommandContext,
+        defaultMessage: dialogRequest.defaultMessage,
+        feedbackSourceTag: dialogRequest.feedbackSourceTag,
+      })}
     />
   );
 };
