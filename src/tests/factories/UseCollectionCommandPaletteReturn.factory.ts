@@ -32,6 +32,10 @@ const createUseCollectionCommandPaletteReturn = (
     applyPreviewFilters: jest.fn(),
     saveFilterViewFromPreview: jest.fn(),
     canSaveFromPreview: false,
+    createCrateFromPreview: jest.fn(),
+    canCreateCrateFromPreview: false,
+    preferCreateCrateAction: false,
+    isCreatingCrateFromPreview: false,
     ...attributes,
   }) as UseCollectionCommandPaletteReturn;
 

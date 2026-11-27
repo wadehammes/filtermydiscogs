@@ -1,8 +1,10 @@
 import { describe, expect, it } from "@jest/globals";
+import { CRATE_NAME_MAX_LENGTH } from "src/constants/crate";
 import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import type { CollectionCommandIntent } from "src/lib/validation/collectionCommand.schemas";
 import type { PersistedFiltersJson } from "src/types/filters.types";
 import {
+  buildCollectionCommandCrateName,
   buildCollectionCommandViewName,
   buildCollectionCommandViewNameFromFilters,
 } from "src/utils/collectionCommandViewName";
@@ -71,6 +73,28 @@ describe("buildCollectionCommandViewName", () => {
         prompt,
       }),
     ).toBe(`${"a".repeat(39)}…`);
+  });
+});
+
+describe("buildCollectionCommandCrateName", () => {
+  it("keeps suggested names longer than the saved-view cap", () => {
+    const suggestedViewName = "a".repeat(60);
+    expect(
+      buildCollectionCommandCrateName({
+        prompt: "unused",
+        suggestedViewName,
+      }),
+    ).toBe(suggestedViewName);
+  });
+
+  it("truncates crate names at the crate max length", () => {
+    const suggestedViewName = "a".repeat(CRATE_NAME_MAX_LENGTH + 5);
+    expect(
+      buildCollectionCommandCrateName({
+        prompt: "unused",
+        suggestedViewName,
+      }),
+    ).toBe(`${"a".repeat(CRATE_NAME_MAX_LENGTH - 1)}…`);
   });
 });
 

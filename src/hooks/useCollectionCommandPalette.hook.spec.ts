@@ -58,6 +58,7 @@ describe("useCollectionCommandPalette", () => {
     Object.assign(mockApi, {
       interpretCollectionCommand: jest.fn(),
       userPreferences: jest.fn(),
+      addReleaseToCrate: jest.fn(),
     });
     mockAllReleases = releaseFactory.buildList(3);
     mockFacetOptions = {

@@ -175,6 +175,16 @@ describe("AutocompleteSelect", () => {
     expect(screen.getByText("Option 2")).toBeInTheDocument();
   });
 
+  it("shows pills for selected values that are not in the options list", () => {
+    po.renderAutocompleteSelect({
+      multiple: true,
+      value: ["Techno"],
+      options: [{ value: "House", label: "House" }],
+    });
+
+    expect(screen.getByText("Techno")).toBeInTheDocument();
+  });
+
   it("opens on the first click in the pill row when closed", async () => {
     po.renderAutocompleteSelect({ value: ["option1"] });
 

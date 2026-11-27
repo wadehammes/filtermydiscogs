@@ -1,6 +1,6 @@
 # Collection command palette (v1)
 
-Natural-language commands on **`/collection`** (v1: filter intent via AI Gateway; **Run** → preview, **Apply filters**, **Save view**). Saved views are auto-named by **`buildCollectionCommandViewName`**: explicit AI **`suggestedViewName`** when the user names a view, else a compact label from preview filters (year first, styles/formats joined with **`/`**), else the trimmed prompt (**`saveViewFromFilters`**, no save dialog; rename in **Views** later). UI: **cmdk** command strip; primary/secondary actions use shared **[`Button`](../../src/components/Button/Button.component.tsx)** (**`Command.Item asChild`**); recent prompts use **`InlinePopoverMenu`** **`itemNeutral`** row styling; shortcut from **`User.preferences`** (default **`mod+shift+k`**).
+Natural-language commands on **`/collection`** (v1: filter intent via AI Gateway; **Run** → preview, **Apply filters**, **Save view**, **Create crate**). When the command text mentions a crate (**`promptMentionsCollectionCrate`**), preview **Create crate** is the primary action (↵ default) ahead of **Apply filters**. Saved views and prompt-created crates are auto-named by **`buildCollectionCommandViewName`** / **`buildCollectionCommandCrateName`** (crate names allow up to **`CRATE_NAME_MAX_LENGTH`**): explicit AI **`suggestedViewName`** when the user names a view, else a compact label from preview filters (year first, styles/formats joined with **`/`**), else the trimmed prompt (**`saveViewFromFilters`**, no save dialog; rename in **Views** or **Crates** later). **Create crate** uses **`listCollectionCommandMatchedReleases`**, **`useOptionalCrateActions` → `createCrate`**, then **`addCollectionCommandReleasesToCrate`** (**`api.addReleaseToCrate`** per match; 409 skips duplicates) and crate query invalidation when the batch finishes. UI: **cmdk** command strip; primary/secondary actions use shared **[`Button`](../../src/components/Button/Button.component.tsx)** (**`Command.Item asChild`**); recent prompts use **`InlinePopoverMenu`** **`itemNeutral`** row styling; shortcut from **`User.preferences`** (default **`mod+shift+k`**).
 
 ## Routes and env
 
@@ -17,4 +17,4 @@ After **Run**, the hook stores the interpreted prompt as **`previewSourcePrompt`
 
 ## Phase 2 (not in v1)
 
-Create crate / playlist from the same intent; rating and date-added filters; Settings shortcut recorder UI.
+Create playlist from the same intent; rating and date-added filters; Settings shortcut recorder UI.

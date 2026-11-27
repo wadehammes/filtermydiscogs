@@ -43,6 +43,7 @@ export const CollectionRadioPlayButton = ({
   const isVisible = shouldShowCollectionRadioPlayButton({
     hasActiveFilters,
     matchingViewActive: matchingView !== null,
+    matchingReleaseCount: filteredReleaseCount,
   });
 
   if (!isVisible) {

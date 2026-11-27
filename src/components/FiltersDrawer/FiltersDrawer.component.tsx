@@ -15,7 +15,10 @@ import { SearchBar } from "src/components/SearchBar/SearchBar.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { useCollectionContext } from "src/context/collection.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
-import { useAppliedFilterCount } from "src/hooks/useFilterAtoms.hook";
+import {
+  useAppliedFilterCount,
+  useSortedFilteredReleases,
+} from "src/hooks/useFilterAtoms.hook";
 import { useFilterHandlers } from "src/hooks/useFilterHandlers.hook";
 import { useFilterViews } from "src/hooks/useFilterViews.hook";
 import type { StyleOperator, YearOperator } from "src/types/filters.types";
@@ -107,10 +110,12 @@ const FiltersDrawerPanel = ({ onClose }: { onClose: () => void }) => {
   const { state: collectionState } = useCollectionContext();
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const appliedFilterCount = useAppliedFilterCount();
+  const sortedFilteredReleases = useSortedFilteredReleases();
   const { hasActiveFilters, matchingView } = useFilterViews();
   const showCollectionRadioPlayButton = shouldShowCollectionRadioPlayButton({
     hasActiveFilters,
     matchingViewActive: matchingView !== null,
+    matchingReleaseCount: sortedFilteredReleases.length,
   });
   const {
     handleStyleChange,

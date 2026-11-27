@@ -35,6 +35,10 @@ export const CollectionCommandPalette = () => {
     applyPreviewFilters,
     saveFilterViewFromPreview,
     canSaveFromPreview,
+    createCrateFromPreview,
+    canCreateCrateFromPreview,
+    isCreatingCrateFromPreview,
+    preferCreateCrateAction,
     shortcut,
   } = useCollectionCommandPalette();
 
@@ -63,6 +67,10 @@ export const CollectionCommandPalette = () => {
         applyPreviewFilters={applyPreviewFilters}
         saveFilterViewFromPreview={saveFilterViewFromPreview}
         canSaveFromPreview={canSaveFromPreview}
+        createCrateFromPreview={createCrateFromPreview}
+        canCreateCrateFromPreview={canCreateCrateFromPreview}
+        isCreatingCrateFromPreview={isCreatingCrateFromPreview}
+        preferCreateCrateAction={preferCreateCrateAction}
         shortcut={shortcut}
       />
     </div>
@@ -87,6 +95,10 @@ type CollectionCommandPanelProps = {
   applyPreviewFilters: () => void;
   saveFilterViewFromPreview: () => void;
   canSaveFromPreview: boolean;
+  createCrateFromPreview: () => void;
+  canCreateCrateFromPreview: boolean;
+  isCreatingCrateFromPreview: boolean;
+  preferCreateCrateAction: boolean;
   shortcut: string;
 };
 
@@ -102,27 +114,35 @@ const CollectionCommandPanel = ({
   applyPreviewFilters,
   saveFilterViewFromPreview,
   canSaveFromPreview,
+  createCrateFromPreview,
+  canCreateCrateFromPreview,
+  isCreatingCrateFromPreview,
+  preferCreateCrateAction,
   shortcut,
 }: CollectionCommandPanelProps) => {
   const commandInputRef = useRef<HTMLInputElement>(null);
-  const applyFiltersActionRef = useRef<HTMLButtonElement>(null);
+  const primaryPreviewActionRef = useRef<HTMLButtonElement>(null);
   const recentHeadingId = useId();
   const [highlightedValue, setHighlightedValue] = useState("");
   const queryIsEmpty = query.trim().length === 0;
   const hasCommandPreview = preview !== null;
 
-  const focusApplyFiltersAction = useCallback(() => {
-    const applyButton =
-      applyFiltersActionRef.current ??
+  const primaryPreviewCommandValue = preferCreateCrateAction
+    ? "create-crate"
+    : "apply-filters";
+
+  const focusPrimaryPreviewAction = useCallback(() => {
+    const primaryButton =
+      primaryPreviewActionRef.current ??
       commandInputRef.current
         ?.closest("[cmdk-root]")
         ?.querySelector<HTMLButtonElement>(
-          "[cmdk-item][data-value='apply-filters']",
+          `[cmdk-item][data-value='${primaryPreviewCommandValue}']`,
         ) ??
       null;
 
-    applyButton?.focus();
-  }, []);
+    primaryButton?.focus();
+  }, [primaryPreviewCommandValue]);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -137,13 +157,13 @@ const CollectionCommandPanel = ({
       return undefined;
     }
 
-    setHighlightedValue("apply-filters");
+    setHighlightedValue(primaryPreviewCommandValue);
 
     let cancelled = false;
     const frame = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (!cancelled) {
-          focusApplyFiltersAction();
+          focusPrimaryPreviewAction();
         }
       });
     });
@@ -152,7 +172,11 @@ const CollectionCommandPanel = ({
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [focusApplyFiltersAction, hasCommandPreview]);
+  }, [
+    focusPrimaryPreviewAction,
+    hasCommandPreview,
+    primaryPreviewCommandValue,
+  ]);
 
   useEffect(() => {
     if (hasCommandPreview) {
@@ -183,6 +207,12 @@ const CollectionCommandPanel = ({
       if (preview) {
         if (highlightedValue === "save-filter-view") {
           saveFilterViewFromPreview();
+        } else if (highlightedValue === "create-crate") {
+          createCrateFromPreview();
+        } else if (highlightedValue === "apply-filters") {
+          applyPreviewFilters();
+        } else if (preferCreateCrateAction) {
+          createCrateFromPreview();
         } else {
           applyPreviewFilters();
         }
@@ -196,14 +226,63 @@ const CollectionCommandPanel = ({
     },
     [
       applyPreviewFilters,
+      createCrateFromPreview,
       highlightedValue,
       interpretMutation.isPending,
+      preferCreateCrateAction,
       preview,
       query,
       runInterpret,
       saveFilterViewFromPreview,
     ],
   );
+
+  const applyFiltersAction = ({ primary }: { primary: boolean }) => (
+    <Command.Item asChild value="apply-filters" onSelect={applyPreviewFilters}>
+      <Button
+        ref={primary ? primaryPreviewActionRef : undefined}
+        variant={primary ? "ghost" : "secondary"}
+        size="md"
+        className={primary ? styles.commandActionPrimary : styles.commandAction}
+        data-testid={primary ? "fmdCollectionCommandApplyFilters" : undefined}
+      >
+        <span className={styles.actionLabel}>Apply filters</span>
+        {primary ? (
+          <span className={styles.actionShortcut} aria-hidden>
+            <ReturnThinIcon />
+          </span>
+        ) : null}
+      </Button>
+    </Command.Item>
+  );
+
+  const createCrateAction = ({ primary }: { primary: boolean }) =>
+    canCreateCrateFromPreview ? (
+      <Command.Item
+        asChild
+        value="create-crate"
+        onSelect={createCrateFromPreview}
+      >
+        <Button
+          ref={primary ? primaryPreviewActionRef : undefined}
+          variant={primary ? "ghost" : "secondary"}
+          size="md"
+          className={
+            primary ? styles.commandActionPrimary : styles.commandAction
+          }
+          disabled={isCreatingCrateFromPreview}
+        >
+          <span className={styles.actionLabel}>
+            {isCreatingCrateFromPreview ? "Creating crate…" : "Create crate"}
+          </span>
+          {primary ? (
+            <span className={styles.actionShortcut} aria-hidden>
+              <ReturnThinIcon />
+            </span>
+          ) : null}
+        </Button>
+      </Command.Item>
+    ) : null;
 
   return (
     <div
@@ -317,25 +396,33 @@ const CollectionCommandPanel = ({
                 confidenceNotes={previewIntent?.confidenceNotes}
               />
               <div className={styles.actionStack}>
-                <Command.Item
-                  asChild
-                  value="apply-filters"
-                  onSelect={applyPreviewFilters}
-                >
-                  <Button
-                    ref={applyFiltersActionRef}
-                    variant="ghost"
-                    size="md"
-                    className={styles.commandActionPrimary}
-                    data-testid="fmdCollectionCommandApplyFilters"
-                  >
-                    <span className={styles.actionLabel}>Apply filters</span>
-                    <span className={styles.actionShortcut} aria-hidden>
-                      <ReturnThinIcon />
-                    </span>
-                  </Button>
-                </Command.Item>
-                {canSaveFromPreview ? (
+                {preferCreateCrateAction ? (
+                  <>
+                    {createCrateAction({ primary: true })}
+                    {applyFiltersAction({ primary: false })}
+                  </>
+                ) : (
+                  <>
+                    {applyFiltersAction({ primary: true })}
+                    {canSaveFromPreview ? (
+                      <Command.Item
+                        asChild
+                        value="save-filter-view"
+                        onSelect={saveFilterViewFromPreview}
+                      >
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          className={styles.commandAction}
+                        >
+                          <span className={styles.actionLabel}>Save view</span>
+                        </Button>
+                      </Command.Item>
+                    ) : null}
+                    {createCrateAction({ primary: false })}
+                  </>
+                )}
+                {preferCreateCrateAction && canSaveFromPreview ? (
                   <Command.Item
                     asChild
                     value="save-filter-view"

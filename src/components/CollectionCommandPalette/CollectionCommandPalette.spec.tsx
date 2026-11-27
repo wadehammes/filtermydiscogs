@@ -27,4 +27,31 @@ describe("CollectionCommandPalette", () => {
       String(COLLECTION_COMMAND_PROMPT_MAX_LENGTH),
     );
   });
+
+  it("shows Create crate when the hook enables crate creation from preview", () => {
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.open({
+        preview: { matchCount: 12, facts: [] },
+        canCreateCrateFromPreview: true,
+      }),
+    ).renderCollectionCommandPalette();
+
+    expect(
+      screen.getByRole("option", { name: "Create crate" }),
+    ).toBeInTheDocument();
+  });
+
+  it("lists Create crate first when the hook prefers crate creation", () => {
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.open({
+        preview: { matchCount: 12, facts: [] },
+        canCreateCrateFromPreview: true,
+        preferCreateCrateAction: true,
+      }),
+    ).renderCollectionCommandPalette();
+
+    const options = screen.getAllByRole("option");
+    expect(options[0]).toHaveAccessibleName("Create crate");
+    expect(options[1]).toHaveAccessibleName("Apply filters");
+  });
 });
