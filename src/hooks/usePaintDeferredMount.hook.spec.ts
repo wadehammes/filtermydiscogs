@@ -39,4 +39,36 @@ describe("usePaintDeferredMount", () => {
     });
     expect(result.current).toBe(true);
   });
+
+  it("mounts immediately when immediate option is set", () => {
+    const { result } = renderHook(() =>
+      usePaintDeferredMount(true, { immediate: true }),
+    );
+
+    expect(result.current).toBe(true);
+  });
+
+  it("keeps mounted after ready blips false once defer has completed", () => {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    jest
+      .spyOn(globalThis, "requestAnimationFrame")
+      .mockImplementation((callback: FrameRequestCallback) => {
+        rafCallbacks.push(callback);
+        return rafCallbacks.length;
+      });
+
+    const { result, rerender } = renderHook(
+      ({ ready }: { ready: boolean }) => usePaintDeferredMount(ready),
+      { initialProps: { ready: true } },
+    );
+
+    act(() => {
+      rafCallbacks.shift()?.(0);
+      rafCallbacks.shift()?.(0);
+    });
+    expect(result.current).toBe(true);
+
+    rerender({ ready: false });
+    expect(result.current).toBe(true);
+  });
 });
