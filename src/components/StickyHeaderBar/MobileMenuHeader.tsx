@@ -2,6 +2,7 @@ import classNames from "classnames";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
 import FilterIcon from "src/styles/icons/filter-thin.svg";
 import MenuIcon from "src/styles/icons/menu.svg";
+import { SparklesThinIcon } from "src/styles/icons/SparklesThinIcon.component";
 import XIcon from "src/styles/icons/x-thin.svg";
 import styles from "./MobileMenu.module.css";
 
@@ -9,20 +10,26 @@ interface MobileMenuHeaderProps {
   isOpen: boolean;
   isRandomMode: boolean;
   shouldShowFilters: boolean;
+  shouldShowCollectionCommand: boolean;
+  collectionCommandAriaLabel: string;
   appliedFilterCount: number;
   onToggleMenu: () => void;
   onFiltersClick: () => void;
   onRandomModeToggle: () => void;
+  onCollectionCommandClick: () => void;
 }
 
 export const MobileMenuHeader = ({
   isOpen,
   isRandomMode,
   shouldShowFilters,
+  shouldShowCollectionCommand,
+  collectionCommandAriaLabel,
   appliedFilterCount,
   onToggleMenu,
   onFiltersClick,
   onRandomModeToggle,
+  onCollectionCommandClick,
 }: MobileMenuHeaderProps) => {
   const filterButtonLabel =
     appliedFilterCount > 0
@@ -68,6 +75,19 @@ export const MobileMenuHeader = ({
               ) : null}
             </span>
           </button>
+          {shouldShowCollectionCommand ? (
+            <button
+              type="button"
+              className={styles.filtersButton}
+              data-testid="fmdMobileCollectionCommandAsk"
+              aria-label={collectionCommandAriaLabel}
+              onClick={onCollectionCommandClick}
+            >
+              <span className={styles.filterIcon}>
+                <SparklesThinIcon />
+              </span>
+            </button>
+          ) : null}
         </>
       )}
 

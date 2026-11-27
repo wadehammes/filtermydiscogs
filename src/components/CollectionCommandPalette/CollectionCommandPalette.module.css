@@ -121,7 +121,7 @@
 .recentList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 0;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -133,7 +133,7 @@
   height: auto;
   justify-content: flex-start;
   min-height: auto;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-3);
   white-space: normal;
   width: 100%;
 }
