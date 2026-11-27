@@ -1,11 +1,13 @@
 import { useCallback, useState } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
+import { DEFAULT_COLLECTION_COMMAND_SHORTCUT } from "src/constants/collectionCommand.constants";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
 import { ViewActionTypes } from "src/context/view.context";
+import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import {
   useAppliedFilterCount,
@@ -14,6 +16,8 @@ import {
 } from "src/hooks/useFilterAtoms.hook";
 import { useListenBottomDrawerDismiss } from "src/hooks/useListenBottomDrawerDismiss.hook";
 import { useViewDispatch } from "src/hooks/useViewAtoms.hook";
+import { buildCollectionCommandOpenAriaLabel } from "src/utils/buildCollectionCommandOpenTooltip";
+import { openCollectionCommandPalette } from "src/utils/collectionCommandPaletteBridge";
 import styles from "./MobileMenu.module.css";
 import { MobileMenuDrawerFooter } from "./MobileMenuDrawerFooter";
 import { MobileMenuHeader } from "./MobileMenuHeader";
@@ -48,6 +52,17 @@ export const MobileMenu = ({
   const viewDispatch = useViewDispatch();
   const isRandomMode = useIsRandomMode();
   const appliedFilterCount = useAppliedFilterCount();
+  const { data: preferences } = useUserPreferencesQuery({
+    userId: authState.userId,
+    enabled: authState.isAuthenticated && !authState.isCheckingAuth,
+  });
+  const paletteEnabled = preferences?.collectionCommandPaletteEnabled ?? true;
+  const collectionCommandShortcut =
+    preferences?.collectionCommandPaletteShortcut ??
+    DEFAULT_COLLECTION_COMMAND_SHORTCUT;
+  const collectionCommandAriaLabel = buildCollectionCommandOpenAriaLabel(
+    collectionCommandShortcut,
+  );
 
   const closeMenuDrawer = useCallback(() => {
     setIsOpen(false);
@@ -84,6 +99,10 @@ export const MobileMenu = ({
     setIsFiltersDrawerOpen(true);
   };
 
+  const handleCollectionCommandClick = () => {
+    openCollectionCommandPalette();
+  };
+
   const handleRandomModeToggle = () => {
     const newIsRandomMode = !isRandomMode;
 
@@ -103,6 +122,7 @@ export const MobileMenu = ({
   const hasValidCollection =
     !(fetchingCollection || error) && Boolean(collection);
   const shouldShowFilters = showFilters && hasValidCollection;
+  const shouldShowCollectionCommand = shouldShowFilters && paletteEnabled;
 
   return (
     <>
@@ -110,10 +130,13 @@ export const MobileMenu = ({
         isOpen={isOpen}
         isRandomMode={isRandomMode}
         shouldShowFilters={shouldShowFilters}
+        shouldShowCollectionCommand={shouldShowCollectionCommand}
+        collectionCommandAriaLabel={collectionCommandAriaLabel}
         appliedFilterCount={appliedFilterCount}
         onToggleMenu={() => setIsOpen(!isOpen)}
         onFiltersClick={handleFiltersClick}
         onRandomModeToggle={handleRandomModeToggle}
+        onCollectionCommandClick={handleCollectionCommandClick}
       />
 
       <BottomDrawer
