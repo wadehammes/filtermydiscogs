@@ -4,6 +4,7 @@ import classNames from "classnames";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BottomDrawer } from "src/components/BottomDrawer/BottomDrawer.component";
+import { MobilePlaybackHeaderControl } from "src/components/MobilePlaybackHeaderControl/MobilePlaybackHeaderControl.component";
 import { TABLET_UP_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { SITE_NAME, SITE_WORDMARK } from "src/constants/siteMetadata";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
@@ -155,6 +156,7 @@ export const PublicPageHeader = ({
         </nav>
 
         <div className={styles.mobileControls}>
+          <MobilePlaybackHeaderControl />
           <button
             type="button"
             className={styles.menuButton}

@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import { MobilePlaybackHeaderControl } from "src/components/MobilePlaybackHeaderControl/MobilePlaybackHeaderControl.component";
 import DiceIcon from "src/styles/icons/dice-thin.svg";
 import FilterIcon from "src/styles/icons/filter-thin.svg";
 import MenuIcon from "src/styles/icons/menu.svg";
@@ -38,6 +39,7 @@ export const MobileMenuHeader = ({
 
   return (
     <div className={styles.mobileNav}>
+      <MobilePlaybackHeaderControl />
       {shouldShowFilters && (
         <>
           <button

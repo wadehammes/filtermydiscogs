@@ -1,0 +1,54 @@
+.headerPlayback {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-3);
+  margin-inline-end: var(--space-1);
+}
+
+.headerButton {
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  font-size: var(--text-lg);
+  height: var(--button-height-sm);
+  justify-content: center;
+  padding: 0;
+  transition: color var(--transition-normal);
+  width: var(--button-height-sm);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-sm);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--link);
+  }
+}
+
+.headerIcon {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+
+  :global(svg) {
+    height: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+  }
+}

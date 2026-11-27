@@ -53,6 +53,11 @@ export const WHATS_NEW_RELEASES: readonly WhatsNewRelease[] = [
         badge: "new",
         text: `On the collection page, open Ask in the filters bar, the mobile header, or press ${WHATS_NEW_SHORTCUT_PLACEHOLDER}, type what you want, run it, then apply filters, save a view, or create a crate from the preview.`,
       },
+      {
+        id: "mobile-playback-header-dock",
+        badge: "improved",
+        text: "While something is playing on phone or tablet, use the header control to hide the playback bar for more screen; when the bar is hidden, play or pause stays in the header so audio keeps going.",
+      },
     ],
   },
   {

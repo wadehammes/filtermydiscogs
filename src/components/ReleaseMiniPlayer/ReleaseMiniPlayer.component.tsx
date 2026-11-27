@@ -18,6 +18,7 @@ import { useReleasePlayback } from "src/context/releasePlayback.context";
 import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { usePlaybackDockMobileBarCollapsed } from "src/hooks/usePlaybackDockMobileBarCollapsed.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import { buildUserTrackMetadataBody } from "src/utils/buildUserTrackMetadataBody";
 import { definedProps } from "src/utils/definedProps";
@@ -70,7 +71,12 @@ export const ReleaseMiniPlayer = ({
   const isMobileLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
   const filtersDrawerOpen = useFiltersDrawerOpen();
   const crateDrawerOpen = useCrateDrawerOpen();
+  const { isDockBarCollapsed } = usePlaybackDockMobileBarCollapsed({
+    isMiniPlayerVisible,
+  });
   const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const isDockBarExpanded = !isDockBarCollapsed;
+  const isQueueDrawerOpen = isQueueOpen && isDockBarExpanded;
   const { openRelease: openReleaseBase, prefetchPointerProps } =
     useReleaseCardOpenHandler({
       release,
@@ -94,12 +100,12 @@ export const ReleaseMiniPlayer = ({
   const showVideoLoading = isPlaybackVideoLoading && isVideoPanelExpanded;
 
   useEffect(() => {
-    if (isMiniPlayerVisible) {
+    if (isMiniPlayerVisible && isDockBarExpanded) {
       return;
     }
 
     setIsQueueOpen(false);
-  }, [isMiniPlayerVisible]);
+  }, [isDockBarExpanded, isMiniPlayerVisible]);
 
   if (!(isMiniPlayerVisible && release)) {
     return null;
@@ -187,17 +193,23 @@ export const ReleaseMiniPlayer = ({
         <section
           className={styles.miniPlayerShell}
           data-testid="fmdReleaseMiniPlayer"
-          {...(isVideoPanelExpanded && { "data-video-expanded": true })}
-          {...(isQueueOpen && { "data-playback-queue-shell-open": true })}
-          {...(isQueueOpen &&
+          {...(isVideoPanelExpanded &&
+            isDockBarExpanded && { "data-video-expanded": true })}
+          {...(isQueueDrawerOpen && {
+            "data-playback-queue-shell-open": true,
+          })}
+          {...(isQueueDrawerOpen &&
             isVideoPanelExpanded && { "data-queue-over-video": true })}
           {...(showVideoLoading && { "data-playback-video-loading": true })}
+          {...(isDockBarCollapsed && {
+            "data-playback-dock-bar-collapsed": true,
+          })}
           aria-label={NOW_PLAYING_REGION_LABEL}
         >
           {isPlaying && playbackVideoId ? (
             <ReleasePlaybackVideoPanel
               panelId="release-playback-video-panel"
-              isExpanded={isVideoPanelExpanded}
+              isExpanded={isVideoPanelExpanded && isDockBarExpanded}
               onClose={handleVideoToggle}
             >
               <div
@@ -221,66 +233,74 @@ export const ReleaseMiniPlayer = ({
                   autoplay={shouldAutoplayIframe}
                   deferVideoLoad={false}
                   isPlaybackVideoLoading={isPlaybackVideoLoading}
-                  variant={isVideoPanelExpanded ? "visible" : "hidden"}
+                  variant={
+                    isVideoPanelExpanded && isDockBarExpanded
+                      ? "visible"
+                      : "hidden"
+                  }
                 />
               </div>
             </ReleasePlaybackVideoPanel>
           ) : null}
-          <Activity mode={isQueueOpen ? "visible" : "hidden"}>
+          <Activity mode={isQueueDrawerOpen ? "visible" : "hidden"}>
             <PlaybackQueueDrawerLazy
-              isOpen={isQueueOpen}
+              isOpen={isQueueDrawerOpen}
               elevateOverVideo={isVideoPanelExpanded}
               onClose={() => {
                 setIsQueueOpen(false);
               }}
             />
           </Activity>
-          <div className={styles.miniPlayerBar}>
-            <div className={styles.releaseArea}>
-              <div className={styles.metaRow}>
-                {!isMobileLayout ? addToMenu : null}
-                <ReleaseMiniPlayerReleaseMetaRow
-                  {...definedProps({
-                    onReleaseClick,
-                    prefetchPointerProps: prefetchPointerProps ?? undefined,
-                  })}
-                  openRelease={openRelease}
-                  releaseTitle={release.basic_information.title}
-                  cover={cover}
-                  metaLines={metaLines}
-                />
-              </div>
-            </div>
-            {isPlaybackReady && playbackVideoId ? (
-              <ReleaseMiniPlayerDigScrub disabled={isPlaybackVideoLoading} />
-            ) : null}
-            <ReleaseMiniPlayerTransportControls
-              volumeControl={
-                isPlaybackReady && playbackVideoId ? (
-                  <ReleaseMiniPlayerVolumePopover
-                    disabled={isPlaybackVideoLoading}
+          {isDockBarExpanded ? (
+            <div className={styles.miniPlayerBar}>
+              <div className={styles.releaseArea}>
+                <div className={styles.metaRow}>
+                  {!isMobileLayout ? addToMenu : null}
+                  <ReleaseMiniPlayerReleaseMetaRow
+                    {...definedProps({
+                      onReleaseClick,
+                      prefetchPointerProps: prefetchPointerProps ?? undefined,
+                    })}
+                    openRelease={openRelease}
+                    releaseTitle={release.basic_information.title}
+                    cover={cover}
+                    metaLines={metaLines}
                   />
-                ) : null
-              }
-              isMobileLayout={isMobileLayout}
-              crateToggleButton={addToMenu}
-              isQueueOpen={isQueueOpen}
-              queueButtonAriaLabel={queueButtonAriaLabel}
-              {...(queueButtonAddon !== undefined ? { queueButtonAddon } : {})}
-              onQueueToggle={() => {
-                setIsQueueOpen((open) => !open);
-              }}
-              isPlaybackReady={isPlaybackReady}
-              isVideoPanelExpanded={isVideoPanelExpanded}
-              onVideoToggle={handleVideoToggle}
-              hasPrevious={canPlayPrevious}
-              hasNext={canPlayNext}
-              isPaused={isPaused}
-              onPlayPrevious={playPrevious}
-              onTogglePlayback={togglePlayback}
-              onPlayNext={playNext}
-            />
-          </div>
+                </div>
+              </div>
+              {isPlaybackReady && playbackVideoId ? (
+                <ReleaseMiniPlayerDigScrub disabled={isPlaybackVideoLoading} />
+              ) : null}
+              <ReleaseMiniPlayerTransportControls
+                volumeControl={
+                  isPlaybackReady && playbackVideoId ? (
+                    <ReleaseMiniPlayerVolumePopover
+                      disabled={isPlaybackVideoLoading}
+                    />
+                  ) : null
+                }
+                isMobileLayout={isMobileLayout}
+                crateToggleButton={addToMenu}
+                isQueueOpen={isQueueOpen}
+                queueButtonAriaLabel={queueButtonAriaLabel}
+                {...(queueButtonAddon !== undefined
+                  ? { queueButtonAddon }
+                  : {})}
+                onQueueToggle={() => {
+                  setIsQueueOpen((open) => !open);
+                }}
+                isPlaybackReady={isPlaybackReady}
+                isVideoPanelExpanded={isVideoPanelExpanded}
+                onVideoToggle={handleVideoToggle}
+                hasPrevious={canPlayPrevious}
+                hasNext={canPlayNext}
+                isPaused={isPaused}
+                onPlayPrevious={playPrevious}
+                onTogglePlayback={togglePlayback}
+                onPlayNext={playNext}
+              />
+            </div>
+          ) : null}
         </section>
       </OverlayStack>
     </div>
