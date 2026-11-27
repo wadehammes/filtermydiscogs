@@ -222,7 +222,6 @@ export const buildDashboardStory = ({
       : `No records added on ${dateString} in earlier years yet.`;
   const weeklyRecapSummary = calculateWeeklyRecapSummary(releases, today);
   const weeklyRecapLede = buildWeeklyRecapLede(weeklyRecapSummary);
-
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
   const addedPastYear = releasesAddedSince(releases, oneYearAgo);

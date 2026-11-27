@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { AppPageLoading } from "src/components/AppPageLoading/AppPageLoading.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
@@ -58,8 +57,10 @@ function DashboardClientContent() {
     isFetchingNextPage,
   });
   const allReleases = useAllReleases();
+  const shelfHydrated = allReleases.length > 0;
+  const awaitingCollectionContext = fetchingCollection && !shelfHydrated;
   const showLoading =
-    isCheckingAuth || needsCollectionLoad || fetchingCollection;
+    isCheckingAuth || needsCollectionLoad || awaitingCollectionContext;
   const { selectedRelease, handleReleaseClick, handleCloseModal } =
     useLocalSelectedReleaseModal({
       collectionUsername: authState.username,
@@ -107,24 +108,15 @@ function DashboardClientContent() {
   }, [valueError]);
 
   const dashboardContentReady =
-    !fetchingCollection && analytics !== null && story !== null;
-  const mountBelowFold = usePaintDeferredMount(dashboardContentReady);
+    !showLoading && analytics !== null && story !== null;
+  const mountBelowFold = usePaintDeferredMount(dashboardContentReady, {
+    immediate: shelfHydrated,
+    retainMountedWhenNotReady: true,
+  });
   const openCollectionDrilldown = useDashboardCollectionDrilldown();
 
   if (shouldRedirectHome) {
     return null;
-  }
-
-  if (showLoading) {
-    return (
-      <Page>
-        <AppPageLoading currentPage="dashboard" hideFilters>
-          <div className={styles.container}>
-            <DashboardSkeleton />
-          </div>
-        </AppPageLoading>
-      </Page>
-    );
   }
 
   return (
@@ -143,142 +135,154 @@ function DashboardClientContent() {
       >
         <main
           className={styles.container}
-          data-testid="fmdDashboardClient"
-          aria-label={DASHBOARD_PAGE_MAIN_LABEL}
+          aria-label={showLoading ? undefined : DASHBOARD_PAGE_MAIN_LABEL}
+          data-testid={showLoading ? undefined : "fmdDashboardClient"}
         >
-          {!fetchingCollection && allReleases.length === 0 && !analytics && (
-            <EmptyState
-              variant="page"
-              title="Nothing on the shelf yet"
-              description="Add records to your Discogs collection to see them here."
-            />
-          )}
-
-          {dashboardContentReady && story && analytics && (
-            <div className={styles.content}>
-              <DashboardHero
-                story={story}
-                stats={analytics.stats}
-                collectionValue={collectionValue}
-                isLoadingValue={valueLoading}
-                valueError={valueError}
-              />
-
-              <div className={styles.storyPair}>
-                <DashboardSection
-                  lede={story.sections.today.lede}
-                  title={story.sections.today.title}
-                >
-                  <OnThisDay
-                    hideHeading={true}
-                    onReleaseClick={handleReleaseClick}
+          {showLoading ? (
+            <DashboardSkeleton />
+          ) : (
+            <>
+              {!fetchingCollection &&
+                allReleases.length === 0 &&
+                !analytics && (
+                  <EmptyState
+                    variant="page"
+                    title="Nothing on the shelf yet"
+                    description="Add records to your Discogs collection to see them here."
                   />
-                </DashboardSection>
+                )}
 
-                <DashboardSection
-                  lede={story.sections.weeklyRecap.lede}
-                  title={story.sections.weeklyRecap.title}
-                >
-                  <WeeklyRecap
-                    hideHeading={true}
-                    onReleaseClick={handleReleaseClick}
+              {dashboardContentReady && story && analytics && (
+                <div className={styles.content}>
+                  <DashboardHero
+                    story={story}
+                    stats={analytics.stats}
+                    collectionValue={collectionValue}
+                    isLoadingValue={valueLoading}
+                    valueError={valueError}
                   />
-                </DashboardSection>
-              </div>
 
-              <div className={styles.belowFold} aria-busy={!mountBelowFold}>
-                {mountBelowFold && (
-                  <>
+                  <div className={styles.storyPair}>
                     <DashboardSection
-                      lede={story.sections.growth.lede}
-                      title={story.sections.growth.title}
+                      lede={story.sections.today.lede}
+                      title={story.sections.today.title}
                     >
-                      <CollectionRhythm
-                        acquisitionStreaks={analytics.acquisitionStreaks}
-                      />
-                      <DashboardGrowthChartLazy
-                        growthData={analytics.growth}
-                        hideHeading={true}
-                      />
-                    </DashboardSection>
-
-                    <DashboardSection
-                      lede={story.sections.sound.lede}
-                      title={story.sections.sound.title}
-                    >
-                      <DashboardDistributionChartsLazy
-                        styleDistribution={analytics.styleDistribution}
-                        genreDistribution={analytics.genreDistribution}
-                        decadeDistribution={analytics.decadeDistribution}
-                        mediaTypeDistribution={analytics.mediaTypeDistribution}
-                        formatTagDistribution={analytics.formatTagDistribution}
-                        onDrilldown={openCollectionDrilldown}
-                      />
-                      <DashboardComparativeGrowthChartsLazy
-                        hideHeading={true}
-                      />
-                      <StyleEvolution
-                        hideHeading={true}
-                        sectionCopy={story.sections.styleEvolution}
-                      />
-                    </DashboardSection>
-
-                    <DashboardSection
-                      lede={story.sections.playback.lede}
-                      title={story.sections.playback.title}
-                    >
-                      <TopTracks onReleaseClick={handleReleaseClick} />
-                    </DashboardSection>
-
-                    <DashboardSection
-                      lede={story.sections.names.lede}
-                      title={story.sections.names.title}
-                    >
-                      <DashboardArtistLabelChartsLazy
-                        artistDistribution={analytics.artistDistribution}
-                        labelDistribution={analytics.labelDistribution}
-                        onDrilldown={openCollectionDrilldown}
-                      />
-                    </DashboardSection>
-
-                    <DashboardSection
-                      lede={story.sections.markers.lede}
-                      title={story.sections.markers.title}
-                    >
-                      <CollectionMilestones
+                      <OnThisDay
                         hideHeading={true}
                         onReleaseClick={handleReleaseClick}
                       />
                     </DashboardSection>
 
-                    <div className={styles.storyPair}>
-                      <DashboardSection
-                        lede={story.sections.share.lede}
-                        title={story.sections.share.title}
-                      >
-                        <MostCrated
-                          hideHeading={true}
-                          onReleaseClick={handleReleaseClick}
-                          onDrilldown={openCollectionDrilldown}
-                        />
-                      </DashboardSection>
+                    <DashboardSection
+                      lede={story.sections.weeklyRecap.lede}
+                      title={story.sections.weeklyRecap.title}
+                    >
+                      <WeeklyRecap
+                        hideHeading={true}
+                        onReleaseClick={handleReleaseClick}
+                      />
+                    </DashboardSection>
+                  </div>
 
-                      <DashboardSection
-                        lede={story.sections.upkeep.lede}
-                        title={story.sections.upkeep.title}
-                      >
-                        <CollectionHealth
-                          health={analytics.health}
-                          hideHeading={true}
-                          onReleaseClick={handleReleaseClick}
-                          onDrilldown={openCollectionDrilldown}
-                        />
-                      </DashboardSection>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+                  <div className={styles.belowFold} aria-busy={!mountBelowFold}>
+                    {mountBelowFold && (
+                      <>
+                        <DashboardSection
+                          lede={story.sections.growth.lede}
+                          title={story.sections.growth.title}
+                        >
+                          <CollectionRhythm
+                            acquisitionStreaks={analytics.acquisitionStreaks}
+                          />
+                          <DashboardGrowthChartLazy
+                            growthData={analytics.growth}
+                            hideHeading={true}
+                          />
+                        </DashboardSection>
+
+                        <DashboardSection
+                          lede={story.sections.sound.lede}
+                          title={story.sections.sound.title}
+                        >
+                          <DashboardDistributionChartsLazy
+                            styleDistribution={analytics.styleDistribution}
+                            genreDistribution={analytics.genreDistribution}
+                            decadeDistribution={analytics.decadeDistribution}
+                            mediaTypeDistribution={
+                              analytics.mediaTypeDistribution
+                            }
+                            formatTagDistribution={
+                              analytics.formatTagDistribution
+                            }
+                            onDrilldown={openCollectionDrilldown}
+                          />
+                          <DashboardComparativeGrowthChartsLazy
+                            hideHeading={true}
+                          />
+                          <StyleEvolution
+                            hideHeading={true}
+                            sectionCopy={story.sections.styleEvolution}
+                          />
+                        </DashboardSection>
+
+                        <DashboardSection
+                          lede={story.sections.playback.lede}
+                          title={story.sections.playback.title}
+                        >
+                          <TopTracks onReleaseClick={handleReleaseClick} />
+                        </DashboardSection>
+
+                        <DashboardSection
+                          lede={story.sections.names.lede}
+                          title={story.sections.names.title}
+                        >
+                          <DashboardArtistLabelChartsLazy
+                            artistDistribution={analytics.artistDistribution}
+                            labelDistribution={analytics.labelDistribution}
+                            onDrilldown={openCollectionDrilldown}
+                          />
+                        </DashboardSection>
+
+                        <DashboardSection
+                          lede={story.sections.markers.lede}
+                          title={story.sections.markers.title}
+                        >
+                          <CollectionMilestones
+                            hideHeading={true}
+                            onReleaseClick={handleReleaseClick}
+                          />
+                        </DashboardSection>
+
+                        <div className={styles.storyPair}>
+                          <DashboardSection
+                            lede={story.sections.share.lede}
+                            title={story.sections.share.title}
+                          >
+                            <MostCrated
+                              hideHeading={true}
+                              onReleaseClick={handleReleaseClick}
+                              onDrilldown={openCollectionDrilldown}
+                            />
+                          </DashboardSection>
+
+                          <DashboardSection
+                            lede={story.sections.upkeep.lede}
+                            title={story.sections.upkeep.title}
+                          >
+                            <CollectionHealth
+                              health={analytics.health}
+                              hideHeading={true}
+                              onReleaseClick={handleReleaseClick}
+                              onDrilldown={openCollectionDrilldown}
+                            />
+                          </DashboardSection>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </CollectionPlaybackPageShell>

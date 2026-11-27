@@ -57,7 +57,9 @@ describe("DashboardClient", () => {
     po.renderDashboardClient({ releaseCount: 3 });
 
     expect(screen.queryByTestId("fmdEmptyState")).not.toBeInTheDocument();
-    expect(screen.queryByTestId(po.testId)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Nothing on the shelf yet"),
+    ).not.toBeInTheDocument();
   });
 
   it("renders the dashboard with stats after the collection loads", async () => {

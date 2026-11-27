@@ -1,7 +1,8 @@
 "use client";
 
 import classNames from "classnames";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import Button from "src/components/Button/Button.component";
 import {
   ScrollRevealBar,
   TickerNumber,
@@ -15,15 +16,20 @@ import type {
   YearInReviewTimeframe,
 } from "src/types/dashboard.types";
 import { getChartColor, useChartColors } from "src/utils/chartColors";
+import { buildCollectionRecapShareText } from "src/utils/collectionRecapShare";
 import {
   calculateYearInReview,
   YEAR_IN_REVIEW_TIMEFRAME_META,
   YEAR_IN_REVIEW_TIMEFRAME_OPTIONS,
 } from "src/utils/collectionRhythm";
+import { copyToClipboard } from "src/utils/copyToClipboard";
+import { toast } from "src/utils/toast";
 import styles from "./CollectionRhythm.module.css";
 
 interface CollectionRhythmProps {
   acquisitionStreaks: AcquisitionStreaksSummary | null;
+  totalReleases?: number;
+  username?: string | null;
 }
 
 const formatCount = (value: number): string =>
@@ -87,6 +93,8 @@ function RhythmStat({
 
 export const CollectionRhythm = ({
   acquisitionStreaks,
+  totalReleases,
+  username,
 }: CollectionRhythmProps) => {
   const releases = useAllReleases();
   const colors = useChartColors();
@@ -113,6 +121,30 @@ export const CollectionRhythm = ({
   }, [yearInReview]);
 
   const heroAdds = yearInReview?.recentPeriodAdds ?? 0;
+
+  const handleCopyRecapPress = useCallback(async () => {
+    if (!(yearInReview && username && totalReleases !== undefined)) {
+      return;
+    }
+
+    const text = buildCollectionRecapShareText({
+      compareLabel: timeframeMeta.compareLabel,
+      periodEyebrow: timeframeMeta.eyebrow,
+      recentPeriodLabel: timeframeMeta.recentLabel,
+      summary: yearInReview,
+      totalReleases,
+      username,
+    });
+    const success = await copyToClipboard(text);
+
+    if (success) {
+      toast.success("Recap copied to clipboard");
+    } else {
+      toast.error("Failed to copy recap");
+    }
+  }, [timeframeMeta, totalReleases, username, yearInReview]);
+
+  const showCopyRecap = yearInReview && username && totalReleases !== undefined;
 
   if (!(yearInReview || acquisitionStreaks)) {
     return null;
@@ -179,6 +211,14 @@ export const CollectionRhythm = ({
                 </span>
               )}
           </div>
+
+          {showCopyRecap ? (
+            <div className={styles.shareRow}>
+              <Button onPress={handleCopyRecapPress} variant="secondary">
+                Copy recap
+              </Button>
+            </div>
+          ) : null}
 
           <div className={styles.compareBars}>
             <div className={styles.compareRow}>

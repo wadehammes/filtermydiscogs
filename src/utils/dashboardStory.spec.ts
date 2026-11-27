@@ -68,7 +68,7 @@ describe("buildDashboardStory", () => {
         date_added: "2020-08-07T12:00:00",
       }),
       releaseFactory.build({
-        date_added: "2026-08-07T15:00:00",
+        date_added: "2026-08-06T15:00:00",
       }),
     ];
 
@@ -86,6 +86,8 @@ describe("buildDashboardStory", () => {
     expect(story.heroTagline).toContain("years collecting");
     expect(story.sections.today.lede).toContain("August 7");
     expect(story.sections.today.title).toBe("On this day");
+    expect(story.sections.weeklyRecap.title).toBe("This week");
+    expect(story.sections.weeklyRecap.lede).toContain("last 7 days");
     expect(story.sections.names.lede).toContain("Aphex Twin");
     expect(story.sections.names.title).toBe("Who repeats");
     expect(story.sections.sound.title).toBe("What you collect");
