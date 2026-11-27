@@ -1,5 +1,11 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { e2eReleaseCards } from "./authenticatedExpectations";
+import { releaseModal } from "./releaseModal";
+
+const expectCrateMenuPortaledOutsideHost = async (host: Locator) => {
+  await expect(host.getByTestId("fmdReleaseCrateMenu")).toHaveCount(0);
+  await expect(host.page().getByTestId("fmdReleaseCrateMenu")).toBeVisible();
+};
 
 export const releaseCardByAlbum = (page: Page, albumTitle: string) =>
   e2eReleaseCards(page).filter({ hasText: albumTitle });
@@ -20,10 +26,8 @@ export const openReleaseCrateMenuOnCard = async (card: Locator) => {
   return menu;
 };
 
-export const expectCrateMenuPortaledOutsideCard = async (card: Locator) => {
-  await expect(card.getByTestId("fmdReleaseCrateMenu")).toHaveCount(0);
-  await expect(card.page().getByTestId("fmdReleaseCrateMenu")).toBeVisible();
-};
+export const expectCrateMenuPortaledOutsideCard = async (card: Locator) =>
+  expectCrateMenuPortaledOutsideHost(card);
 
 export const expectCrateMenuInlineOnCard = async (card: Locator) => {
   const menu = card
@@ -41,10 +45,8 @@ export const openReleaseCrateMenuOnTableRow = async (row: Locator) => {
   return menu;
 };
 
-export const expectCrateMenuPortaledOutsideTableRow = async (row: Locator) => {
-  await expect(row.getByTestId("fmdReleaseCrateMenu")).toHaveCount(0);
-  await expect(row.page().getByTestId("fmdReleaseCrateMenu")).toBeVisible();
-};
+export const expectCrateMenuPortaledOutsideTableRow = async (row: Locator) =>
+  expectCrateMenuPortaledOutsideHost(row);
 
 export const scrollReleasesCollection = async (
   page: Page,
@@ -55,3 +57,18 @@ export const scrollReleasesCollection = async (
     element.scrollTop = top;
   }, scrollTop);
 };
+
+export const openReleaseCrateMenuInModal = async (page: Page) => {
+  const modal = releaseModal(page);
+  await expect(modal).toBeVisible();
+  const trigger = modal.getByTestId("fmdReleaseCrateMenuTrigger");
+  await expect(trigger).toBeEnabled();
+  await trigger.click();
+  const menu = page.getByTestId("fmdReleaseCrateMenu");
+  await expect(menu).toBeVisible();
+  return { modal, menu };
+};
+
+export const expectCrateMenuPortaledOutsideReleaseModal = async (
+  modal: Locator,
+) => expectCrateMenuPortaledOutsideHost(modal);

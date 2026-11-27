@@ -19,6 +19,8 @@ const waitForReleaseDetailFetch = (page: Page) =>
     { timeout: 30_000 },
   );
 
+export const releaseModal = (page: Page) => page.getByTestId("fmdReleaseModal");
+
 export const openReleaseModalFromCard = async (
   page: Page,
   card: Locator,
@@ -70,6 +72,17 @@ export const addAllPlayableTracksToQueueFromReleaseModal = async (
 
 export const closeReleaseModal = async (page: Page) => {
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0, {
+    timeout: 15_000,
+  });
+};
+
+export const closeReleaseModalWithOpenCrateMenu = async (
+  page: Page,
+  modal: Locator,
+) => {
+  await page.keyboard.press("Escape");
+  await modal.getByRole("button", { name: "Close modal" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0, {
     timeout: 15_000,
   });

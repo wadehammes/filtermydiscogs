@@ -8,7 +8,7 @@ import { artistFactory } from "src/tests/factories/Artist.factory";
 import { formatFactory } from "src/tests/factories/Format.factory";
 import { labelFactory } from "src/tests/factories/Label.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { expectReleaseCrateMenuInlineWithTrigger } from "src/tests/filterControlTestHelpers";
+import { expectReleaseCrateMenuPortaledOutOfHost } from "src/tests/filterControlTestHelpers";
 import { screen, waitFor } from "test-utils";
 
 const RELEASE_ID = RELEASE_SUMMARY_HERO_RELEASE_ID;
@@ -416,6 +416,6 @@ describe("ReleaseSummaryHero", () => {
       expect(screen.getByTestId("fmdReleaseCrateMenu")).toBeInTheDocument();
     });
 
-    expectReleaseCrateMenuInlineWithTrigger();
+    expectReleaseCrateMenuPortaledOutOfHost();
   });
 });
