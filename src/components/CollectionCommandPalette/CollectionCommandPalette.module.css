@@ -44,6 +44,10 @@
 }
 
 .command {
+  --command-inset: var(--space-4);
+  --command-row-min-height: var(--touch-target-min);
+  --command-row-pad-block: var(--space-3);
+
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -70,7 +74,7 @@
   }
 
   & [cmdk-item] {
-    border-radius: var(--radius-ui);
+    border-radius: 0;
   }
 }
 
@@ -79,8 +83,8 @@
   border-bottom: 1px solid var(--border);
   display: flex;
   gap: var(--space-3);
-  padding-block: var(--space-2);
-  padding-inline: calc(var(--space-2) + var(--space-3));
+  min-height: var(--touch-target-min);
+  padding: var(--command-inset);
 }
 
 .commandInputIcon {
@@ -93,24 +97,28 @@
   border: none;
   color: var(--foreground);
   flex: 1;
-  font-size: var(--text-lg);
+  font-size: 1rem;
   min-width: 0;
   outline: none;
-  padding-block: var(--space-2);
-  padding-inline: 0;
+  padding: 0;
   width: 100%;
 
   &::placeholder {
     color: var(--muted-foreground);
   }
+
+  @media (width >= 768px) {
+    font-size: var(--text-lg);
+    padding-block: var(--space-2);
+    padding-inline: 0;
+  }
 }
 
 .commandList {
-  max-height: min(40vh, 14rem);
+  max-height: min(46vh, 18rem);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-block: var(--space-1) var(--space-2);
-  padding-inline: var(--space-2);
+  padding: 0;
 }
 
 .recentSection {
@@ -121,19 +129,19 @@
 .recentList {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--space-1);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .command button.recentRow {
-  border-radius: var(--radius-ui);
+  border-radius: 0;
   gap: var(--space-3);
   height: auto;
   justify-content: flex-start;
-  min-height: auto;
-  padding: var(--space-3) var(--space-3);
+  min-height: var(--command-row-min-height);
+  padding: var(--command-inset);
   white-space: normal;
   width: 100%;
 }
@@ -143,7 +151,7 @@
   flex-direction: column;
   gap: var(--space-1);
   padding-block: var(--space-1) 0;
-  padding-inline: var(--space-3);
+  padding-inline: var(--command-inset);
   text-align: left;
 }
 
@@ -153,11 +161,12 @@
 }
 
 .command button.commandActionSecondary {
-  border-radius: var(--radius-ui);
+  border-radius: 0;
   height: auto;
   justify-content: flex-start;
-  min-height: auto;
-  padding: var(--space-2) var(--space-3);
+  min-height: var(--command-row-min-height);
+  padding-block: var(--command-row-pad-block);
+  padding-inline: var(--command-inset);
   text-align: left;
   width: 100%;
 }
@@ -202,9 +211,11 @@
 
 .actionStack .commandActionPrimary,
 .actionStack .commandActionRun {
+  border-radius: 0;
   justify-content: space-between;
-  min-height: var(--button-height-md);
-  padding-inline: var(--space-3);
+  min-height: var(--command-row-min-height);
+  padding-block: var(--command-row-pad-block);
+  padding-inline: var(--command-inset);
   text-align: left;
   width: 100%;
 
@@ -231,12 +242,16 @@
 
 .actionLabel {
   flex: 1;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   min-width: 0;
   overflow: hidden;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  @media (width >= 768px) {
+    font-size: var(--text-sm);
+  }
 }
 
 .actionShortcut {
@@ -284,8 +299,11 @@
 }
 
 .previewActionStack .commandActionPrimaryCta {
+  border-radius: 0;
   justify-content: space-between;
-  padding-inline: var(--space-3);
+  min-height: var(--command-row-min-height);
+  padding-block: var(--command-row-pad-block);
+  padding-inline: var(--command-inset);
   text-align: left;
   width: 100%;
 }
@@ -297,11 +315,15 @@
 
 .itemTitle {
   flex: 1;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  @media (width >= 768px) {
+    font-size: var(--text-sm);
+  }
 }
 
 .shortcutKeys {

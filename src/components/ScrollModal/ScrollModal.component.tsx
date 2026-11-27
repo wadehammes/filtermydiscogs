@@ -20,6 +20,7 @@ interface ScrollModalProps {
   asideClassName?: string;
   toolbar?: ReactNode;
   escapeStackingContext?: boolean;
+  abovePlaybackDock?: boolean;
 }
 
 export const ScrollModal = ({
@@ -36,6 +37,7 @@ export const ScrollModal = ({
   asideClassName,
   toolbar,
   escapeStackingContext = false,
+  abovePlaybackDock = false,
 }: ScrollModalProps) => {
   const hasAside = aside != null;
 
@@ -46,6 +48,7 @@ export const ScrollModal = ({
       panelClassName={classNames(styles.modal, panelClassName)}
       backdropVariant="modal"
       escapeStackingContext={escapeStackingContext}
+      abovePlaybackDock={abovePlaybackDock}
       {...definedProps({
         testId,
         ariaLabelledBy,

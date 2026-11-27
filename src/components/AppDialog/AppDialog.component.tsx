@@ -25,19 +25,26 @@ interface AppDialogProps {
   backdropVariant?: AppDialogBackdropVariant;
   escapeStackingContext?: boolean;
   aboveBottomDrawer?: boolean;
+  abovePlaybackDock?: boolean;
 }
 
 const popupClassByPlacement = ({
   aboveBottomDrawer,
+  abovePlaybackDock,
   usesShellPortal,
   backdropVariant,
 }: {
   aboveBottomDrawer: boolean;
+  abovePlaybackDock: boolean;
   usesShellPortal: boolean;
   backdropVariant: AppDialogBackdropVariant;
 }): string => {
   if (aboveBottomDrawer) {
     return styles.popupAboveDrawer;
+  }
+
+  if (abovePlaybackDock) {
+    return styles.popupAbovePlaybackDock;
   }
 
   if (usesShellPortal) {
@@ -79,10 +86,12 @@ export const AppDialog = ({
   backdropVariant = "default",
   escapeStackingContext = false,
   aboveBottomDrawer = false,
+  abovePlaybackDock = false,
 }: AppDialogProps) => {
   usePlaybackPageScrollLock(open);
   const overlayPortal = usePlaybackPageOverlayPortal();
-  const usesShellPortal = overlayPortal !== null && !aboveBottomDrawer;
+  const usesShellPortal =
+    overlayPortal !== null && !aboveBottomDrawer && !abovePlaybackDock;
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handleOpenChange = useCallback(
@@ -113,7 +122,9 @@ export const AppDialog = ({
           className={
             aboveBottomDrawer
               ? portalStyles.backdropAboveDrawer
-              : backdropClassByVariant(backdropVariant, usesShellPortal)
+              : abovePlaybackDock
+                ? portalStyles.backdropAbovePlaybackDock
+                : backdropClassByVariant(backdropVariant, usesShellPortal)
           }
           {...definedProps({
             "data-testid": testId ? `${testId}-backdrop` : undefined,
@@ -124,6 +135,7 @@ export const AppDialog = ({
           className={classNames(
             popupClassByPlacement({
               aboveBottomDrawer,
+              abovePlaybackDock,
               usesShellPortal,
               backdropVariant,
             }),

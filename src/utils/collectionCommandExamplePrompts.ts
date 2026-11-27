@@ -111,6 +111,33 @@ const pickDominantDecadeLabel = (years: readonly number[]): string | null => {
   return formatDecadePhrase(bestDecade);
 };
 
+const pickExampleDecadeLabel = (years: readonly number[]): string | null => {
+  if (years.length === 0) {
+    return null;
+  }
+
+  const counts = new Map<number, number>();
+  for (const year of years) {
+    const decade = Math.floor(year / 10) * 10;
+    counts.set(decade, (counts.get(decade) ?? 0) + 1);
+  }
+
+  let bestDecade: number | null = null;
+  let bestCount = 0;
+  for (const [decade, count] of counts) {
+    if (count > bestCount) {
+      bestCount = count;
+      bestDecade = decade;
+    }
+  }
+
+  if (bestDecade === null) {
+    return null;
+  }
+
+  return `the ${bestDecade}s`;
+};
+
 const describeActiveFilterSet = (
   filters: PersistedFiltersJson,
 ): string | null => {
@@ -145,10 +172,23 @@ const describeActiveFilterSet = (
   return segments.join(", ");
 };
 
-const pickLeadFormat = (facetOptions: FacetOptions): string | null =>
-  facetOptions.availableFormats.find((format) => format === "Vinyl") ??
-  facetOptions.availableFormats[0] ??
-  null;
+const pickLeadFormat = (
+  facetOptions: FacetOptions,
+  shuffleSeed = 0,
+): string | null => {
+  const formats = facetOptions.availableFormats;
+  if (formats.length === 0) {
+    return null;
+  }
+
+  const vinylFirst = [
+    ...formats.filter((format) => format === "Vinyl"),
+    ...formats.filter((format) => format !== "Vinyl"),
+  ];
+
+  const index = shuffleSeed % vinylFirst.length;
+  return vinylFirst[index] ?? formats[0] ?? null;
+};
 
 const pickSecondaryStyle = (facetOptions: FacetOptions): string | null =>
   facetOptions.availableStyles[1] ??
@@ -157,8 +197,11 @@ const pickSecondaryStyle = (facetOptions: FacetOptions): string | null =>
   ) ??
   null;
 
-const hashFacetStyleSampleSeed = (styles: readonly string[]): number => {
-  let hash = 2_166_136_261;
+const hashFacetStyleSampleSeed = (
+  styles: readonly string[],
+  shuffleSeed = 0,
+): number => {
+  let hash = 2_166_136_261 ^ shuffleSeed;
   for (const style of styles) {
     for (let index = 0; index < style.length; index += 1) {
       hash ^= style.charCodeAt(index);
@@ -204,13 +247,17 @@ const uniqueFacetStyles = (availableStyles: readonly string[]): string[] => [
 export const sampleDistinctFacetStyles = (
   availableStyles: readonly string[],
   count: number,
+  shuffleSeed = 0,
 ): string[] => {
   const unique = uniqueFacetStyles(availableStyles);
   if (unique.length === 0 || count <= 0) {
     return [];
   }
 
-  const shuffled = seededShuffle(unique, hashFacetStyleSampleSeed(unique));
+  const shuffled = seededShuffle(
+    unique,
+    hashFacetStyleSampleSeed(unique, shuffleSeed),
+  );
   return shuffled.slice(0, Math.min(count, unique.length));
 };
 
@@ -220,36 +267,6 @@ type IdleExampleStyleSlots = {
   savePrimary: string | null;
   cratePrimary: string | null;
 };
-
-const pickIdleExampleStyleSlots = (
-  facetOptions: FacetOptions,
-): IdleExampleStyleSlots => {
-  const samples = sampleDistinctFacetStyles(facetOptions.availableStyles, 4);
-  const explorePrimary = samples[0] ?? null;
-  const exploreSecondary = samples[1] ?? explorePrimary;
-  const savePrimary = samples[2] ?? samples[1] ?? explorePrimary;
-  let cratePrimary = samples[3] ?? samples[2] ?? samples[1] ?? explorePrimary;
-
-  if (
-    savePrimary !== null &&
-    cratePrimary !== null &&
-    savePrimary === cratePrimary &&
-    samples[1] !== undefined &&
-    samples[1] !== savePrimary
-  ) {
-    cratePrimary = samples[1];
-  }
-
-  return {
-    explorePrimary,
-    exploreSecondary,
-    savePrimary,
-    cratePrimary,
-  };
-};
-
-const exampleShelfName = (filters: PersistedFiltersJson): string =>
-  buildCollectionCommandViewNameFromFilters({ filters }) ?? "This shelf";
 
 const countFacetProbeMatches = (
   releases: readonly DiscogsRelease[] | undefined,
@@ -262,83 +279,91 @@ const countFacetProbeMatches = (
   return listCollectionCommandMatchedReleases({ releases, filters }).length;
 };
 
-const pickViableStyle = ({
-  styleCandidates,
-  format,
-  releases,
-}: {
-  styleCandidates: readonly string[];
-  format: string | null;
-  releases: readonly DiscogsRelease[] | undefined;
-}): string | null => {
-  for (const style of styleCandidates) {
-    const styleOnlyCount = countFacetProbeMatches(releases, {
-      ...baseProbeFilters(),
-      selectedStyles: [style],
-    });
+const isStyleViableForExample = (
+  style: string,
+  format: string | null,
+  releases: readonly DiscogsRelease[] | undefined,
+): boolean => {
+  const styleCount = countFacetProbeMatches(releases, {
+    ...baseProbeFilters(),
+    selectedStyles: [style],
+  });
 
-    if (styleOnlyCount === null) {
-      return style;
-    }
+  if (styleCount === null) {
+    return true;
+  }
 
-    if (styleOnlyCount === 0) {
+  if (styleCount === 0) {
+    return false;
+  }
+
+  if (!format) {
+    return true;
+  }
+
+  const styleAndFormatCount = countFacetProbeMatches(releases, {
+    ...baseProbeFilters(),
+    selectedStyles: [style],
+    selectedFormats: [format],
+  });
+
+  if (styleAndFormatCount === null) {
+    return true;
+  }
+
+  return styleAndFormatCount > 0;
+};
+
+const assignDistinctIdleStyleSlots = (
+  facetOptions: FacetOptions,
+  releases: readonly DiscogsRelease[] | undefined,
+  shuffleSeed: number,
+): IdleExampleStyleSlots => {
+  const format = pickLeadFormat(facetOptions, shuffleSeed);
+  const stylePool = sampleDistinctFacetStyles(
+    facetOptions.availableStyles,
+    Math.min(12, uniqueFacetStyles(facetOptions.availableStyles).length),
+    shuffleSeed,
+  );
+
+  const distinct: string[] = [];
+  for (const style of stylePool) {
+    if (distinct.includes(style)) {
       continue;
     }
 
-    if (format) {
-      const styleAndFormatCount = countFacetProbeMatches(releases, {
-        ...baseProbeFilters(),
-        selectedStyles: [style],
-        selectedFormats: [format],
-      });
-
-      if (styleAndFormatCount === 0) {
-        continue;
-      }
+    if (!isStyleViableForExample(style, format, releases)) {
+      continue;
     }
 
-    return style;
+    distinct.push(style);
+    if (distinct.length >= 3) {
+      break;
+    }
   }
 
-  return styleCandidates[0] ?? null;
-};
+  if (distinct.length < 3) {
+    for (const style of stylePool) {
+      if (distinct.includes(style)) {
+        continue;
+      }
 
-const refineIdleExampleSlots = ({
-  slots,
-  facetOptions,
-  releases,
-}: {
-  slots: IdleExampleStyleSlots;
-  facetOptions: FacetOptions;
-  releases: readonly DiscogsRelease[] | undefined;
-}): IdleExampleStyleSlots => {
-  const format = pickLeadFormat(facetOptions);
-  const samples = sampleDistinctFacetStyles(facetOptions.availableStyles, 4);
+      if (!isStyleViableForExample(style, format, releases)) {
+        continue;
+      }
 
-  const explorePrimary = pickViableStyle({
-    styleCandidates: [slots.explorePrimary, ...samples].filter(
-      (style): style is string => Boolean(style),
-    ),
-    format,
-    releases,
-  });
+      distinct.push(style);
+      if (distinct.length >= 3) {
+        break;
+      }
+    }
+  }
+
+  const explorePrimary = distinct[0] ?? null;
+  const savePrimary = distinct[1] ?? distinct[0] ?? null;
+  const cratePrimary = distinct[2] ?? distinct[1] ?? distinct[0] ?? null;
   const exploreSecondary =
-    samples.find((style) => style !== explorePrimary) ?? explorePrimary;
-
-  const savePrimary = pickViableStyle({
-    styleCandidates: [slots.savePrimary, ...samples].filter(
-      (style): style is string => Boolean(style),
-    ),
-    format,
-    releases,
-  });
-  const cratePrimary = pickViableStyle({
-    styleCandidates: [slots.cratePrimary, ...samples].filter(
-      (style): style is string => Boolean(style),
-    ),
-    format,
-    releases,
-  });
+    distinct.find((style) => style !== explorePrimary) ?? explorePrimary;
 
   return {
     explorePrimary,
@@ -346,6 +371,24 @@ const refineIdleExampleSlots = ({
     savePrimary,
     cratePrimary,
   };
+};
+
+const exampleShelfName = (filters: PersistedFiltersJson): string =>
+  buildCollectionCommandViewNameFromFilters({ filters }) ?? "This shelf";
+
+const pickExampleYear = (
+  years: readonly number[],
+  shuffleSeed: number,
+): number | null => {
+  const sorted = [...years]
+    .filter((year) => Number.isFinite(year) && year > 0)
+    .sort((left, right) => left - right);
+
+  if (sorted.length === 0) {
+    return null;
+  }
+
+  return sorted[shuffleSeed % sorted.length] ?? null;
 };
 
 const pushUnique = (prompts: string[], candidate: string | null) => {
@@ -378,13 +421,15 @@ const appendFallbackPrompts = (prompts: string[]) => {
 const buildRefinePrompt = ({
   filters,
   facetOptions,
+  shuffleSeed,
 }: {
   filters: PersistedFiltersJson;
   facetOptions: FacetOptions;
   descriptor: string;
+  shuffleSeed: number;
 }): string | null => {
   const searchQuery = filters.searchQuery.trim();
-  const leadFormat = pickLeadFormat(facetOptions);
+  const leadFormat = pickLeadFormat(facetOptions, shuffleSeed);
   const leadStyle = facetOptions.availableStyles[0];
   const secondaryStyle = pickSecondaryStyle(facetOptions);
   const decade = pickDominantDecadeLabel(facetOptions.availableYears);
@@ -413,7 +458,7 @@ const buildRefinePrompt = ({
 
 const buildSaveViewPrompt = (
   filters: PersistedFiltersJson,
-  descriptor: string,
+  _descriptor: string,
 ): string | null => {
   const name = exampleShelfName(filters);
   return `Save a view named "${name}" from what's showing`;
@@ -421,7 +466,7 @@ const buildSaveViewPrompt = (
 
 const buildCratePrompt = (
   filters: PersistedFiltersJson,
-  descriptor: string,
+  _descriptor: string,
 ): string | null => {
   const name = exampleShelfName(filters);
   return `Create a crate named "${name}" from what's showing`;
@@ -430,35 +475,66 @@ const buildCratePrompt = (
 const buildExplorePrompt = (
   facetOptions: FacetOptions,
   styles: IdleExampleStyleSlots,
+  shuffleSeed: number,
 ): string | null => {
   const leadStyle = styles.explorePrimary;
-  const leadFormat = pickLeadFormat(facetOptions);
+  const secondaryStyle = styles.exploreSecondary;
+  const leadFormat = pickLeadFormat(facetOptions, shuffleSeed);
+  const exampleYear = pickExampleYear(facetOptions.availableYears, shuffleSeed);
+  const exampleDecade = pickExampleDecadeLabel(facetOptions.availableYears);
+  const decade = pickDominantDecadeLabel(facetOptions.availableYears);
+  const variant = shuffleSeed % 3;
 
-  if (leadStyle && leadFormat) {
-    return `Show ${leadStyle} on ${leadFormat}`;
+  if (
+    leadStyle &&
+    secondaryStyle &&
+    leadStyle !== secondaryStyle &&
+    exampleDecade
+  ) {
+    const complex = `Show me ${leadStyle} AND ${secondaryStyle} releases from ${exampleDecade}`;
+    if (complex.length <= COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH) {
+      return complex;
+    }
+  }
+
+  if (leadStyle && exampleYear) {
+    return `Show me ${leadStyle} from ${exampleYear}`;
+  }
+
+  if (variant === 0 && leadStyle && leadFormat) {
+    return `Show me ${leadStyle} on ${leadFormat} only`;
+  }
+
+  const decadePhrase = exampleDecade ?? decade;
+
+  if (variant === 1 && leadStyle && decadePhrase) {
+    return `Show me ${leadStyle} from ${decadePhrase}`;
+  }
+
+  if (
+    variant === 2 &&
+    leadStyle &&
+    secondaryStyle &&
+    leadStyle !== secondaryStyle
+  ) {
+    return `Show me ${leadStyle} and ${secondaryStyle}`;
   }
 
   if (leadStyle) {
-    return `Show all ${leadStyle}`;
+    return `Show me ${leadStyle} only`;
   }
 
   if (leadFormat) {
-    return `Show everything on ${leadFormat}`;
+    return `Show me ${leadFormat} only`;
   }
 
   return null;
 };
 
 const buildIdleSaveViewPrompt = (
-  facetOptions: FacetOptions,
   styles: IdleExampleStyleSlots,
 ): string | null => {
   const leadStyle = styles.savePrimary;
-  const leadFormat = pickLeadFormat(facetOptions);
-
-  if (leadStyle && leadFormat) {
-    return `Save a view for ${leadStyle} on ${leadFormat}`;
-  }
 
   if (leadStyle) {
     return `Save a view for ${leadStyle}`;
@@ -470,16 +546,17 @@ const buildIdleSaveViewPrompt = (
 const buildIdleCratePrompt = (
   facetOptions: FacetOptions,
   styles: IdleExampleStyleSlots,
+  shuffleSeed: number,
 ): string | null => {
   const leadStyle = styles.cratePrimary;
-  const leadFormat = pickLeadFormat(facetOptions);
+  const leadFormat = pickLeadFormat(facetOptions, shuffleSeed + 2);
 
-  if (leadStyle && leadFormat) {
-    return `Create a crate of ${leadStyle} on ${leadFormat}`;
+  if (leadStyle && leadFormat && shuffleSeed % 2 === 0) {
+    return `Crate ${leadStyle} on ${leadFormat}`;
   }
 
   if (leadStyle) {
-    return `Create a crate of ${leadStyle}`;
+    return `Create a crate from ${leadStyle}`;
   }
 
   return null;
@@ -489,10 +566,12 @@ export const buildCollectionCommandExamplePrompts = ({
   filters,
   facetOptions,
   releases,
+  shuffleSeed = 0,
 }: {
   filters: PersistedFiltersJson;
   facetOptions: FacetOptions;
   releases?: readonly DiscogsRelease[];
+  shuffleSeed?: number;
 }): string[] => {
   const prompts: string[] = [];
   const appliedFilterCount = getAppliedFilterCount(filters);
@@ -501,19 +580,25 @@ export const buildCollectionCommandExamplePrompts = ({
   if (appliedFilterCount > 0 && descriptor) {
     pushUnique(
       prompts,
-      buildRefinePrompt({ filters, facetOptions, descriptor }),
+      buildRefinePrompt({ filters, facetOptions, descriptor, shuffleSeed }),
     );
     pushUnique(prompts, buildSaveViewPrompt(filters, descriptor));
     pushUnique(prompts, buildCratePrompt(filters, descriptor));
   } else {
-    const idleStyles = refineIdleExampleSlots({
-      slots: pickIdleExampleStyleSlots(facetOptions),
+    const idleStyles = assignDistinctIdleStyleSlots(
       facetOptions,
       releases,
-    });
-    pushUnique(prompts, buildExplorePrompt(facetOptions, idleStyles));
-    pushUnique(prompts, buildIdleSaveViewPrompt(facetOptions, idleStyles));
-    pushUnique(prompts, buildIdleCratePrompt(facetOptions, idleStyles));
+      shuffleSeed,
+    );
+    pushUnique(
+      prompts,
+      buildExplorePrompt(facetOptions, idleStyles, shuffleSeed),
+    );
+    pushUnique(prompts, buildIdleSaveViewPrompt(idleStyles));
+    pushUnique(
+      prompts,
+      buildIdleCratePrompt(facetOptions, idleStyles, shuffleSeed),
+    );
   }
 
   appendFallbackPrompts(prompts);

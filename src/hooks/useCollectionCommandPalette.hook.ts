@@ -85,18 +85,25 @@ export const useCollectionCommandPalette = () => {
   const [isCreatingCrateFromPreview, setIsCreatingCrateFromPreview] =
     useState(false);
   const [promptHistoryRevision, setPromptHistoryRevision] = useState(0);
-  const promptHistory = useMemo(
-    () => (open ? readCollectionCommandPromptHistory(authState.userId) : []),
-    [authState.userId, open, promptHistoryRevision],
-  );
+  const [exampleShuffleSeed, setExampleShuffleSeed] = useState(0);
+  const promptHistory = useMemo(() => {
+    if (!open) {
+      return [];
+    }
+
+    return readCollectionCommandPromptHistory(authState.userId).filter(
+      () => promptHistoryRevision >= 0,
+    );
+  }, [authState.userId, open, promptHistoryRevision]);
   const examplePrompts = useMemo(
     () =>
       buildCollectionCommandExamplePrompts({
         filters: sessionFilters,
         facetOptions,
         releases: allReleases,
+        shuffleSeed: exampleShuffleSeed,
       }),
-    [allReleases, facetOptions, sessionFilters],
+    [allReleases, exampleShuffleSeed, facetOptions, sessionFilters],
   );
 
   const interpretMutation = useMutation({
@@ -170,6 +177,7 @@ export const useCollectionCommandPalette = () => {
       return;
     }
 
+    setExampleShuffleSeed((seed) => seed + 1);
     setOpen(true);
   }, [paletteEnabled]);
 
@@ -197,6 +205,19 @@ export const useCollectionCommandPalette = () => {
 
     interpretMutation.mutate(prompt);
   }, [interpretMutation, query]);
+
+  const runInterpretForPrompt = useCallback(
+    (prompt: string) => {
+      const trimmed = prompt.trim();
+      if (!trimmed || interpretMutation.isPending) {
+        return;
+      }
+
+      setQuery(trimmed);
+      interpretMutation.mutate(trimmed);
+    },
+    [interpretMutation],
+  );
 
   const saveFilterViewFromPreview = useCallback(() => {
     if (!previewFilters) {
@@ -373,9 +394,11 @@ export const useCollectionCommandPalette = () => {
       setOpen((previous) => {
         if (previous) {
           resetPaletteState();
+          return false;
         }
 
-        return !previous;
+        setExampleShuffleSeed((seed) => seed + 1);
+        return true;
       });
     };
 
@@ -402,6 +425,7 @@ export const useCollectionCommandPalette = () => {
     previewIntent,
     previewFilters,
     runInterpret,
+    runInterpretForPrompt,
     applyPreviewFilters,
     saveFilterViewFromPreview,
     canSaveFromPreview,

@@ -73,7 +73,14 @@ describe("discogs-request-throttle", () => {
     });
 
     expect(timestamps).toHaveLength(2);
-    expect(timestamps[1]! - timestamps[0]!).toBeGreaterThanOrEqual(35);
+    const first = timestamps[0];
+    const second = timestamps[1];
+    if (first === undefined || second === undefined) {
+      expect(first).toBeDefined();
+      expect(second).toBeDefined();
+      return;
+    }
+    expect(second - first).toBeGreaterThanOrEqual(35);
   });
 
   it("runs nested throttle calls without deadlocking the queue", async () => {

@@ -26,7 +26,7 @@ export const COLLECTION_COMMAND_OPEN_TOOLTIP_LEDE =
 export const COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH = 72;
 
 export const COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK = [
-  "Show vinyl from the 90s",
+  "Show me House AND Disco releases from the 2010s",
   'Save a view named "Sunday spins"',
-  "Create a crate from highly rated picks",
+  "Create a crate from ambient vinyl",
 ] as const;
