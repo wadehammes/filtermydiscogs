@@ -1,4 +1,6 @@
+import { HttpResponse, http } from "msw";
 import { DASHBOARD_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
+import { buildE2eCollectionReleasesWithExactDuplicate } from "src/tests/msw/e2eCollectionData";
 import {
   E2E_ALBUM_ONE,
   E2E_MOST_CRATED_CRATE_COUNT,
@@ -70,5 +72,44 @@ test.describe("authenticated dashboard (MSW)", () => {
         name: `${E2E_MOST_CRATED_CRATE_COUNT} crates`,
       }),
     ).toBeVisible();
+  });
+
+  test("shows value outage copy when collection value fails", async ({
+    page,
+    network,
+  }) => {
+    await network.use(
+      http.get("/api/collection/value", () =>
+        HttpResponse.json({ message: "upstream" }, { status: 503 }),
+      ),
+    );
+
+    await page.goto("/dashboard");
+    await expectNotOnLogin(page);
+    await expect(
+      page.getByRole("group", { name: "Estimated value" }),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Estimated value unavailable")).toBeVisible();
+  });
+});
+
+test.describe("authenticated dashboard duplicate shelf (MSW)", () => {
+  test.use({
+    authenticatedE2eHandlerOptions: {
+      releases: buildE2eCollectionReleasesWithExactDuplicate(),
+    },
+  });
+
+  test("opens exact duplicates modal", async ({ page }) => {
+    await page.goto("/dashboard");
+    await expectNotOnLogin(page);
+    await expect(
+      page.getByRole("group", { name: "Exact Duplicates" }),
+    ).toBeVisible({ timeout: 30_000 });
+    await page
+      .getByRole("group", { name: "Exact Duplicates" })
+      .getByRole("button", { name: "Show details" })
+      .click();
+    await expect(page.getByTestId("fmdDuplicatesDetailModal")).toBeVisible();
   });
 });

@@ -6,7 +6,12 @@ import { installClearClientStorage } from "../helpers/clearClientStorage";
 import { installHideNextDevOverlay } from "../helpers/hideNextDevOverlay";
 import { test as base, expect } from "./browser.fixture";
 
+type AuthenticatedE2eHandlerOptions = NonNullable<
+  Parameters<typeof createAuthenticatedE2eHandlers>[0]
+>;
+
 type MswFixtures = {
+  authenticatedE2eHandlerOptions: AuthenticatedE2eHandlerOptions | undefined;
   handlers: RequestHandler[];
   network: NetworkFixture;
 };
@@ -45,8 +50,9 @@ export const test = base.extend<MswFixtures>({
     await installClearClientStorage(context);
     await use(context);
   },
-  handlers: async ({ context: _context }, use) => {
-    await use(createAuthenticatedE2eHandlers());
+  authenticatedE2eHandlerOptions: undefined,
+  handlers: async ({ authenticatedE2eHandlerOptions }, use) => {
+    await use(createAuthenticatedE2eHandlers(authenticatedE2eHandlerOptions));
   },
   network: [
     async ({ context, handlers }, use) => {

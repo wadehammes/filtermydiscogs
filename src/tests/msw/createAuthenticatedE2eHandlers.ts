@@ -10,11 +10,13 @@ import { createDefaultPlaylistApiHandlers } from "src/tests/msw/handlers/playlis
 import { createDefaultReleaseApiHandlers } from "src/tests/msw/handlers/release";
 import { createDefaultTrackApiHandlers } from "src/tests/msw/handlers/tracks";
 import { createDefaultUserApiHandlers } from "src/tests/msw/handlers/user";
+import type { DiscogsRelease } from "src/types";
 export function createAuthenticatedE2eHandlers(options?: {
   authStatus?: AuthStatus;
+  releases?: DiscogsRelease[];
 }): RequestHandler[] {
   const authStatus = options?.authStatus ?? authStatusFactory.authenticated();
-  const releases = buildE2eCollectionReleases();
+  const releases = options?.releases ?? buildE2eCollectionReleases();
 
   return [
     ...createDefaultAuthHandlers({ authStatus }),
