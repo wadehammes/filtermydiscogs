@@ -8,6 +8,7 @@ import {
   updateCollectionNote,
   updateReleaseRating,
 } from "src/api/endpoints/collection";
+import { interpretCollectionCommand } from "src/api/endpoints/collectionCommand";
 import {
   addReleaseToCrate,
   clearAllPackedInCrate,
@@ -114,6 +115,7 @@ export const api = {
   recordTrackEvent,
   fetchTrackStats,
   fetchYoutubeOembed,
+  interpretCollectionCommand,
   saveTrackYoutubeOverride,
   updateCollectionNote,
   updateCrate,

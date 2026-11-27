@@ -1,0 +1,299 @@
+.dialog {
+  composes: enterexitfade from "../../styles/modules/portal-enter-exit.module.css";
+  align-items: flex-start;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: min(16vh, 7rem) var(--space-4) var(--space-4);
+  pointer-events: none;
+  position: fixed;
+  width: 100%;
+  z-index: var(--z-5-modal);
+}
+
+.backdrop {
+  background: color-mix(in srgb, var(--background) 50%, transparent);
+  border-color: transparent;
+  border-radius: 0;
+  color: transparent;
+  cursor: default;
+  height: 100%;
+  inset: 0;
+  min-height: 0;
+  padding: 0;
+  pointer-events: auto;
+  position: absolute;
+  width: 100%;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--background) 50%, transparent);
+    border-color: transparent;
+    color: transparent;
+  }
+}
+
+.panel {
+  composes: backdroppanel from "../../styles/modules/modal-dialog.module.css";
+  composes: enterexitscale from "../../styles/modules/portal-enter-exit.module.css";
+  max-height: min(70vh, 26rem);
+  overflow: hidden;
+  pointer-events: auto;
+  position: relative;
+  width: min(100%, 40rem);
+  z-index: 1;
+}
+
+.command {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  & [cmdk-group-heading] {
+    color: var(--muted-foreground);
+    font-family: var(--font-family-meta);
+    font-size: var(--text-meta-xxs);
+    font-weight: var(--font-medium);
+    letter-spacing: var(--letter-spacing-eyebrow);
+    padding: var(--space-2) var(--space-3) var(--space-1);
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  & [cmdk-group] + [cmdk-group] {
+    border-top: 1px solid var(--border);
+  }
+
+  & [cmdk-separator] {
+    background: var(--border);
+    height: 1px;
+    margin: var(--space-1) var(--space-2);
+  }
+}
+
+.commandInput {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: var(--text-lg);
+  outline: none;
+  padding: var(--space-4);
+  width: 100%;
+
+  &::placeholder {
+    color: var(--muted-foreground);
+  }
+}
+
+.commandList {
+  max-height: min(40vh, 14rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2);
+}
+
+.recentSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.recentHeading {
+  color: var(--muted-foreground);
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  font-weight: var(--font-medium);
+  letter-spacing: var(--letter-spacing-eyebrow);
+  margin: 0;
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.recentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recentRow {
+  gap: var(--space-3);
+  height: auto;
+  justify-content: flex-start;
+  white-space: normal;
+  width: 100%;
+}
+
+.previewSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-2) 0;
+  text-align: left;
+}
+
+.previewLine {
+  color: var(--muted-foreground);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  margin: 0;
+  overflow: hidden;
+  padding-block: var(--space-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewLineCount {
+  color: var(--foreground);
+  font-weight: var(--font-semibold);
+}
+
+.previewLineTail::before {
+  content: " · ";
+}
+
+.previewNote {
+  color: var(--muted-foreground);
+  font-size: var(--text-meta-xxs);
+  line-height: 1.35;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.commandAction {
+  justify-content: space-between;
+  padding-inline: var(--space-3);
+  text-align: left;
+  width: 100%;
+}
+
+.actionStack .commandActionPrimary {
+  justify-content: space-between;
+  padding-inline: var(--space-3);
+  text-align: left;
+  width: 100%;
+
+  &:not(:disabled, :hover, :focus, :focus-visible) {
+    background: var(--muted);
+    border-color: var(--border);
+    color: var(--foreground);
+  }
+
+  &:hover:not(:disabled),
+  &:focus:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--link-hover);
+    color: var(--on-primary-hover);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--primary-active);
+    border-color: var(--primary-active);
+    color: var(--on-primary-active);
+  }
+}
+
+.actionLabel {
+  flex: 1;
+  font-size: var(--text-sm);
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionShortcut {
+  align-items: center;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  color: var(--muted-foreground);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.375rem;
+  justify-content: center;
+  line-height: 0;
+  width: 1.375rem;
+
+  & svg {
+    display: block;
+    flex-shrink: 0;
+    height: 0.625rem;
+    width: 0.625rem;
+  }
+}
+
+.actionStack .commandActionPrimary .actionShortcut {
+  background: var(--primary);
+  border-color: var(--link);
+  color: var(--primary-foreground);
+}
+
+.actionStack .commandActionPrimary:hover:not(:disabled) .actionShortcut,
+.actionStack .commandActionPrimary:focus:not(:disabled) .actionShortcut,
+.actionStack
+  .commandActionPrimary:focus-visible:not(:disabled)
+  .actionShortcut {
+  background: color-mix(in srgb, var(--primary-foreground) 16%, transparent);
+  border-color: color-mix(in srgb, var(--primary-foreground) 28%, transparent);
+  color: var(--primary-foreground);
+}
+
+.itemIcon {
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+.itemTitle {
+  flex: 1;
+  font-size: var(--text-sm);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcutKeys {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  justify-content: center;
+}
+
+.itemKbd {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+  font-family: var(--font-family-meta);
+  font-size: var(--text-meta-xxs);
+  line-height: 1.2;
+  padding: var(--space-1) var(--space-2);
+}
+
+.empty {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-sm);
+  gap: var(--space-1);
+  line-height: 1.5;
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+}

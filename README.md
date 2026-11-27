@@ -26,6 +26,7 @@
 
 - **Discogs OAuth**: Sign in with your Discogs account
 - **Flexible filters**: Require-all and exclude on genres, styles, formats, and years; dropdowns follow the visible grid. Saved views; resume filters after load
+- **Collection command**: Natural-language filter commands on Collection (default **⌘⇧K**); preview match count, then apply or save a view
 - **Search & browse**: Search title, artist, label, or notes; full collection sync with IndexedDB cache for faster return visits
 - **Sorting & views**: Primary sort (label, artist, title, date added, year, rating, …) plus optional **Then by** tie-breaker; card, list (table on desktop), or random view
 - **Release details**: In-app modal with tracklist, similar releases, personal rating, and Discogs-synced collection notes
@@ -121,6 +122,10 @@ STRIPE_API_KEY=sk_test_your_stripe_secret_key_here
 # Playlists (optional — force on/off locally without the Vercel adapter)
 # PLAYLISTS_FEATURE_OVERRIDE=1
 
+# Collection command palette (optional — natural-language filter interpret)
+# AI_GATEWAY_API_KEY=your_vercel_ai_gateway_key
+# COLLECTION_COMMAND_AI_MODEL=openai/gpt-4o-mini
+
 ```
 
 Full variable list: [`docs/handbook/platform.md`](./docs/handbook/platform.md).
@@ -152,7 +157,7 @@ The app will be available at `http://localhost:6767`.
 ## Usage
 
 1. Click **Connect with Discogs** on the home page and authorize the app
-2. Browse **Collection** — narrow by genre, format, and year (filter lists update as the grid shrinks); search, sort, or try random view; open release details; preview tracks; queue or playlist from track menus; **Add all to…** from the tracklist toolbar; set per-track YouTube links when needed
+2. Browse **Collection** — narrow by genre, format, and year (filter lists update as the grid shrinks); search, sort, or try random view; use the **collection command** palette (**⌘⇧K**) to describe filters in plain language; open release details; preview tracks; queue or playlist from track menus; **Add all to…** from the tracklist toolbar; set per-track YouTube links when needed
 3. On **Collection**, use the side panel — **Crates** or **Playlists** — stage albums into crates or add tracks to playlists while you browse
 4. Open **Crates** for the full crate hub and owner workspace (reorder, sections, packing, public share); manage, play, and share playlists from the playlists panel on Collection
 5. Check **Dashboard** for collection insights; **Mosaic** to browse cover grids (click a tile for release details) or download an export
@@ -182,7 +187,7 @@ The app will be available at `http://localhost:6767`.
 - **UI**: CSS Modules, Base UI (dialogs, menus, selects, toasts), TanStack Table / Charts / Virtual, youtube-video-element (landing demo)
 - **State**: Jotai (filters, view) + React Context (auth, collection meta, crates, theme, playback)
 - **Playlists env override**: **`PLAYLISTS_FEATURE_OVERRIDE=0`** for a local/CI kill switch ([platform.md → Playlists env override](./docs/handbook/platform.md#playlists-env-override))
-- **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API
+- **Data**: TanStack Query, Prisma 7 + PostgreSQL, Discogs OAuth 1.0a API; optional **Vercel AI Gateway** + AI SDK for collection command interpret (`cmdk` palette UI)
 - **Email (optional)**: React Email + Resend for a one-time welcome on first signup and address-verification mail when you change email in Settings (`pnpm email:dev`, `pnpm email:send:test`)
 - **Forms**: React Hook Form + Zod 4
 - **Tooling**: pnpm 12, mise (Node 26 — [`.tool-versions`](./.tool-versions)), Biome, Stylelint, Jest (`jest-fixed-jsdom`) + Testing Library, **MSW 3** (Jest API specs + Playwright E2E via `@msw/playwright`), Playwright, Knip; optional **Fallow** (`pnpm fallow:*`, [AGENTS.md](./AGENTS.md))

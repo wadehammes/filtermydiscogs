@@ -54,6 +54,8 @@ export type UserPreferencesJson = {
   view: StoredViewState;
   filters: PersistedFiltersJson;
   filterViews: FilterView[];
+  collectionCommandPaletteEnabled: boolean;
+  collectionCommandPaletteShortcut: string;
   analyticsConsent?: boolean;
 };
 
@@ -71,6 +73,8 @@ export type UserPreferencesPatch = Partial<
     | "view"
     | "filters"
     | "filterViews"
+    | "collectionCommandPaletteEnabled"
+    | "collectionCommandPaletteShortcut"
     | "analyticsConsent"
   >
 >;

@@ -9,6 +9,7 @@ import {
 } from "src/constants/storageKeys";
 import { clearAnalyticsConsentChoice } from "src/utils/analyticsConsentStorage";
 import { clearPersistedCollectionCaches } from "src/utils/collectionCacheStorage";
+import { clearAllCollectionCommandPromptHistories } from "src/utils/collectionCommandPromptHistory";
 import { clearStoredCollectionItemCounts } from "src/utils/collectionItemCountStorage";
 import {
   PERSIST_FILTERS_STORAGE_KEY,
@@ -42,4 +43,5 @@ export const clearClientStoredData = (): void => {
   clearAllLastPlayedPlaylistIds();
   clearAnalyticsConsentChoice();
   clearSimilarReleasesPageIndexByAnchor();
+  clearAllCollectionCommandPromptHistories();
 };

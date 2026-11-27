@@ -18,6 +18,7 @@ import {
   pageObjectApiError,
   pageObjectMockApi,
 } from "src/tests/mocks/pageObjectMockedApi";
+import { setupDefaultCrateApiMocks } from "src/tests/mocks/setupDefaultCrateApiMocks";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import { createTestQueryClient } from "src/tests/utils/testQueryClient";
 import { render } from "test-utils";
@@ -45,6 +46,7 @@ export class SupportProjectToastPageObject extends BasePageObject {
 
   setupMocks(): void {
     jest.clearAllMocks();
+    setupDefaultCrateApiMocks(this.mockApi);
     mockApiResponse(
       true,
       this.mockApi.dismissSupportProjectToast,

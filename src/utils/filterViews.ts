@@ -29,6 +29,7 @@ export type FilterView = {
 
 export const MAX_FILTER_VIEWS = 20;
 export const MAX_FILTER_VIEW_NAME_LENGTH = 40;
+export const SAVED_COMMAND_VIEW_FALLBACK_NAME = "Saved command";
 
 export const normalizeFilterViewName = (name: string): string => name.trim();
 
@@ -152,6 +153,33 @@ export const filterViewNameExists = (
     (view) =>
       view.id !== excludeId && view.name.trim().toLowerCase() === normalized,
   );
+};
+
+export const ensureUniqueFilterViewName = (
+  baseName: string,
+  views: FilterView[],
+): string => {
+  const trimmed = normalizeFilterViewName(baseName);
+  const base =
+    trimmed.length > 0 && trimmed.length <= MAX_FILTER_VIEW_NAME_LENGTH
+      ? trimmed
+      : SAVED_COMMAND_VIEW_FALLBACK_NAME;
+
+  if (!filterViewNameExists(views, base)) {
+    return base;
+  }
+
+  for (let index = 2; index < 100; index += 1) {
+    const suffix = ` (${index})`;
+    const maxBaseLength = MAX_FILTER_VIEW_NAME_LENGTH - suffix.length;
+    const candidate = `${base.slice(0, maxBaseLength)}${suffix}`;
+
+    if (!filterViewNameExists(views, candidate)) {
+      return candidate;
+    }
+  }
+
+  return base;
 };
 
 const getOperatorLabel = (

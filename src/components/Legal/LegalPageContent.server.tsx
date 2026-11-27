@@ -140,12 +140,13 @@ export const LegalPageContent = () => {
               whether to remember filter selections, whether to auto-play when
               adding to an empty queue, whether to extend the playback queue
               with similar releases from your collection when up next runs low
-              (opt-in; default off), your analytics cookie choice (when set),
-              named saved views from the Views menu on Collection, and, when
-              enabled, saved filter and sort choices (styles, years, formats,
-              sort order, genre/style, format, and release year match mode, and
-              search text). These sync across browsers; your full collection is
-              not stored in Postgres.
+              (opt-in; default off), collection command palette enable and
+              keyboard shortcut, your analytics cookie choice (when set), named
+              saved views from the Views menu on Collection, and, when enabled,
+              saved filter and sort choices (styles, years, formats, sort order,
+              genre/style, format, and release year match mode, and search
+              text). These sync across browsers; your full collection is not
+              stored in Postgres.
             </li>
             <li>
               <strong>Email contact</strong> (optional): a confirmed email
@@ -178,6 +179,14 @@ export const LegalPageContent = () => {
               Replays help me see what led to a problem. If you use Submit bug
               report in the account menu, your feedback may include a replay
               from your session along with any screenshot you attach.
+            </li>
+            <li>
+              <strong>Collection command:</strong> When you use the command
+              palette on Collection, the text you submit is sent through my
+              server to an AI provider (Vercel AI Gateway) to suggest filter and
+              sort settings. I do not store that prompt text in Postgres. A
+              short list of recent prompts may be kept in localStorage on this
+              device until you delete your account or clear stored data.
             </li>
           </ul>
           <h3>What I Do With It</h3>
@@ -221,12 +230,12 @@ export const LegalPageContent = () => {
               sort selections (when &quot;Remember filter selections&quot; is
               on), your analytics cookie choice, in-progress playback (current
               track and upcoming queue), remembered collection size for faster
-              loading, and similar UI state. When you&apos;re logged in, the
-              same preferences are also stored on the server (see above).{" "}
-              <strong>IndexedDB:</strong> After your collection finishes
-              loading, a cached copy of those pages may be stored on this device
-              to speed up return visits until your Discogs collection size
-              changes or you delete your {SITE_NAME} account.
+              loading, recent collection command prompts, and similar UI state.
+              When you&apos;re logged in, the same preferences are also stored
+              on the server (see above). <strong>IndexedDB:</strong> After your
+              collection finishes loading, a cached copy of those pages may be
+              stored on this device to speed up return visits until your Discogs
+              collection size changes or you delete your {SITE_NAME} account.
             </li>
             <li>
               <strong>Optional analytics:</strong> When you opt in, Google Tag
@@ -310,15 +319,16 @@ export const LegalPageContent = () => {
               named saved views from the Views menu on Collection, filter/sort
               selections when &quot;Remember filter selections&quot; is enabled
               in Settings, and playback settings (auto-play on queue add and
-              extend queue with similar releases), and any saved or pending
-              email contact, marketing opt-in choice, and in-progress email
-              verification state
+              extend queue with similar releases), collection command palette
+              enable and shortcut, and any saved or pending email contact,
+              marketing opt-in choice, and in-progress email verification state
             </li>
             <li>
               Local data on this browser: theme, view mode, filters, analytics
               cookie choice (you will be asked about analytics cookies again),
-              in-progress playback, remembered collection size, cached
-              collection pages in IndexedDB, and similar UI state
+              in-progress playback, remembered collection size, recent
+              collection command prompts, cached collection pages in IndexedDB,
+              and similar UI state
             </li>
             <li>
               In-memory caches for the current session, including your loaded

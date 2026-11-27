@@ -1,0 +1,20 @@
+# Collection command palette (v1)
+
+Natural-language commands on **`/collection`** (v1: filter intent via AI Gateway; **Run** → preview, **Apply filters**, **Save view**). Saved views are auto-named by **`buildCollectionCommandViewName`**: explicit AI **`suggestedViewName`** when the user names a view, else a compact label from preview filters (year first, styles/formats joined with **`/`**), else the trimmed prompt (**`saveViewFromFilters`**, no save dialog; rename in **Views** later). UI: **cmdk** command strip; primary/secondary actions use shared **[`Button`](../../src/components/Button/Button.component.tsx)** (**`Command.Item asChild`**); recent prompts use **`InlinePopoverMenu`** **`itemNeutral`** row styling; shortcut from **`User.preferences`** (default **`mod+shift+k`**).
+
+## Routes and env
+
+- **`POST /api/collection/interpret-prompt`** — auth required; body `{ prompt }`; returns `{ intent }`. See [platform.md → Environment variables](../platform.md#environment-variables) (`AI_GATEWAY_API_KEY`, `COLLECTION_COMMAND_AI_MODEL`). Structured output uses **`collectionCommandIntentGenerationSchema`** (every field required for the gateway); normalized with **`parseCollectionCommandIntentFromLlm`**. The system prompt includes **today’s ISO date** and **calendar year**; **`applyPromptYearBoundsToIntent`** ([`collectionCommandPromptYears.ts`](../../src/utils/collectionCommandPromptYears.ts)) deterministically maps phrases like **last N years**, **this year**, and **last year** to bounds so stale model years (e.g. 2022–2023) are overridden. Other relative ranges (e.g. “before 2019”) use LLM **`yearStartInclusive`** / **`yearEndExclusive`** (0 = unset); **`sanitizeCollectionCommandIntent`** expands bounds against **`facetOptions.availableYears`**. Year bounds with the default sort → **`AlbumYearNew`** unless the prompt requests another sort.
+- Client: **`api.interpretCollectionCommand`** in [`collectionCommand.ts`](../../src/api/endpoints/collectionCommand.ts).
+
+## Client flow
+
+[`useCollectionCommandPalette`](../../src/hooks/useCollectionCommandPalette.hook.ts) + [`CollectionCommandPalette`](../../src/components/CollectionCommandPalette/CollectionCommandPalette.component.tsx) on [`ReleasesClient`](../../src/components/ReleasesClient/ReleasesClient.component.tsx). Recent prompts: **`localStorage`** per user ([`collectionCommandPromptHistory.ts`](../../src/utils/collectionCommandPromptHistory.ts)); cleared on **Clear stored data**.
+
+After **Run**, the hook stores the interpreted prompt as **`previewSourcePrompt`**. Editing the command input (typing, picking **Recent**, paste) clears preview state when **`query.trim()`** no longer matches that source prompt so **Apply** / **Save view** cannot target a stale interpret. While a preview is open, **`sanitizeCollectionCommandIntent`** re-runs when **`facetOptions`** grow during collection pagination ([`persistedFiltersEqual`](../../src/utils/filtersStorage.ts) skips no-op updates). The command input uses **`maxLength`** [**`COLLECTION_COMMAND_PROMPT_MAX_LENGTH`**](../../src/constants/collectionCommand.constants.ts) (same cap as the route body schema). Recent prompt rows load when the palette opens (**`useMemo`** on **`open`**), not on every keystroke.
+
+**Save view** from the palette uses [`saveViewFromFilters`](../../src/hooks/useFilterViews.hook.ts) (no **`SaveFilterViewDialog`**). Preview invalidation logic: [`shouldClearCollectionCommandPreview`](../../src/utils/collectionCommandPalettePreview.ts) (**[`useCollectionCommandPalette.hook.spec.ts`](../../src/hooks/useCollectionCommandPalette.hook.spec.ts)** — interpret, apply, facet re-sanitize). Interpret failures log via **`logSanitizedApiRouteFailure`** in [`collection-command-interpret.server.ts`](../../src/lib/collection-command-interpret.server.ts) (catch path; route returns **502** per [`interpret-prompt/route.spec.ts`](../../src/app/api/collection/interpret-prompt/route.spec.ts)).
+
+## Phase 2 (not in v1)
+
+Create crate / playlist from the same intent; rating and date-added filters; Settings shortcut recorder UI.

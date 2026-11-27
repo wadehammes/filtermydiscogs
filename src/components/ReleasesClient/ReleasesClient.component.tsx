@@ -3,6 +3,7 @@
 import classNames from "classnames";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackToTop } from "src/components/BackToTop/BackToTop.component";
+import { CollectionCommandPalette } from "src/components/CollectionCommandPalette/CollectionCommandPalette.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { Page } from "src/components/Page/Page.component";
 import { CollectionPlaybackPageShell } from "src/components/PlaybackPageShell/CollectionPlaybackPageShell.component";
@@ -348,6 +349,7 @@ const ReleasesClientContent = () => {
           </div>
         </div>
       </CollectionPlaybackPageShell>
+      <CollectionCommandPalette />
     </Page>
   );
 };

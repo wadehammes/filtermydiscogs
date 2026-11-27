@@ -42,16 +42,11 @@ describe("user-preferences.server", () => {
         filters,
       }),
     ).toEqual({
-      version: 1,
+      ...defaultUserPreferences(),
       persistFilters: false,
-      autoPlayOnQueueAdd: true,
-      extendQueueWithSimilarReleases: false,
-      defaultCollectionSidePanel: "crates",
       theme: "dark",
-      squareCorners: false,
       view: { currentView: "list", previousView: "card" },
       filters,
-      filterViews: [],
     });
   });
 
@@ -93,16 +88,10 @@ describe("user-preferences.server", () => {
         filters,
       }),
     ).toEqual({
-      version: 1,
+      ...defaultUserPreferences(),
       persistFilters: false,
-      autoPlayOnQueueAdd: true,
-      extendQueueWithSimilarReleases: false,
-      defaultCollectionSidePanel: "crates",
       theme: "dark",
-      squareCorners: false,
-      view: { currentView: "card", previousView: "card" },
       filters,
-      filterViews: [],
     });
   });
 
