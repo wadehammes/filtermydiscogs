@@ -68,14 +68,19 @@
     height: 1px;
     margin: var(--space-1) var(--space-2);
   }
+
+  & [cmdk-item] {
+    border-radius: var(--radius-ui);
+  }
 }
 
 .commandInputRow {
   align-items: center;
   border-bottom: 1px solid var(--border);
   display: flex;
-  gap: var(--space-2);
-  padding-inline: var(--space-4);
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  padding-inline: calc(var(--space-2) + var(--space-3));
 }
 
 .commandInputIcon {
@@ -91,7 +96,7 @@
   font-size: var(--text-lg);
   min-width: 0;
   outline: none;
-  padding-block: var(--space-4);
+  padding-block: var(--space-2);
   padding-inline: 0;
   width: 100%;
 
@@ -104,7 +109,8 @@
   max-height: min(40vh, 14rem);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--space-2);
+  padding-block: var(--space-1) var(--space-2);
+  padding-inline: var(--space-2);
 }
 
 .recentSection {
@@ -115,16 +121,19 @@
 .recentList {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--space-1);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.recentRow {
+.command button.recentRow {
+  border-radius: var(--radius-ui);
   gap: var(--space-3);
   height: auto;
   justify-content: flex-start;
+  min-height: auto;
+  padding: var(--space-2) var(--space-3);
   white-space: normal;
   width: 100%;
 }
@@ -133,8 +142,24 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-2) var(--space-2) 0;
+  padding-block: var(--space-1) 0;
+  padding-inline: var(--space-3);
   text-align: left;
+}
+
+.previewActionStack {
+  gap: var(--space-1);
+  margin-block-start: var(--space-3);
+}
+
+.command button.commandActionSecondary {
+  border-radius: var(--radius-ui);
+  height: auto;
+  justify-content: flex-start;
+  min-height: auto;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  width: 100%;
 }
 
 .previewLine {
@@ -143,7 +168,7 @@
   line-height: 1.4;
   margin: 0;
   overflow: hidden;
-  padding-block: var(--space-1);
+  padding-block: var(--space-2);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -167,22 +192,18 @@
   white-space: nowrap;
 }
 
-.actionStack {
+.actionStack,
+.previewActionStack {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-2);
+  padding: 0;
 }
 
-.commandAction {
+.actionStack .commandActionPrimary,
+.actionStack .commandActionRun {
   justify-content: space-between;
-  padding-inline: var(--space-3);
-  text-align: left;
-  width: 100%;
-}
-
-.actionStack .commandActionPrimary {
-  justify-content: space-between;
+  min-height: var(--button-height-md);
   padding-inline: var(--space-3);
   text-align: left;
   width: 100%;
@@ -246,6 +267,12 @@
   color: var(--primary-foreground);
 }
 
+.previewActionStack .commandActionPrimaryCta .actionShortcut {
+  background: color-mix(in srgb, var(--primary-foreground) 16%, transparent);
+  border-color: color-mix(in srgb, var(--primary-foreground) 28%, transparent);
+  color: var(--primary-foreground);
+}
+
 .actionStack .commandActionPrimary:hover:not(:disabled) .actionShortcut,
 .actionStack .commandActionPrimary:focus:not(:disabled) .actionShortcut,
 .actionStack
@@ -254,6 +281,13 @@
   background: color-mix(in srgb, var(--primary-foreground) 16%, transparent);
   border-color: color-mix(in srgb, var(--primary-foreground) 28%, transparent);
   color: var(--primary-foreground);
+}
+
+.previewActionStack .commandActionPrimaryCta {
+  justify-content: space-between;
+  padding-inline: var(--space-3);
+  text-align: left;
+  width: 100%;
 }
 
 .itemIcon {

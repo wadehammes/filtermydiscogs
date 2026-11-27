@@ -1,12 +1,30 @@
-import { COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK } from "src/constants/collectionCommand.constants";
+import {
+  COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH,
+  COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK,
+} from "src/constants/collectionCommand.constants";
+import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
+import type { DiscogsRelease } from "src/types";
 import type {
   FacetOptions,
   PersistedFiltersJson,
 } from "src/types/filters.types";
+import { listCollectionCommandMatchedReleases } from "src/utils/collectionCommandPreview";
 import { buildCollectionCommandViewNameFromFilters } from "src/utils/collectionCommandViewName";
 import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
 
 const EXAMPLE_PROMPT_COUNT = 3;
+
+const baseProbeFilters = (): PersistedFiltersJson => ({
+  selectedStyles: [],
+  selectedYears: [],
+  selectedFormats: [],
+  selectedSort: SortValues.DateAddedNew,
+  selectedSortSecondary: SortSecondaryValues.None,
+  styleOperator: "OR",
+  formatOperator: "OR",
+  yearOperator: "OR",
+  searchQuery: "",
+});
 
 const formatDecadePhrase = (decadeStart: number): string => {
   if (decadeStart >= 2000 || decadeStart % 100 === 0) {
@@ -233,13 +251,114 @@ const pickIdleExampleStyleSlots = (
 const exampleShelfName = (filters: PersistedFiltersJson): string =>
   buildCollectionCommandViewNameFromFilters({ filters }) ?? "This shelf";
 
+const countFacetProbeMatches = (
+  releases: readonly DiscogsRelease[] | undefined,
+  filters: PersistedFiltersJson,
+): number | null => {
+  if (!releases || releases.length === 0) {
+    return null;
+  }
+
+  return listCollectionCommandMatchedReleases({ releases, filters }).length;
+};
+
+const pickViableStyle = ({
+  styleCandidates,
+  format,
+  releases,
+}: {
+  styleCandidates: readonly string[];
+  format: string | null;
+  releases: readonly DiscogsRelease[] | undefined;
+}): string | null => {
+  for (const style of styleCandidates) {
+    const styleOnlyCount = countFacetProbeMatches(releases, {
+      ...baseProbeFilters(),
+      selectedStyles: [style],
+    });
+
+    if (styleOnlyCount === null) {
+      return style;
+    }
+
+    if (styleOnlyCount === 0) {
+      continue;
+    }
+
+    if (format) {
+      const styleAndFormatCount = countFacetProbeMatches(releases, {
+        ...baseProbeFilters(),
+        selectedStyles: [style],
+        selectedFormats: [format],
+      });
+
+      if (styleAndFormatCount === 0) {
+        continue;
+      }
+    }
+
+    return style;
+  }
+
+  return styleCandidates[0] ?? null;
+};
+
+const refineIdleExampleSlots = ({
+  slots,
+  facetOptions,
+  releases,
+}: {
+  slots: IdleExampleStyleSlots;
+  facetOptions: FacetOptions;
+  releases: readonly DiscogsRelease[] | undefined;
+}): IdleExampleStyleSlots => {
+  const format = pickLeadFormat(facetOptions);
+  const samples = sampleDistinctFacetStyles(facetOptions.availableStyles, 4);
+
+  const explorePrimary = pickViableStyle({
+    styleCandidates: [slots.explorePrimary, ...samples].filter(
+      (style): style is string => Boolean(style),
+    ),
+    format,
+    releases,
+  });
+  const exploreSecondary =
+    samples.find((style) => style !== explorePrimary) ?? explorePrimary;
+
+  const savePrimary = pickViableStyle({
+    styleCandidates: [slots.savePrimary, ...samples].filter(
+      (style): style is string => Boolean(style),
+    ),
+    format,
+    releases,
+  });
+  const cratePrimary = pickViableStyle({
+    styleCandidates: [slots.cratePrimary, ...samples].filter(
+      (style): style is string => Boolean(style),
+    ),
+    format,
+    releases,
+  });
+
+  return {
+    explorePrimary,
+    exploreSecondary,
+    savePrimary,
+    cratePrimary,
+  };
+};
+
 const pushUnique = (prompts: string[], candidate: string | null) => {
   if (!candidate) {
     return;
   }
 
   const normalized = candidate.trim();
-  if (normalized.length === 0 || prompts.includes(normalized)) {
+  if (
+    normalized.length === 0 ||
+    normalized.length > COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH ||
+    prompts.includes(normalized)
+  ) {
     return;
   }
 
@@ -259,7 +378,6 @@ const appendFallbackPrompts = (prompts: string[]) => {
 const buildRefinePrompt = ({
   filters,
   facetOptions,
-  descriptor,
 }: {
   filters: PersistedFiltersJson;
   facetOptions: FacetOptions;
@@ -272,29 +390,25 @@ const buildRefinePrompt = ({
   const decade = pickDominantDecadeLabel(facetOptions.availableYears);
 
   if (searchQuery.length > 0 && leadStyle && leadFormat) {
-    return `Start from albums matching "${searchQuery}", then keep only ${leadStyle} on ${leadFormat}`;
+    return `Keep "${searchQuery}" matches on ${leadFormat} only`;
   }
 
   if (filters.selectedFormats.length === 0 && leadFormat) {
-    return `Narrow what's showing (${descriptor}) to ${leadFormat} only, same styles and years`;
+    return `Limit what's showing to ${leadFormat} only`;
   }
 
   if (filters.selectedYears.length === 0 && decade) {
     const styles = formatTagList(filters.selectedStyles) ?? leadStyle;
     if (styles) {
-      return `Keep ${styles} but limit to ${decade}, still matching the rest of this filter`;
+      return `Keep ${styles} and limit to ${decade}`;
     }
   }
 
-  if (secondaryStyle && decade) {
-    return `Keep ${descriptor}, and also fold in ${secondaryStyle} from ${decade}`;
-  }
-
   if (secondaryStyle) {
-    return `Keep ${descriptor}, but also include ${secondaryStyle} in the results`;
+    return `Add ${secondaryStyle} to what's showing`;
   }
 
-  return `Refine ${descriptor} and sort the matches by year, oldest first`;
+  return `Sort what's showing by year, oldest first`;
 };
 
 const buildSaveViewPrompt = (
@@ -302,7 +416,7 @@ const buildSaveViewPrompt = (
   descriptor: string,
 ): string | null => {
   const name = exampleShelfName(filters);
-  return `Save what's on screen (${descriptor}) as a view called "${name}"`;
+  return `Save a view named "${name}" from what's showing`;
 };
 
 const buildCratePrompt = (
@@ -310,7 +424,7 @@ const buildCratePrompt = (
   descriptor: string,
 ): string | null => {
   const name = exampleShelfName(filters);
-  return `Create a crate from everything in this filter (${descriptor}) and name it "${name}"`;
+  return `Create a crate named "${name}" from what's showing`;
 };
 
 const buildExplorePrompt = (
@@ -318,27 +432,18 @@ const buildExplorePrompt = (
   styles: IdleExampleStyleSlots,
 ): string | null => {
   const leadStyle = styles.explorePrimary;
-  const secondaryStyle =
-    styles.exploreSecondary !== styles.explorePrimary
-      ? styles.exploreSecondary
-      : null;
   const leadFormat = pickLeadFormat(facetOptions);
-  const decade = pickDominantDecadeLabel(facetOptions.availableYears);
-
-  if (leadStyle && secondaryStyle && leadFormat && decade) {
-    return `Show ${leadStyle} and ${secondaryStyle} on ${leadFormat} from ${decade}, sorted newest first`;
-  }
-
-  if (leadStyle && leadFormat && decade) {
-    return `Filter to ${leadStyle} on ${leadFormat} from ${decade} only`;
-  }
 
   if (leadStyle && leadFormat) {
-    return `Show everything I have on ${leadFormat} tagged ${leadStyle}`;
+    return `Show ${leadStyle} on ${leadFormat}`;
   }
 
   if (leadStyle) {
-    return `Show all ${leadStyle} in my collection, grouped by year`;
+    return `Show all ${leadStyle}`;
+  }
+
+  if (leadFormat) {
+    return `Show everything on ${leadFormat}`;
   }
 
   return null;
@@ -350,15 +455,13 @@ const buildIdleSaveViewPrompt = (
 ): string | null => {
   const leadStyle = styles.savePrimary;
   const leadFormat = pickLeadFormat(facetOptions);
-  const decade = pickDominantDecadeLabel(facetOptions.availableYears);
-
-  if (leadStyle && leadFormat && decade) {
-    const name = `${leadStyle} on ${leadFormat}`;
-    return `Save a view named "${name}" for ${leadStyle} on ${leadFormat} from ${decade}`;
-  }
 
   if (leadStyle && leadFormat) {
-    return `Save a view for ${leadStyle} on ${leadFormat} I reach for on weekends`;
+    return `Save a view for ${leadStyle} on ${leadFormat}`;
+  }
+
+  if (leadStyle) {
+    return `Save a view for ${leadStyle}`;
   }
 
   return null;
@@ -372,11 +475,11 @@ const buildIdleCratePrompt = (
   const leadFormat = pickLeadFormat(facetOptions);
 
   if (leadStyle && leadFormat) {
-    return `Make a crate from every ${leadStyle} on ${leadFormat} in my collection, including newer adds`;
+    return `Create a crate of ${leadStyle} on ${leadFormat}`;
   }
 
   if (leadStyle) {
-    return `Create a crate of my ${leadStyle} records and sort the crate list by date added`;
+    return `Create a crate of ${leadStyle}`;
   }
 
   return null;
@@ -385,9 +488,11 @@ const buildIdleCratePrompt = (
 export const buildCollectionCommandExamplePrompts = ({
   filters,
   facetOptions,
+  releases,
 }: {
   filters: PersistedFiltersJson;
   facetOptions: FacetOptions;
+  releases?: readonly DiscogsRelease[];
 }): string[] => {
   const prompts: string[] = [];
   const appliedFilterCount = getAppliedFilterCount(filters);
@@ -401,7 +506,11 @@ export const buildCollectionCommandExamplePrompts = ({
     pushUnique(prompts, buildSaveViewPrompt(filters, descriptor));
     pushUnique(prompts, buildCratePrompt(filters, descriptor));
   } else {
-    const idleStyles = pickIdleExampleStyleSlots(facetOptions);
+    const idleStyles = refineIdleExampleSlots({
+      slots: pickIdleExampleStyleSlots(facetOptions),
+      facetOptions,
+      releases,
+    });
     pushUnique(prompts, buildExplorePrompt(facetOptions, idleStyles));
     pushUnique(prompts, buildIdleSaveViewPrompt(facetOptions, idleStyles));
     pushUnique(prompts, buildIdleCratePrompt(facetOptions, idleStyles));

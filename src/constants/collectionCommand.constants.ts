@@ -23,8 +23,10 @@ export const COLLECTION_COMMAND_INPUT_PLACEHOLDER = "What should we do?";
 export const COLLECTION_COMMAND_OPEN_TOOLTIP_LEDE =
   "Ask your collection in plain English";
 
+export const COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH = 72;
+
 export const COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK = [
-  "Show techno and electro on vinyl from the 90s, sorted by year oldest first",
-  'Save a view named "Sunday spins" for jazz on vinyl I added last year',
-  "Create a crate from highly rated ambient in my collection, newest first",
+  "Show vinyl from the 90s",
+  'Save a view named "Sunday spins"',
+  "Create a crate from highly rated picks",
 ] as const;

@@ -78,6 +78,19 @@ describe("CollectionCommandPalette", () => {
     expect(clearPromptHistory).toHaveBeenCalledTimes(1);
   });
 
+  it("hides Clear recent while Run or preview actions are showing", () => {
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withPromptHistory(
+        ["Ambient for coding"],
+        { query: "techno", preview: { matchCount: 5, facts: [] } },
+      ),
+    ).renderCollectionCommandPalette();
+
+    expect(
+      screen.queryByRole("button", { name: "Clear recent" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows recent prompts instead of examples when history exists", () => {
     po.withHookReturn(
       useCollectionCommandPaletteReturnFactory.withPromptHistory([

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "@jest/globals";
-import { COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK } from "src/constants/collectionCommand.constants";
+import {
+  COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH,
+  COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK,
+} from "src/constants/collectionCommand.constants";
 import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
+import { releaseFactory } from "src/tests/factories/Release.factory";
 import type {
   FacetOptions,
   PersistedFiltersJson,
@@ -49,9 +53,9 @@ describe("buildCollectionCommandExamplePrompts", () => {
     expect(prompts.some((prompt) => /House|Refine|fold in/i.test(prompt))).toBe(
       true,
     );
-    expect(
-      prompts.some((prompt) => /Save what's on screen/i.test(prompt)),
-    ).toBe(true);
+    expect(prompts.some((prompt) => /Save a view named/i.test(prompt))).toBe(
+      true,
+    );
     expect(prompts.some((prompt) => /Create a crate/i.test(prompt))).toBe(true);
     expect(new Set(prompts).size).toBe(3);
   });
@@ -68,9 +72,14 @@ describe("buildCollectionCommandExamplePrompts", () => {
 
     expect(prompts.length).toBe(3);
     expect(prompts[0]).toMatch(/Jazz|Soul/i);
-    expect(prompts[0]).toMatch(/on Vinyl from the 80s/i);
-    expect(prompts[1]).toMatch(/Save a view named/i);
-    expect(prompts[2]).toMatch(/Make a crate from every|Create a crate/i);
+    expect(prompts[0]).toMatch(/Show .+ on Vinyl/);
+    expect(prompts[1]).toMatch(/Save a view for/i);
+    expect(prompts[2]).toMatch(/Create a crate of/i);
+    for (const prompt of prompts) {
+      expect(prompt.length).toBeLessThanOrEqual(
+        COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH,
+      );
+    }
     expect(new Set(prompts).size).toBe(3);
   });
 
@@ -109,12 +118,16 @@ describe("buildCollectionCommandExamplePrompts", () => {
       },
     });
 
-    expect(prompts[0]).toMatch(/matching "morning"/i);
+    expect(prompts[0]).toMatch(/"morning"/i);
   });
 
-  it("uses four-digit decade labels for the 2000s and 2010s", () => {
+  it("keeps decade phrasing in refine examples when filters omit years", () => {
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: {
+        ...baseFilters(),
+        selectedStyles: ["Electronic"],
+        selectedFormats: ["Vinyl"],
+      },
       facetOptions: {
         availableStyles: ["Electronic"],
         availableYears: [2012, 2014, 2013],
@@ -122,8 +135,32 @@ describe("buildCollectionCommandExamplePrompts", () => {
       },
     });
 
-    expect(prompts[0]).toMatch(/from the 2010s/i);
+    expect(prompts[0]).toMatch(/limit to the 2010s/i);
     expect(prompts[0]).not.toMatch(/\bthe 10s\b/i);
+  });
+
+  it("prefers styles that match the loaded collection when releases are provided", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: {
+          styles: ["Techno"],
+          formats: [{ name: "Vinyl", qty: "1" }],
+        },
+      }),
+    ];
+
+    const prompts = buildCollectionCommandExamplePrompts({
+      filters: baseFilters(),
+      facetOptions: {
+        availableStyles: ["Abstract", "Techno"],
+        availableYears: [2012],
+        availableFormats: ["Vinyl"],
+      },
+      releases,
+    });
+
+    expect(prompts.some((prompt) => /Techno/i.test(prompt))).toBe(true);
+    expect(prompts.some((prompt) => /Abstract/i.test(prompt))).toBe(false);
   });
 
   it("falls back when facets and filters are empty", () => {

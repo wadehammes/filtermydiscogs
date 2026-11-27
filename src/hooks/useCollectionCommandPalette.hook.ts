@@ -94,8 +94,9 @@ export const useCollectionCommandPalette = () => {
       buildCollectionCommandExamplePrompts({
         filters: sessionFilters,
         facetOptions,
+        releases: allReleases,
       }),
-    [facetOptions, sessionFilters],
+    [allReleases, facetOptions, sessionFilters],
   );
 
   const interpretMutation = useMutation({

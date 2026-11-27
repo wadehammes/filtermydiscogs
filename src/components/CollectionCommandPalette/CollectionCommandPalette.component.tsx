@@ -150,8 +150,11 @@ const CollectionCommandPanel = ({
   const primaryPreviewActionRef = useRef<HTMLButtonElement>(null);
   const [highlightedValue, setHighlightedValue] = useState("");
   const queryIsEmpty = query.trim().length === 0;
+  const hasCommandPreview = preview !== null;
   const canStartOver =
-    !queryIsEmpty || preview !== null || interpretMutation.isError;
+    !queryIsEmpty || hasCommandPreview || interpretMutation.isError;
+  const canClearRecent =
+    promptHistory.length > 0 && queryIsEmpty && !hasCommandPreview;
 
   const handleStartOver = useCallback(() => {
     startOver();
@@ -178,7 +181,6 @@ const CollectionCommandPanel = ({
       }),
     });
   }, [closePalette, interpretErrorMessage, preview, query]);
-  const hasCommandPreview = preview !== null;
 
   const primaryPreviewCommandValue = preferCreateCrateAction
     ? "create-crate"
@@ -294,9 +296,14 @@ const CollectionCommandPanel = ({
     <Command.Item asChild value="apply-filters" onSelect={applyPreviewFilters}>
       <Button
         ref={primary ? primaryPreviewActionRef : undefined}
-        variant={primary ? "ghost" : "secondary"}
-        size="md"
-        className={primary ? styles.commandActionPrimary : styles.commandAction}
+        variant={primary ? "primary" : "ghost"}
+        size={primary ? "sm" : "md"}
+        className={classNames(
+          primary
+            ? styles.commandActionPrimaryCta
+            : styles.commandActionSecondary,
+          !primary && inlineMenuStyles.itemNeutral,
+        )}
         data-testid={primary ? "fmdCollectionCommandApplyFilters" : undefined}
       >
         <span className={styles.actionLabel}>Apply filters</span>
@@ -318,11 +325,14 @@ const CollectionCommandPanel = ({
       >
         <Button
           ref={primary ? primaryPreviewActionRef : undefined}
-          variant={primary ? "ghost" : "secondary"}
-          size="md"
-          className={
-            primary ? styles.commandActionPrimary : styles.commandAction
-          }
+          variant={primary ? "primary" : "ghost"}
+          size={primary ? "sm" : "md"}
+          className={classNames(
+            primary
+              ? styles.commandActionPrimaryCta
+              : styles.commandActionSecondary,
+            !primary && inlineMenuStyles.itemNeutral,
+          )}
           disabled={isCreatingCrateFromPreview}
         >
           <span className={styles.actionLabel}>
@@ -455,7 +465,10 @@ const CollectionCommandPanel = ({
                 <Button
                   variant="ghost"
                   size="md"
-                  className={styles.commandActionPrimary}
+                  className={classNames(
+                    styles.commandActionPrimary,
+                    styles.commandActionRun,
+                  )}
                   disabled={interpretMutation.isPending}
                   isLoading={interpretMutation.isPending}
                   loadingText="Running…"
@@ -480,7 +493,7 @@ const CollectionCommandPanel = ({
                 facts={preview.facts}
                 confidenceNotes={previewIntent?.confidenceNotes}
               />
-              <div className={styles.actionStack}>
+              <div className={styles.previewActionStack}>
                 {preferCreateCrateAction ? (
                   <>
                     {createCrateAction({ primary: true })}
@@ -496,9 +509,12 @@ const CollectionCommandPanel = ({
                         onSelect={saveFilterViewFromPreview}
                       >
                         <Button
-                          variant="secondary"
+                          variant="ghost"
                           size="md"
-                          className={styles.commandAction}
+                          className={classNames(
+                            styles.commandActionSecondary,
+                            inlineMenuStyles.itemNeutral,
+                          )}
                         >
                           <span className={styles.actionLabel}>Save view</span>
                         </Button>
@@ -514,9 +530,12 @@ const CollectionCommandPanel = ({
                     onSelect={saveFilterViewFromPreview}
                   >
                     <Button
-                      variant="secondary"
+                      variant="ghost"
                       size="md"
-                      className={styles.commandAction}
+                      className={classNames(
+                        styles.commandActionSecondary,
+                        inlineMenuStyles.itemNeutral,
+                      )}
                     >
                       <span className={styles.actionLabel}>Save view</span>
                     </Button>
@@ -544,7 +563,7 @@ const CollectionCommandPanel = ({
                 {COLLECTION_COMMAND_START_OVER_LABEL}
               </button>
             ) : null}
-            {promptHistory.length > 0 ? (
+            {canClearRecent ? (
               <button
                 type="button"
                 className={classNames(
