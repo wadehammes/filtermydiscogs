@@ -135,3 +135,22 @@ export const formatShortcutForDisplay = (shortcut: string): string => {
     .map((part) => formatShortcutKeyForDisplay(part))
     .join(isMac ? "" : "+");
 };
+
+export const formatShortcutChipAbbreviation = (shortcut: string): string => {
+  const isMac = isApplePlatform();
+
+  return parseKeyboardShortcut(shortcut)
+    .map((part) => {
+      if (part === "mod") {
+        return isMac ? "CMD" : "CTRL";
+      }
+      if (part === "shift") {
+        return "SFT";
+      }
+      if (part === "alt") {
+        return isMac ? "OPT" : "ALT";
+      }
+      return part.toUpperCase();
+    })
+    .join("+");
+};

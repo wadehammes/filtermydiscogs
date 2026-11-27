@@ -18,6 +18,10 @@
   width: 100%;
 }
 
+.inputContainerEmbedded {
+  height: 100%;
+}
+
 .input {
   background-color: var(--background);
   border: 1px solid var(--input);
@@ -69,6 +73,22 @@
 
   &::placeholder {
     color: var(--muted-foreground);
+  }
+
+  &.inputEmbedded {
+    border: none;
+    border-radius: var(--radius-none);
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+
+    &:focus-visible {
+      border-color: transparent;
+    }
+
+    &:hover:not(:disabled, :focus-visible) {
+      border-color: transparent;
+    }
   }
 
   .inputContainer:has(.clearButton) & {

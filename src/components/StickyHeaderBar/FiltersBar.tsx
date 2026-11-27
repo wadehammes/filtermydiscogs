@@ -7,7 +7,7 @@ import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSel
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
 import { FilterViewsMenu } from "src/components/FilterViewsMenu/FilterViewsMenu.component";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
-import { SearchBar } from "src/components/SearchBar/SearchBar.component";
+import { CollectionSearchCommandSegment } from "src/components/StickyHeaderBar/CollectionSearchCommandSegment.component";
 import { FILTER_ANY_NONE_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import { useCollectionContext } from "src/context/collection.context";
 import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
@@ -82,8 +82,7 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
         >
           <div className={styles.desktopFilters}>
             <FilterViewsMenu disabled={!collection} />
-            <SearchBar
-              placeholder="Search your collection..."
+            <CollectionSearchCommandSegment
               disabled={!collection}
               className={styles.searchBar}
             />

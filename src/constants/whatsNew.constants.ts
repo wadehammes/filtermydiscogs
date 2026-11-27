@@ -46,7 +46,7 @@ export const WHATS_NEW_RELEASES: readonly WhatsNewRelease[] = [
       {
         id: "collection-command-palette",
         badge: "new",
-        text: `Filter your collection with a plain-English prompt (${WHATS_NEW_SHORTCUT_PLACEHOLDER}).`,
+        text: `On the collection page, open Ask in the filters bar (or ${WHATS_NEW_SHORTCUT_PLACEHOLDER}), type what you want, run it, then apply filters, save a view, or create a crate from the preview.`,
       },
     ],
   },

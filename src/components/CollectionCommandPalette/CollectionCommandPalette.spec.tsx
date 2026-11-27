@@ -20,6 +20,95 @@ describe("CollectionCommandPalette", () => {
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
+  it("shows example prompts when history is empty", () => {
+    const examplePrompts = [
+      "Save a view for Techno Vinyl",
+      "Make a crate from what's showing",
+      "Show only Vinyl for Techno",
+    ];
+
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.open({ examplePrompts }),
+    ).renderCollectionCommandPalette();
+
+    expect(
+      screen.getByTestId("fmdCollectionCommandExamples"),
+    ).toBeInTheDocument();
+    for (const prompt of examplePrompts) {
+      expect(screen.getByRole("button", { name: prompt })).toBeInTheDocument();
+    }
+  });
+
+  it("calls startOver when Start over is pressed", async () => {
+    const startOver = jest.fn();
+    const user = userEvent.setup();
+
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withQuery("techno vinyl", {
+        startOver,
+      }),
+    ).renderCollectionCommandPalette();
+
+    await user.click(screen.getByRole("button", { name: "Start over" }));
+
+    expect(startOver).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides Start over when the command input and preview are empty", () => {
+    po.renderCollectionCommandPalette();
+
+    expect(
+      screen.queryByRole("button", { name: "Start over" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("calls clearPromptHistory when Clear recent is pressed", async () => {
+    const clearPromptHistory = jest.fn();
+    const user = userEvent.setup();
+
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withPromptHistory(
+        ["Ambient for coding"],
+        { clearPromptHistory },
+      ),
+    ).renderCollectionCommandPalette();
+
+    await user.click(screen.getByRole("button", { name: "Clear recent" }));
+
+    expect(clearPromptHistory).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides Clear recent while Run or preview actions are showing", () => {
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withPromptHistory(
+        ["Ambient for coding"],
+        { query: "techno", preview: { matchCount: 5, facts: [] } },
+      ),
+    ).renderCollectionCommandPalette();
+
+    expect(
+      screen.queryByRole("button", { name: "Clear recent" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows recent prompts instead of examples when history exists", () => {
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withPromptHistory([
+        "Ambient for coding",
+      ]),
+    ).renderCollectionCommandPalette();
+
+    expect(
+      screen.queryByTestId("fmdCollectionCommandExamples"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Clear recent" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Ambient for coding" }),
+    ).toBeInTheDocument();
+  });
+
   it("caps command input length to the interpret API max", () => {
     po.renderCollectionCommandPalette();
 

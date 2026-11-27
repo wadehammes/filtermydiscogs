@@ -68,16 +68,36 @@
     height: 1px;
     margin: var(--space-1) var(--space-2);
   }
+
+  & [cmdk-item] {
+    border-radius: var(--radius-ui);
+  }
+}
+
+.commandInputRow {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  padding-inline: calc(var(--space-2) + var(--space-3));
+}
+
+.commandInputIcon {
+  color: var(--muted-foreground);
+  flex: none;
 }
 
 .commandInput {
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border);
   color: var(--foreground);
+  flex: 1;
   font-size: var(--text-lg);
+  min-width: 0;
   outline: none;
-  padding: var(--space-4);
+  padding-block: var(--space-2);
+  padding-inline: 0;
   width: 100%;
 
   &::placeholder {
@@ -89,7 +109,8 @@
   max-height: min(40vh, 14rem);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--space-2);
+  padding-block: var(--space-1) var(--space-2);
+  padding-inline: var(--space-2);
 }
 
 .recentSection {
@@ -97,31 +118,22 @@
   flex-direction: column;
 }
 
-.recentHeading {
-  color: var(--muted-foreground);
-  font-family: var(--font-family-meta);
-  font-size: var(--text-meta-xxs);
-  font-weight: var(--font-medium);
-  letter-spacing: var(--letter-spacing-eyebrow);
-  margin: 0;
-  padding: var(--space-2) var(--space-3) var(--space-1);
-  text-transform: uppercase;
-  user-select: none;
-}
-
 .recentList {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--space-1);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.recentRow {
+.command button.recentRow {
+  border-radius: var(--radius-ui);
   gap: var(--space-3);
   height: auto;
   justify-content: flex-start;
+  min-height: auto;
+  padding: var(--space-2) var(--space-3);
   white-space: normal;
   width: 100%;
 }
@@ -130,8 +142,24 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-2) var(--space-2) 0;
+  padding-block: var(--space-1) 0;
+  padding-inline: var(--space-3);
   text-align: left;
+}
+
+.previewActionStack {
+  gap: var(--space-1);
+  margin-block-start: var(--space-3);
+}
+
+.command button.commandActionSecondary {
+  border-radius: var(--radius-ui);
+  height: auto;
+  justify-content: flex-start;
+  min-height: auto;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  width: 100%;
 }
 
 .previewLine {
@@ -140,7 +168,7 @@
   line-height: 1.4;
   margin: 0;
   overflow: hidden;
-  padding-block: var(--space-1);
+  padding-block: var(--space-2);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -164,22 +192,18 @@
   white-space: nowrap;
 }
 
-.actionStack {
+.actionStack,
+.previewActionStack {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-2);
+  padding: 0;
 }
 
-.commandAction {
+.actionStack .commandActionPrimary,
+.actionStack .commandActionRun {
   justify-content: space-between;
-  padding-inline: var(--space-3);
-  text-align: left;
-  width: 100%;
-}
-
-.actionStack .commandActionPrimary {
-  justify-content: space-between;
+  min-height: var(--button-height-md);
   padding-inline: var(--space-3);
   text-align: left;
   width: 100%;
@@ -243,6 +267,12 @@
   color: var(--primary-foreground);
 }
 
+.previewActionStack .commandActionPrimaryCta .actionShortcut {
+  background: color-mix(in srgb, var(--primary-foreground) 16%, transparent);
+  border-color: color-mix(in srgb, var(--primary-foreground) 28%, transparent);
+  color: var(--primary-foreground);
+}
+
 .actionStack .commandActionPrimary:hover:not(:disabled) .actionShortcut,
 .actionStack .commandActionPrimary:focus:not(:disabled) .actionShortcut,
 .actionStack
@@ -251,6 +281,13 @@
   background: color-mix(in srgb, var(--primary-foreground) 16%, transparent);
   border-color: color-mix(in srgb, var(--primary-foreground) 28%, transparent);
   color: var(--primary-foreground);
+}
+
+.previewActionStack .commandActionPrimaryCta {
+  justify-content: space-between;
+  padding-inline: var(--space-3);
+  text-align: left;
+  width: 100%;
 }
 
 .itemIcon {
@@ -298,13 +335,27 @@
   text-align: center;
 }
 
-.reportIssueRow {
+.panelFooter {
+  align-items: center;
+  border-top: 1px dashed var(--border);
   display: flex;
-  justify-content: flex-end;
-  padding: 0 var(--space-3) var(--space-2);
+  flex-shrink: 0;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
 }
 
-.reportIssueButton {
+.panelFooterStart {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  min-width: 0;
+  text-align: start;
+}
+
+.panelFooterAction {
   align-items: center;
   appearance: none;
   background: transparent;
@@ -313,7 +364,7 @@
   cursor: pointer;
   display: inline-flex;
   font-family: inherit;
-  font-size: var(--text-meta-xxs);
+  font-size: var(--text-sm);
   gap: var(--space-1);
   line-height: 1.3;
   padding: 0;
@@ -323,6 +374,6 @@
   }
 }
 
-.reportIssueIcon {
+.panelFooterIcon {
   flex-shrink: 0;
 }

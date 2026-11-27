@@ -92,6 +92,17 @@ export const recordCollectionCommandPromptHistory = ({
   writeCollectionCommandPromptHistory(userId, next);
 };
 
+export const clearCollectionCommandPromptHistory = (
+  userId: string | null,
+): void => {
+  if (typeof window === "undefined" || !userId) {
+    return;
+  }
+
+  const storageKey = buildCollectionCommandPromptsStorageKey(userId);
+  window.localStorage.removeItem(storageKey);
+};
+
 export const clearAllCollectionCommandPromptHistories = (): void => {
   if (typeof window === "undefined") {
     return;

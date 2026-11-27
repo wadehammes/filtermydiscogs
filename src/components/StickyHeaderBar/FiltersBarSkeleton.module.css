@@ -9,6 +9,41 @@
   min-height: var(--input-height);
 }
 
+.searchSegmentShell {
+  display: flex;
+  flex: 2;
+  min-width: 0;
+}
+
+.searchShell {
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  padding-left: calc(var(--space-3) + var(--space-4) + var(--space-2));
+  position: relative;
+}
+
+.searchSegmentShell > .searchShell {
+  border-end-end-radius: var(--radius-none);
+  border-inline-end: none;
+  border-start-end-radius: var(--radius-none);
+  flex: 1;
+}
+
+.commandChipShell {
+  border: 1px solid var(--input);
+  border-end-end-radius: var(--radius-ui);
+  border-end-start-radius: var(--radius-none);
+  border-start-end-radius: var(--radius-ui);
+  border-start-start-radius: var(--radius-none);
+  flex: none;
+  min-height: var(--input-height);
+  width: 4.75rem;
+
+  @media (width < 1280px) {
+    width: 4.25rem;
+  }
+}
+
 .viewsShell {
   background: color-mix(in srgb, var(--primary) 6%, var(--background));
   border-color: color-mix(in srgb, var(--primary) 22%, var(--input));
@@ -34,18 +69,11 @@
   }
 }
 
-.searchShell,
 .selectShell {
   flex: 1;
+  justify-content: space-between;
   min-width: 5rem;
-}
-
-.searchShell {
-  flex: 2;
-  min-width: 0;
   padding: var(--space-2) var(--space-3);
-  padding-left: calc(var(--space-3) + var(--space-4) + var(--space-2));
-  position: relative;
 }
 
 .searchIcon {
@@ -62,11 +90,6 @@
     height: var(--space-4);
     width: var(--space-4);
   }
-}
-
-.selectShell {
-  justify-content: space-between;
-  padding: var(--space-2) var(--space-3);
 }
 
 .styleFilterPrimaryShell,

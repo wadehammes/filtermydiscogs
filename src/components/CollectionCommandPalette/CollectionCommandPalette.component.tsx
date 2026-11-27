@@ -6,24 +6,27 @@ import {
   type KeyboardEvent,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
 } from "react";
 import Button from "src/components/Button/Button.component";
 import { CollectionCommandPreviewBlock } from "src/components/CollectionCommandPalette/CollectionCommandPreviewBlock.component";
-import { CollectionCommandShortcutKeys } from "src/components/CollectionCommandPalette/CollectionCommandShortcutKeys.component";
 import inlineMenuStyles from "src/components/InlinePopoverMenu/InlinePopoverMenu.module.css";
 import {
+  COLLECTION_COMMAND_CLEAR_RECENT_LABEL,
+  COLLECTION_COMMAND_INPUT_PLACEHOLDER,
   COLLECTION_COMMAND_PROMPT_MAX_LENGTH,
   COLLECTION_COMMAND_REPORT_ISSUE_LABEL,
+  COLLECTION_COMMAND_START_OVER_LABEL,
 } from "src/constants/collectionCommand.constants";
 import { useCollectionCommandPalette } from "src/hooks/useCollectionCommandPalette.hook";
 import { openCollectionCommandSentryFeedback } from "src/lib/sentry/openCollectionCommandSentryFeedback.client";
 import { ClockThinIcon } from "src/styles/icons/ClockThinIcon.component";
 import { QuestionThinIcon } from "src/styles/icons/QuestionThinIcon.component";
 import { ReturnThinIcon } from "src/styles/icons/ReturnThinIcon.component";
+import { SparklesThinIcon } from "src/styles/icons/SparklesThinIcon.component";
 import accessibilityStyles from "src/styles/modules/accessibility.module.css";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./CollectionCommandPalette.module.css";
 
@@ -34,6 +37,7 @@ export const CollectionCommandPalette = () => {
     setQuery,
     closePalette,
     promptHistory,
+    clearPromptHistory,
     interpretMutation,
     preview,
     previewIntent,
@@ -46,6 +50,8 @@ export const CollectionCommandPalette = () => {
     isCreatingCrateFromPreview,
     preferCreateCrateAction,
     shortcut,
+    examplePrompts,
+    startOver,
   } = useCollectionCommandPalette();
 
   return open ? (
@@ -66,6 +72,7 @@ export const CollectionCommandPalette = () => {
         query={query}
         setQuery={setQuery}
         promptHistory={promptHistory}
+        clearPromptHistory={clearPromptHistory}
         interpretMutation={interpretMutation}
         preview={preview}
         previewIntent={previewIntent}
@@ -78,7 +85,9 @@ export const CollectionCommandPalette = () => {
         isCreatingCrateFromPreview={isCreatingCrateFromPreview}
         preferCreateCrateAction={preferCreateCrateAction}
         shortcut={shortcut}
+        examplePrompts={examplePrompts}
         closePalette={closePalette}
+        startOver={startOver}
       />
     </div>
   ) : null;
@@ -91,6 +100,9 @@ type CollectionCommandPanelProps = {
   promptHistory: ReturnType<
     typeof useCollectionCommandPalette
   >["promptHistory"];
+  clearPromptHistory: ReturnType<
+    typeof useCollectionCommandPalette
+  >["clearPromptHistory"];
   interpretMutation: ReturnType<
     typeof useCollectionCommandPalette
   >["interpretMutation"];
@@ -107,7 +119,9 @@ type CollectionCommandPanelProps = {
   isCreatingCrateFromPreview: boolean;
   preferCreateCrateAction: boolean;
   shortcut: string;
+  examplePrompts: string[];
   closePalette: () => void;
+  startOver: () => void;
 };
 
 const CollectionCommandPanel = ({
@@ -115,6 +129,7 @@ const CollectionCommandPanel = ({
   query,
   setQuery,
   promptHistory,
+  clearPromptHistory,
   interpretMutation,
   preview,
   previewIntent,
@@ -127,13 +142,25 @@ const CollectionCommandPanel = ({
   isCreatingCrateFromPreview,
   preferCreateCrateAction,
   shortcut,
+  examplePrompts,
   closePalette,
+  startOver,
 }: CollectionCommandPanelProps) => {
   const commandInputRef = useRef<HTMLInputElement>(null);
   const primaryPreviewActionRef = useRef<HTMLButtonElement>(null);
-  const recentHeadingId = useId();
   const [highlightedValue, setHighlightedValue] = useState("");
   const queryIsEmpty = query.trim().length === 0;
+  const hasCommandPreview = preview !== null;
+  const canStartOver =
+    !queryIsEmpty || hasCommandPreview || interpretMutation.isError;
+  const canClearRecent =
+    promptHistory.length > 0 && queryIsEmpty && !hasCommandPreview;
+
+  const handleStartOver = useCallback(() => {
+    startOver();
+    setHighlightedValue("");
+    commandInputRef.current?.focus();
+  }, [startOver]);
 
   const interpretErrorMessage =
     interpretMutation.isError && interpretMutation.error
@@ -154,7 +181,6 @@ const CollectionCommandPanel = ({
       }),
     });
   }, [closePalette, interpretErrorMessage, preview, query]);
-  const hasCommandPreview = preview !== null;
 
   const primaryPreviewCommandValue = preferCreateCrateAction
     ? "create-crate"
@@ -270,9 +296,14 @@ const CollectionCommandPanel = ({
     <Command.Item asChild value="apply-filters" onSelect={applyPreviewFilters}>
       <Button
         ref={primary ? primaryPreviewActionRef : undefined}
-        variant={primary ? "ghost" : "secondary"}
-        size="md"
-        className={primary ? styles.commandActionPrimary : styles.commandAction}
+        variant={primary ? "primary" : "ghost"}
+        size={primary ? "sm" : "md"}
+        className={classNames(
+          primary
+            ? styles.commandActionPrimaryCta
+            : styles.commandActionSecondary,
+          !primary && inlineMenuStyles.itemNeutral,
+        )}
         data-testid={primary ? "fmdCollectionCommandApplyFilters" : undefined}
       >
         <span className={styles.actionLabel}>Apply filters</span>
@@ -294,11 +325,14 @@ const CollectionCommandPanel = ({
       >
         <Button
           ref={primary ? primaryPreviewActionRef : undefined}
-          variant={primary ? "ghost" : "secondary"}
-          size="md"
-          className={
-            primary ? styles.commandActionPrimary : styles.commandAction
-          }
+          variant={primary ? "primary" : "ghost"}
+          size={primary ? "sm" : "md"}
+          className={classNames(
+            primary
+              ? styles.commandActionPrimaryCta
+              : styles.commandActionSecondary,
+            !primary && inlineMenuStyles.itemNeutral,
+          )}
           disabled={isCreatingCrateFromPreview}
         >
           <span className={styles.actionLabel}>
@@ -329,36 +363,68 @@ const CollectionCommandPanel = ({
         value={highlightedValue}
         onValueChange={setHighlightedValue}
       >
-        <Command.Input
-          ref={commandInputRef}
-          autoFocus
-          className={styles.commandInput}
-          data-testid="fmdCollectionCommandInput"
-          placeholder="Filter your collection…"
-          maxLength={COLLECTION_COMMAND_PROMPT_MAX_LENGTH}
-          value={query}
-          onValueChange={setQuery}
-          onKeyDown={handleCommandInputKeyDown}
-        />
+        <div className={styles.commandInputRow}>
+          <SparklesThinIcon
+            className={styles.commandInputIcon}
+            width={16}
+            height={16}
+          />
+          <Command.Input
+            ref={commandInputRef}
+            autoFocus
+            className={styles.commandInput}
+            data-testid="fmdCollectionCommandInput"
+            placeholder={COLLECTION_COMMAND_INPUT_PLACEHOLDER}
+            maxLength={COLLECTION_COMMAND_PROMPT_MAX_LENGTH}
+            value={query}
+            onValueChange={setQuery}
+            onKeyDown={handleCommandInputKeyDown}
+          />
+        </div>
         <Command.List
           className={styles.commandList}
           data-testid="fmdCollectionCommandList"
         >
           {queryIsEmpty && promptHistory.length === 0 ? (
-            <Command.Empty className={styles.empty}>
-              <span>Type a command, or open with </span>
-              <CollectionCommandShortcutKeys shortcut={shortcut} />
-            </Command.Empty>
+            <section
+              className={styles.recentSection}
+              aria-label="Example commands"
+              data-testid="fmdCollectionCommandExamples"
+            >
+              <ul className={styles.recentList}>
+                {examplePrompts.map((prompt) => (
+                  <li key={prompt}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className={classNames(
+                        inlineMenuStyles.itemNeutral,
+                        styles.recentRow,
+                      )}
+                      onPress={() => {
+                        setQuery(prompt);
+                        setHighlightedValue("");
+                        commandInputRef.current?.focus();
+                      }}
+                    >
+                      <SparklesThinIcon
+                        className={styles.itemIcon}
+                        width={16}
+                        height={16}
+                      />
+                      <span className={styles.itemTitle}>{prompt}</span>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ) : null}
 
           {queryIsEmpty && promptHistory.length > 0 ? (
             <section
               className={styles.recentSection}
-              aria-labelledby={recentHeadingId}
+              aria-label="Past commands"
             >
-              <p className={styles.recentHeading} id={recentHeadingId}>
-                Recent
-              </p>
               <ul className={styles.recentList}>
                 {promptHistory.map((entry) => (
                   <li key={`${entry.usedAt}-${entry.prompt}`}>
@@ -399,7 +465,10 @@ const CollectionCommandPanel = ({
                 <Button
                   variant="ghost"
                   size="md"
-                  className={styles.commandActionPrimary}
+                  className={classNames(
+                    styles.commandActionPrimary,
+                    styles.commandActionRun,
+                  )}
                   disabled={interpretMutation.isPending}
                   isLoading={interpretMutation.isPending}
                   loadingText="Running…"
@@ -424,7 +493,7 @@ const CollectionCommandPanel = ({
                 facts={preview.facts}
                 confidenceNotes={previewIntent?.confidenceNotes}
               />
-              <div className={styles.actionStack}>
+              <div className={styles.previewActionStack}>
                 {preferCreateCrateAction ? (
                   <>
                     {createCrateAction({ primary: true })}
@@ -440,9 +509,12 @@ const CollectionCommandPanel = ({
                         onSelect={saveFilterViewFromPreview}
                       >
                         <Button
-                          variant="secondary"
+                          variant="ghost"
                           size="md"
-                          className={styles.commandAction}
+                          className={classNames(
+                            styles.commandActionSecondary,
+                            inlineMenuStyles.itemNeutral,
+                          )}
                         >
                           <span className={styles.actionLabel}>Save view</span>
                         </Button>
@@ -458,9 +530,12 @@ const CollectionCommandPanel = ({
                     onSelect={saveFilterViewFromPreview}
                   >
                     <Button
-                      variant="secondary"
+                      variant="ghost"
                       size="md"
-                      className={styles.commandAction}
+                      className={classNames(
+                        styles.commandActionSecondary,
+                        inlineMenuStyles.itemNeutral,
+                      )}
                     >
                       <span className={styles.actionLabel}>Save view</span>
                     </Button>
@@ -470,21 +545,51 @@ const CollectionCommandPanel = ({
             </>
           ) : null}
         </Command.List>
-        <div className={styles.reportIssueRow}>
+        <footer
+          className={styles.panelFooter}
+          data-testid="fmdCollectionCommandPanelFooter"
+        >
+          <div className={styles.panelFooterStart}>
+            {canStartOver ? (
+              <button
+                type="button"
+                className={classNames(
+                  textActionStyles.subtlelink,
+                  styles.panelFooterAction,
+                )}
+                data-testid="fmdCollectionCommandStartOver"
+                onClick={handleStartOver}
+              >
+                {COLLECTION_COMMAND_START_OVER_LABEL}
+              </button>
+            ) : null}
+            {canClearRecent ? (
+              <button
+                type="button"
+                className={classNames(
+                  textActionStyles.subtlelink,
+                  styles.panelFooterAction,
+                )}
+                onClick={clearPromptHistory}
+              >
+                {COLLECTION_COMMAND_CLEAR_RECENT_LABEL}
+              </button>
+            ) : null}
+          </div>
           <button
             type="button"
-            className={styles.reportIssueButton}
+            className={styles.panelFooterAction}
             data-testid="fmdCollectionCommandReportIssue"
             onClick={handleReportCommandIssue}
           >
             <QuestionThinIcon
-              className={styles.reportIssueIcon}
+              className={styles.panelFooterIcon}
               width={12}
               height={12}
             />
             <span>{COLLECTION_COMMAND_REPORT_ISSUE_LABEL}</span>
           </button>
-        </div>
+        </footer>
       </Command>
     </div>
   );

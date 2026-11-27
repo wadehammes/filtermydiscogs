@@ -22,18 +22,27 @@ describe("FilterViewsMenu", () => {
     ).toBeInTheDocument();
   });
 
-  it("lays out the Views trigger icon before the label in separate flex children", () => {
+  it("bar variant omits the Views label until a saved view is active", () => {
     po.renderFilterViewsMenu();
 
     const button = screen.getByRole("button", {
       name: "Views and filter actions",
     });
 
-    expect(button.className).toContain(iconButtonStyles.labeled);
-    expect(button.className).not.toContain(iconButtonStyles.iconOnly);
+    expect(button).not.toHaveTextContent("Views");
+    expect(button).toHaveClass(styles.menuTriggerIconOnly);
     expect(button.children[0]).toHaveAttribute("aria-hidden", "true");
-    expect(button.children[1]).toHaveClass(styles.menuTriggerLabel);
-    expect(button.children[1]).toHaveTextContent("Views");
+    expect(button.className).toContain(iconButtonStyles.labeled);
+  });
+
+  it("drawer variant keeps the Views label when no saved view is active", () => {
+    po.renderFilterViewsMenu({ variant: "drawer" });
+
+    const button = screen.getByRole("button", {
+      name: "Views and filter actions",
+    });
+
+    expect(button).toHaveTextContent("Views");
   });
 
   it("derives the active saved view when multi-select order differs", async () => {

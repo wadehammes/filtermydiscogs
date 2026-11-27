@@ -31,17 +31,21 @@ export const FiltersBarSkeleton = () => {
             >
               <BookmarkIcon />
             </span>
-            <div className={classNames(styles.viewsLine, pulseSurface)} />
             <span className={styles.chevron}>
               <ChevronDownThin />
             </span>
           </div>
-          <div className={styles.searchShell} aria-hidden>
-            <span className={styles.searchIcon}>
-              <SearchIcon />
-            </span>
+          <div className={styles.searchSegmentShell} aria-hidden>
+            <div className={styles.searchShell} aria-hidden>
+              <span className={styles.searchIcon}>
+                <SearchIcon />
+              </span>
+              <div
+                className={classNames(styles.placeholderLineWide, pulseSurface)}
+              />
+            </div>
             <div
-              className={classNames(styles.placeholderLineWide, pulseSurface)}
+              className={classNames(styles.commandChipShell, pulseSurface)}
             />
           </div>
           <div className={filtersBarStyles.styleFilterGroup}>

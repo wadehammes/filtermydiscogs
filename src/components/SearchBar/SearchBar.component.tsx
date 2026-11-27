@@ -19,6 +19,7 @@ interface SearchBarProps {
   disabled?: boolean;
   label?: string;
   showLabel?: boolean;
+  embedded?: boolean;
 }
 
 export const SearchBar = ({
@@ -27,6 +28,7 @@ export const SearchBar = ({
   disabled = false,
   label = "Search",
   showLabel = false,
+  embedded = false,
 }: SearchBarProps) => {
   "use memo";
   const filtersDispatch = useFiltersDispatch();
@@ -153,7 +155,11 @@ export const SearchBar = ({
           {label}
         </label>
       ) : null}
-      <div className={styles.inputContainer}>
+      <div
+        className={classNames(styles.inputContainer, {
+          [styles.inputContainerEmbedded]: embedded,
+        })}
+      >
         <span className={styles.searchIcon} aria-hidden>
           <SearchIcon />
         </span>
@@ -173,6 +179,7 @@ export const SearchBar = ({
           disabled={disabled}
           className={classNames(styles.input, {
             [styles.searching]: isSearching,
+            [styles.inputEmbedded]: embedded,
           })}
           aria-label={showLabel ? undefined : "Search collection"}
         />

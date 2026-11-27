@@ -45,7 +45,12 @@ export const FilterViewsMenu = ({
     saveCurrentView,
   } = useFilterViews();
 
-  const triggerLabel = matchingView?.name ?? "Views";
+  const triggerLabel =
+    matchingView !== null ? (
+      <span title={matchingView.name}>{matchingView.name}</span>
+    ) : isDrawerVariant ? (
+      "Views"
+    ) : null;
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -167,6 +172,7 @@ export const FilterViewsMenu = ({
       <div
         className={classNames(styles.menuRoot, className, {
           [styles.drawerVariant]: isDrawerVariant,
+          [styles.menuRootIconOnly]: !isDrawerVariant && matchingView === null,
         })}
         data-testid="fmdFilterViewsMenu"
       >
@@ -182,13 +188,11 @@ export const FilterViewsMenu = ({
                 {...props}
                 className={classNames(styles.menuTrigger, {
                   [styles.menuTriggerActive]: matchingView !== null,
+                  [styles.menuTriggerIconOnly]:
+                    !isDrawerVariant && matchingView === null,
                 })}
                 iconClassName={styles.menuTriggerIcon}
-                label={
-                  <span title={matchingView ? matchingView.name : undefined}>
-                    {triggerLabel}
-                  </span>
-                }
+                label={triggerLabel}
                 labelClassName={styles.menuTriggerLabel}
                 addon={<ExpandChevronThinIcon />}
                 addonClassName={styles.chevronIcon}
