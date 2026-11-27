@@ -1,8 +1,13 @@
 import { E2E_ALBUM_ONE } from "src/tests/msw/e2eSession.constants";
-import { test } from "./fixtures/msw.fixture";
-import { releaseCardByAlbum } from "./helpers/releaseCrateMenu";
+import { expect, test } from "./fixtures/msw.fixture";
+import {
+  expectCrateMenuPortaledOutsideReleaseModal,
+  openReleaseCrateMenuInModal,
+  releaseCardByAlbum,
+} from "./helpers/releaseCrateMenu";
 import {
   closeReleaseModal,
+  closeReleaseModalWithOpenCrateMenu,
   expectReleaseModalShowsE2eTracklist,
   openReleaseModalFromCard,
 } from "./helpers/releaseModal";
@@ -20,5 +25,20 @@ test.describe("authenticated release modal (MSW)", () => {
     await openReleaseModalFromCard(page, card, E2E_ALBUM_ONE);
     await expectReleaseModalShowsE2eTracklist(page, E2E_ALBUM_ONE);
     await closeReleaseModal(page);
+  });
+
+  test("portals the crate menu outside the clipped modal toolbar", async ({
+    page,
+  }) => {
+    const card = releaseCardByAlbum(page, E2E_ALBUM_ONE);
+    await openReleaseModalFromCard(page, card, E2E_ALBUM_ONE);
+    const { modal } = await openReleaseCrateMenuInModal(page);
+    await expectCrateMenuPortaledOutsideReleaseModal(modal);
+    await expect(
+      page
+        .getByTestId("fmdReleaseCrateMenu")
+        .filter({ hasText: "Add to new crate" }),
+    ).toBeVisible();
+    await closeReleaseModalWithOpenCrateMenu(page, modal);
   });
 });
