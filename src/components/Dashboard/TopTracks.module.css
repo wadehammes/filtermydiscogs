@@ -83,12 +83,6 @@
   margin: 0;
 }
 
-.error {
-  color: var(--destructive);
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
 .emptyState {
   composes: card from "../../styles/modules/dashboard-card.module.css";
 }
