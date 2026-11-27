@@ -2,6 +2,7 @@
 
 import classNames from "classnames";
 import { useMemo } from "react";
+import { DiscogsExternalLink } from "src/components/DiscogsExternalLink/DiscogsExternalLink.component";
 import { TickerNumber } from "src/components/ScrollReveal/ScrollReveal.component";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import type {
@@ -9,6 +10,7 @@ import type {
   CollectionValue,
 } from "src/types/dashboard.types";
 import type { DashboardStory } from "src/utils/dashboardStory";
+import { getDashboardSegmentErrorContent } from "src/utils/getDashboardSegmentErrorContent";
 import styles from "./DashboardHero.module.css";
 
 interface DashboardHeroProps {
@@ -27,6 +29,13 @@ export const DashboardHero = ({
   valueError,
 }: DashboardHeroProps) => {
   const releases = useAllReleases();
+  const valueErrorContent = useMemo(
+    () =>
+      valueError
+        ? getDashboardSegmentErrorContent(valueError, "collection_value")
+        : null,
+    [valueError],
+  );
 
   const yearOverYearChange = useMemo(() => {
     if (!releases || releases.length === 0) {
@@ -133,8 +142,10 @@ export const DashboardHero = ({
               <dd className={styles.metricValue}>
                 {isLoadingValue ? (
                   <span className={styles.loading}>Loading…</span>
-                ) : valueError ? (
-                  <span className={styles.error}>Unavailable</span>
+                ) : valueError && valueErrorContent ? (
+                  <span className={styles.error}>
+                    {valueErrorContent.message}
+                  </span>
                 ) : collectionValue ? (
                   formatCurrency(collectionValue.median)
                 ) : (
@@ -145,6 +156,21 @@ export const DashboardHero = ({
                 <dd className={styles.metricMeta}>
                   {formatCurrency(collectionValue.minimum)} to{" "}
                   {formatCurrency(collectionValue.maximum)}
+                </dd>
+              )}
+              {valueErrorContent && !isLoadingValue && (
+                <dd className={styles.metricMeta}>
+                  {valueErrorContent.detail}
+                  {valueErrorContent.showDiscogsStatusLink ? (
+                    <>
+                      {" "}
+                      <DiscogsExternalLink
+                        href={valueErrorContent.statusUrl}
+                        variant="text"
+                        label="Discogs status"
+                      />
+                    </>
+                  ) : null}
                 </dd>
               )}
             </fieldset>

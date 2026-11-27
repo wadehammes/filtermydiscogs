@@ -7,6 +7,10 @@
   min-height: 0;
 }
 
+.chartDrilldown {
+  cursor: pointer;
+}
+
 .chart {
   color: var(--muted-foreground);
   font-family: var(--font-family-meta);
@@ -31,6 +35,10 @@
 
 .chart :global(.ts-chart__axes line) {
   opacity: 0.35;
+}
+
+.chartBarCategories :global(.ts-chart__axes text) {
+  fill: var(--foreground);
 }
 
 .chart :global(*),

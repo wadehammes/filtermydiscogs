@@ -4,6 +4,7 @@ import { useId } from "react";
 import { ModalToolbar } from "src/components/ModalToolbar/ModalToolbar.component";
 import { ScrollModal } from "src/components/ScrollModal/ScrollModal.component";
 import type { DuplicateGroup } from "src/types/dashboard.types";
+import type { DashboardDrilldownTarget } from "src/utils/dashboardDrilldownFilters";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./DuplicatesDetailModal.module.css";
 import { DuplicatesList } from "./DuplicatesList.component";
@@ -14,6 +15,7 @@ interface DuplicatesDetailModalProps {
   description: string;
   duplicateGroups: DuplicateGroup[];
   onClose: () => void;
+  onDrilldown?: (target: DashboardDrilldownTarget) => void;
   onReleaseClick?: (instanceId: string) => void;
 }
 
@@ -23,6 +25,7 @@ export const DuplicatesDetailModal = ({
   description,
   duplicateGroups,
   onClose,
+  onDrilldown,
   onReleaseClick,
 }: DuplicatesDetailModalProps) => {
   const titleId = useId();
@@ -46,7 +49,7 @@ export const DuplicatesDetailModal = ({
     >
       <DuplicatesList
         duplicateGroups={duplicateGroups}
-        {...definedProps({ onReleaseClick })}
+        {...definedProps({ onDrilldown, onReleaseClick })}
       />
     </ScrollModal>
   );

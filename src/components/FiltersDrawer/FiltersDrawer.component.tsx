@@ -96,6 +96,14 @@ const DrawerFacetFilter = ({
 };
 
 export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
+  if (!isOpen) {
+    return null;
+  }
+
+  return <FiltersDrawerPanel onClose={onClose} />;
+};
+
+const FiltersDrawerPanel = ({ onClose }: { onClose: () => void }) => {
   const { state: collectionState } = useCollectionContext();
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
   const appliedFilterCount = useAppliedFilterCount();
@@ -143,7 +151,7 @@ export const FiltersDrawer = ({ isOpen, onClose }: FiltersDrawerProps) => {
 
   return (
     <BottomDrawer
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       chrome
       title={drawerTitle}

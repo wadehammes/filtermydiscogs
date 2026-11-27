@@ -4,6 +4,7 @@ import { formatFactory } from "src/tests/factories/Format.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
 import {
   releaseMatchesFormats,
+  releaseMatchesStyles,
   releaseMatchesYear,
 } from "./releaseFilterMatchers";
 
@@ -33,6 +34,46 @@ describe("releaseMatchesYear", () => {
     expect(releaseMatchesYear(release, [2020], "NONE")).toBe(false);
     expect(releaseMatchesYear(release, [2021], "NONE")).toBe(true);
     expect(releaseMatchesYear(release, [2020, 2021], "NONE")).toBe(false);
+  });
+});
+
+describe("releaseMatchesStyles", () => {
+  it("matches genre and style tags regardless of casing", () => {
+    const release = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        genres: ["Electronic"],
+        styles: ["Minimal Techno"],
+      }),
+    });
+
+    expect(releaseMatchesStyles(release, ["Minimal techno"], "OR")).toBe(true);
+    expect(releaseMatchesStyles(release, ["minimal techno"], "OR")).toBe(true);
+    expect(releaseMatchesStyles(release, ["MINIMAL TECHNO"], "OR")).toBe(true);
+    expect(releaseMatchesStyles(release, ["House"], "OR")).toBe(false);
+  });
+
+  it("matches Electronic genre when selected as a style filter tag", () => {
+    const release = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        genres: ["Electronic"],
+        styles: ["Techno"],
+      }),
+    });
+
+    expect(releaseMatchesStyles(release, ["Electronic"], "OR")).toBe(true);
+    expect(releaseMatchesStyles(release, ["electronic"], "OR")).toBe(true);
+  });
+
+  it("trims whitespace when comparing selected styles to release tags", () => {
+    const release = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Minimal Techno"],
+      }),
+    });
+
+    expect(releaseMatchesStyles(release, ["  Minimal Techno  "], "OR")).toBe(
+      true,
+    );
   });
 });
 

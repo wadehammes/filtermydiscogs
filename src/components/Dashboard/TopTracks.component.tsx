@@ -12,8 +12,10 @@ import type { TopUserTrack } from "src/types/dashboard.types";
 import { buildReleaseIndexFromList } from "src/utils/collectionReleaseLookup";
 import { definedProps } from "src/utils/definedProps";
 import { EMPTY_DISCOGS_RELEASE_DETAIL_MAP } from "src/utils/discogsReleaseBatchCache";
+import { getDashboardSegmentErrorContent } from "src/utils/getDashboardSegmentErrorContent";
 import { getReleaseImageUrl } from "src/utils/helpers";
 import { buildCatalogTitleByTrackKey } from "src/utils/userTrack";
+import { DashboardSegmentError } from "./DashboardSegmentError.component";
 import { DashboardTrackItem } from "./DashboardTrackItem.component";
 import styles from "./TopTracks.module.css";
 
@@ -174,9 +176,9 @@ export const TopTracks = ({ onReleaseClick }: TopTracksProps) => {
 
   if (error) {
     return (
-      <p className={styles.error}>
-        Unable to load most played and listened tracks.
-      </p>
+      <DashboardSegmentError
+        content={getDashboardSegmentErrorContent(error, "top_tracks")}
+      />
     );
   }
 

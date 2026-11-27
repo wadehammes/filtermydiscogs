@@ -59,6 +59,23 @@ describe("filterReleases", () => {
     expect(result[0]).toEqual(release1);
   });
 
+  it("matches styles case-insensitively", () => {
+    const release = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Minimal Techno"],
+      }),
+    });
+
+    const result = filterReleases({
+      releases: [release],
+      selectedStyles: ["Minimal techno"],
+      selectedYears: [],
+      selectedFormats: [],
+    });
+
+    expect(result).toEqual([release]);
+  });
+
   it("filters by single genre", () => {
     const release1 = releaseFactory.build({
       basic_information: basicInformationFactory.build({

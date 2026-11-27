@@ -12,6 +12,10 @@ type CollectionLoadState = ReturnType<
 const mockUseCollectionLoadState: jest.Mock<() => CollectionLoadState> =
   jest.fn();
 
+jest.mock("src/hooks/usePaintDeferredMount.hook", () => ({
+  usePaintDeferredMount: (ready: boolean) => ready,
+}));
+
 jest.mock("src/hooks/useCollectionData.hook", () => {
   const actual = jest.requireActual<
     typeof import("src/hooks/useCollectionData.hook")
@@ -75,11 +79,13 @@ describe("DashboardClient", () => {
     );
     expect(screen.getByText("Estimated value")).toBeInTheDocument();
     expect(screen.getByText("$500")).toBeInTheDocument();
-    expect(screen.getByText("Exact Duplicates")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { level: 2, name: "This week" }),
     ).toBeInTheDocument();
-    expect(screen.getAllByTestId("fmdChartStub").length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(screen.getByText("Exact Duplicates")).toBeInTheDocument();
+      expect(screen.getAllByTestId("fmdChartStub").length).toBeGreaterThan(0);
+    });
   });
 
   it("shows loading indication while additional release pages are fetching", async () => {

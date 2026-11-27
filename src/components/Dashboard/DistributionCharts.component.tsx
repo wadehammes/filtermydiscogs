@@ -1,10 +1,17 @@
 "use client";
 
+import classNames from "classnames";
 import { useMemo } from "react";
-import { PieChartLegend } from "src/components/PieChartLegend/PieChartLegend.component";
+import { DashboardBarDrilldownHint } from "src/components/Dashboard/DashboardBarDrilldownHint.component";
+import {
+  PieChartLegend,
+  type PieLegendItem,
+} from "src/components/PieChartLegend/PieChartLegend.component";
 import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
 import type { DistributionData } from "src/types/dashboard.types";
 import { useChartColors } from "src/utils/chartColors";
+import type { DashboardDrilldownTarget } from "src/utils/dashboardDrilldownFilters";
+import { definedProps } from "src/utils/definedProps";
 import {
   createDistributionPieChartDefinition,
   createVerticalBarChartDefinition,
@@ -18,6 +25,7 @@ interface DistributionChartsProps {
   decadeDistribution: DistributionData[];
   mediaTypeDistribution: DistributionData[];
   formatTagDistribution: DistributionData[];
+  onDrilldown?: (target: DashboardDrilldownTarget) => void;
 }
 
 export const DistributionCharts = ({
@@ -26,6 +34,7 @@ export const DistributionCharts = ({
   decadeDistribution,
   mediaTypeDistribution,
   formatTagDistribution,
+  onDrilldown,
 }: DistributionChartsProps) => {
   const colors = useChartColors();
 
@@ -79,21 +88,48 @@ export const DistributionCharts = ({
       <div className={styles.chartsGrid}>
         <div className={styles.chartContainer}>
           <h2>Top Styles</h2>
-          <div className={styles.chartWrapper}>
-            <TanstackChart
-              ariaLabel="Top styles distribution"
-              definition={styleBarDefinition}
-            />
+          <div
+            className={classNames({
+              [styles.barChartWithHint]: onDrilldown !== undefined,
+            })}
+          >
+            <div className={styles.chartWrapper}>
+              <TanstackChart
+                ariaLabel="Top styles distribution"
+                definition={styleBarDefinition}
+                emphasizeCategoryAxisLabels
+                {...definedProps({
+                  onBarLabelSelect: onDrilldown
+                    ? (label: string) =>
+                        onDrilldown({ kind: "genreStyle", label })
+                    : undefined,
+                })}
+              />
+            </div>
+            {onDrilldown ? <DashboardBarDrilldownHint /> : null}
           </div>
         </div>
 
         <div className={styles.chartContainer}>
           <h2>Physical Formats</h2>
-          <div className={styles.chartWrapper}>
-            <TanstackChart
-              ariaLabel="Physical formats distribution"
-              definition={formatBarDefinition}
-            />
+          <div
+            className={classNames({
+              [styles.barChartWithHint]: onDrilldown !== undefined,
+            })}
+          >
+            <div className={styles.chartWrapper}>
+              <TanstackChart
+                ariaLabel="Physical formats distribution"
+                definition={formatBarDefinition}
+                emphasizeCategoryAxisLabels
+                {...definedProps({
+                  onBarLabelSelect: onDrilldown
+                    ? (label: string) => onDrilldown({ kind: "format", label })
+                    : undefined,
+                })}
+              />
+            </div>
+            {onDrilldown ? <DashboardBarDrilldownHint /> : null}
           </div>
         </div>
       </div>
@@ -107,7 +143,16 @@ export const DistributionCharts = ({
               definition={decadePieDefinition}
               height={240}
             />
-            <PieChartLegend colors={colors} data={decadeDistribution} />
+            <PieChartLegend
+              colors={colors}
+              data={decadeDistribution}
+              {...definedProps({
+                onLabelSelect: onDrilldown
+                  ? (item: PieLegendItem) =>
+                      onDrilldown({ kind: "decade", label: item.label })
+                  : undefined,
+              })}
+            />
           </div>
         </div>
 
@@ -119,7 +164,16 @@ export const DistributionCharts = ({
               definition={mediaTypePieDefinition}
               height={240}
             />
-            <PieChartLegend colors={colors} data={mediaTypeDistribution} />
+            <PieChartLegend
+              colors={colors}
+              data={mediaTypeDistribution}
+              {...definedProps({
+                onLabelSelect: onDrilldown
+                  ? (item: PieLegendItem) =>
+                      onDrilldown({ kind: "format", label: item.label })
+                  : undefined,
+              })}
+            />
           </div>
         </div>
 
@@ -131,7 +185,16 @@ export const DistributionCharts = ({
               definition={genrePieDefinition}
               height={240}
             />
-            <PieChartLegend colors={colors} data={genreDistribution} />
+            <PieChartLegend
+              colors={colors}
+              data={genreDistribution}
+              {...definedProps({
+                onLabelSelect: onDrilldown
+                  ? (item: PieLegendItem) =>
+                      onDrilldown({ kind: "genreStyle", label: item.label })
+                  : undefined,
+              })}
+            />
           </div>
         </div>
       </div>

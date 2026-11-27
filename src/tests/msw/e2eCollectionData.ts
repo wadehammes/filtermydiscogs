@@ -50,6 +50,36 @@ const buildE2eCollectionRelease = ({
     }),
   });
 
+export const E2E_SHARED_MASTER_ID = 9_000_042;
+
+export const buildE2eCollectionReleasesWithExactDuplicate =
+  (): DiscogsRelease[] => {
+    const base = buildE2eCollectionReleases();
+    const [first, second, third] = base;
+
+    if (!(first && second && third)) {
+      throw new Error("E2E collection must include three releases");
+    }
+
+    return [
+      {
+        ...first,
+        basic_information: {
+          ...first.basic_information,
+          master_id: E2E_SHARED_MASTER_ID,
+        },
+      },
+      {
+        ...second,
+        basic_information: {
+          ...second.basic_information,
+          master_id: E2E_SHARED_MASTER_ID,
+        },
+      },
+      third,
+    ];
+  };
+
 export const buildE2eCollectionReleases = (): DiscogsRelease[] => {
   const now = new Date();
   const thisYear = new Date(now.getFullYear(), 0, 15).toISOString();

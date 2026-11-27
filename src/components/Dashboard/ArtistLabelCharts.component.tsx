@@ -1,11 +1,15 @@
 "use client";
 
+import classNames from "classnames";
 import { useMemo } from "react";
+import { DashboardBarDrilldownHint } from "src/components/Dashboard/DashboardBarDrilldownHint.component";
 import { TanstackChart } from "src/components/TanstackChart/TanstackChart.component";
 import { BELOW_DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import type { DistributionData } from "src/types/dashboard.types";
 import { useChartColors } from "src/utils/chartColors";
+import type { DashboardDrilldownTarget } from "src/utils/dashboardDrilldownFilters";
+import { definedProps } from "src/utils/definedProps";
 import {
   createHorizontalBarChartDefinition,
   HORIZONTAL_BAR_ASSUMED_WIDTH,
@@ -16,11 +20,13 @@ import styles from "./ArtistLabelCharts.module.css";
 interface ArtistLabelChartsProps {
   artistDistribution: DistributionData[];
   labelDistribution: DistributionData[];
+  onDrilldown?: (target: DashboardDrilldownTarget) => void;
 }
 
 export const ArtistLabelCharts = ({
   artistDistribution,
   labelDistribution,
+  onDrilldown,
 }: ArtistLabelChartsProps) => {
   const colors = useChartColors();
   const isMobile = useMediaQuery(BELOW_DESKTOP_LAYOUT_MEDIA_QUERY);
@@ -59,28 +65,48 @@ export const ArtistLabelCharts = ({
       <div className={styles.chartContainer}>
         <h2>Top Artists</h2>
         <div
-          className={styles.chartWrapper}
-          data-compact-y-axis={isMobile ? "true" : undefined}
+          className={classNames({
+            [styles.barChartWithHint]: onDrilldown !== undefined,
+          })}
         >
-          <TanstackChart
-            ariaLabel="Top artists by release count"
-            definition={artistDefinition}
-            height={400}
-          />
+          <div className={styles.chartWrapper}>
+            <TanstackChart
+              ariaLabel="Top artists by release count"
+              definition={artistDefinition}
+              emphasizeCategoryAxisLabels
+              height={400}
+              {...definedProps({
+                onBarLabelSelect: onDrilldown
+                  ? (label: string) => onDrilldown({ kind: "search", label })
+                  : undefined,
+              })}
+            />
+          </div>
+          {onDrilldown ? <DashboardBarDrilldownHint /> : null}
         </div>
       </div>
 
       <div className={styles.chartContainer}>
         <h2>Top Labels</h2>
         <div
-          className={styles.chartWrapper}
-          data-compact-y-axis={isMobile ? "true" : undefined}
+          className={classNames({
+            [styles.barChartWithHint]: onDrilldown !== undefined,
+          })}
         >
-          <TanstackChart
-            ariaLabel="Top labels by release count"
-            definition={labelDefinition}
-            height={400}
-          />
+          <div className={styles.chartWrapper}>
+            <TanstackChart
+              ariaLabel="Top labels by release count"
+              definition={labelDefinition}
+              emphasizeCategoryAxisLabels
+              height={400}
+              {...definedProps({
+                onBarLabelSelect: onDrilldown
+                  ? (label: string) => onDrilldown({ kind: "search", label })
+                  : undefined,
+              })}
+            />
+          </div>
+          {onDrilldown ? <DashboardBarDrilldownHint /> : null}
         </div>
       </div>
     </div>
