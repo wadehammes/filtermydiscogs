@@ -58,6 +58,7 @@ import {
   recordTrackEvent,
   saveTrackYoutubeOverride,
 } from "src/api/endpoints/tracks";
+import { notifyBugReportReceipt } from "src/api/endpoints/userBugReport";
 import {
   fetchUserContact,
   updateUserContact,
@@ -91,6 +92,7 @@ export const api = {
   discogsReleaseBatch: fetchDiscogsReleaseBatch,
   discogsSearch: fetchDiscogsSearch,
   dismissSupportProjectToast,
+  notifyBugReportReceipt,
   logout,
   mostCratedReleases: fetchMostCratedReleases,
   topUserTracks: fetchTopUserTracks,

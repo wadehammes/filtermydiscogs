@@ -10,6 +10,16 @@ large work, dependent branches, st init/add/sync/ss, or gh stack workflows.
 
 **Non-negotiable** for substantive work ([conventions.md → Non-negotiables §8](../../docs/handbook/conventions.md#non-negotiables-substantive-work-and-agents)): use **`st`** / gh-stack — do not open parallel feature branches off **`staging`** when stack tooling applies.
 
+## Session gate (run first, every task)
+
+Before reading files to implement, editing code, or creating a branch:
+
+1. **`st view --json`**
+2. New dependent layer → **`st add <branch>`** (not `git checkout -b`)
+3. New work → **`st init …`** / **`st create`**; existing stack → **`st checkout …`**
+
+See [`.cursor/rules/gh-stack-always.mdc`](../../.cursor/rules/gh-stack-always.mdc).
+
 Trunk is **`staging`**, not `main`. Full policy: [platform.md → Stacked pull requests](../../docs/handbook/platform.md#stacked-pull-requests-st).
 
 ## Prerequisites

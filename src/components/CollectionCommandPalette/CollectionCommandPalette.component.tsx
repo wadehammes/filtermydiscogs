@@ -14,11 +14,17 @@ import Button from "src/components/Button/Button.component";
 import { CollectionCommandPreviewBlock } from "src/components/CollectionCommandPalette/CollectionCommandPreviewBlock.component";
 import { CollectionCommandShortcutKeys } from "src/components/CollectionCommandPalette/CollectionCommandShortcutKeys.component";
 import inlineMenuStyles from "src/components/InlinePopoverMenu/InlinePopoverMenu.module.css";
-import { COLLECTION_COMMAND_PROMPT_MAX_LENGTH } from "src/constants/collectionCommand.constants";
+import {
+  COLLECTION_COMMAND_PROMPT_MAX_LENGTH,
+  COLLECTION_COMMAND_REPORT_ISSUE_LABEL,
+} from "src/constants/collectionCommand.constants";
 import { useCollectionCommandPalette } from "src/hooks/useCollectionCommandPalette.hook";
+import { openCollectionCommandSentryFeedback } from "src/lib/sentry/openCollectionCommandSentryFeedback.client";
 import { ClockThinIcon } from "src/styles/icons/ClockThinIcon.component";
+import { QuestionThinIcon } from "src/styles/icons/QuestionThinIcon.component";
 import { ReturnThinIcon } from "src/styles/icons/ReturnThinIcon.component";
 import accessibilityStyles from "src/styles/modules/accessibility.module.css";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./CollectionCommandPalette.module.css";
 
 export const CollectionCommandPalette = () => {
@@ -72,6 +78,7 @@ export const CollectionCommandPalette = () => {
         isCreatingCrateFromPreview={isCreatingCrateFromPreview}
         preferCreateCrateAction={preferCreateCrateAction}
         shortcut={shortcut}
+        closePalette={closePalette}
       />
     </div>
   ) : null;
@@ -100,6 +107,7 @@ type CollectionCommandPanelProps = {
   isCreatingCrateFromPreview: boolean;
   preferCreateCrateAction: boolean;
   shortcut: string;
+  closePalette: () => void;
 };
 
 const CollectionCommandPanel = ({
@@ -119,12 +127,33 @@ const CollectionCommandPanel = ({
   isCreatingCrateFromPreview,
   preferCreateCrateAction,
   shortcut,
+  closePalette,
 }: CollectionCommandPanelProps) => {
   const commandInputRef = useRef<HTMLInputElement>(null);
   const primaryPreviewActionRef = useRef<HTMLButtonElement>(null);
   const recentHeadingId = useId();
   const [highlightedValue, setHighlightedValue] = useState("");
   const queryIsEmpty = query.trim().length === 0;
+
+  const interpretErrorMessage =
+    interpretMutation.isError && interpretMutation.error
+      ? interpretMutation.error instanceof Error
+        ? interpretMutation.error.message
+        : "Interpret failed"
+      : undefined;
+
+  const handleReportCommandIssue = useCallback(() => {
+    closePalette();
+    openCollectionCommandSentryFeedback({
+      prompt: query,
+      ...definedProps({
+        interpretError: interpretErrorMessage,
+        preview: preview
+          ? { matchCount: preview.matchCount, facts: preview.facts }
+          : undefined,
+      }),
+    });
+  }, [closePalette, interpretErrorMessage, preview, query]);
   const hasCommandPreview = preview !== null;
 
   const primaryPreviewCommandValue = preferCreateCrateAction
@@ -441,6 +470,21 @@ const CollectionCommandPanel = ({
             </>
           ) : null}
         </Command.List>
+        <div className={styles.reportIssueRow}>
+          <button
+            type="button"
+            className={styles.reportIssueButton}
+            data-testid="fmdCollectionCommandReportIssue"
+            onClick={handleReportCommandIssue}
+          >
+            <QuestionThinIcon
+              className={styles.reportIssueIcon}
+              width={12}
+              height={12}
+            />
+            <span>{COLLECTION_COMMAND_REPORT_ISSUE_LABEL}</span>
+          </button>
+        </div>
       </Command>
     </div>
   );

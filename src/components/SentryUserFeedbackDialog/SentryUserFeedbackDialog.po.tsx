@@ -10,6 +10,8 @@ import {
   BasePageObject,
   type BasePageObjectProps,
 } from "src/tests/BasePageObject.po";
+import type { CollectionCommandSentryFeedbackContext } from "src/utils/buildCollectionCommandSentryFeedbackMessage";
+import { definedProps } from "src/utils/definedProps";
 import { render } from "test-utils";
 import { SentryUserFeedbackDialog } from "./SentryUserFeedbackDialog.component";
 
@@ -31,6 +33,10 @@ const PlaybackOverlayPortalMarker = () => {
 export type SentryUserFeedbackDialogRenderProps = {
   open?: boolean;
   defaultName?: string;
+  defaultEmail?: string;
+  defaultMessage?: string;
+  collectionCommandContext?: CollectionCommandSentryFeedbackContext;
+  feedbackSourceTag?: string;
   onClose?: () => void;
   onSubmitFeedback?: (
     values: SentryUserFeedbackFormValues,
@@ -54,6 +60,10 @@ export class SentryUserFeedbackDialogPageObject extends BasePageObject {
     const {
       open,
       defaultName,
+      defaultEmail,
+      defaultMessage,
+      collectionCommandContext,
+      feedbackSourceTag,
       onClose,
       onSubmitFeedback,
       onCaptureScreenshot,
@@ -62,10 +72,16 @@ export class SentryUserFeedbackDialogPageObject extends BasePageObject {
 
     return (
       <SentryUserFeedbackDialog
+        defaultEmail={defaultEmail ?? ""}
         defaultName={defaultName ?? ""}
         open={open ?? true}
         onClose={onClose ?? jest.fn()}
         onSubmitFeedback={onSubmitFeedback ?? jest.fn(async () => false)}
+        {...definedProps({
+          collectionCommandContext,
+          defaultMessage,
+          feedbackSourceTag,
+        })}
         {...(onCaptureScreenshot ? { onCaptureScreenshot } : {})}
         {...(screenshotCaptureSupported !== undefined
           ? { screenshotCaptureSupported }

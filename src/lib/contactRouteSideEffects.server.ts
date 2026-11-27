@@ -5,8 +5,9 @@ import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 export const runContactRouteSideEffect = (
   promise: Promise<void>,
   logMessage: string,
+  routeLabel = "/api/user/contact",
 ): void => {
   void promise.catch((error) =>
-    logSanitizedApiRouteFailure("/api/user/contact", error, logMessage),
+    logSanitizedApiRouteFailure(routeLabel, error, logMessage),
   );
 };

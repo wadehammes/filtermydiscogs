@@ -5,6 +5,9 @@ export const SENTRY_USER_FEEDBACK_SOURCE_TAG = "user_menu" as const;
 export const SENTRY_PLAYBACK_SKIP_FEEDBACK_SOURCE_TAG =
   "playback_skip_report" as const;
 
+export const SENTRY_COLLECTION_COMMAND_FEEDBACK_SOURCE_TAG =
+  "collection_command" as const;
+
 export const SENTRY_USER_FEEDBACK_SCREENSHOT_MAX_BYTES = 5 * 1024 * 1024;
 
 export const SENTRY_USER_FEEDBACK_ADD_SCREENSHOT_LABEL = "Add a screenshot";

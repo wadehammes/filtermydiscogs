@@ -1,0 +1,29 @@
+---
+description: gh-stack / st before any branch or substantive work (non-negotiable)
+alwaysApply: true
+---
+
+# gh-stack / `st` first (non-negotiable)
+
+**Before any substantive work** — including reading files to implement, editing code, or creating a branch — establish stack context with **`st`** (gh-stack). Trunk is **`staging`**.
+
+## Session start (every task)
+
+1. Run **`st view --json`** (never bare `st view` — TUI hangs agents).
+2. If the task adds a dependent layer: **`st add <branch-name>`** on top of the current stack tip (never **`git checkout -b`**).
+3. If starting new stacked work: plan layers, then **`st init <bottom> [<middle> …]`** or **`st create`** for a single layer on **`staging`**.
+4. If joining an existing stack: **`st checkout <branch|pr#|stack#>`** before editing.
+
+## While working
+
+- One reviewable concern per branch; navigate with **`st up`** / **`st down`** / **`st bottom`** — do not fork parallel branches off **`staging`** for related work.
+- Commit with **`./scripts/git-commit.sh`** (not raw **`git commit`**).
+- After commits on a layer: **`st sync`** when the chain needs it; **`st ss --auto`** to push and open/update PRs.
+
+## Forbidden
+
+- **`git checkout -b`** for feature/stack work (orphan branches, broken stack ancestry).
+- Fixing stack metadata with ad-hoc **`gh stack link`** after forgetting **`st add`**.
+- Bare **`gh stack`** commands when **`st`** exists — use [`.cursor/skills/stacked-prs/SKILL.md`](../../.cursor/skills/stacked-prs/SKILL.md) and [platform.md → Stacked pull requests](../../docs/handbook/platform.md#stacked-pull-requests-st).
+
+**Exception:** trivial one-off fixes explicitly scoped as *not* a stack (user says so, or hotfix directly on an agreed branch) — still prefer **`st`** when in doubt.

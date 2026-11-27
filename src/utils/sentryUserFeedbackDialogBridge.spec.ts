@@ -19,6 +19,7 @@ describe("sentryUserFeedbackDialogBridge", () => {
     openSentryUserFeedbackDialog();
 
     expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onOpen).toHaveBeenCalledWith({});
 
     unregisterOpen();
     onOpen.mockClear();
@@ -26,5 +27,20 @@ describe("sentryUserFeedbackDialogBridge", () => {
     openSentryUserFeedbackDialog();
 
     expect(onOpen).not.toHaveBeenCalled();
+  });
+
+  it("forwards optional dialog request fields to the registered handler", () => {
+    const onOpen = jest.fn();
+    unregisterOpen = registerSentryUserFeedbackDialogOpen(onOpen);
+
+    openSentryUserFeedbackDialog({
+      defaultMessage: "Prefilled",
+      feedbackSourceTag: "collection_command",
+    });
+
+    expect(onOpen).toHaveBeenCalledWith({
+      defaultMessage: "Prefilled",
+      feedbackSourceTag: "collection_command",
+    });
   });
 });
