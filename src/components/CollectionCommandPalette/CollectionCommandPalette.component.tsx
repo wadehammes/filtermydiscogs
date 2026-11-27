@@ -6,15 +6,15 @@ import {
   type KeyboardEvent,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
 } from "react";
 import Button from "src/components/Button/Button.component";
 import { CollectionCommandPreviewBlock } from "src/components/CollectionCommandPalette/CollectionCommandPreviewBlock.component";
-import { CollectionCommandShortcutKeys } from "src/components/CollectionCommandPalette/CollectionCommandShortcutKeys.component";
 import inlineMenuStyles from "src/components/InlinePopoverMenu/InlinePopoverMenu.module.css";
 import {
+  COLLECTION_COMMAND_CLEAR_RECENT_LABEL,
+  COLLECTION_COMMAND_INPUT_PLACEHOLDER,
   COLLECTION_COMMAND_PROMPT_MAX_LENGTH,
   COLLECTION_COMMAND_REPORT_ISSUE_LABEL,
 } from "src/constants/collectionCommand.constants";
@@ -23,7 +23,9 @@ import { openCollectionCommandSentryFeedback } from "src/lib/sentry/openCollecti
 import { ClockThinIcon } from "src/styles/icons/ClockThinIcon.component";
 import { QuestionThinIcon } from "src/styles/icons/QuestionThinIcon.component";
 import { ReturnThinIcon } from "src/styles/icons/ReturnThinIcon.component";
+import { SparklesThinIcon } from "src/styles/icons/SparklesThinIcon.component";
 import accessibilityStyles from "src/styles/modules/accessibility.module.css";
+import textActionStyles from "src/styles/modules/text-action.module.css";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./CollectionCommandPalette.module.css";
 
@@ -34,6 +36,7 @@ export const CollectionCommandPalette = () => {
     setQuery,
     closePalette,
     promptHistory,
+    clearPromptHistory,
     interpretMutation,
     preview,
     previewIntent,
@@ -46,6 +49,7 @@ export const CollectionCommandPalette = () => {
     isCreatingCrateFromPreview,
     preferCreateCrateAction,
     shortcut,
+    examplePrompts,
   } = useCollectionCommandPalette();
 
   return open ? (
@@ -66,6 +70,7 @@ export const CollectionCommandPalette = () => {
         query={query}
         setQuery={setQuery}
         promptHistory={promptHistory}
+        clearPromptHistory={clearPromptHistory}
         interpretMutation={interpretMutation}
         preview={preview}
         previewIntent={previewIntent}
@@ -78,6 +83,7 @@ export const CollectionCommandPalette = () => {
         isCreatingCrateFromPreview={isCreatingCrateFromPreview}
         preferCreateCrateAction={preferCreateCrateAction}
         shortcut={shortcut}
+        examplePrompts={examplePrompts}
         closePalette={closePalette}
       />
     </div>
@@ -91,6 +97,9 @@ type CollectionCommandPanelProps = {
   promptHistory: ReturnType<
     typeof useCollectionCommandPalette
   >["promptHistory"];
+  clearPromptHistory: ReturnType<
+    typeof useCollectionCommandPalette
+  >["clearPromptHistory"];
   interpretMutation: ReturnType<
     typeof useCollectionCommandPalette
   >["interpretMutation"];
@@ -107,6 +116,7 @@ type CollectionCommandPanelProps = {
   isCreatingCrateFromPreview: boolean;
   preferCreateCrateAction: boolean;
   shortcut: string;
+  examplePrompts: string[];
   closePalette: () => void;
 };
 
@@ -115,6 +125,7 @@ const CollectionCommandPanel = ({
   query,
   setQuery,
   promptHistory,
+  clearPromptHistory,
   interpretMutation,
   preview,
   previewIntent,
@@ -127,11 +138,11 @@ const CollectionCommandPanel = ({
   isCreatingCrateFromPreview,
   preferCreateCrateAction,
   shortcut,
+  examplePrompts,
   closePalette,
 }: CollectionCommandPanelProps) => {
   const commandInputRef = useRef<HTMLInputElement>(null);
   const primaryPreviewActionRef = useRef<HTMLButtonElement>(null);
-  const recentHeadingId = useId();
   const [highlightedValue, setHighlightedValue] = useState("");
   const queryIsEmpty = query.trim().length === 0;
 
@@ -329,36 +340,68 @@ const CollectionCommandPanel = ({
         value={highlightedValue}
         onValueChange={setHighlightedValue}
       >
-        <Command.Input
-          ref={commandInputRef}
-          autoFocus
-          className={styles.commandInput}
-          data-testid="fmdCollectionCommandInput"
-          placeholder="Filter your collection…"
-          maxLength={COLLECTION_COMMAND_PROMPT_MAX_LENGTH}
-          value={query}
-          onValueChange={setQuery}
-          onKeyDown={handleCommandInputKeyDown}
-        />
+        <div className={styles.commandInputRow}>
+          <SparklesThinIcon
+            className={styles.commandInputIcon}
+            width={16}
+            height={16}
+          />
+          <Command.Input
+            ref={commandInputRef}
+            autoFocus
+            className={styles.commandInput}
+            data-testid="fmdCollectionCommandInput"
+            placeholder={COLLECTION_COMMAND_INPUT_PLACEHOLDER}
+            maxLength={COLLECTION_COMMAND_PROMPT_MAX_LENGTH}
+            value={query}
+            onValueChange={setQuery}
+            onKeyDown={handleCommandInputKeyDown}
+          />
+        </div>
         <Command.List
           className={styles.commandList}
           data-testid="fmdCollectionCommandList"
         >
           {queryIsEmpty && promptHistory.length === 0 ? (
-            <Command.Empty className={styles.empty}>
-              <span>Type a command, or open with </span>
-              <CollectionCommandShortcutKeys shortcut={shortcut} />
-            </Command.Empty>
+            <section
+              className={styles.recentSection}
+              aria-label="Example commands"
+              data-testid="fmdCollectionCommandExamples"
+            >
+              <ul className={styles.recentList}>
+                {examplePrompts.map((prompt) => (
+                  <li key={prompt}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className={classNames(
+                        inlineMenuStyles.itemNeutral,
+                        styles.recentRow,
+                      )}
+                      onPress={() => {
+                        setQuery(prompt);
+                        setHighlightedValue("");
+                        commandInputRef.current?.focus();
+                      }}
+                    >
+                      <SparklesThinIcon
+                        className={styles.itemIcon}
+                        width={16}
+                        height={16}
+                      />
+                      <span className={styles.itemTitle}>{prompt}</span>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ) : null}
 
           {queryIsEmpty && promptHistory.length > 0 ? (
             <section
               className={styles.recentSection}
-              aria-labelledby={recentHeadingId}
+              aria-label="Past commands"
             >
-              <p className={styles.recentHeading} id={recentHeadingId}>
-                Recent
-              </p>
               <ul className={styles.recentList}>
                 {promptHistory.map((entry) => (
                   <li key={`${entry.usedAt}-${entry.prompt}`}>
@@ -470,21 +513,38 @@ const CollectionCommandPanel = ({
             </>
           ) : null}
         </Command.List>
-        <div className={styles.reportIssueRow}>
+        <footer
+          className={styles.panelFooter}
+          data-testid="fmdCollectionCommandPanelFooter"
+        >
+          <div className={styles.panelFooterStart}>
+            {promptHistory.length > 0 ? (
+              <button
+                type="button"
+                className={classNames(
+                  textActionStyles.subtlelink,
+                  styles.panelFooterAction,
+                )}
+                onClick={clearPromptHistory}
+              >
+                {COLLECTION_COMMAND_CLEAR_RECENT_LABEL}
+              </button>
+            ) : null}
+          </div>
           <button
             type="button"
-            className={styles.reportIssueButton}
+            className={styles.panelFooterAction}
             data-testid="fmdCollectionCommandReportIssue"
             onClick={handleReportCommandIssue}
           >
             <QuestionThinIcon
-              className={styles.reportIssueIcon}
+              className={styles.panelFooterIcon}
               width={12}
               height={12}
             />
             <span>{COLLECTION_COMMAND_REPORT_ISSUE_LABEL}</span>
           </button>
-        </div>
+        </footer>
       </Command>
     </div>
   );

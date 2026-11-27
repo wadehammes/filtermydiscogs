@@ -20,6 +20,59 @@ describe("CollectionCommandPalette", () => {
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
+  it("shows example prompts when history is empty", () => {
+    const examplePrompts = [
+      "Save a view for Techno Vinyl",
+      "Make a crate from what's showing",
+      "Show only Vinyl for Techno",
+    ];
+
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.open({ examplePrompts }),
+    ).renderCollectionCommandPalette();
+
+    expect(
+      screen.getByTestId("fmdCollectionCommandExamples"),
+    ).toBeInTheDocument();
+    for (const prompt of examplePrompts) {
+      expect(screen.getByRole("button", { name: prompt })).toBeInTheDocument();
+    }
+  });
+
+  it("calls clearPromptHistory when Clear recent is pressed", async () => {
+    const clearPromptHistory = jest.fn();
+    const user = userEvent.setup();
+
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withPromptHistory(
+        ["Ambient for coding"],
+        { clearPromptHistory },
+      ),
+    ).renderCollectionCommandPalette();
+
+    await user.click(screen.getByRole("button", { name: "Clear recent" }));
+
+    expect(clearPromptHistory).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows recent prompts instead of examples when history exists", () => {
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.withPromptHistory([
+        "Ambient for coding",
+      ]),
+    ).renderCollectionCommandPalette();
+
+    expect(
+      screen.queryByTestId("fmdCollectionCommandExamples"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Clear recent" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Ambient for coding" }),
+    ).toBeInTheDocument();
+  });
+
   it("caps command input length to the interpret API max", () => {
     po.renderCollectionCommandPalette();
 

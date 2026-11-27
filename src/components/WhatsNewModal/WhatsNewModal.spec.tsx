@@ -21,7 +21,12 @@ describe("WhatsNewModal", () => {
       screen.getByRole("heading", { name: WHATS_NEW_MODAL_TITLE }),
     ).toBeInTheDocument();
     expect(screen.getByText("v2026.11.27")).toBeInTheDocument();
-    expect(screen.getByText(/plain-English prompt/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/open Ask in the filters bar/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/apply filters, save a view, or create a crate/i),
+    ).toBeInTheDocument();
     expect(
       screen.getAllByText(/Other bug fixes and performance improvements/i),
     ).toHaveLength(WHATS_NEW_RELEASES.length);

@@ -1,0 +1,77 @@
+.segment {
+  align-items: stretch;
+  background: var(--background);
+  border: 1px solid var(--input);
+  border-radius: var(--radius-ui);
+  display: flex;
+  flex: 2;
+  height: var(--input-height);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.commandChip {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-inline-start: 1px solid var(--input);
+  border-radius: var(--radius-none);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  height: 100%;
+  justify-content: center;
+  min-width: 0;
+  padding-inline: var(--space-4);
+
+  @media (width < 1280px) {
+    padding-inline: var(--space-3);
+  }
+
+  &:focus-visible {
+    color: var(--foreground);
+    outline: 2px solid var(--link);
+    outline-offset: -2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--foreground) 4%, var(--background));
+    color: var(--foreground);
+  }
+}
+
+.chipInner {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+  line-height: 1;
+}
+
+.chipIcon {
+  align-self: center;
+  block-size: 0.875rem;
+  display: block;
+  flex-shrink: 0;
+  inline-size: 0.875rem;
+}
+
+.chipLabel {
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: 1;
+  white-space: nowrap;
+}

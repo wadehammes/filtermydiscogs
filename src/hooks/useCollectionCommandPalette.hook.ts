@@ -1,9 +1,13 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "src/api/urls";
-import { FiltersActionTypes } from "src/atoms/filters.atoms";
+import {
+  FiltersActionTypes,
+  sessionFiltersAtom,
+} from "src/atoms/filters.atoms";
 import { DEFAULT_COLLECTION_COMMAND_SHORTCUT } from "src/constants/collectionCommand.constants";
 import { useAuth } from "src/context/auth.context";
 import { useOptionalCrateActions } from "src/context/crate.context";
@@ -21,7 +25,9 @@ import { useFilterViews } from "src/hooks/useFilterViews.hook";
 import type { CollectionCommandIntent } from "src/lib/validation/collectionCommand.schemas";
 import type { PersistedFiltersJson } from "src/types/filters.types";
 import { addCollectionCommandReleasesToCrate } from "src/utils/collectionCommandCrateFromPreview";
+import { buildCollectionCommandExamplePrompts } from "src/utils/collectionCommandExamplePrompts";
 import { sanitizeCollectionCommandIntent } from "src/utils/collectionCommandIntent";
+import { registerCollectionCommandPaletteOpen } from "src/utils/collectionCommandPaletteBridge";
 import {
   promptMentionsCollectionCrate,
   shouldClearCollectionCommandPreview,
@@ -32,6 +38,7 @@ import {
   previewCollectionCommandFilters,
 } from "src/utils/collectionCommandPreview";
 import {
+  clearCollectionCommandPromptHistory,
   readCollectionCommandPromptHistory,
   recordCollectionCommandPromptHistory,
 } from "src/utils/collectionCommandPromptHistory";
@@ -51,6 +58,7 @@ export const useCollectionCommandPalette = () => {
   const queryClient = useQueryClient();
   const allReleases = useAllReleases();
   const facetOptions = useFacetOptions();
+  const sessionFilters = useAtomValue(sessionFiltersAtom);
   const filtersDispatch = useFiltersDispatch();
   const { saveViewFromFilters, canAddView } = useFilterViews();
   const crateActions = useOptionalCrateActions();
@@ -76,9 +84,18 @@ export const useCollectionCommandPalette = () => {
   );
   const [isCreatingCrateFromPreview, setIsCreatingCrateFromPreview] =
     useState(false);
+  const [promptHistoryRevision, setPromptHistoryRevision] = useState(0);
   const promptHistory = useMemo(
     () => (open ? readCollectionCommandPromptHistory(authState.userId) : []),
-    [authState.userId, open],
+    [authState.userId, open, promptHistoryRevision],
+  );
+  const examplePrompts = useMemo(
+    () =>
+      buildCollectionCommandExamplePrompts({
+        filters: sessionFilters,
+        facetOptions,
+      }),
+    [facetOptions, sessionFilters],
   );
 
   const interpretMutation = useMutation({
@@ -136,6 +153,11 @@ export const useCollectionCommandPalette = () => {
       prompt,
     });
   }, [authState.userId, query]);
+
+  const clearPromptHistory = useCallback(() => {
+    clearCollectionCommandPromptHistory(authState.userId);
+    setPromptHistoryRevision((revision) => revision + 1);
+  }, [authState.userId]);
 
   const closePalette = useCallback(() => {
     setOpen(false);
@@ -327,6 +349,11 @@ export const useCollectionCommandPalette = () => {
     });
   }, [facetOptions, previewIntent]);
 
+  useEffect(
+    () => registerCollectionCommandPaletteOpen(openPalette),
+    [openPalette],
+  );
+
   useEffect(() => {
     if (!paletteEnabled) {
       return;
@@ -364,6 +391,8 @@ export const useCollectionCommandPalette = () => {
     shortcut,
     paletteEnabled,
     promptHistory,
+    clearPromptHistory,
+    examplePrompts,
     interpretMutation,
     preview,
     previewIntent,
