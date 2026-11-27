@@ -35,6 +35,7 @@ const createUseCollectionCommandPaletteReturn = (
     previewIntent: null,
     previewFilters: null,
     runInterpret: jest.fn(),
+    runInterpretForPrompt: jest.fn(),
     applyPreviewFilters: jest.fn(),
     saveFilterViewFromPreview: jest.fn(),
     canSaveFromPreview: false,

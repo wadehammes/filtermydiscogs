@@ -20,6 +20,24 @@ describe("CollectionCommandPalette", () => {
     expect(screen.getByTestId(po.testId)).toBeInTheDocument();
   });
 
+  it("runs interpret when an example prompt is chosen", async () => {
+    const user = userEvent.setup();
+    const runInterpretForPrompt = jest.fn();
+    const examplePrompt = "Show me House AND Disco releases from the 2010s";
+
+    po.withHookReturn(
+      useCollectionCommandPaletteReturnFactory.open({
+        examplePrompts: [examplePrompt],
+        runInterpretForPrompt,
+      }),
+    ).renderCollectionCommandPalette();
+
+    await user.click(screen.getByRole("button", { name: examplePrompt }));
+
+    expect(runInterpretForPrompt).toHaveBeenCalledTimes(1);
+    expect(runInterpretForPrompt).toHaveBeenCalledWith(examplePrompt);
+  });
+
   it("shows example prompts when history is empty", () => {
     const examplePrompts = [
       "Save a view for Techno Vinyl",

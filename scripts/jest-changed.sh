@@ -115,12 +115,14 @@ if [ "${#jest_targets[@]}" -eq 0 ] && [ "${#find_related[@]}" -eq 0 ]; then
   exit 0
 fi
 
-for target in "${jest_targets[@]}"; do
-  if [ ! -f "$ROOT/$target" ]; then
-    echo "jest-changed: missing test file ${target} (finish git switch/checkout or restore the file)." >&2
-    exit 1
-  fi
-done
+if [ "${#jest_targets[@]}" -gt 0 ]; then
+  for target in "${jest_targets[@]}"; do
+    if [ ! -f "$ROOT/$target" ]; then
+      echo "jest-changed: missing test file ${target} (finish git switch/checkout or restore the file)." >&2
+      exit 1
+    fi
+  done
+fi
 
 jest_args=(--runInBand --detectOpenHandles --passWithNoTests)
 

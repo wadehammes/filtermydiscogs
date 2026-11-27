@@ -31,6 +31,7 @@ export const WhatsNewModal = ({ isOpen, onClose }: WhatsNewModalProps) => {
 
   return (
     <ScrollModal
+      abovePlaybackDock
       ariaLabelledBy={titleId}
       contentClassName={styles.content}
       isOpen={isOpen}

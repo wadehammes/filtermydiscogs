@@ -71,15 +71,80 @@ describe("buildCollectionCommandExamplePrompts", () => {
     });
 
     expect(prompts.length).toBe(3);
-    expect(prompts[0]).toMatch(/Jazz|Soul/i);
-    expect(prompts[0]).toMatch(/Show .+ on Vinyl/);
+    expect(prompts[0]).toMatch(/Show me .+ AND .+ releases from the \d{4}s/i);
     expect(prompts[1]).toMatch(/Save a view for/i);
-    expect(prompts[2]).toMatch(/Create a crate of/i);
+    expect(prompts[2]).toMatch(/Create a crate from|Crate /i);
     for (const prompt of prompts) {
       expect(prompt.length).toBeLessThanOrEqual(
         COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH,
       );
     }
+    expect(new Set(prompts).size).toBe(3);
+  });
+
+  it("varies idle examples when shuffleSeed changes", () => {
+    const facetOptions = {
+      availableStyles: ["Jazz", "Soul", "Funk", "Disco"],
+      availableYears: [1985, 1987, 1988, 1992],
+      availableFormats: ["Vinyl", "CD"],
+    };
+
+    const first = buildCollectionCommandExamplePrompts({
+      filters: baseFilters(),
+      facetOptions,
+      shuffleSeed: 1,
+    });
+    const second = buildCollectionCommandExamplePrompts({
+      filters: baseFilters(),
+      facetOptions,
+      shuffleSeed: 42,
+    });
+
+    expect(first.join("|||")).not.toBe(second.join("|||"));
+  });
+
+  it("uses a different style in each idle example when the collection supports it", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: {
+          styles: ["House"],
+          formats: [{ name: "Vinyl", qty: "1" }],
+        },
+      }),
+      releaseFactory.build({
+        basic_information: {
+          styles: ["Techno"],
+          formats: [{ name: "Vinyl", qty: "1" }],
+        },
+      }),
+      releaseFactory.build({
+        basic_information: {
+          styles: ["Deep House"],
+          year: 2019,
+          formats: [{ name: "Vinyl", qty: "1" }],
+        },
+      }),
+    ];
+
+    const prompts = buildCollectionCommandExamplePrompts({
+      filters: baseFilters(),
+      facetOptions: {
+        availableStyles: ["House", "Techno", "Deep House", "Ambient"],
+        availableYears: [2018, 2019, 2020],
+        availableFormats: ["Vinyl"],
+      },
+      releases,
+      shuffleSeed: 5,
+    });
+
+    const mentionedStyles = ["House", "Techno", "Deep House", "Ambient"].filter(
+      (style) => prompts.some((prompt) => prompt.includes(style)),
+    );
+
+    expect(mentionedStyles.length).toBeGreaterThanOrEqual(3);
+    expect(prompts[0]).toMatch(
+      /Show me .+ AND .+ releases from the 20(10|18|19|20)s/i,
+    );
     expect(new Set(prompts).size).toBe(3);
   });
 
@@ -159,8 +224,8 @@ describe("buildCollectionCommandExamplePrompts", () => {
       releases,
     });
 
+    expect(prompts.every((prompt) => !/Abstract/i.test(prompt))).toBe(true);
     expect(prompts.some((prompt) => /Techno/i.test(prompt))).toBe(true);
-    expect(prompts.some((prompt) => /Abstract/i.test(prompt))).toBe(false);
   });
 
   it("falls back when facets and filters are empty", () => {

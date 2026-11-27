@@ -48,13 +48,8 @@ describe("EmailAccountCaptureToast", () => {
       expect(screen.getByText("Add an email address")).toBeInTheDocument();
     });
 
-    const dismissButton = document.querySelector<HTMLButtonElement>(
-      'button.toastHeaderButton[aria-label="Dismiss notification"]',
-    );
-    expect(dismissButton).not.toBeNull();
-
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
-    await user.click(dismissButton!);
+    await user.click(screen.getByLabelText("Dismiss notification"));
 
     expect(
       localStorage.getItem(buildEmailAccountToastDismissedStorageKey(userId)),

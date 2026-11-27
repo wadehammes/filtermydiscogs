@@ -42,6 +42,7 @@ export const CollectionCommandPalette = () => {
     preview,
     previewIntent,
     runInterpret,
+    runInterpretForPrompt,
     applyPreviewFilters,
     saveFilterViewFromPreview,
     canSaveFromPreview,
@@ -49,7 +50,6 @@ export const CollectionCommandPalette = () => {
     canCreateCrateFromPreview,
     isCreatingCrateFromPreview,
     preferCreateCrateAction,
-    shortcut,
     examplePrompts,
     startOver,
   } = useCollectionCommandPalette();
@@ -77,6 +77,7 @@ export const CollectionCommandPalette = () => {
         preview={preview}
         previewIntent={previewIntent}
         runInterpret={runInterpret}
+        runInterpretForPrompt={runInterpretForPrompt}
         applyPreviewFilters={applyPreviewFilters}
         saveFilterViewFromPreview={saveFilterViewFromPreview}
         canSaveFromPreview={canSaveFromPreview}
@@ -84,7 +85,6 @@ export const CollectionCommandPalette = () => {
         canCreateCrateFromPreview={canCreateCrateFromPreview}
         isCreatingCrateFromPreview={isCreatingCrateFromPreview}
         preferCreateCrateAction={preferCreateCrateAction}
-        shortcut={shortcut}
         examplePrompts={examplePrompts}
         closePalette={closePalette}
         startOver={startOver}
@@ -111,6 +111,7 @@ type CollectionCommandPanelProps = {
     typeof useCollectionCommandPalette
   >["previewIntent"];
   runInterpret: () => void;
+  runInterpretForPrompt: (prompt: string) => void;
   applyPreviewFilters: () => void;
   saveFilterViewFromPreview: () => void;
   canSaveFromPreview: boolean;
@@ -118,7 +119,6 @@ type CollectionCommandPanelProps = {
   canCreateCrateFromPreview: boolean;
   isCreatingCrateFromPreview: boolean;
   preferCreateCrateAction: boolean;
-  shortcut: string;
   examplePrompts: string[];
   closePalette: () => void;
   startOver: () => void;
@@ -134,6 +134,7 @@ const CollectionCommandPanel = ({
   preview,
   previewIntent,
   runInterpret,
+  runInterpretForPrompt,
   applyPreviewFilters,
   saveFilterViewFromPreview,
   canSaveFromPreview,
@@ -141,7 +142,6 @@ const CollectionCommandPanel = ({
   canCreateCrateFromPreview,
   isCreatingCrateFromPreview,
   preferCreateCrateAction,
-  shortcut,
   examplePrompts,
   closePalette,
   startOver,
@@ -402,9 +402,8 @@ const CollectionCommandPanel = ({
                         styles.recentRow,
                       )}
                       onPress={() => {
-                        setQuery(prompt);
+                        runInterpretForPrompt(prompt);
                         setHighlightedValue("");
-                        commandInputRef.current?.focus();
                       }}
                     >
                       <SparklesThinIcon

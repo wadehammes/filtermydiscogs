@@ -149,6 +149,56 @@ describe("useCollectionCommandPalette", () => {
     });
   });
 
+  it("when openPalette is called, surfaces complex multi-style example prompts", () => {
+    mockAllReleases = [];
+    mockFacetOptions = {
+      availableStyles: ["House", "Disco", "Techno", "Soul"],
+      availableYears: [2012, 2014, 2016],
+      availableFormats: ["Vinyl", "CD"],
+    };
+
+    const { result } = renderPaletteHook();
+
+    act(() => {
+      result.current.openPalette();
+    });
+
+    expect(result.current.examplePrompts).toHaveLength(3);
+    expect(result.current.examplePrompts[0]).toMatch(
+      /Show me .+ AND .+ releases from the \d{4}s/i,
+    );
+  });
+
+  it("when runInterpretForPrompt is called, sets query and calls interpret API", async () => {
+    const intent = collectionCommandIntentFactory.withStyles([
+      "House",
+      "Disco",
+    ]);
+    mockApiResponse(
+      true,
+      mockApi.interpretCollectionCommand,
+      { intent },
+      new Error("interpret failed"),
+    );
+
+    const { result } = renderPaletteHook();
+
+    act(() => {
+      result.current.runInterpretForPrompt(
+        "  Show me House AND Disco releases from the 2010s  ",
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockApi.interpretCollectionCommand).toHaveBeenCalledWith(
+        "Show me House AND Disco releases from the 2010s",
+      );
+      expect(result.current.query).toBe(
+        "Show me House AND Disco releases from the 2010s",
+      );
+    });
+  });
+
   it("when runInterpret succeeds, calls the interpret API with a trimmed prompt", async () => {
     const intent = collectionCommandIntentFactory.withStyles(["Techno"]);
     mockApiResponse(
