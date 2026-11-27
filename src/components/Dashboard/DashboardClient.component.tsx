@@ -13,6 +13,7 @@ import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClic
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
+import { usePaintDeferredMount } from "src/hooks/usePaintDeferredMount.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { useRedirectIfUnauthenticated } from "src/hooks/useRedirectIfUnauthenticated.hook";
@@ -104,6 +105,10 @@ function DashboardClientContent() {
     });
   }, [valueError]);
 
+  const dashboardContentReady =
+    !fetchingCollection && analytics !== null && story !== null;
+  const mountBelowFold = usePaintDeferredMount(dashboardContentReady);
+
   if (shouldRedirectHome) {
     return null;
   }
@@ -147,7 +152,7 @@ function DashboardClientContent() {
             />
           )}
 
-          {!fetchingCollection && analytics && story && (
+          {dashboardContentReady && story && analytics && (
             <div className={styles.content}>
               <DashboardHero
                 story={story}
@@ -179,85 +184,91 @@ function DashboardClientContent() {
                 </DashboardSection>
               </div>
 
-              <DashboardSection
-                lede={story.sections.growth.lede}
-                title={story.sections.growth.title}
-              >
-                <CollectionRhythm
-                  acquisitionStreaks={analytics.acquisitionStreaks}
-                />
-                <DashboardGrowthChartLazy
-                  growthData={analytics.growth}
-                  hideHeading={true}
-                />
-              </DashboardSection>
+              <div className={styles.belowFold} aria-busy={!mountBelowFold}>
+                {mountBelowFold && (
+                  <>
+                                  <DashboardSection
+                                    lede={story.sections.growth.lede}
+                                    title={story.sections.growth.title}
+                                  >
+                                    <CollectionRhythm
+                                      acquisitionStreaks={analytics.acquisitionStreaks}
+                                    />
+                                    <DashboardGrowthChartLazy
+                                      growthData={analytics.growth}
+                                      hideHeading={true}
+                                    />
+                                  </DashboardSection>
 
-              <DashboardSection
-                lede={story.sections.sound.lede}
-                title={story.sections.sound.title}
-              >
-                <DashboardDistributionChartsLazy
-                  styleDistribution={analytics.styleDistribution}
-                  genreDistribution={analytics.genreDistribution}
-                  decadeDistribution={analytics.decadeDistribution}
-                  mediaTypeDistribution={analytics.mediaTypeDistribution}
-                  formatTagDistribution={analytics.formatTagDistribution}
-                />
-                <DashboardComparativeGrowthChartsLazy hideHeading={true} />
-                <StyleEvolution
-                  hideHeading={true}
-                  sectionCopy={story.sections.styleEvolution}
-                />
-              </DashboardSection>
+                                  <DashboardSection
+                                    lede={story.sections.sound.lede}
+                                    title={story.sections.sound.title}
+                                  >
+                                    <DashboardDistributionChartsLazy
+                                      styleDistribution={analytics.styleDistribution}
+                                      genreDistribution={analytics.genreDistribution}
+                                      decadeDistribution={analytics.decadeDistribution}
+                                      mediaTypeDistribution={analytics.mediaTypeDistribution}
+                                      formatTagDistribution={analytics.formatTagDistribution}
+                                    />
+                                    <DashboardComparativeGrowthChartsLazy hideHeading={true} />
+                                    <StyleEvolution
+                                      hideHeading={true}
+                                      sectionCopy={story.sections.styleEvolution}
+                                    />
+                                  </DashboardSection>
 
-              <DashboardSection
-                lede={story.sections.playback.lede}
-                title={story.sections.playback.title}
-              >
-                <TopTracks onReleaseClick={handleReleaseClick} />
-              </DashboardSection>
+                                  <DashboardSection
+                                    lede={story.sections.playback.lede}
+                                    title={story.sections.playback.title}
+                                  >
+                                    <TopTracks onReleaseClick={handleReleaseClick} />
+                                  </DashboardSection>
 
-              <DashboardSection
-                lede={story.sections.names.lede}
-                title={story.sections.names.title}
-              >
-                <DashboardArtistLabelChartsLazy
-                  artistDistribution={analytics.artistDistribution}
-                  labelDistribution={analytics.labelDistribution}
-                />
-              </DashboardSection>
+                                  <DashboardSection
+                                    lede={story.sections.names.lede}
+                                    title={story.sections.names.title}
+                                  >
+                                    <DashboardArtistLabelChartsLazy
+                                      artistDistribution={analytics.artistDistribution}
+                                      labelDistribution={analytics.labelDistribution}
+                                    />
+                                  </DashboardSection>
 
-              <DashboardSection
-                lede={story.sections.markers.lede}
-                title={story.sections.markers.title}
-              >
-                <CollectionMilestones
-                  hideHeading={true}
-                  onReleaseClick={handleReleaseClick}
-                />
-              </DashboardSection>
+                                  <DashboardSection
+                                    lede={story.sections.markers.lede}
+                                    title={story.sections.markers.title}
+                                  >
+                                    <CollectionMilestones
+                                      hideHeading={true}
+                                      onReleaseClick={handleReleaseClick}
+                                    />
+                                  </DashboardSection>
 
-              <div className={styles.storyPair}>
-                <DashboardSection
-                  lede={story.sections.share.lede}
-                  title={story.sections.share.title}
-                >
-                  <MostCrated
-                    hideHeading={true}
-                    onReleaseClick={handleReleaseClick}
-                  />
-                </DashboardSection>
+                                  <div className={styles.storyPair}>
+                                    <DashboardSection
+                                      lede={story.sections.share.lede}
+                                      title={story.sections.share.title}
+                                    >
+                                      <MostCrated
+                                        hideHeading={true}
+                                        onReleaseClick={handleReleaseClick}
+                                      />
+                                    </DashboardSection>
 
-                <DashboardSection
-                  lede={story.sections.upkeep.lede}
-                  title={story.sections.upkeep.title}
-                >
-                  <CollectionHealth
-                    health={analytics.health}
-                    hideHeading={true}
-                    onReleaseClick={handleReleaseClick}
-                  />
-                </DashboardSection>
+                                    <DashboardSection
+                                      lede={story.sections.upkeep.lede}
+                                      title={story.sections.upkeep.title}
+                                    >
+                                      <CollectionHealth
+                                        health={analytics.health}
+                                        hideHeading={true}
+                                        onReleaseClick={handleReleaseClick}
+                                      />
+                                    </DashboardSection>
+                                  </div>
+                  </>
+                )}
               </div>
             </div>
           )}

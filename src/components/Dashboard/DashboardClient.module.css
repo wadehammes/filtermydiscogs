@@ -32,6 +32,14 @@
   }
 }
 
+.belowFold {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-height: 0;
+  width: 100%;
+}
+
 .statsGrid {
   display: grid;
   gap: var(--space-4);
