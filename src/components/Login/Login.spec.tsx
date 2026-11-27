@@ -25,7 +25,7 @@ import {
   SITE_TAGLINE,
 } from "src/constants/siteMetadata";
 import { testUnauthenticatedAuthState } from "src/tests/utils/testAuthStates";
-import { screen } from "test-utils";
+import { screen, waitFor } from "test-utils";
 
 let po: LoginPageObject;
 
@@ -72,7 +72,7 @@ describe("Login", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the preview demo and hero content", () => {
+  it("renders the preview demo and hero content", async () => {
     po.renderLogin();
 
     expect(screen.getByTestId("fmdLoginPreviewDemo")).toBeInTheDocument();
@@ -84,10 +84,12 @@ describe("Login", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(SITE_LEAD)).toBeInTheDocument();
     expect(screen.getByLabelText(LOGIN_PREVIEW_ALT)).toBeInTheDocument();
-    expect(screen.getByTestId("mockYoutubeVideo")).toHaveAttribute(
-      "data-src",
-      LOGIN_PREVIEW_VIDEO_URL,
-    );
+    await waitFor(() => {
+      expect(screen.getByTestId("mockYoutubeVideo")).toHaveAttribute(
+        "data-src",
+        LOGIN_PREVIEW_VIDEO_URL,
+      );
+    });
     expect(
       screen.getByRole("link", {
         name: LOGIN_PAGE_UI_COPY.publicShareTeaserPlaylistLinkLabel,

@@ -70,6 +70,57 @@ export const clearDiscogsSessionCookie = (response: NextResponse): void => {
   });
 };
 
+export const applyInvalidDiscogsSessionCookies = (
+  response: NextResponse,
+  request: NextRequest,
+): void => {
+  const accessToken = request.cookies.get("discogs_access_token")?.value;
+  const accessTokenSecret = request.cookies.get(
+    "discogs_access_token_secret",
+  )?.value;
+
+  if (accessToken && accessTokenSecret) {
+    clearVerifiedIdentityCache(accessToken, accessTokenSecret);
+  }
+
+  const reconnectUsername = request.cookies.get("discogs_username")?.value;
+  const secureFlag = getSecureCookieFlag();
+
+  const clearHttpOnlyCookieOptions = {
+    httpOnly: true,
+    secure: secureFlag,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 0,
+  };
+
+  const clearDisplayCookieOptions = {
+    httpOnly: false,
+    secure: secureFlag,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 0,
+  };
+
+  response.cookies.set("discogs_username", "", clearDisplayCookieOptions);
+  response.cookies.set("discogs_user_id", "", clearHttpOnlyCookieOptions);
+  response.cookies.set("oauth_token", "", clearHttpOnlyCookieOptions);
+  response.cookies.set("oauth_token_secret", "", clearHttpOnlyCookieOptions);
+  response.cookies.set("discogs_access_token", "", clearHttpOnlyCookieOptions);
+  response.cookies.set(
+    "discogs_access_token_secret",
+    "",
+    clearHttpOnlyCookieOptions,
+  );
+  clearDiscogsSessionCookie(response);
+
+  if (reconnectUsername) {
+    setReconnectUsernameCookie(response, reconnectUsername);
+  } else {
+    clearReconnectUsernameCookie(response);
+  }
+};
+
 function getDiscogsRateLimitResponse(): NextResponse {
   return privateRouteJson(
     { error: "Discogs rate limit exceeded. Please try again shortly." },
@@ -267,13 +318,6 @@ async function getVerifiedUserFromOAuthCookies(
     };
   }
 
-  if (allowStale && hasActiveDiscogsSession(request)) {
-    const sessionIdentity = getDisplayIdentityFromCookies(request);
-    if (sessionIdentity) {
-      return { user: sessionIdentity };
-    }
-  }
-
   try {
     const user = await fetchVerifiedIdentity(
       accessToken,
@@ -323,9 +367,14 @@ async function getVerifiedUserFromOAuthCookies(
       return { error: getDiscogsUnavailableResponse() };
     }
 
-    return {
-      error: privateRouteJson({ error: "Unauthorized" }, { status: 401 }),
-    };
+    const unauthorized = privateRouteJson(
+      { error: "Unauthorized" },
+      { status: 401 },
+    );
+    if (isInvalidToken) {
+      applyInvalidDiscogsSessionCookies(unauthorized, request);
+    }
+    return { error: unauthorized };
   }
 }
 

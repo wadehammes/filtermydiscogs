@@ -21,6 +21,7 @@ const dmSans = DM_Sans({
   display: "swap",
   variable: "--font-dm-sans",
   preload: true,
+  adjustFontFallback: true,
 });
 
 const jetbrainsMono = JetBrains_Mono({

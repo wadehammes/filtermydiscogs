@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { logSanitizedApiRouteFailure } from "src/lib/api-helpers";
 import {
+  applyInvalidDiscogsSessionCookies,
   getDisplayIdentityFromCookies,
   getStoredReconnectUsername,
   getVerifiedUserFromRequest,
@@ -96,10 +97,16 @@ export async function GET(request: NextRequest) {
 
       const reconnectUsername = await resolveReconnectUsername(request);
 
-      return authCheckResponse({
+      const response = authCheckResponse({
         isAuthenticated: false,
         reconnectUsername,
       });
+
+      if (verified.error.status === 401) {
+        applyInvalidDiscogsSessionCookies(response, request);
+      }
+
+      return response;
     }
 
     const [showSupportProjectToast, avatarUrl] = await Promise.all([

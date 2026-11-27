@@ -29,6 +29,8 @@ export class MosaicItemPageObject extends ReleaseOpenPrefetchPageObject {
         release={release}
         totalReleases={totalReleases}
         onReleaseClick={onReleaseClick}
+        gridColumn={1}
+        gridRow={1}
       />
     );
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import classNames from "classnames";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   LOGIN_PREVIEW_VIDEO_ASPECT_RATIO,
   LOGIN_PREVIEW_VIDEO_URL,
@@ -10,6 +10,7 @@ import {
 } from "src/constants/loginPreviewMedia";
 import { LOGIN_PREVIEW_ALT } from "src/constants/siteMetadata";
 import FMDIcon from "src/styles/icons/fmd-icon.svg";
+import { scheduleIdleWork } from "src/utils/scheduleIdleWork";
 import YouTubeVideo from "youtube-video-element/react";
 import styles from "./LoginPreviewDemo.module.css";
 
@@ -18,7 +19,14 @@ type LoginPreviewDemoProps = {
 };
 
 export const LoginPreviewDemo = ({ className }: LoginPreviewDemoProps) => {
+  const [mountPlayer, setMountPlayer] = useState(false);
   const previewPlayerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    scheduleIdleWork(() => {
+      setMountPlayer(true);
+    });
+  }, []);
 
   const requestHd1080 = useCallback(() => {
     requestLoginPreviewHd1080(previewPlayerRef.current);
@@ -60,18 +68,20 @@ export const LoginPreviewDemo = ({ className }: LoginPreviewDemoProps) => {
           className={styles.viewport}
           style={{ aspectRatio: LOGIN_PREVIEW_VIDEO_ASPECT_RATIO }}
         >
-          <YouTubeVideo
-            ref={setPreviewPlayerRef}
-            className={styles.previewPlayer}
-            config={LOGIN_PREVIEW_YOUTUBE_PLAYER_CONFIG}
-            controls
-            loop
-            muted
-            onPlay={requestHd1080}
-            playsInline
-            autoplay
-            src={LOGIN_PREVIEW_VIDEO_URL}
-          />
+          {mountPlayer ? (
+            <YouTubeVideo
+              ref={setPreviewPlayerRef}
+              className={styles.previewPlayer}
+              config={LOGIN_PREVIEW_YOUTUBE_PLAYER_CONFIG}
+              controls
+              loop
+              muted
+              onPlay={requestHd1080}
+              playsInline
+              autoplay
+              src={LOGIN_PREVIEW_VIDEO_URL}
+            />
+          ) : null}
           <div aria-hidden="true" className={styles.brandMark}>
             <FMDIcon className={styles.brandIcon} />
           </div>
