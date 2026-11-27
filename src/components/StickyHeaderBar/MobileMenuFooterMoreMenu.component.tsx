@@ -4,23 +4,22 @@ import { Menu } from "@base-ui/react/menu";
 import Link from "next/link";
 import { DrawerFooterMoreMenu } from "src/components/DrawerFooterMoreMenu/DrawerFooterMoreMenu.component";
 import { inlinePopoverMenuStyles } from "src/components/InlinePopoverMenu/InlinePopoverMenu.component";
-import { InlinePopoverMenuItemIcon } from "src/components/InlinePopoverMenu/InlinePopoverMenuItemIcon.component";
 import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/SupportProjectNavLink.component";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { WHATS_NEW_NAV_LABEL } from "src/constants/whatsNew.constants";
 import { useInlinePopoverMenuClose } from "src/hooks/useInlinePopoverMenuClose.hook";
-import HeartIcon from "src/styles/icons/heart-thin.svg";
-import InfoCircleIcon from "src/styles/icons/info-circle-thin.svg";
 import { definedProps } from "src/utils/definedProps";
 import { openWhatsNewDialog } from "src/utils/whatsNewDialogBridge";
 
 type MobileMenuFooterMoreMenuProps = {
+  onLogout: () => void;
   onNavigate: () => void;
   triggerClassName?: string;
   triggerIconClassName?: string;
 };
 
 export const MobileMenuFooterMoreMenu = ({
+  onLogout,
   onNavigate,
   triggerClassName,
   triggerIconClassName,
@@ -48,9 +47,6 @@ export const MobileMenuFooterMoreMenu = ({
           runAction(onNavigate);
         }}
       >
-        <InlinePopoverMenuItemIcon>
-          <InfoCircleIcon />
-        </InlinePopoverMenuItemIcon>
         About
       </Menu.LinkItem>
       <Menu.Item
@@ -75,11 +71,16 @@ export const MobileMenuFooterMoreMenu = ({
         }
         className={inlinePopoverMenuStyles.item}
       >
-        <InlinePopoverMenuItemIcon>
-          <HeartIcon />
-        </InlinePopoverMenuItemIcon>
         {SUPPORT_PROJECT_NAV_LABEL}
       </Menu.LinkItem>
+      <Menu.Item
+        className={inlinePopoverMenuStyles.itemDanger}
+        onClick={() => {
+          runAction(onLogout);
+        }}
+      >
+        Logout
+      </Menu.Item>
     </DrawerFooterMoreMenu>
   );
 };

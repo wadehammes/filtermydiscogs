@@ -97,7 +97,7 @@
   border: none;
   color: var(--foreground);
   flex: 1;
-  font-size: 1rem;
+  font-size: 16px;
   min-width: 0;
   outline: none;
   padding: 0;

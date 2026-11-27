@@ -35,12 +35,3 @@
     width: 100%;
   }
 }
-
-.logoutSegment {
-  color: var(--destructive);
-
-  &:hover {
-    background: color-mix(in srgb, var(--destructive) 12%, var(--background));
-    color: var(--destructive);
-  }
-}
