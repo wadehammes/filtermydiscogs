@@ -22,6 +22,7 @@ export const ReleaseSummaryHeroToolbar = ({
     <ModalToolbar {...definedProps({ onClose })}>
       <ReleaseCrateMenu
         release={release}
+        portaled
         triggerVariant="custom"
         actionClass={(active) =>
           classNames(modalToolbarStyles.actionButton, {
