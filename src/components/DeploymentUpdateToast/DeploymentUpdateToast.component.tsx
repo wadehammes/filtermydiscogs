@@ -12,6 +12,7 @@ import {
   isNewerBuildAvailable,
   shouldCheckForDeploymentUpdates,
 } from "src/utils/appBuildVersion";
+import { navigateToSamePageWithWhatsNewQuery } from "src/utils/whatsNewOpenFromQuery";
 
 export const DeploymentUpdateToast = () => {
   const mountedVersionRef = useRef(getClientAppBuildVersion());
@@ -32,7 +33,8 @@ export const DeploymentUpdateToast = () => {
     setUpdateDetected(true);
     showDeploymentUpdateToast({
       onRefresh: () => {
-        window.location.reload();
+        dismissDeploymentUpdateToast();
+        navigateToSamePageWithWhatsNewQuery();
       },
       onDismiss: () => {
         dismissDeploymentUpdateToast();

@@ -1,4 +1,5 @@
 import { ABOUT_DONATION_BODY } from "src/constants/about.constants";
+import { DEFAULT_COLLECTION_COMMAND_SHORTCUT } from "src/constants/collectionCommand.constants";
 import {
   COOKIE_CONSENT_DESCRIPTION,
   COOKIE_CONSENT_TITLE,
@@ -54,6 +55,14 @@ import {
   SUPPORT_PROJECT_TOAST_DESCRIPTION,
 } from "src/constants/supportProjectToast.constants";
 import { welcomeSignupEmailCopy } from "src/constants/welcomeSignupEmailCopy.constants";
+import {
+  resolveWhatsNewBulletText,
+  WHATS_NEW_MODAL_TITLE,
+  WHATS_NEW_NAV_LABEL,
+  WHATS_NEW_OTHER_IMPROVEMENTS,
+  WHATS_NEW_RELEASES,
+} from "src/constants/whatsNew.constants";
+import { formatShortcutForDisplay } from "src/utils/keyboardShortcut";
 
 export type UserFacingCopyEntry = LoginPageCopyEntry;
 
@@ -115,6 +124,31 @@ export const getUserFacingCopyEntries = (
       text: EMAIL_ACCOUNT_CAPTURE_TOAST_ACTION_LABEL,
       source: "emailAccountToast.constants.ts",
     },
+    {
+      id: "whatsNew.navLabel",
+      text: WHATS_NEW_NAV_LABEL,
+      source: "whatsNew.constants.ts",
+    },
+    {
+      id: "whatsNew.modalTitle",
+      text: WHATS_NEW_MODAL_TITLE,
+      source: "whatsNew.constants.ts",
+    },
+    {
+      id: "whatsNew.otherImprovements",
+      text: WHATS_NEW_OTHER_IMPROVEMENTS,
+      source: "whatsNew.constants.ts",
+    },
+    ...WHATS_NEW_RELEASES.flatMap((release) =>
+      release.highlights.map((bullet) => ({
+        id: `whatsNew.bullet.${bullet.id}`,
+        text: resolveWhatsNewBulletText(
+          bullet,
+          formatShortcutForDisplay(DEFAULT_COLLECTION_COMMAND_SHORTCUT),
+        ),
+        source: "whatsNew.constants.ts",
+      })),
+    ),
     {
       id: "about.donationBody",
       text: ABOUT_DONATION_BODY,
@@ -251,6 +285,7 @@ export const USER_FACING_COPY_SOURCE_FILES = [
   "src/constants/publicReleaseListen.constants.ts",
   "src/constants/playlistPlaybackCopy.constants.ts",
   "src/constants/releaseSimilarSidebar.constants.ts",
+  "src/constants/whatsNew.constants.ts",
   "src/components/ReleaseSimilarSidebar/ReleaseSimilarSidebar.component.tsx",
   "src/components/SupportProjectToast/supportProjectToast.tsx",
   "src/components/About/AboutDonationSection.component.tsx",

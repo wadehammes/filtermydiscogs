@@ -9,11 +9,13 @@ import { SupportProjectNavLink } from "src/components/SupportProjectNavLink/Supp
 import { ThemeSwitcher } from "src/components/ThemeSwitcher/ThemeSwitcher.component";
 import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.constants";
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
+import { WHATS_NEW_NAV_LABEL } from "src/constants/whatsNew.constants";
 import { useAuth } from "src/context/auth.context";
 import { runSubmitBugReport } from "src/lib/sentry/runSubmitBugReport.client";
 import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
 import { ExpandChevronThinIcon } from "src/styles/icons/ExpandChevronThinIcon.component";
 import { buildDiscogsAvatarProxyUrl } from "src/utils/discogsAvatarUrl";
+import { openWhatsNewDialog } from "src/utils/whatsNewDialogBridge";
 import styles from "./UserActions.module.css";
 
 interface UserActionsProps {
@@ -119,6 +121,15 @@ export const UserActions = ({
               >
                 About
               </Menu.LinkItem>
+              <Menu.Item
+                className={inlinePopoverMenuStyles.item}
+                onClick={() => {
+                  handleMenuNavigation();
+                  openWhatsNewDialog();
+                }}
+              >
+                {WHATS_NEW_NAV_LABEL}
+              </Menu.Item>
               {showSubmitBugReport ? (
                 <Menu.Item
                   className={inlinePopoverMenuStyles.item}
