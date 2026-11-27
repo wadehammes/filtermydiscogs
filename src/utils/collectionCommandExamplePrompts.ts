@@ -139,6 +139,97 @@ const pickSecondaryStyle = (facetOptions: FacetOptions): string | null =>
   ) ??
   null;
 
+const hashFacetStyleSampleSeed = (styles: readonly string[]): number => {
+  let hash = 2_166_136_261;
+  for (const style of styles) {
+    for (let index = 0; index < style.length; index += 1) {
+      hash ^= style.charCodeAt(index);
+      hash = Math.imul(hash, 16_777_619);
+    }
+    hash ^= 0;
+    hash = Math.imul(hash, 16_777_619);
+  }
+
+  return hash >>> 0;
+};
+
+const seededShuffle = <T>(items: readonly T[], seed: number): T[] => {
+  const shuffled = [...items];
+  let state = seed;
+
+  const nextUnit = () => {
+    state = Math.imul(1_664_525, state) + 1_013_904_223;
+    return (state >>> 0) / 4_294_967_296;
+  };
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(nextUnit() * (index + 1));
+    const left = shuffled[index];
+    const right = shuffled[swapIndex];
+    if (left !== undefined && right !== undefined) {
+      shuffled[index] = right;
+      shuffled[swapIndex] = left;
+    }
+  }
+
+  return shuffled;
+};
+
+const uniqueFacetStyles = (availableStyles: readonly string[]): string[] => [
+  ...new Set(
+    availableStyles
+      .map((style) => style.trim())
+      .filter((style) => style.length > 0),
+  ),
+];
+
+export const sampleDistinctFacetStyles = (
+  availableStyles: readonly string[],
+  count: number,
+): string[] => {
+  const unique = uniqueFacetStyles(availableStyles);
+  if (unique.length === 0 || count <= 0) {
+    return [];
+  }
+
+  const shuffled = seededShuffle(unique, hashFacetStyleSampleSeed(unique));
+  return shuffled.slice(0, Math.min(count, unique.length));
+};
+
+type IdleExampleStyleSlots = {
+  explorePrimary: string | null;
+  exploreSecondary: string | null;
+  savePrimary: string | null;
+  cratePrimary: string | null;
+};
+
+const pickIdleExampleStyleSlots = (
+  facetOptions: FacetOptions,
+): IdleExampleStyleSlots => {
+  const samples = sampleDistinctFacetStyles(facetOptions.availableStyles, 4);
+  const explorePrimary = samples[0] ?? null;
+  const exploreSecondary = samples[1] ?? explorePrimary;
+  const savePrimary = samples[2] ?? samples[1] ?? explorePrimary;
+  let cratePrimary = samples[3] ?? samples[2] ?? samples[1] ?? explorePrimary;
+
+  if (
+    savePrimary !== null &&
+    cratePrimary !== null &&
+    savePrimary === cratePrimary &&
+    samples[1] !== undefined &&
+    samples[1] !== savePrimary
+  ) {
+    cratePrimary = samples[1];
+  }
+
+  return {
+    explorePrimary,
+    exploreSecondary,
+    savePrimary,
+    cratePrimary,
+  };
+};
+
 const exampleShelfName = (filters: PersistedFiltersJson): string =>
   buildCollectionCommandViewNameFromFilters({ filters }) ?? "This shelf";
 
@@ -222,9 +313,15 @@ const buildCratePrompt = (
   return `Create a crate from everything in this filter (${descriptor}) and name it "${name}"`;
 };
 
-const buildExplorePrompt = (facetOptions: FacetOptions): string | null => {
-  const leadStyle = facetOptions.availableStyles[0];
-  const secondaryStyle = pickSecondaryStyle(facetOptions);
+const buildExplorePrompt = (
+  facetOptions: FacetOptions,
+  styles: IdleExampleStyleSlots,
+): string | null => {
+  const leadStyle = styles.explorePrimary;
+  const secondaryStyle =
+    styles.exploreSecondary !== styles.explorePrimary
+      ? styles.exploreSecondary
+      : null;
   const leadFormat = pickLeadFormat(facetOptions);
   const decade = pickDominantDecadeLabel(facetOptions.availableYears);
 
@@ -247,8 +344,11 @@ const buildExplorePrompt = (facetOptions: FacetOptions): string | null => {
   return null;
 };
 
-const buildIdleSaveViewPrompt = (facetOptions: FacetOptions): string | null => {
-  const leadStyle = facetOptions.availableStyles[0];
+const buildIdleSaveViewPrompt = (
+  facetOptions: FacetOptions,
+  styles: IdleExampleStyleSlots,
+): string | null => {
+  const leadStyle = styles.savePrimary;
   const leadFormat = pickLeadFormat(facetOptions);
   const decade = pickDominantDecadeLabel(facetOptions.availableYears);
 
@@ -264,8 +364,11 @@ const buildIdleSaveViewPrompt = (facetOptions: FacetOptions): string | null => {
   return null;
 };
 
-const buildIdleCratePrompt = (facetOptions: FacetOptions): string | null => {
-  const leadStyle = facetOptions.availableStyles[0];
+const buildIdleCratePrompt = (
+  facetOptions: FacetOptions,
+  styles: IdleExampleStyleSlots,
+): string | null => {
+  const leadStyle = styles.cratePrimary;
   const leadFormat = pickLeadFormat(facetOptions);
 
   if (leadStyle && leadFormat) {
@@ -298,9 +401,10 @@ export const buildCollectionCommandExamplePrompts = ({
     pushUnique(prompts, buildSaveViewPrompt(filters, descriptor));
     pushUnique(prompts, buildCratePrompt(filters, descriptor));
   } else {
-    pushUnique(prompts, buildExplorePrompt(facetOptions));
-    pushUnique(prompts, buildIdleSaveViewPrompt(facetOptions));
-    pushUnique(prompts, buildIdleCratePrompt(facetOptions));
+    const idleStyles = pickIdleExampleStyleSlots(facetOptions);
+    pushUnique(prompts, buildExplorePrompt(facetOptions, idleStyles));
+    pushUnique(prompts, buildIdleSaveViewPrompt(facetOptions, idleStyles));
+    pushUnique(prompts, buildIdleCratePrompt(facetOptions, idleStyles));
   }
 
   appendFallbackPrompts(prompts);

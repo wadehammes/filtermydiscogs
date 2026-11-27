@@ -5,7 +5,10 @@ import type {
   FacetOptions,
   PersistedFiltersJson,
 } from "src/types/filters.types";
-import { buildCollectionCommandExamplePrompts } from "src/utils/collectionCommandExamplePrompts";
+import {
+  buildCollectionCommandExamplePrompts,
+  sampleDistinctFacetStyles,
+} from "src/utils/collectionCommandExamplePrompts";
 
 const baseFilters = (): PersistedFiltersJson => ({
   selectedStyles: [],
@@ -64,10 +67,33 @@ describe("buildCollectionCommandExamplePrompts", () => {
     });
 
     expect(prompts.length).toBe(3);
-    expect(prompts[0]).toMatch(/Jazz and Soul on Vinyl from the 80s/i);
+    expect(prompts[0]).toMatch(/Jazz|Soul/i);
+    expect(prompts[0]).toMatch(/on Vinyl from the 80s/i);
     expect(prompts[1]).toMatch(/Save a view named/i);
-    expect(prompts[2]).toMatch(/Make a crate from every Jazz/i);
+    expect(prompts[2]).toMatch(/Make a crate from every|Create a crate/i);
     expect(new Set(prompts).size).toBe(3);
+  });
+
+  it("foregrounds different styles across idle examples when facets allow", () => {
+    const facetOptions = {
+      availableStyles: ["Abstract", "Acid", "Techno", "House"],
+      availableYears: [2012, 2014, 2013],
+      availableFormats: ["Vinyl"],
+    };
+
+    const prompts = buildCollectionCommandExamplePrompts({
+      filters: baseFilters(),
+      facetOptions,
+    });
+
+    const stylesInPrompts = facetOptions.availableStyles.filter((style) =>
+      prompts.some((prompt) => prompt.includes(style)),
+    );
+
+    expect(stylesInPrompts.length).toBeGreaterThanOrEqual(3);
+    expect(sampleDistinctFacetStyles(facetOptions.availableStyles, 3)).toEqual(
+      sampleDistinctFacetStyles(facetOptions.availableStyles, 3),
+    );
   });
 
   it("includes search query in the active refine prompt", () => {
