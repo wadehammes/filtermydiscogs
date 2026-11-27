@@ -4,6 +4,7 @@ import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.fac
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import {
   createFilterView,
+  ensureUniqueFilterViewName,
   filterViewNameExists,
   findMatchingFilterView,
   formatFilterViewSummary,
@@ -174,5 +175,15 @@ describe("filterViews", () => {
     expect(renameFilterView(views, techno.id, "Techno")).toEqual(views);
     expect(renameFilterView(views, "missing-id", "New name")).toBeNull();
     expect(renameFilterView(views, techno.id, "  ")).toBeNull();
+  });
+
+  it("appends a numeric suffix when the view name is already taken", () => {
+    const filters = persistedFiltersFactory.build();
+    const views = [createFilterView("Deep house", filters)];
+
+    expect(ensureUniqueFilterViewName("Deep house", views)).toBe(
+      "Deep house (2)",
+    );
+    expect(ensureUniqueFilterViewName("Fresh name", views)).toBe("Fresh name");
   });
 });

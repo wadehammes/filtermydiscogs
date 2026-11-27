@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { clearSimilarReleasesPageIndexByAnchor } from "src/components/ReleaseModal/useSimilarReleasesPageState.hook";
 import {
   ANALYTICS_CONSENT_STORAGE_KEY,
+  buildCollectionCommandPromptsStorageKey,
   COLLECTION_ITEM_COUNTS_STORAGE_KEY,
   LEGACY_COMMUNITY_RATINGS_STORAGE_KEY,
   PLAYBACK_DOCK_VOLUME_STORAGE_KEY,
@@ -11,6 +12,7 @@ import {
   USERNAME_STORAGE_KEY,
   VIEW_STATE_STORAGE_KEY,
 } from "src/constants/storageKeys";
+import { collectionCommandPromptHistoryFactory } from "src/tests/factories/CollectionCommandPromptHistory.factory";
 import { clearPersistedCollectionCaches } from "src/utils/collectionCacheStorage";
 import { PERSIST_FILTERS_STORAGE_KEY } from "src/utils/filterPersistence";
 import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
@@ -100,5 +102,19 @@ describe("clearClientStoredData", () => {
 
     expect(readLastPlayedPlaylistId("user-a")).toBeNull();
     expect(readLastPlayedPlaylistId("user-b")).toBeNull();
+  });
+
+  it("removes collection command prompt history from localStorage", () => {
+    const userId = "42";
+    collectionCommandPromptHistoryFactory.writeLocalStorage(
+      userId,
+      collectionCommandPromptHistoryFactory.buildList(2),
+    );
+
+    clearClientStoredData();
+
+    expect(
+      localStorage.getItem(buildCollectionCommandPromptsStorageKey(userId)),
+    ).toBeNull();
   });
 });

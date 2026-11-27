@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { DEFAULT_COLLECTION_COMMAND_SHORTCUT } from "src/constants/collectionCommand.constants";
 import {
   type CollectionSidePanelPreference,
   DEFAULT_AUTO_PLAY_ON_QUEUE_ADD,
@@ -37,6 +38,8 @@ export const defaultUserPreferences = (): UserPreferences => ({
   view: defaultViewPreference,
   filters: defaultPersistedFilters,
   filterViews: [],
+  collectionCommandPaletteEnabled: true,
+  collectionCommandPaletteShortcut: DEFAULT_COLLECTION_COMMAND_SHORTCUT,
 });
 
 const isJsonObject = (value: Prisma.JsonValue): value is Prisma.JsonObject =>
@@ -61,6 +64,14 @@ const parseBooleanField = (
   value: Prisma.JsonValue | undefined,
   fallback: boolean,
 ): boolean => (typeof value === "boolean" ? value : fallback);
+
+const parseShortcutField = (
+  value: Prisma.JsonValue | undefined,
+  fallback: string,
+): string =>
+  typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : fallback;
 
 const parseCollectionSidePanelField = (
   value: Prisma.JsonValue | undefined,
@@ -119,6 +130,14 @@ export const parseUserPreferences = (
     view: parseViewPreference(storedPreferences.view ?? null),
     filters: parseStoredFiltersObject(storedPreferences.filters),
     filterViews: parseFilterViews(storedPreferences.filterViews),
+    collectionCommandPaletteEnabled: parseBooleanField(
+      storedPreferences.collectionCommandPaletteEnabled,
+      defaults.collectionCommandPaletteEnabled,
+    ),
+    collectionCommandPaletteShortcut: parseShortcutField(
+      storedPreferences.collectionCommandPaletteShortcut,
+      defaults.collectionCommandPaletteShortcut,
+    ),
     ...(typeof storedPreferences.analyticsConsent === "boolean"
       ? { analyticsConsent: storedPreferences.analyticsConsent }
       : {}),

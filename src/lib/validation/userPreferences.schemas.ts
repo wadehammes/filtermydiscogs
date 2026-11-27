@@ -57,6 +57,15 @@ export const userPreferencesPatchSchema = z
     analyticsConsent: z
       .boolean({ error: "analyticsConsent must be a boolean" })
       .optional(),
+    collectionCommandPaletteEnabled: z
+      .boolean({ error: "collectionCommandPaletteEnabled must be a boolean" })
+      .optional(),
+    collectionCommandPaletteShortcut: z
+      .string()
+      .trim()
+      .min(3)
+      .max(64)
+      .optional(),
   })
   .refine(
     (patch) =>
@@ -69,6 +78,8 @@ export const userPreferencesPatchSchema = z
       patch.view !== undefined ||
       patch.filters !== undefined ||
       patch.filterViews !== undefined ||
+      patch.collectionCommandPaletteEnabled !== undefined ||
+      patch.collectionCommandPaletteShortcut !== undefined ||
       patch.analyticsConsent !== undefined,
     { message: "No supported preference fields to update" },
   );

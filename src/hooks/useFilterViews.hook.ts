@@ -11,8 +11,10 @@ import { useAuth } from "src/context/auth.context";
 import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQuery";
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
+import type { PersistedFiltersJson } from "src/types/filters.types";
 import {
   createFilterView,
+  ensureUniqueFilterViewName,
   type FilterView,
   filterViewNameExists,
   findMatchingFilterView,
@@ -144,6 +146,49 @@ export const useFilterViews = () => {
     ],
   );
 
+  const saveViewFromFilters = useCallback(
+    (name: string, filters: PersistedFiltersJson) => {
+      if (!hasSaveableFilterViewFilters(filters)) {
+        toast.error("Adjust filters before saving a view.");
+        return false;
+      }
+
+      if (findMatchingFilterView(filterViews, filters)) {
+        toast.error("A view with these filters already exists.");
+        return false;
+      }
+
+      if (!canAddView) {
+        toast.error(`You can save up to ${MAX_FILTER_VIEWS} views.`);
+        return false;
+      }
+
+      const viewName = ensureUniqueFilterViewName(name, filterViews);
+
+      if (!isValidFilterViewName(viewName)) {
+        return false;
+      }
+
+      const nextViews = [createFilterView(viewName, filters), ...filterViews];
+
+      persistFilterViews(nextViews, {
+        onSuccess: () => {
+          toast.success(FILTER_VIEW_SAVED_MESSAGE);
+          trackFilterViewSaved(viewName, nextViews.length);
+        },
+        errorMessage: FILTER_VIEW_SAVE_ERROR_MESSAGE,
+      });
+
+      filtersDispatch({
+        type: FiltersActionTypes.ApplySessionFilters,
+        payload: filters,
+      });
+
+      return true;
+    },
+    [canAddView, filterViews, filtersDispatch, persistFilterViews],
+  );
+
   const deleteView = useCallback(
     (viewId: string) => {
       const nextViews = filterViews.filter((view) => view.id !== viewId);
@@ -206,6 +251,7 @@ export const useFilterViews = () => {
     applyView,
     resetFilters,
     saveCurrentView,
+    saveViewFromFilters,
     deleteView,
     renameView,
   };

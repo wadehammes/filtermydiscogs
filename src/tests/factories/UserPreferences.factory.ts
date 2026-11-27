@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { Prisma } from "@prisma/client";
+import { DEFAULT_COLLECTION_COMMAND_SHORTCUT } from "src/constants/collectionCommand.constants";
 import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import type {
@@ -108,6 +109,8 @@ class UserPreferencesFactory extends BaseFactory<
       view,
       filters: persistedFiltersFactory.build(),
       filterViews: [],
+      collectionCommandPaletteEnabled: true,
+      collectionCommandPaletteShortcut: DEFAULT_COLLECTION_COMMAND_SHORTCUT,
       analyticsConsent: faker.datatype.boolean(),
     } satisfies UserPreferences;
 
@@ -136,6 +139,8 @@ class UserPreferencesFactory extends BaseFactory<
       view: { currentView: "card", previousView: "card" },
       filters: persistedFiltersFactory.empty(),
       filterViews: [],
+      collectionCommandPaletteEnabled: true,
+      collectionCommandPaletteShortcut: DEFAULT_COLLECTION_COMMAND_SHORTCUT,
     };
   }
 
