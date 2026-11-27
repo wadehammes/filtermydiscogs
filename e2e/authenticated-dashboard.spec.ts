@@ -1,6 +1,5 @@
 import { HttpResponse, http } from "msw";
 import { DASHBOARD_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
-import { createAuthenticatedE2eHandlers } from "src/tests/msw/createAuthenticatedE2eHandlers";
 import { buildE2eCollectionReleasesWithExactDuplicate } from "src/tests/msw/e2eCollectionData";
 import {
   E2E_ALBUM_ONE,

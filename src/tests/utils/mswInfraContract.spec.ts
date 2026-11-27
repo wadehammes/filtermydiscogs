@@ -32,8 +32,9 @@ describe("mswInfraContract", () => {
     expect(fixture).not.toMatch(
       /handlers:\s*\[createAuthenticatedE2eHandlers\(\)/,
     );
+    expect(fixture).toContain("authenticatedE2eHandlerOptions");
     expect(fixture).toMatch(
-      /handlers:\s*async\s*\([^)]*\)\s*=>\s*\{[\s\S]*createAuthenticatedE2eHandlers\(\)/,
+      /handlers:\s*async\s*\([^)]*\)\s*=>\s*\{[\s\S]*createAuthenticatedE2eHandlers\(authenticatedE2eHandlerOptions\)/,
     );
   });
 
