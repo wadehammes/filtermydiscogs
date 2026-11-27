@@ -47,6 +47,20 @@ export const releaseMatchesYear = (
   return yearOperator === "NONE" ? !matchesAny : matchesAny;
 };
 
+const releaseHasGenreStyleTag = (
+  releaseGenreStyleTags: readonly string[],
+  selectedTag: string,
+): boolean => {
+  const normalizedSelected = selectedTag.trim().toLowerCase();
+  if (!normalizedSelected) {
+    return false;
+  }
+
+  return releaseGenreStyleTags.some(
+    (tag) => tag.trim().toLowerCase() === normalizedSelected,
+  );
+};
+
 export const releaseMatchesStyles = (
   release: DiscogsRelease,
   selectedStyles: readonly string[],
@@ -56,7 +70,7 @@ export const releaseMatchesStyles = (
   ),
 ): boolean =>
   matchSelectedTagsWithOperator(selectedStyles, styleOperator, (tag) =>
-    releaseGenreStyleTags.includes(tag),
+    releaseHasGenreStyleTag(releaseGenreStyleTags, tag),
   );
 
 export const releaseMatchesFormats = (

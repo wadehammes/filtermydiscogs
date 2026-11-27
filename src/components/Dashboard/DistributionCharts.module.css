@@ -53,3 +53,16 @@
   overflow: visible;
   width: 100%;
 }
+
+.barChartWithHint {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+
+  .chartWrapper {
+    margin-bottom: var(--space-2);
+    min-height: 320px;
+  }
+}

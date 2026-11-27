@@ -1,6 +1,6 @@
 "use client";
 
-import type { DomChartDefinition } from "@tanstack/charts";
+import type { ChartPoint, DomChartDefinition } from "@tanstack/charts";
 import { motion } from "@tanstack/charts/motion";
 import {
   type ChartTooltipBodyRenderContext,
@@ -28,6 +28,8 @@ interface TanstackChartProps {
   height?: number;
   className?: string;
   animateOnView?: boolean;
+  onBarLabelSelect?: (label: string) => void;
+  emphasizeCategoryAxisLabels?: boolean;
 }
 
 interface ChartLayoutSize {
@@ -68,6 +70,8 @@ export const TanstackChart = ({
   height,
   className,
   animateOnView = true,
+  onBarLabelSelect,
+  emphasizeCategoryAxisLabels = false,
 }: TanstackChartProps) => {
   const { ref: scrollRevealRef, inView } = useScrollRevealInView({
     skip: !animateOnView,
@@ -164,6 +168,20 @@ export const TanstackChart = ({
   const showChartPlaceholder =
     (animateOnView && !shouldRenderChart) || awaitingMount;
 
+  const handleBarSelect = useCallback(
+    (point: ChartPoint | null) => {
+      if (!(onBarLabelSelect && point?.datum)) {
+        return;
+      }
+
+      const datum = point.datum as { label?: string };
+      if (typeof datum.label === "string" && datum.label.length > 0) {
+        onBarLabelSelect(datum.label);
+      }
+    },
+    [onBarLabelSelect],
+  );
+
   const renderTooltipBody = useCallback(
     ({ content, defaultBody }: ChartTooltipBodyRenderContext) => {
       if (isGrowthTooltipContent(content)) {
@@ -191,19 +209,26 @@ export const TanstackChart = ({
       definition,
       ariaLabel,
       renderer: chartRenderer,
-      className: classNames(styles.chart, className),
+      className: classNames(styles.chart, className, {
+        [styles.chartDrilldown]: onBarLabelSelect !== undefined,
+        [styles.chartBarCategories]: emphasizeCategoryAxisLabels,
+      }),
       renderTooltipBody,
       width: layoutSize.width,
       height: layoutSize.height,
       initialWidth: layoutSize.width,
       ...(ariaDescription ? { ariaDescription } : {}),
+      ...(onBarLabelSelect ? { onSelect: handleBarSelect } : {}),
     };
   }, [
     ariaDescription,
     ariaLabel,
     className,
     definition,
+    handleBarSelect,
     layoutSize,
+    emphasizeCategoryAxisLabels,
+    onBarLabelSelect,
     renderTooltipBody,
   ]);
 

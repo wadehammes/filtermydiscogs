@@ -8,6 +8,7 @@ import {
   calculateFormatTagDistribution,
   calculateGenreDistribution,
   calculateMediaTypeDistribution,
+  calculateStyleDistribution,
   detectDuplicates,
 } from "src/utils/collectionAnalytics";
 
@@ -67,6 +68,32 @@ describe("calculateMediaTypeDistribution", () => {
     expect(result).toEqual([
       { label: "Vinyl", value: 2, count: 2 },
       { label: "CD", value: 1, count: 1 },
+    ]);
+  });
+});
+
+describe("calculateStyleDistribution", () => {
+  it("uses the most common Discogs casing for each style bucket", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({
+          styles: ["Minimal Techno"],
+        }),
+      }),
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({
+          styles: ["Minimal Techno"],
+        }),
+      }),
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({
+          styles: ["minimal techno"],
+        }),
+      }),
+    ];
+
+    expect(calculateStyleDistribution(releases)).toEqual([
+      { label: "Minimal Techno", value: 3, count: 3 },
     ]);
   });
 });
