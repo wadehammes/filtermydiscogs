@@ -1,3 +1,4 @@
+import { ApiFetchError } from "src/api/apiFetchError";
 import { api } from "src/api/urls";
 import { CollectionLoadingToast } from "src/components/CollectionLoadingToast/CollectionLoadingToast.component";
 import DashboardClient from "src/components/Dashboard/DashboardClient.component";
@@ -15,6 +16,7 @@ import { authStatusFactory } from "src/tests/factories/AuthStatus.factory";
 import { authUrlParamsFactory } from "src/tests/factories/AuthUrlParams.factory";
 import { collectionFactory } from "src/tests/factories/Collection.factory";
 import { collectionValueFactory } from "src/tests/factories/CollectionValue.factory";
+import { releaseFactory } from "src/tests/factories/Release.factory";
 import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { setupMockMatchMedia } from "src/tests/mocks/mockMatchMedia.mock";
@@ -76,6 +78,21 @@ const apiError = new Error("API request failed");
 export type DashboardClientRenderOptions = {
   releaseCount?: number;
   paginatedFirstPage?: boolean;
+  exactDuplicatePair?: boolean;
+  collectionValueFails?: boolean;
+};
+
+const buildDuplicatePairReleases = () => {
+  const masterId = 77_007;
+  return [
+    releaseFactory.withDisplayDefaults({
+      basic_information: { master_id: masterId, title: "Twin Pressing" },
+    }),
+    releaseFactory.withDisplayDefaults({
+      basic_information: { master_id: masterId, title: "Twin Pressing B" },
+    }),
+    releaseFactory.withDisplayDefaults(),
+  ];
 };
 
 export class DashboardClientPageObject extends BasePageObject {
@@ -92,12 +109,21 @@ export class DashboardClientPageObject extends BasePageObject {
     setupMockMatchMedia({ desktop: true });
 
     const releaseCount = options.releaseCount ?? 3;
+    const releases = options.exactDuplicatePair
+      ? buildDuplicatePairReleases()
+      : undefined;
     const collectionPage = options.paginatedFirstPage
-      ? collectionFactory.build(
-          {},
-          { page: 1, totalPages: 3, releaseCount: 50, totalItems: 2500 },
-        )
-      : collectionFactory.build({}, { page: 1, totalPages: 1, releaseCount });
+      ? collectionFactory.build(releases ? { releases } : {}, {
+          page: 1,
+          totalPages: 3,
+          releaseCount: 50,
+          totalItems: 2500,
+        })
+      : collectionFactory.build(releases ? { releases } : {}, {
+          page: 1,
+          totalPages: 1,
+          releaseCount: releases?.length ?? releaseCount,
+        });
 
     if (options.paginatedFirstPage) {
       collectionPage.pagination.per_page = 50;
@@ -117,12 +143,21 @@ export class DashboardClientPageObject extends BasePageObject {
       apiError,
     );
     mockApiResponse(true, mockApi.discogsCollection, collectionPage, apiError);
-    mockApiResponse(
-      true,
-      mockApi.collectionValue,
-      collectionValueFactory.dashboardDefaults(),
-      apiError,
-    );
+    if (options.collectionValueFails) {
+      mockApiResponse(
+        false,
+        mockApi.collectionValue,
+        collectionValueFactory.dashboardDefaults(),
+        new ApiFetchError(503),
+      );
+    } else {
+      mockApiResponse(
+        true,
+        mockApi.collectionValue,
+        collectionValueFactory.dashboardDefaults(),
+        apiError,
+      );
+    }
     mockApiResponse(true, mockApi.mostCratedReleases, [], apiError);
     mockApiResponse(
       true,
