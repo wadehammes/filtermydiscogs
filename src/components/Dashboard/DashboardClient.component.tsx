@@ -13,6 +13,7 @@ import { useRegisterPlaybackReleaseClick } from "src/context/playbackReleaseClic
 import { useCollectionValueQuery } from "src/hooks/queries/useCollectionValueQuery";
 import { useCollectionAnalytics } from "src/hooks/useCollectionAnalytics.hook";
 import { useCollectionLoadState } from "src/hooks/useCollectionData.hook";
+import { useDashboardCollectionDrilldown } from "src/hooks/useDashboardCollectionDrilldown.hook";
 import { useAllReleases } from "src/hooks/useFilterAtoms.hook";
 import { useNeedsCollectionLoad } from "src/hooks/useNeedsCollectionLoad.hook";
 import { usePaintDeferredMount } from "src/hooks/usePaintDeferredMount.hook";
@@ -108,6 +109,7 @@ function DashboardClientContent() {
   const dashboardContentReady =
     !fetchingCollection && analytics !== null && story !== null;
   const mountBelowFold = usePaintDeferredMount(dashboardContentReady);
+  const openCollectionDrilldown = useDashboardCollectionDrilldown();
 
   if (shouldRedirectHome) {
     return null;
@@ -210,6 +212,7 @@ function DashboardClientContent() {
                         decadeDistribution={analytics.decadeDistribution}
                         mediaTypeDistribution={analytics.mediaTypeDistribution}
                         formatTagDistribution={analytics.formatTagDistribution}
+                        onDrilldown={openCollectionDrilldown}
                       />
                       <DashboardComparativeGrowthChartsLazy
                         hideHeading={true}
@@ -234,6 +237,7 @@ function DashboardClientContent() {
                       <DashboardArtistLabelChartsLazy
                         artistDistribution={analytics.artistDistribution}
                         labelDistribution={analytics.labelDistribution}
+                        onDrilldown={openCollectionDrilldown}
                       />
                     </DashboardSection>
 
@@ -255,6 +259,7 @@ function DashboardClientContent() {
                         <MostCrated
                           hideHeading={true}
                           onReleaseClick={handleReleaseClick}
+                          onDrilldown={openCollectionDrilldown}
                         />
                       </DashboardSection>
 
@@ -266,6 +271,7 @@ function DashboardClientContent() {
                           health={analytics.health}
                           hideHeading={true}
                           onReleaseClick={handleReleaseClick}
+                          onDrilldown={openCollectionDrilldown}
                         />
                       </DashboardSection>
                     </div>

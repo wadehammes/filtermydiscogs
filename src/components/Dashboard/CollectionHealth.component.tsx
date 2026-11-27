@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useAuth } from "src/context/auth.context";
 import type { CollectionHealth as CollectionHealthType } from "src/types/dashboard.types";
+import type { DashboardDrilldownTarget } from "src/utils/dashboardDrilldownFilters";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./CollectionHealth.module.css";
 import { DuplicatesDetailModal } from "./DuplicatesDetailModal.component";
@@ -12,12 +13,14 @@ type DuplicateDetailModal = "duplicates" | "potential";
 interface CollectionHealthComponentProps {
   health: CollectionHealthType;
   hideHeading?: boolean;
+  onDrilldown?: (target: DashboardDrilldownTarget) => void;
   onReleaseClick?: (instanceId: string) => void;
 }
 
 export const CollectionHealth = ({
   health,
   hideHeading = false,
+  onDrilldown,
   onReleaseClick,
 }: CollectionHealthComponentProps) => {
   const [detailModal, setDetailModal] = useState<DuplicateDetailModal | null>(
@@ -125,7 +128,7 @@ export const CollectionHealth = ({
         description={activeModal?.description ?? ""}
         duplicateGroups={activeModal?.duplicateGroups ?? []}
         onClose={() => setDetailModal(null)}
-        {...definedProps({ onReleaseClick })}
+        {...definedProps({ onDrilldown, onReleaseClick })}
       />
     </div>
   );

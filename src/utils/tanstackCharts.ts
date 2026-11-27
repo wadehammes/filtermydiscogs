@@ -80,6 +80,16 @@ const modernAxisPresentation = {
   ticks: { size: 0, padding: 8 },
 } satisfies ChartAxisPresentationOptions;
 
+const categoryBarChartTheme = {
+  muted: "var(--foreground)",
+};
+
+const readableCategoryTickLabels = {
+  opacity: 1,
+  fontSize: 12,
+  fontWeight: 500,
+};
+
 const resolveTimeSeriesTickCount = (width: number): number =>
   Math.max(
     TIME_SERIES_TICK_MIN,
@@ -638,6 +648,7 @@ export const createVerticalBarChartDefinition = ({
 }): DomChartDefinition =>
   defineChart({
     ...chartMotion,
+    theme: categoryBarChartTheme,
     ...cartesianChartFrame,
     marks: [
       barY(data, {
@@ -661,9 +672,16 @@ export const createVerticalBarChartDefinition = ({
         axis: rotateXLabels
           ? {
               ...modernAxisPresentation,
-              tickLabels: { rotate: -40, thin: false },
+              tickLabels: {
+                rotate: -40,
+                thin: false,
+                ...readableCategoryTickLabels,
+              },
             }
-          : modernAxisPresentation,
+          : {
+              ...modernAxisPresentation,
+              tickLabels: readableCategoryTickLabels,
+            },
       },
       y: modernValueAxis,
     },
@@ -690,6 +708,7 @@ export const createHorizontalBarChartDefinition = ({
 
   return defineChart({
     ...chartMotion,
+    theme: categoryBarChartTheme,
     clip: true,
     margin: { left },
     marks: [
@@ -720,12 +739,14 @@ export const createHorizontalBarChartDefinition = ({
           },
           tickLabels: {
             anchor: "end",
+            ...readableCategoryTickLabels,
           },
         },
       },
     },
     tooltip: {
       ...chartTooltip,
+      placement: ["top", "top-right", "left"] as const,
       format(point: ChartPoint<BarDatum>) {
         const datum = point.datum;
         return `${datum.label}: ${datum.count.toLocaleString()}`;

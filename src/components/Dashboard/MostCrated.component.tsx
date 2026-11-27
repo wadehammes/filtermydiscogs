@@ -1,20 +1,26 @@
 "use client";
 
+import { Tooltip } from "@base-ui/react/tooltip";
 import Link from "next/link";
+import { DashboardDrilldownFacetControl } from "src/components/Dashboard/DashboardDrilldownFacetControl.component";
 import { EmptyState } from "src/components/EmptyState/EmptyState.component";
 import { useMostCratedQuery } from "src/hooks/queries/useMostCratedQuery";
 import dashboardCardStyles from "src/styles/modules/dashboard-card.module.css";
+import drilldownStyles from "src/styles/modules/dashboard-drilldown.module.css";
+import type { DashboardDrilldownTarget } from "src/utils/dashboardDrilldownFilters";
 import { definedProps } from "src/utils/definedProps";
 import { DashboardReleaseItem } from "./DashboardReleaseItem.component";
 import styles from "./MostCrated.module.css";
 
 interface MostCratedProps {
   hideHeading?: boolean;
+  onDrilldown?: (target: DashboardDrilldownTarget) => void;
   onReleaseClick?: (instanceId: string) => void;
 }
 
 export const MostCrated = ({
   hideHeading = false,
+  onDrilldown,
   onReleaseClick,
 }: MostCratedProps) => {
   const {
@@ -69,32 +75,50 @@ export const MostCrated = ({
           Records that show up in more than one crate
         </p>
       )}
-      <div className={styles.releasesList}>
-        {mostCratedReleases.map((item) => (
-          <div
-            key={item.instance_id}
-            className={dashboardCardStyles.releaseRow}
-          >
-            <DashboardReleaseItem
-              release={item.release}
-              {...definedProps({ onReleaseClick })}
+      <Tooltip.Provider closeDelay={80} delay={300}>
+        <div className={styles.releasesList}>
+          {mostCratedReleases.map((item) => (
+            <div
+              key={item.instance_id}
+              className={dashboardCardStyles.releaseRow}
             >
-              <div
-                className={styles.crateCount}
-                role="status"
-                aria-label={`${item.crate_count} ${item.crate_count === 1 ? "crate" : "crates"}`}
+              <DashboardReleaseItem
+                release={item.release}
+                {...definedProps({ onReleaseClick })}
               >
-                <span className={styles.countNumber} aria-hidden="true">
-                  {item.crate_count}
-                </span>
-                <span className={styles.countLabel} aria-hidden="true">
-                  {item.crate_count === 1 ? "crate" : "crates"}
-                </span>
-              </div>
-            </DashboardReleaseItem>
-          </div>
-        ))}
-      </div>
+                <div className={styles.rowMeta}>
+                  <div
+                    className={styles.crateCount}
+                    role="status"
+                    aria-label={`${item.crate_count} ${item.crate_count === 1 ? "crate" : "crates"}`}
+                  >
+                    <span className={styles.countNumber} aria-hidden="true">
+                      {item.crate_count}
+                    </span>
+                    <span className={styles.countLabel} aria-hidden="true">
+                      {item.crate_count === 1 ? "crate" : "crates"}
+                    </span>
+                  </div>
+                  {onDrilldown ? (
+                    <DashboardDrilldownFacetControl
+                      className={drilldownStyles.chip}
+                      filterLabel={item.release.basic_information.title}
+                      onPress={() =>
+                        onDrilldown({
+                          kind: "search",
+                          label: item.release.basic_information.title,
+                        })
+                      }
+                    >
+                      In collection
+                    </DashboardDrilldownFacetControl>
+                  ) : null}
+                </div>
+              </DashboardReleaseItem>
+            </div>
+          ))}
+        </div>
+      </Tooltip.Provider>
     </div>
   );
 };

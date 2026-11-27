@@ -182,26 +182,59 @@ export const detectDuplicates = (
 export const calculateStyleDistribution = (
   releases: readonly DiscogsRelease[],
 ): DistributionData[] => {
-  const styleCounts = new Map<string, number>();
+  const styleBuckets = new Map<
+    string,
+    { count: number; labelCounts: Map<string, number> }
+  >();
 
   releases.forEach((release) => {
     release.basic_information.styles.forEach((style) => {
-      const normalizedStyle = style.toLowerCase();
-      styleCounts.set(
-        normalizedStyle,
-        (styleCounts.get(normalizedStyle) || 0) + 1,
+      const trimmed = style.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      const key = trimmed.toLowerCase();
+      const bucket = styleBuckets.get(key);
+      if (!bucket) {
+        styleBuckets.set(key, {
+          count: 1,
+          labelCounts: new Map([[trimmed, 1]]),
+        });
+        return;
+      }
+
+      bucket.count += 1;
+      bucket.labelCounts.set(
+        trimmed,
+        (bucket.labelCounts.get(trimmed) ?? 0) + 1,
       );
     });
   });
 
-  return Array.from(styleCounts.entries())
-    .map(([label, count]) => ({
-      label: label.charAt(0).toUpperCase() + label.slice(1),
-      value: count,
-      count,
-    }))
+  const canonicalStyleLabel = (labelCounts: Map<string, number>): string => {
+    let label = "";
+    let highCount = -1;
+    labelCounts.forEach((count, candidate) => {
+      if (count > highCount) {
+        label = candidate;
+        highCount = count;
+      }
+    });
+    return label;
+  };
+
+  return Array.from(styleBuckets.values())
+    .map((bucket) => {
+      const label = canonicalStyleLabel(bucket.labelCounts);
+      return {
+        label,
+        value: bucket.count,
+        count: bucket.count,
+      };
+    })
     .sort((a, b) => b.count - a.count)
-    .slice(0, 10); // Top 10 styles
+    .slice(0, 10);
 };
 
 export const calculateGenreDistribution = (
