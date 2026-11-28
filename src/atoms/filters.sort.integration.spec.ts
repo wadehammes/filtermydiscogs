@@ -10,7 +10,7 @@ import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import { FiltersActionTypes } from "src/context/filters.context";
 import { artistFactory } from "src/tests/factories/Artist.factory";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { defaultPersistedFilters } from "src/utils/filtersStorage";
+import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.factory";
 import { act, renderHook, TestProviders } from "test-utils";
 
 describe("filters secondary sort integration", () => {
@@ -195,11 +195,10 @@ describe("filters secondary sort integration", () => {
     act(() => {
       result.current.dispatch({
         type: FiltersActionTypes.ApplySessionFilters,
-        payload: {
-          ...defaultPersistedFilters,
+        payload: persistedFiltersFactory.withDefaults({
           selectedSort: SortValues.DateAddedNew,
           selectedSortSecondary: SortValues.DateAddedOld,
-        },
+        }),
       });
     });
 

@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 
 import { type ReactNode, useLayoutEffect } from "react";
 import { StickyHeaderBarPageObject } from "src/components/StickyHeaderBar/StickyHeaderBar.po";
-import { SortValues } from "src/constants/sortValues";
 import { useCollectionContext } from "src/context/collection.context";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.factory";
 import {
   expectFilterPopupAbovePlaybackDock,
   openFilterCombobox,
@@ -25,15 +25,6 @@ const filterBarReleases = [
     },
   }),
 ];
-
-const defaultSessionFilters = {
-  selectedStyles: ["Rock"],
-  selectedYears: [],
-  selectedFormats: [],
-  selectedSort: SortValues.DateAddedNew,
-  styleOperator: "OR" as const,
-  searchQuery: "",
-};
 
 const FetchingCollectionHarness = ({ children }: { children: ReactNode }) => {
   const { dispatchFetchingCollection } = useCollectionContext();
@@ -147,7 +138,9 @@ describe("StickyHeaderBar", () => {
     po.renderStickyHeaderBar({
       part: "filters",
       releases: filterBarReleases,
-      sessionFilters: defaultSessionFilters,
+      sessionFilters: persistedFiltersFactory.withDefaults({
+        selectedStyles: ["Rock", "Jazz"],
+      }),
     });
 
     for (const name of ["Sort by", "Match"] as const) {

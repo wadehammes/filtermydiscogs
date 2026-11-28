@@ -37,12 +37,21 @@ const facetOptionsFromSets = (
   availableFormats: sortFormatTags(Array.from(formatSet)),
 });
 
+const releaseMatchesExcludedYears = (
+  release: DiscogsRelease,
+  excludedYears: readonly number[],
+): boolean =>
+  excludedYears.length === 0 ||
+  !excludedYears.includes(release.basic_information.year);
+
 export const computeFilterDerivedState = ({
   releases,
   selectedStyles,
   excludedStyles = [],
   selectedYears,
+  excludedYears = [],
   selectedFormats,
+  excludedFormats = [],
   searchQuery,
   styleOperator,
   formatOperator,
@@ -55,7 +64,9 @@ export const computeFilterDerivedState = ({
     selectedStyles.length > 0 ||
     excludedStyles.length > 0 ||
     selectedYears.length > 0 ||
+    excludedYears.length > 0 ||
     selectedFormats.length > 0 ||
+    excludedFormats.length > 0 ||
     searchTokens.length > 0;
 
   if (!hasActiveFilters) {
@@ -70,6 +81,11 @@ export const computeFilterDerivedState = ({
       ? buildNormalizedFormatFilterSet(selectedFormats)
       : undefined;
 
+  const normalizedExcludedFormats =
+    excludedFormats.length > 0
+      ? buildNormalizedFormatFilterSet(excludedFormats)
+      : undefined;
+
   const styleSet = new Set<string>();
   const yearSet = new Set<number>();
   const formatSet = new Set<string>();
@@ -78,11 +94,16 @@ export const computeFilterDerivedState = ({
   for (const release of releases) {
     const { genreStyleTags, formatTags } = getReleaseSearchIndexEntry(release);
     const matchesSearch = releaseMatchesSearch(release, searchTokens);
-    const matchesYear = releaseMatchesYear(
+    const matchesIncludedYear = releaseMatchesYear(
       release,
       selectedYears,
       yearOperator,
     );
+    const matchesExcludedYear = releaseMatchesExcludedYears(
+      release,
+      excludedYears,
+    );
+    const matchesYear = matchesIncludedYear && matchesExcludedYear;
     const matchesIncludedStyles = releaseMatchesStyles(
       release,
       selectedStyles,
@@ -93,13 +114,23 @@ export const computeFilterDerivedState = ({
       excludedStyles.length === 0 ||
       !releaseMatchesStyles(release, excludedStyles, "OR", genreStyleTags);
     const matchesStyles = matchesIncludedStyles && matchesExcludedStyles;
-    const matchesFormats = releaseMatchesFormats(
+    const matchesIncludedFormats = releaseMatchesFormats(
       release,
       selectedFormats,
       formatOperator,
       normalizedSelectedFormats,
       formatTags,
     );
+    const matchesExcludedFormats =
+      excludedFormats.length === 0 ||
+      !releaseMatchesFormats(
+        release,
+        excludedFormats,
+        "OR",
+        normalizedExcludedFormats,
+        formatTags,
+      );
+    const matchesFormats = matchesIncludedFormats && matchesExcludedFormats;
 
     if (matchesSearch && matchesYear && matchesStyles && matchesFormats) {
       filteredReleases.push(release);

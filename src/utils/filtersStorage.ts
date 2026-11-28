@@ -22,7 +22,9 @@ export const defaultPersistedFilters: PersistedFiltersState = {
   selectedStyles: [],
   excludedStyles: [],
   selectedYears: [],
+  excludedYears: [],
   selectedFormats: [],
+  excludedFormats: [],
   selectedSort: SortValues.DateAddedNew,
   selectedSortSecondary: SortSecondaryValues.None,
   styleOperator: "OR",
@@ -35,7 +37,9 @@ export const inactiveFilterSelectionDefaults = {
   selectedStyles: defaultPersistedFilters.selectedStyles,
   excludedStyles: defaultPersistedFilters.excludedStyles,
   selectedYears: defaultPersistedFilters.selectedYears,
+  excludedYears: defaultPersistedFilters.excludedYears,
   selectedFormats: defaultPersistedFilters.selectedFormats,
+  excludedFormats: defaultPersistedFilters.excludedFormats,
   searchQuery: defaultPersistedFilters.searchQuery,
   selectedSort: defaultPersistedFilters.selectedSort,
   selectedSortSecondary: defaultPersistedFilters.selectedSortSecondary,
@@ -49,6 +53,36 @@ const isStringArray = (value: unknown): value is string[] =>
 
 const isNumberArray = (value: unknown): value is number[] =>
   Array.isArray(value) && value.every((item) => typeof item === "number");
+
+const isOptionalStringArray = (value: unknown): boolean =>
+  value === undefined || isStringArray(value);
+
+const isOptionalNumberArray = (value: unknown): boolean =>
+  value === undefined || isNumberArray(value);
+
+const isValidPersistedFilterSelections = (
+  state: Partial<PersistedFiltersState>,
+): boolean =>
+  isStringArray(state.selectedStyles) &&
+  isOptionalStringArray(state.excludedStyles) &&
+  isNumberArray(state.selectedYears) &&
+  isOptionalNumberArray(state.excludedYears) &&
+  isStringArray(state.selectedFormats) &&
+  isOptionalStringArray(state.excludedFormats);
+
+const isValidPersistedFilterSort = (
+  state: Partial<PersistedFiltersState>,
+): boolean =>
+  typeof state.selectedSort === "string" &&
+  VALID_SORT_VALUES.has(state.selectedSort) &&
+  typeof state.selectedSortSecondary === "string" &&
+  VALID_SORT_SECONDARY_VALUES.has(state.selectedSortSecondary) &&
+  typeof state.styleOperator === "string" &&
+  VALID_STYLE_OPERATORS.has(state.styleOperator as StyleOperator) &&
+  typeof state.formatOperator === "string" &&
+  VALID_STYLE_OPERATORS.has(state.formatOperator as StyleOperator) &&
+  typeof state.yearOperator === "string" &&
+  VALID_YEAR_OPERATORS.has(state.yearOperator as YearOperator);
 
 const migratePersistedSort = (sort: string): SortValues => {
   if (sort === "CommunityRatingHigh" || sort === "CommunityRatingLow") {
@@ -72,21 +106,8 @@ const isValidPersistedFilters = (
   const state = value as Partial<PersistedFiltersState>;
 
   return (
-    isStringArray(state.selectedStyles) &&
-    (state.excludedStyles === undefined ||
-      isStringArray(state.excludedStyles)) &&
-    isNumberArray(state.selectedYears) &&
-    isStringArray(state.selectedFormats) &&
-    typeof state.selectedSort === "string" &&
-    VALID_SORT_VALUES.has(state.selectedSort) &&
-    typeof state.selectedSortSecondary === "string" &&
-    VALID_SORT_SECONDARY_VALUES.has(state.selectedSortSecondary) &&
-    typeof state.styleOperator === "string" &&
-    VALID_STYLE_OPERATORS.has(state.styleOperator as StyleOperator) &&
-    typeof state.formatOperator === "string" &&
-    VALID_STYLE_OPERATORS.has(state.formatOperator as StyleOperator) &&
-    typeof state.yearOperator === "string" &&
-    VALID_YEAR_OPERATORS.has(state.yearOperator as YearOperator) &&
+    isValidPersistedFilterSelections(state) &&
+    isValidPersistedFilterSort(state) &&
     typeof state.searchQuery === "string"
   );
 };
@@ -121,6 +142,13 @@ const parsePersistedFiltersValue = (
     candidate.selectedSort,
     candidate.selectedSortSecondary,
   );
+
+  if (
+    candidate.selectedYears.length > 0 &&
+    candidate.excludedYears.length > 0
+  ) {
+    candidate.excludedYears = [];
+  }
 
   if (isValidPersistedFilters(candidate)) {
     return candidate;
@@ -185,7 +213,11 @@ const canonicalizePersistedFiltersForCompare = (
     selectedYears: [...normalized.selectedYears].sort(
       (left, right) => left - right,
     ),
+    excludedYears: [...normalized.excludedYears].sort(
+      (left, right) => left - right,
+    ),
     selectedFormats: [...normalized.selectedFormats].sort(),
+    excludedFormats: [...normalized.excludedFormats].sort(),
     selectedSort: normalized.selectedSort,
     selectedSortSecondary: normalized.selectedSortSecondary,
     styleOperator: normalized.styleOperator,

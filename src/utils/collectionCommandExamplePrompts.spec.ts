@@ -3,29 +3,13 @@ import {
   COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH,
   COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK,
 } from "src/constants/collectionCommand.constants";
-import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import type {
-  FacetOptions,
-  PersistedFiltersJson,
-} from "src/types/filters.types";
+import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.factory";
+import type { FacetOptions } from "src/types/filters.types";
 import {
   buildCollectionCommandExamplePrompts,
   sampleDistinctFacetStyles,
 } from "src/utils/collectionCommandExamplePrompts";
-
-const baseFilters = (): PersistedFiltersJson => ({
-  selectedStyles: [],
-  excludedStyles: [],
-  selectedYears: [],
-  selectedFormats: [],
-  selectedSort: SortValues.DateAddedNew,
-  selectedSortSecondary: SortSecondaryValues.None,
-  styleOperator: "OR",
-  formatOperator: "OR",
-  yearOperator: "OR",
-  searchQuery: "",
-});
 
 const emptyFacets = (): FacetOptions => ({
   availableStyles: [],
@@ -35,12 +19,11 @@ const emptyFacets = (): FacetOptions => ({
 
 describe("buildCollectionCommandExamplePrompts", () => {
   it("suggests refine, save, and crate prompts from the active filter set", () => {
-    const filters = {
-      ...baseFilters(),
+    const filters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Techno"],
       selectedFormats: ["Vinyl"],
       selectedYears: [1992, 1994],
-    };
+    });
     const prompts = buildCollectionCommandExamplePrompts({
       filters,
       facetOptions: {
@@ -63,7 +46,7 @@ describe("buildCollectionCommandExamplePrompts", () => {
 
   it("suggests distinct facet-based prompts when no filters are applied", () => {
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: persistedFiltersFactory.empty(),
       facetOptions: {
         availableStyles: ["Jazz", "Soul"],
         availableYears: [1985, 1987, 1988],
@@ -91,12 +74,12 @@ describe("buildCollectionCommandExamplePrompts", () => {
     };
 
     const first = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: persistedFiltersFactory.empty(),
       facetOptions,
       shuffleSeed: 1,
     });
     const second = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: persistedFiltersFactory.empty(),
       facetOptions,
       shuffleSeed: 42,
     });
@@ -128,7 +111,7 @@ describe("buildCollectionCommandExamplePrompts", () => {
     ];
 
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: persistedFiltersFactory.empty(),
       facetOptions: {
         availableStyles: ["House", "Techno", "Deep House", "Ambient"],
         availableYears: [2018, 2019, 2020],
@@ -157,7 +140,7 @@ describe("buildCollectionCommandExamplePrompts", () => {
     };
 
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: persistedFiltersFactory.empty(),
       facetOptions,
     });
 
@@ -173,10 +156,9 @@ describe("buildCollectionCommandExamplePrompts", () => {
 
   it("includes search query in the active refine prompt", () => {
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: {
-        ...baseFilters(),
+      filters: persistedFiltersFactory.withDefaults({
         searchQuery: "morning",
-      },
+      }),
       facetOptions: {
         availableStyles: ["Ambient"],
         availableYears: [],
@@ -189,11 +171,10 @@ describe("buildCollectionCommandExamplePrompts", () => {
 
   it("keeps decade phrasing in refine examples when filters omit years", () => {
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: {
-        ...baseFilters(),
+      filters: persistedFiltersFactory.withDefaults({
         selectedStyles: ["Electronic"],
         selectedFormats: ["Vinyl"],
-      },
+      }),
       facetOptions: {
         availableStyles: ["Electronic"],
         availableYears: [2012, 2014, 2013],
@@ -216,7 +197,7 @@ describe("buildCollectionCommandExamplePrompts", () => {
     ];
 
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: persistedFiltersFactory.empty(),
       facetOptions: {
         availableStyles: ["Abstract", "Techno"],
         availableYears: [2012],
@@ -231,7 +212,7 @@ describe("buildCollectionCommandExamplePrompts", () => {
 
   it("falls back when facets and filters are empty", () => {
     const prompts = buildCollectionCommandExamplePrompts({
-      filters: baseFilters(),
+      filters: persistedFiltersFactory.empty(),
       facetOptions: emptyFacets(),
     });
 

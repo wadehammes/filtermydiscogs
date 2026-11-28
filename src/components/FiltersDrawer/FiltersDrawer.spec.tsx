@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { FiltersDrawerPageObject } from "src/components/FiltersDrawer/FiltersDrawer.po";
 import { SortValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
-import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import {
+  persistedFiltersFactory,
+  userPreferencesFactory,
+} from "src/tests/factories/UserPreferences.factory";
 import {
   expectFilterPopupAboveBottomDrawer,
   expectFilterPopupAbovePlaybackDock,
@@ -11,10 +14,7 @@ import {
   openFilterSelect,
   selectMultiFilterOption,
 } from "src/tests/filterControlTestHelpers";
-import {
-  defaultPersistedFilters,
-  FILTERS_STORAGE_KEY,
-} from "src/utils/filtersStorage";
+import { FILTERS_STORAGE_KEY } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
 
@@ -58,10 +58,9 @@ describe("FiltersDrawer", () => {
 
   it("shows compact sort labels on triggers and full names in the open menu", async () => {
     po.renderFiltersDrawer({
-      sessionFilters: {
-        ...defaultPersistedFilters,
+      sessionFilters: persistedFiltersFactory.withDefaults({
         selectedSort: SortValues.DateAddedOld,
-      },
+      }),
     });
 
     expect(screen.getByText("Date Added ↑")).toBeInTheDocument();
@@ -102,14 +101,12 @@ describe("FiltersDrawer", () => {
   it("resets all filters from the Views menu", async () => {
     const user = userEvent.setup();
     po.renderFiltersDrawer({
-      sessionFilters: {
+      sessionFilters: persistedFiltersFactory.withDefaults({
         selectedStyles: ["Rock"],
         selectedYears: [1999],
         selectedFormats: ["Vinyl"],
-        selectedSort: SortValues.DateAddedNew,
-        styleOperator: "OR",
         searchQuery: "test search",
-      },
+      }),
     });
 
     await user.click(
@@ -149,14 +146,10 @@ describe("FiltersDrawer", () => {
 
   it("shows applied filter count in the drawer title and footer", () => {
     po.renderFiltersDrawer({
-      sessionFilters: {
+      sessionFilters: persistedFiltersFactory.withDefaults({
         selectedStyles: ["Rock"],
         selectedYears: [1999],
-        selectedFormats: [],
-        selectedSort: SortValues.DateAddedNew,
-        styleOperator: "OR",
-        searchQuery: "",
-      },
+      }),
     });
 
     expect(
@@ -166,11 +159,10 @@ describe("FiltersDrawer", () => {
   });
 
   it("applies a saved view from the Views menu", async () => {
-    const technoFilters = {
-      ...defaultPersistedFilters,
+    const technoFilters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Techno"],
       selectedSort: SortValues.AZArtist,
-    };
+    });
     const savedView = createFilterView("Techno", technoFilters);
 
     po.mockUserPreferences(
@@ -203,11 +195,10 @@ describe("FiltersDrawer", () => {
   });
 
   it("disables Save current view when filters match an existing saved view", async () => {
-    const technoFilters = {
-      ...defaultPersistedFilters,
+    const technoFilters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Techno"],
       selectedSort: SortValues.AZArtist,
-    };
+    });
     const savedView = createFilterView("Techno", technoFilters);
 
     po.mockUserPreferences(
@@ -240,10 +231,9 @@ describe("FiltersDrawer", () => {
   });
 
   it("clears filters when clicking the active saved view again", async () => {
-    const technoFilters = {
-      ...defaultPersistedFilters,
+    const technoFilters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Techno"],
-    };
+    });
     const savedView = createFilterView("Techno", technoFilters);
 
     po.mockUserPreferences(
@@ -278,10 +268,10 @@ describe("FiltersDrawer", () => {
   });
 
   it("enables Save current view when filters differ from saved views", async () => {
-    const savedView = createFilterView("Techno", {
-      ...defaultPersistedFilters,
-      selectedStyles: ["Techno"],
-    });
+    const savedView = createFilterView(
+      "Techno",
+      persistedFiltersFactory.withDefaults({ selectedStyles: ["Techno"] }),
+    );
 
     po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({
@@ -291,14 +281,9 @@ describe("FiltersDrawer", () => {
 
     const user = userEvent.setup();
     po.renderFiltersDrawer({
-      sessionFilters: {
+      sessionFilters: persistedFiltersFactory.withDefaults({
         selectedStyles: ["Rock"],
-        selectedYears: [],
-        selectedFormats: [],
-        selectedSort: SortValues.DateAddedNew,
-        styleOperator: "OR",
-        searchQuery: "",
-      },
+      }),
     });
 
     await user.click(
@@ -313,14 +298,9 @@ describe("FiltersDrawer", () => {
   it("clears a multi-select filter from its Clear control", async () => {
     const user = userEvent.setup();
     po.renderFiltersDrawer({
-      sessionFilters: {
+      sessionFilters: persistedFiltersFactory.withDefaults({
         selectedStyles: ["Rock"],
-        selectedYears: [],
-        selectedFormats: [],
-        selectedSort: SortValues.DateAddedNew,
-        styleOperator: "OR",
-        searchQuery: "",
-      },
+      }),
     });
 
     await user.click(
@@ -373,14 +353,9 @@ describe("FiltersDrawer", () => {
 
   it("portals select popups into the bottom drawer overlay stack", async () => {
     po.renderFiltersDrawer({
-      sessionFilters: {
-        selectedStyles: ["Rock"],
-        selectedYears: [],
-        selectedFormats: [],
-        selectedSort: SortValues.DateAddedNew,
-        styleOperator: "OR",
-        searchQuery: "",
-      },
+      sessionFilters: persistedFiltersFactory.withDefaults({
+        selectedStyles: ["Rock", "Jazz"],
+      }),
     });
 
     for (const name of ["Sort by", "Then by", "Match"] as const) {
@@ -487,10 +462,9 @@ describe("FiltersDrawer", () => {
 
   it("shows applied filter hint in the drawer footer when filters are active", () => {
     po.renderFiltersDrawer({
-      sessionFilters: {
-        ...defaultPersistedFilters,
+      sessionFilters: persistedFiltersFactory.withDefaults({
         selectedStyles: ["Rock"],
-      },
+      }),
     });
 
     expect(screen.getByText("1 filter applied")).toBeVisible();

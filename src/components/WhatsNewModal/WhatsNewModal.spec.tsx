@@ -26,16 +26,18 @@ describe("WhatsNewModal", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Collection Ask/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/apply, save a view, or create a crate/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Genre & Style excludes/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Collection radio is removed for now/i),
+      screen.getByText(/apply them, save a view, or create a crate/i),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        /A revised version may return after I refine the concept/i,
+        /Genre & Style, Format Type, and Release Year: row Exclude/i,
       ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Collection radio is off for now/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/I may ship a revised version later/i),
     ).toBeInTheDocument();
     expect(screen.getByText("Removed")).toBeInTheDocument();
     expect(

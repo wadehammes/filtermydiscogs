@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
 import { FilterViewsMenuPageObject } from "src/components/FilterViewsMenu/FilterViewsMenu.po";
 import iconButtonStyles from "src/styles/modules/icon-button.module.css";
-import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
-import { defaultPersistedFilters } from "src/utils/filtersStorage";
+import {
+  persistedFiltersFactory,
+  userPreferencesFactory,
+} from "src/tests/factories/UserPreferences.factory";
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
 import styles from "./FilterViewsMenu.module.css";
@@ -46,10 +48,9 @@ describe("FilterViewsMenu", () => {
   });
 
   it("derives the active saved view when multi-select order differs", async () => {
-    const deepAcidFilters = {
-      ...defaultPersistedFilters,
+    const deepAcidFilters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Acid", "Deep House"],
-    };
+    });
     const savedView = createFilterView("Deep Acid", deepAcidFilters);
 
     po.mockUserPreferences(

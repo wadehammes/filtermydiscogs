@@ -58,6 +58,10 @@ export enum FiltersActionTypes {
   SetStyles = "SET_STYLES",
   AddExcludedStyle = "ADD_EXCLUDED_STYLE",
   RemoveExcludedStyle = "REMOVE_EXCLUDED_STYLE",
+  AddExcludedFormat = "ADD_EXCLUDED_FORMAT",
+  RemoveExcludedFormat = "REMOVE_EXCLUDED_FORMAT",
+  AddExcludedYear = "ADD_EXCLUDED_YEAR",
+  RemoveExcludedYear = "REMOVE_EXCLUDED_YEAR",
   SetStyleOperator = "SET_STYLE_OPERATOR",
   SetFormatOperator = "SET_FORMAT_OPERATOR",
   SetYearOperator = "SET_YEAR_OPERATOR",
@@ -113,6 +117,22 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.RemoveExcludedStyle;
       payload: string;
+    }
+  | {
+      type: FiltersActionTypes.AddExcludedFormat;
+      payload: string;
+    }
+  | {
+      type: FiltersActionTypes.RemoveExcludedFormat;
+      payload: string;
+    }
+  | {
+      type: FiltersActionTypes.AddExcludedYear;
+      payload: number;
+    }
+  | {
+      type: FiltersActionTypes.RemoveExcludedYear;
+      payload: number;
     }
   | {
       type: FiltersActionTypes.SetStyleOperator;
@@ -285,7 +305,9 @@ const getActiveFilterInputs = (get: Getter) => {
       selectedStyles: [...inactiveFilterSelectionDefaults.selectedStyles],
       excludedStyles: [...inactiveFilterSelectionDefaults.excludedStyles],
       selectedYears: [...inactiveFilterSelectionDefaults.selectedYears],
+      excludedYears: [...inactiveFilterSelectionDefaults.excludedYears],
       selectedFormats: [...inactiveFilterSelectionDefaults.selectedFormats],
+      excludedFormats: [...inactiveFilterSelectionDefaults.excludedFormats],
       searchQuery: inactiveFilterSelectionDefaults.searchQuery,
       selectedSort: SortValues.DateAddedNew,
       selectedSortSecondary: SortSecondaryValues.None,
@@ -299,7 +321,9 @@ const getActiveFilterInputs = (get: Getter) => {
     selectedStyles: get(selectedStylesAtom),
     excludedStyles: get(excludedStylesAtom),
     selectedYears: get(selectedYearsAtom),
+    excludedYears: get(excludedYearsAtom),
     selectedFormats: get(selectedFormatsAtom),
+    excludedFormats: get(excludedFormatsAtom),
     searchQuery: get(searchQueryAtom),
     selectedSort: get(selectedSortAtom),
     selectedSortSecondary: get(selectedSortSecondaryAtom),
@@ -312,7 +336,9 @@ const getActiveFilterInputs = (get: Getter) => {
 export const selectedStylesAtom = sessionFieldAtom("selectedStyles");
 export const excludedStylesAtom = sessionFieldAtom("excludedStyles");
 export const selectedYearsAtom = sessionFieldAtom("selectedYears");
+export const excludedYearsAtom = sessionFieldAtom("excludedYears");
 export const selectedFormatsAtom = sessionFieldAtom("selectedFormats");
+export const excludedFormatsAtom = sessionFieldAtom("excludedFormats");
 export const selectedSortAtom = sessionFieldAtom("selectedSort");
 export const selectedSortSecondaryAtom = sessionFieldAtom(
   "selectedSortSecondary",
@@ -329,7 +355,9 @@ const getFacetFilterInputs = (get: Getter): ReleaseFilterCriteria => {
     selectedStyles,
     excludedStyles,
     selectedYears,
+    excludedYears,
     selectedFormats,
+    excludedFormats,
     searchQuery,
     styleOperator,
     formatOperator,
@@ -340,7 +368,9 @@ const getFacetFilterInputs = (get: Getter): ReleaseFilterCriteria => {
     selectedStyles,
     excludedStyles,
     selectedYears,
+    excludedYears,
     selectedFormats,
+    excludedFormats,
     searchQuery,
     styleOperator,
     formatOperator,
@@ -421,6 +451,44 @@ const excludedStylesAfterIncluding = (
   return excludedStyles.filter((style) => !selectedSet.has(style));
 };
 
+const excludedFormatsAfterIncluding = (
+  excludedFormats: readonly string[],
+  selectedFormats: readonly string[],
+): string[] => {
+  const selectedSet = new Set(selectedFormats);
+  return excludedFormats.filter((format) => !selectedSet.has(format));
+};
+
+const excludedYearsAfterIncluding = (
+  excludedYears: readonly number[],
+  selectedYears: readonly number[],
+): number[] => {
+  const selectedSet = new Set(selectedYears);
+  return excludedYears.filter((year) => !selectedSet.has(year));
+};
+
+const reconcileYearIncludesWithExcludes = (
+  selectedYears: readonly number[],
+  excludedYears: readonly number[],
+): number[] => (selectedYears.length > 0 ? [] : [...excludedYears]);
+
+const reconcileSingleSelectionFacetOperators = (get: Getter, set: Setter) => {
+  if (get(selectedStylesAtom).length <= 1 && get(styleOperatorAtom) !== "OR") {
+    set(styleOperatorAtom, "OR");
+  }
+
+  if (
+    get(selectedFormatsAtom).length <= 1 &&
+    get(formatOperatorAtom) !== "OR"
+  ) {
+    set(formatOperatorAtom, "OR");
+  }
+
+  if (get(selectedYearsAtom).length <= 1 && get(yearOperatorAtom) !== "OR") {
+    set(yearOperatorAtom, "OR");
+  }
+};
+
 const applyFilterChange = (
   get: Getter,
   set: Setter,
@@ -428,7 +496,9 @@ const applyFilterChange = (
     selectedStyles?: string[];
     excludedStyles?: string[];
     selectedYears?: number[];
+    excludedYears?: number[];
     selectedFormats?: string[];
+    excludedFormats?: string[];
     selectedSort?: SortValues;
     selectedSortSecondary?: CollectionSortSecondary;
     styleOperator?: StyleOperator;
@@ -449,8 +519,14 @@ const applyFilterChange = (
   if (updates.selectedYears !== undefined) {
     set(selectedYearsAtom, updates.selectedYears);
   }
+  if (updates.excludedYears !== undefined) {
+    set(excludedYearsAtom, updates.excludedYears);
+  }
   if (updates.selectedFormats !== undefined) {
     set(selectedFormatsAtom, updates.selectedFormats);
+  }
+  if (updates.excludedFormats !== undefined) {
+    set(excludedFormatsAtom, updates.excludedFormats);
   }
   if (updates.selectedSort !== undefined) {
     set(selectedSortAtom, updates.selectedSort);
@@ -473,6 +549,8 @@ const applyFilterChange = (
   if (updates.clearSearching) {
     set(isSearchingAtom, false);
   }
+
+  reconcileSingleSelectionFacetOperators(get, set);
 
   syncPersistedFiltersFromSession(get, set);
 
@@ -499,6 +577,10 @@ const persistedFilterActionTypes = new Set<FiltersActions["type"]>([
   FiltersActionTypes.SetStyles,
   FiltersActionTypes.AddExcludedStyle,
   FiltersActionTypes.RemoveExcludedStyle,
+  FiltersActionTypes.AddExcludedFormat,
+  FiltersActionTypes.RemoveExcludedFormat,
+  FiltersActionTypes.AddExcludedYear,
+  FiltersActionTypes.RemoveExcludedYear,
   FiltersActionTypes.SetStyleOperator,
   FiltersActionTypes.SetFormatOperator,
   FiltersActionTypes.SetYearOperator,
@@ -563,19 +645,47 @@ export const filtersDispatchAtom = atom(
 
       case FiltersActionTypes.ToggleYear: {
         const selectedYears = get(selectedYearsAtom);
-        const newSelectedYears = selectedYears.includes(action.payload)
+        const isRemoving = selectedYears.includes(action.payload);
+        const newSelectedYears = isRemoving
           ? selectedYears.filter((year) => year !== action.payload)
           : [...selectedYears, action.payload];
-        applyFilterChange(get, set, { selectedYears: newSelectedYears });
+
+        if (isRemoving) {
+          applyFilterChange(get, set, { selectedYears: newSelectedYears });
+          return;
+        }
+
+        applyFilterChange(get, set, {
+          selectedYears: newSelectedYears,
+          excludedYears: [],
+        });
         return;
       }
 
       case FiltersActionTypes.ToggleFormat: {
         const selectedFormats = get(selectedFormatsAtom);
-        const newSelectedFormats = selectedFormats.includes(action.payload)
+        const isRemoving = selectedFormats.includes(action.payload);
+        const newSelectedFormats = isRemoving
           ? selectedFormats.filter((format) => format !== action.payload)
           : [...selectedFormats, action.payload];
-        applyFilterChange(get, set, { selectedFormats: newSelectedFormats });
+
+        if (isRemoving) {
+          applyFilterChange(get, set, { selectedFormats: newSelectedFormats });
+          return;
+        }
+
+        const excludedFormats = get(excludedFormatsAtom);
+        const nextExcludedFormats = excludedFormatsAfterIncluding(
+          excludedFormats,
+          newSelectedFormats,
+        );
+
+        applyFilterChange(get, set, {
+          selectedFormats: newSelectedFormats,
+          ...(nextExcludedFormats.length !== excludedFormats.length
+            ? { excludedFormats: nextExcludedFormats }
+            : {}),
+        });
         return;
       }
 
@@ -652,6 +762,63 @@ export const filtersDispatchAtom = atom(
         return;
       }
 
+      case FiltersActionTypes.AddExcludedFormat: {
+        const excludedFormats = get(excludedFormatsAtom);
+        if (excludedFormats.includes(action.payload)) {
+          return;
+        }
+
+        const selectedFormats = get(selectedFormatsAtom);
+        applyFilterChange(get, set, {
+          excludedFormats: [...excludedFormats, action.payload],
+          selectedFormats: selectedFormats.filter(
+            (format) => format !== action.payload,
+          ),
+        });
+        return;
+      }
+
+      case FiltersActionTypes.RemoveExcludedFormat: {
+        const excludedFormats = get(excludedFormatsAtom);
+        if (!excludedFormats.includes(action.payload)) {
+          return;
+        }
+
+        applyFilterChange(get, set, {
+          excludedFormats: excludedFormats.filter(
+            (format) => format !== action.payload,
+          ),
+        });
+        return;
+      }
+
+      case FiltersActionTypes.AddExcludedYear: {
+        const excludedYears = get(excludedYearsAtom);
+        if (excludedYears.includes(action.payload)) {
+          return;
+        }
+
+        applyFilterChange(get, set, {
+          excludedYears: [...excludedYears, action.payload],
+          selectedYears: [],
+        });
+        return;
+      }
+
+      case FiltersActionTypes.RemoveExcludedYear: {
+        const excludedYears = get(excludedYearsAtom);
+        if (!excludedYears.includes(action.payload)) {
+          return;
+        }
+
+        applyFilterChange(get, set, {
+          excludedYears: excludedYears.filter(
+            (year) => year !== action.payload,
+          ),
+        });
+        return;
+      }
+
       case FiltersActionTypes.SetStyleOperator:
         applyFilterChange(get, set, { styleOperator: action.payload });
         return;
@@ -668,17 +835,36 @@ export const filtersDispatchAtom = atom(
         applyFilterChange(get, set, { selectedYears: [] });
         return;
 
-      case FiltersActionTypes.SetYears:
-        applyFilterChange(get, set, { selectedYears: action.payload });
+      case FiltersActionTypes.SetYears: {
+        applyFilterChange(get, set, {
+          selectedYears: action.payload,
+          excludedYears: reconcileYearIncludesWithExcludes(
+            action.payload,
+            get(excludedYearsAtom),
+          ),
+        });
         return;
+      }
 
       case FiltersActionTypes.ClearFormats:
         applyFilterChange(get, set, { selectedFormats: [] });
         return;
 
-      case FiltersActionTypes.SetFormats:
-        applyFilterChange(get, set, { selectedFormats: action.payload });
+      case FiltersActionTypes.SetFormats: {
+        const excludedFormats = get(excludedFormatsAtom);
+        const nextExcludedFormats = excludedFormatsAfterIncluding(
+          excludedFormats,
+          action.payload,
+        );
+
+        applyFilterChange(get, set, {
+          selectedFormats: action.payload,
+          ...(nextExcludedFormats.length !== excludedFormats.length
+            ? { excludedFormats: nextExcludedFormats }
+            : {}),
+        });
         return;
+      }
 
       case FiltersActionTypes.ToggleRandomMode: {
         const newIsRandomMode = !get(isRandomModeAtom);
@@ -705,7 +891,9 @@ export const filtersDispatchAtom = atom(
         set(selectedStylesAtom, []);
         set(excludedStylesAtom, []);
         set(selectedYearsAtom, []);
+        set(excludedYearsAtom, []);
         set(selectedFormatsAtom, []);
+        set(excludedFormatsAtom, []);
         set(searchQueryAtom, "");
         set(isRandomModeAtom, false);
         set(randomReleaseAtom, null);
@@ -720,12 +908,27 @@ export const filtersDispatchAtom = atom(
           action.payload.excludedStyles,
           selectedStyles,
         );
+        const selectedYears = [...action.payload.selectedYears];
+        const excludedYears = reconcileYearIncludesWithExcludes(
+          selectedYears,
+          excludedYearsAfterIncluding(
+            action.payload.excludedYears,
+            selectedYears,
+          ),
+        );
+        const selectedFormats = [...action.payload.selectedFormats];
+        const excludedFormats = excludedFormatsAfterIncluding(
+          action.payload.excludedFormats,
+          selectedFormats,
+        );
 
         applyFilterChange(get, set, {
           selectedStyles,
           excludedStyles,
-          selectedYears: [...action.payload.selectedYears],
-          selectedFormats: [...action.payload.selectedFormats],
+          selectedYears,
+          excludedYears,
+          selectedFormats,
+          excludedFormats,
           selectedSort: action.payload.selectedSort,
           selectedSortSecondary: normalizeThenBySortSelection(
             action.payload.selectedSort,

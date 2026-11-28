@@ -4,7 +4,9 @@ import { useAtomValue, useSetAtom, useStore } from "jotai";
 import { useCallback, useMemo } from "react";
 import {
   allReleasesAtom,
+  excludedFormatsAtom,
   excludedStylesAtom,
+  excludedYearsAtom,
   type FiltersActions,
   facetOptionsAtom,
   filteredReleasesAtom,
@@ -85,6 +87,18 @@ export const useExcludedStyles = () => {
   return useAtomValue(excludedStylesAtom);
 };
 
+export const useExcludedYears = () => {
+  useFiltersScope();
+
+  return useAtomValue(excludedYearsAtom);
+};
+
+export const useExcludedFormats = () => {
+  useFiltersScope();
+
+  return useAtomValue(excludedFormatsAtom);
+};
+
 export const useSelectedYears = () => {
   useFiltersScope();
 
@@ -163,7 +177,9 @@ export const useAppliedFilterCount = () => {
   const selectedStyles = useAtomValue(selectedStylesAtom);
   const excludedStyles = useAtomValue(excludedStylesAtom);
   const selectedYears = useAtomValue(selectedYearsAtom);
+  const excludedYears = useAtomValue(excludedYearsAtom);
   const selectedFormats = useAtomValue(selectedFormatsAtom);
+  const excludedFormats = useAtomValue(excludedFormatsAtom);
 
   return useMemo(
     () =>
@@ -172,10 +188,14 @@ export const useAppliedFilterCount = () => {
         selectedStyles,
         excludedStyles,
         selectedYears,
+        excludedYears,
         selectedFormats,
+        excludedFormats,
       }),
     [
+      excludedFormats,
       excludedStyles,
+      excludedYears,
       searchQuery,
       selectedFormats,
       selectedStyles,

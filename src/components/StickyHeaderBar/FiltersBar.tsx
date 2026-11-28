@@ -32,6 +32,12 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
     handleAddExcludedStyle,
     handleRemoveExcludedStyle,
     excludedStyles,
+    handleAddExcludedFormat,
+    handleRemoveExcludedFormat,
+    excludedFormats,
+    handleAddExcludedYear,
+    handleRemoveExcludedYear,
+    excludedYearLabels,
     handleYearChange,
     handleFormatChange,
     handleSortChange,
@@ -118,6 +124,9 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
                 disabled={!collection}
                 multiple={true}
                 placeholder="All format types"
+                readOnlyPillValues={excludedFormats}
+                onReadOnlyPillRemove={handleRemoveExcludedFormat}
+                onOptionExclude={handleAddExcludedFormat}
               />
               <FilterMatchOperatorSelect
                 selectedCount={selectedFormats.length}
@@ -135,6 +144,9 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
                 disabled={!collection}
                 multiple={true}
                 placeholder="All release years"
+                readOnlyPillValues={excludedYearLabels}
+                onReadOnlyPillRemove={handleRemoveExcludedYear}
+                onOptionExclude={handleAddExcludedYear}
               />
               <FilterMatchOperatorSelect
                 selectedCount={selectedYears.length}

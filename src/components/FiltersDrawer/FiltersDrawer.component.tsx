@@ -119,6 +119,12 @@ const FiltersDrawerPanel = ({ onClose }: { onClose: () => void }) => {
     handleAddExcludedStyle,
     handleRemoveExcludedStyle,
     excludedStyles,
+    handleAddExcludedFormat,
+    handleRemoveExcludedFormat,
+    excludedFormats,
+    handleAddExcludedYear,
+    handleRemoveExcludedYear,
+    excludedYearLabels,
     handleYearChange,
     handleFormatChange,
     handleSortChange,
@@ -220,6 +226,9 @@ const FiltersDrawerPanel = ({ onClose }: { onClose: () => void }) => {
               disabled={!collection}
               operatorValue={formatOperator}
               onOperatorChange={handleFormatOperatorChange}
+              readOnlyPillValues={excludedFormats}
+              onReadOnlyPillRemove={handleRemoveExcludedFormat}
+              onOptionExclude={handleAddExcludedFormat}
             />
           </div>
         )}
@@ -236,6 +245,9 @@ const FiltersDrawerPanel = ({ onClose }: { onClose: () => void }) => {
               operatorValue={yearOperator}
               onOperatorChange={handleYearOperatorChange}
               operatorOptions={FILTER_ANY_NONE_OPERATOR_OPTIONS}
+              readOnlyPillValues={excludedYearLabels}
+              onReadOnlyPillRemove={handleRemoveExcludedYear}
+              onOptionExclude={handleAddExcludedYear}
             />
           </div>
         )}

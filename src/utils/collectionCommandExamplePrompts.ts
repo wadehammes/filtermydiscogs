@@ -2,7 +2,6 @@ import {
   COLLECTION_COMMAND_EXAMPLE_PROMPT_MAX_LENGTH,
   COLLECTION_COMMAND_EXAMPLE_PROMPTS_FALLBACK,
 } from "src/constants/collectionCommand.constants";
-import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import type { DiscogsRelease } from "src/types";
 import type {
   FacetOptions,
@@ -10,21 +9,13 @@ import type {
 } from "src/types/filters.types";
 import { listCollectionCommandMatchedReleases } from "src/utils/collectionCommandPreview";
 import { buildCollectionCommandViewNameFromFilters } from "src/utils/collectionCommandViewName";
+import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
 
 const EXAMPLE_PROMPT_COUNT = 3;
 
 const baseProbeFilters = (): PersistedFiltersJson => ({
-  selectedStyles: [],
-  excludedStyles: [],
-  selectedYears: [],
-  selectedFormats: [],
-  selectedSort: SortValues.DateAddedNew,
-  selectedSortSecondary: SortSecondaryValues.None,
-  styleOperator: "OR",
-  formatOperator: "OR",
-  yearOperator: "OR",
-  searchQuery: "",
+  ...defaultPersistedFilters,
 });
 
 const formatDecadePhrase = (decadeStart: number): string => {
