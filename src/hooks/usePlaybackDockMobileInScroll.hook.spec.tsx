@@ -27,12 +27,9 @@ describe("usePlaybackDockMobileInScroll", () => {
   it("when enabled then unmounted, resets playbackDockMobileInScrollAtom to false", () => {
     const store = createStore();
 
-    const { unmount } = renderHook(
-      () => usePlaybackDockMobileInScroll(true),
-      {
-        wrapper: renderWithStore(store),
-      },
-    );
+    const { unmount } = renderHook(() => usePlaybackDockMobileInScroll(true), {
+      wrapper: renderWithStore(store),
+    });
 
     expect(store.get(playbackDockMobileInScrollAtom)).toBe(true);
 

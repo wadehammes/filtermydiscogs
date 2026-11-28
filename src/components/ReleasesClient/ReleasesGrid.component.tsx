@@ -84,7 +84,9 @@ const ReleasesGridComponent = ({
       key={`grid-${view}-${isRandomMode}`}
       {...definedProps({
         "data-fixed-lanes": useFixedLanes ? "" : undefined,
-        "data-releases-random-workspace": isActuallyRandomMode ? true : undefined,
+        "data-releases-random-workspace": isActuallyRandomMode
+          ? true
+          : undefined,
       })}
       style={fixedLaneStyle}
     >
