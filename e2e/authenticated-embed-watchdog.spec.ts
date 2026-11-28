@@ -3,6 +3,7 @@ import { E2E_EMBED_MOCK_VIDEO_IDS } from "src/constants/e2eEmbedMock.constants";
 import { E2E_TAG_FULL_SUITE } from "./e2eProjectTags.constants";
 import { expect, test } from "./fixtures/msw.fixture";
 import {
+  E2E_EMBED_DISABLED_SKIP_REASON,
   E2E_WATCHDOG_SKIP_REASON,
   E2E_YOUTUBE_ERROR_SKIP_REASON,
   e2eWatchdogDelayedNoSkipWaitMs,
@@ -13,6 +14,7 @@ import {
   startE2eAlbumOneTrackPlayback,
   stubE2eReleaseDetailWithYoutubeVideoId,
 } from "./helpers/embedWatchdog";
+import { expectE2eNowPlayingShowsPauseControl } from "./helpers/embedTransportSync";
 
 test.describe("authenticated embed watchdog harness (MSW + mock iframe)", () => {
   test.describe.configure({ timeout: 90_000 });
@@ -34,6 +36,8 @@ test.describe("authenticated embed watchdog harness (MSW + mock iframe)", () => 
       E2E_WATCHDOG_SKIP_REASON,
       e2eWatchdogNoSkipWaitMs(),
     );
+
+    await expectE2eNowPlayingShowsPauseControl(page);
   });
 
   test("silent mock wires mode=silent on the persistent embed iframe", async ({
@@ -103,5 +107,20 @@ test.describe("authenticated embed watchdog harness (MSW + mock iframe)", () => 
       E2E_WATCHDOG_SKIP_REASON,
       e2eWatchdogDelayedNoSkipWaitMs(),
     );
+
+    await expectE2eNowPlayingShowsPauseControl(page);
+  });
+
+  test("embed150 mock skips with embed-disabled copy (pairs with remount watchdog context spec)", async ({
+    page,
+    network,
+  }) => {
+    await stubE2eReleaseDetailWithYoutubeVideoId(
+      network,
+      E2E_EMBED_MOCK_VIDEO_IDS.embed150,
+    );
+    await startE2eAlbumOneTrackPlayback(page);
+
+    await expectPlaybackSkipReasonVisible(page, E2E_EMBED_DISABLED_SKIP_REASON);
   });
 });

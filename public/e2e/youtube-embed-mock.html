@@ -16,6 +16,7 @@
       const YOUTUBE_PLAYER_STATE_PLAYING = 1;
       const YOUTUBE_PLAYER_STATE_PAUSED = 2;
       const YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE = 100;
+      const YOUTUBE_EMBED_ERROR_EMBED_DISABLED = 150;
 
       const params = new URLSearchParams(window.location.search);
       const mode = params.get("mode") || "normal";
@@ -80,10 +81,10 @@
         emitPlaying();
       };
 
-      const emitError = () => {
+      const emitError = (code) => {
         post({
           event: "onError",
-          info: YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE,
+          info: code,
         });
       };
 
@@ -93,7 +94,12 @@
         }
 
         if (mode === "error") {
-          emitError();
+          emitError(YOUTUBE_EMBED_ERROR_VIDEO_UNAVAILABLE);
+          return;
+        }
+
+        if (mode === "embed150") {
+          emitError(YOUTUBE_EMBED_ERROR_EMBED_DISABLED);
           return;
         }
 

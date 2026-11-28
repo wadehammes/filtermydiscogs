@@ -22,6 +22,9 @@ describe("e2eEmbedMock.constants", () => {
     expect(
       resolveE2eEmbedMockModeForVideoId(E2E_EMBED_MOCK_VIDEO_IDS.error),
     ).toBe("error");
+    expect(
+      resolveE2eEmbedMockModeForVideoId(E2E_EMBED_MOCK_VIDEO_IDS.embed150),
+    ).toBe("embed150");
     expect(resolveE2eEmbedMockModeForVideoId("unknownVideo1")).toBeNull();
   });
 
@@ -34,6 +37,9 @@ describe("e2eEmbedMock.constants", () => {
       true,
     );
     expect(isE2eHarnessMockVideoId(E2E_EMBED_MOCK_VIDEO_IDS.error)).toBe(true);
+    expect(isE2eHarnessMockVideoId(E2E_EMBED_MOCK_VIDEO_IDS.embed150)).toBe(
+      true,
+    );
   });
 
   it("appendE2eEmbedMockQueryParams adds mode and delay for harness video ids", () => {

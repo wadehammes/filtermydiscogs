@@ -24,6 +24,8 @@ export const E2E_WATCHDOG_SKIP_REASON =
 
 export const E2E_YOUTUBE_ERROR_SKIP_REASON = "Private or removed on YouTube";
 
+export const E2E_EMBED_DISABLED_SKIP_REASON = "Cannot play in embedded player";
+
 export const e2eWatchdogNoSkipWaitMs = () =>
   resolvePlaybackVideoUiLoadingTimeoutMsForArmMs(
     PLAYBACK_EMBED_UNAVAILABLE_WATCHDOG_MS,
