@@ -31,6 +31,9 @@ describe("WhatsNewModal", () => {
       screen.getByText(/apply filters, save a view, or create a crate/i),
     ).toBeInTheDocument();
     expect(
+      screen.getByText(/Genre & Style can exclude tags/i),
+    ).toBeInTheDocument();
+    expect(
       screen.getAllByText(/Other bug fixes and performance improvements/i),
     ).toHaveLength(WHATS_NEW_RELEASES.length);
   });

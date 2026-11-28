@@ -12,6 +12,8 @@ import {
 } from "src/components/OverlayStack/OverlayStack.component";
 import { CheckThinIcon } from "src/styles/icons/CheckThinIcon.component";
 import { ExpandChevronThinIcon } from "src/styles/icons/ExpandChevronThinIcon.component";
+import XIcon from "src/styles/icons/x-thin.svg";
+import accessibilityStyles from "src/styles/modules/accessibility.module.css";
 import { definedProps } from "src/utils/definedProps";
 import {
   applyFilterValueChange,
@@ -35,6 +37,9 @@ interface AutocompleteSelectProps {
   className?: string;
   showLabel?: boolean;
   clearable?: boolean;
+  readOnlyPillValues?: readonly string[];
+  onReadOnlyPillRemove?: (value: string) => void;
+  onOptionExclude?: (value: string) => void;
 }
 
 const getComboboxItems = (options: AutocompleteOption[]) =>
@@ -51,6 +56,9 @@ const AutocompleteSelectComponent = ({
   className,
   showLabel = false,
   clearable = false,
+  readOnlyPillValues = [],
+  onReadOnlyPillRemove,
+  onOptionExclude,
 }: AutocompleteSelectProps) => {
   const anchorRef = useRef<HTMLElement>(null);
   const overlayContainer = usePortaledOverlayContainer();
@@ -62,6 +70,8 @@ const AutocompleteSelectComponent = ({
 
   const hasSelectedValues =
     multiple && Array.isArray(value) && value.length > 0;
+  const hasReadOnlyPills = multiple && readOnlyPillValues.length > 0;
+  const hasPillRow = hasSelectedValues || hasReadOnlyPills;
 
   const assignAnchorRef = useCallback((node: HTMLElement | null) => {
     anchorRef.current = node;
@@ -112,22 +122,45 @@ const AutocompleteSelectComponent = ({
     [],
   );
 
-  const handleClearOption = useCallback(
+  const handlePillRemove = useCallback(
     (
       optionValue: string,
       event: MouseEvent | KeyboardEvent<HTMLButtonElement>,
+      onRemove: (value: string) => void,
     ) => {
       if ("key" in event && event.key !== "Enter" && event.key !== " ") {
         return;
       }
 
       stopTriggerOpen(event);
+      onRemove(optionValue);
+    },
+    [stopTriggerOpen],
+  );
 
+  const handleClearOption = useCallback(
+    (
+      optionValue: string,
+      event: MouseEvent | KeyboardEvent<HTMLButtonElement>,
+    ) => {
       if (multiple && Array.isArray(value)) {
-        onChange(value.filter((item) => item !== optionValue));
+        handlePillRemove(optionValue, event, (tag) => {
+          onChange(value.filter((item) => item !== tag));
+        });
       }
     },
-    [multiple, onChange, stopTriggerOpen, value],
+    [handlePillRemove, multiple, onChange, value],
+  );
+
+  const handleClearReadOnlyPill = useCallback(
+    (tag: string, event: MouseEvent | KeyboardEvent<HTMLButtonElement>) => {
+      if (!onReadOnlyPillRemove) {
+        return;
+      }
+
+      handlePillRemove(tag, event, onReadOnlyPillRemove);
+    },
+    [handlePillRemove, onReadOnlyPillRemove],
   );
 
   const renderSingleValue = useCallback(
@@ -143,7 +176,7 @@ const AutocompleteSelectComponent = ({
   );
 
   const triggerIcon = (
-    <span className={styles.icon}>
+    <span className={styles.icon} data-testid="fmdFilterComboboxChevron">
       <ExpandChevronThinIcon />
     </span>
   );
@@ -164,7 +197,7 @@ const AutocompleteSelectComponent = ({
       })}
     >
       <div className={styles.valueContainer}>
-        {selectedOptions.length === 0 ? (
+        {!hasPillRow ? (
           <span className={styles.placeholder}>{placeholder}</span>
         ) : (
           <HorizontalScrollRow
@@ -187,9 +220,53 @@ const AutocompleteSelectComponent = ({
                   }}
                   aria-label={`Remove ${option.label}`}
                 >
-                  ×
+                  <XIcon className={styles.pillClearIcon} />
                 </button>
               </span>
+            ))}
+            {readOnlyPillValues.map((tag) => (
+              <fieldset
+                className={styles.pillExcludeSegmented}
+                data-testid="fmdExcludePill"
+                key={`excluding-${tag}`}
+              >
+                <legend className={accessibilityStyles.visuallyHidden}>
+                  Exclude {tag}
+                </legend>
+                <span className={styles.pillExcludeLabel} aria-hidden>
+                  Not
+                </span>
+                <span className={styles.pillExcludeValue} title={tag}>
+                  <span
+                    className={classNames(
+                      styles.pillLabel,
+                      styles.pillExcludeValueText,
+                    )}
+                  >
+                    {tag}
+                  </span>
+                  {onReadOnlyPillRemove ? (
+                    <button
+                      type="button"
+                      className={classNames(
+                        styles.pillClear,
+                        styles.pillClearWarning,
+                      )}
+                      onPointerDown={stopTriggerOpen}
+                      onMouseDown={stopTriggerOpen}
+                      onClick={(event) => {
+                        handleClearReadOnlyPill(tag, event);
+                      }}
+                      onKeyDown={(event) => {
+                        handleClearReadOnlyPill(tag, event);
+                      }}
+                      aria-label={`Remove exclude ${tag}`}
+                    >
+                      <XIcon className={styles.pillClearIcon} />
+                    </button>
+                  ) : null}
+                </span>
+              </fieldset>
             ))}
           </HorizontalScrollRow>
         )}
@@ -283,7 +360,10 @@ const AutocompleteSelectComponent = ({
                   <Combobox.Item
                     key={option.value}
                     value={option.value}
-                    className={styles.option}
+                    className={classNames(
+                      styles.option,
+                      onOptionExclude && !disabled && styles.optionWithExclude,
+                    )}
                   >
                     <span className={styles.optionContent}>
                       <Combobox.ItemIndicator className={styles.checkmark}>
@@ -291,6 +371,25 @@ const AutocompleteSelectComponent = ({
                       </Combobox.ItemIndicator>
                       <span className={styles.optionLabel}>{option.label}</span>
                     </span>
+                    {onOptionExclude && !disabled ? (
+                      <span className={styles.optionExcludeSlot}>
+                        {readOnlyPillValues.includes(option.value) ? null : (
+                          <button
+                            type="button"
+                            className={styles.optionExcludeAction}
+                            onPointerDown={stopTriggerOpen}
+                            onMouseDown={stopTriggerOpen}
+                            onClick={(event) => {
+                              stopTriggerOpen(event);
+                              onOptionExclude(option.value);
+                            }}
+                            aria-label={`Exclude ${option.label}`}
+                          >
+                            Exclude
+                          </button>
+                        )}
+                      </span>
+                    ) : null}
                   </Combobox.Item>
                 )}
               </Combobox.List>

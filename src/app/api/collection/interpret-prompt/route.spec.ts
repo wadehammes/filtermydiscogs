@@ -14,6 +14,7 @@ import { verifiedDiscogsUserFactory } from "src/tests/factories/VerifiedDiscogsU
 const mockInterpretIntent: CollectionCommandIntent = {
   searchQuery: "",
   selectedStyles: ["Techno"],
+  excludedStyles: [],
   selectedYears: [],
   selectedFormats: ["Vinyl"],
   styleOperator: "OR",

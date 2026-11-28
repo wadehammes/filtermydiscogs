@@ -117,7 +117,9 @@ export const expectReleaseCrateMenuAbovePlaybackDock = () => {
 export const openFilterCombobox = async (name: string) => {
   const user = userEvent.setup({ pointerEventsCheck: 0 });
   const trigger = getFilterComboboxTrigger(name);
-  const clickTarget = trigger.querySelector("svg")?.parentElement ?? trigger;
+  const clickTarget =
+    trigger.querySelector('[data-testid="fmdFilterComboboxChevron"]') ??
+    trigger;
   await user.click(clickTarget);
 
   await waitFor(() => {

@@ -10,6 +10,7 @@ import {
   FiltersActionTypes,
 } from "src/context/filters.context";
 import {
+  useExcludedStyles,
   useFacetOptions,
   useFiltersDispatch,
   useFormatOperator,
@@ -58,6 +59,7 @@ export const useFilterHandlers = () => {
   const { availableStyles, availableYears, availableFormats } =
     useFacetOptions();
   const selectedStyles = useSelectedStyles();
+  const excludedStyles = useExcludedStyles();
   const selectedYears = useSelectedYears();
   const selectedFormats = useSelectedFormats();
   const selectedSort = useSelectedSort();
@@ -73,6 +75,26 @@ export const useFilterHandlers = () => {
       filtersDispatch({
         type: FiltersActionTypes.SetStyles,
         payload: selectedOptions,
+      });
+    },
+    [filtersDispatch],
+  );
+
+  const handleAddExcludedStyle = useCallback(
+    (style: string) => {
+      filtersDispatch({
+        type: FiltersActionTypes.AddExcludedStyle,
+        payload: style,
+      });
+    },
+    [filtersDispatch],
+  );
+
+  const handleRemoveExcludedStyle = useCallback(
+    (style: string) => {
+      filtersDispatch({
+        type: FiltersActionTypes.RemoveExcludedStyle,
+        payload: style,
       });
     },
     [filtersDispatch],
@@ -164,6 +186,9 @@ export const useFilterHandlers = () => {
 
   return {
     handleStyleChange,
+    handleAddExcludedStyle,
+    handleRemoveExcludedStyle,
+    excludedStyles,
     handleYearChange,
     handleFormatChange,
     handleSortChange,

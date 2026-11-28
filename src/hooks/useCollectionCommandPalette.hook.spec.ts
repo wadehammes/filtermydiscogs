@@ -7,6 +7,9 @@ import { mockApiResponse } from "src/tests/mocks/mockApiResponse";
 import { testAuthenticatedAuthState } from "src/tests/utils/testAuthStates";
 import type { DiscogsRelease } from "src/types";
 import type { FacetOptions } from "src/types/filters.types";
+import { sanitizeCollectionCommandIntent } from "src/utils/collectionCommandIntent";
+import { computeFacetOptions } from "src/utils/computeFacetOptions";
+import { inactiveFilterSelectionDefaults } from "src/utils/filtersStorage";
 import { act, renderFeatureHook, waitFor } from "test-utils";
 
 jest.mock("src/api/urls");
@@ -197,6 +200,26 @@ describe("useCollectionCommandPalette", () => {
         "Show me House AND Disco releases from the 2010s",
       );
     });
+  });
+
+  it("when collection releases include exclude tags, sanitize keeps excludedStyles for palette preview", () => {
+    const releases = [
+      releaseFactory.withStyles(["Deep House", "House"], {
+        basic_information: { year: 2018 },
+      }),
+    ];
+    const intent = collectionCommandIntentFactory.build({
+      selectedStyles: ["Deep House"],
+      excludedStyles: ["House"],
+    });
+    const facets = computeFacetOptions({
+      releases,
+      ...inactiveFilterSelectionDefaults,
+    });
+    const { filters } = sanitizeCollectionCommandIntent(intent, facets);
+
+    expect(filters.excludedStyles).toEqual(["House"]);
+    expect(filters.selectedStyles).toEqual(["Deep House"]);
   });
 
   it("when runInterpret succeeds, calls the interpret API with a trimmed prompt", async () => {

@@ -20,6 +20,7 @@ export { FILTERS_STORAGE_KEY };
 
 export const defaultPersistedFilters: PersistedFiltersState = {
   selectedStyles: [],
+  excludedStyles: [],
   selectedYears: [],
   selectedFormats: [],
   selectedSort: SortValues.DateAddedNew,
@@ -32,6 +33,7 @@ export const defaultPersistedFilters: PersistedFiltersState = {
 
 export const inactiveFilterSelectionDefaults = {
   selectedStyles: defaultPersistedFilters.selectedStyles,
+  excludedStyles: defaultPersistedFilters.excludedStyles,
   selectedYears: defaultPersistedFilters.selectedYears,
   selectedFormats: defaultPersistedFilters.selectedFormats,
   searchQuery: defaultPersistedFilters.searchQuery,
@@ -71,6 +73,8 @@ const isValidPersistedFilters = (
 
   return (
     isStringArray(state.selectedStyles) &&
+    (state.excludedStyles === undefined ||
+      isStringArray(state.excludedStyles)) &&
     isNumberArray(state.selectedYears) &&
     isStringArray(state.selectedFormats) &&
     typeof state.selectedSort === "string" &&
@@ -177,6 +181,7 @@ const canonicalizePersistedFiltersForCompare = (
 
   return {
     selectedStyles: [...normalized.selectedStyles].sort(),
+    excludedStyles: [...normalized.excludedStyles].sort(),
     selectedYears: [...normalized.selectedYears].sort(
       (left, right) => left - right,
     ),

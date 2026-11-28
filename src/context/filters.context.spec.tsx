@@ -101,6 +101,7 @@ describe("FiltersProvider", () => {
     await waitFor(() => {
       expect(result.current.pendingRestore).toEqual({
         selectedStyles: ["Rock"],
+        excludedStyles: [],
         selectedYears: [1984],
         selectedFormats: ["LP"],
         selectedSort: SortValues.AZTitle,
@@ -195,6 +196,7 @@ describe("FiltersProvider", () => {
     await waitFor(() => {
       expect(remountedResult.current.pendingRestore).toEqual({
         selectedStyles: ["Electronic"],
+        excludedStyles: [],
         selectedYears: [],
         selectedFormats: [],
         selectedSort: SortValues.DateAddedNew,

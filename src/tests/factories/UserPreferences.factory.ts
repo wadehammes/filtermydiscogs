@@ -39,6 +39,7 @@ class PersistedFiltersFactory extends BaseFactory<
         "Jazz",
         "Electronic",
       ]),
+      excludedStyles: [],
       selectedYears: faker.helpers.arrayElements([1970, 1980, 1990]),
       selectedFormats: faker.helpers.arrayElements(["Vinyl", "CD", "Cassette"]),
       selectedSort: faker.helpers.arrayElement([

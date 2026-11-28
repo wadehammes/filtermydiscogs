@@ -223,6 +223,10 @@ export const formatFilterViewSummary = (
     );
   }
 
+  if (normalized.excludedStyles.length > 0) {
+    parts.push(`Not: ${normalized.excludedStyles.join(", ")}`);
+  }
+
   if (normalized.selectedFormats.length > 0) {
     parts.push(
       `Format: ${normalized.selectedFormats.join(", ")}${formatOperatorSuffix(normalized.formatOperator, normalized.selectedFormats.length, FILTER_MATCH_OPERATOR_OPTIONS)}`,

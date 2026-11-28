@@ -34,4 +34,16 @@ describe("getAppliedFilterCount", () => {
       }),
     ).toBe(1);
   });
+
+  it("counts excluded styles as an active genre and style filter", () => {
+    expect(
+      getAppliedFilterCount({
+        searchQuery: "",
+        selectedStyles: [],
+        excludedStyles: ["House"],
+        selectedYears: [],
+        selectedFormats: [],
+      }),
+    ).toBe(1);
+  });
 });

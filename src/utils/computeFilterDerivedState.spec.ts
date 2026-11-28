@@ -44,4 +44,36 @@ describe("computeFilterDerivedState", () => {
     expect(result.facetOptions.availableYears).toEqual([1959]);
     expect(result.facetOptions.availableFormats).toEqual(["Vinyl"]);
   });
+
+  it("when excludedStyles is set, omits releases that carry any excluded tag", () => {
+    const included = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Deep House"],
+        year: 2018,
+      }),
+    });
+    const alsoTaggedExcluded = releaseFactory.build({
+      basic_information: basicInformationFactory.build({
+        styles: ["Deep House", "House"],
+        year: 2018,
+      }),
+    });
+    const releases = [included, alsoTaggedExcluded];
+
+    buildReleaseSearchIndex(releases);
+
+    const result = computeFilterDerivedState({
+      releases,
+      selectedStyles: ["Deep House"],
+      excludedStyles: ["House"],
+      selectedYears: [2018],
+      selectedFormats: [],
+      searchQuery: "",
+      styleOperator: "OR",
+      formatOperator: "OR",
+      yearOperator: "OR",
+    });
+
+    expect(result.filteredReleases).toEqual([included]);
+  });
 });

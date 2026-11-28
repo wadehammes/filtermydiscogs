@@ -19,6 +19,18 @@ export type CollectionCommandPreviewFact = {
   value: string;
 };
 
+const isExclusionPreviewFact = (fact: CollectionCommandPreviewFact): boolean =>
+  fact.label.startsWith("Exclude");
+
+export const formatCollectionCommandPreviewTailSegment = (
+  fact: CollectionCommandPreviewFact,
+): string =>
+  isExclusionPreviewFact(fact) ? `excluding ${fact.value}` : fact.value;
+
+export const formatCollectionCommandPreviewTail = (
+  facts: CollectionCommandPreviewFact[],
+): string => facts.map(formatCollectionCommandPreviewTailSegment).join(" · ");
+
 const summarizeYears = (years: number[]): string => {
   if (years.length === 0) {
     return "";
@@ -50,6 +62,13 @@ export const formatCollectionCommandPreviewDetails = (
     facts.push({
       label: normalized.styleOperator === "NONE" ? "Exclude style" : "Style",
       value: tags,
+    });
+  }
+
+  if (normalized.excludedStyles.length > 0) {
+    facts.push({
+      label: "Exclude style",
+      value: normalized.excludedStyles.join(", "),
     });
   }
 

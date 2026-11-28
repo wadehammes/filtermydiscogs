@@ -44,6 +44,9 @@ type DrawerFacetFilterProps = {
     value: StyleOperator | YearOperator;
     label: string;
   }>;
+  readOnlyPillValues?: readonly string[];
+  onReadOnlyPillRemove?: (value: string) => void;
+  onOptionExclude?: (value: string) => void;
 };
 
 const DrawerFacetFilter = ({
@@ -56,6 +59,9 @@ const DrawerFacetFilter = ({
   operatorValue,
   onOperatorChange,
   operatorOptions,
+  readOnlyPillValues,
+  onReadOnlyPillRemove,
+  onOptionExclude,
 }: DrawerFacetFilterProps) => {
   const hasSelections = selectedValues.length > 0;
 
@@ -71,6 +77,11 @@ const DrawerFacetFilter = ({
           disabled={disabled}
           multiple={true}
           placeholder={placeholder}
+          {...definedProps({
+            readOnlyPillValues,
+            onReadOnlyPillRemove,
+            onOptionExclude,
+          })}
         />
         <FilterMatchOperatorSelect
           selectedCount={selectedValues.length}
@@ -119,6 +130,9 @@ const FiltersDrawerPanel = ({ onClose }: { onClose: () => void }) => {
   });
   const {
     handleStyleChange,
+    handleAddExcludedStyle,
+    handleRemoveExcludedStyle,
+    excludedStyles,
     handleYearChange,
     handleFormatChange,
     handleSortChange,
@@ -217,6 +231,9 @@ const FiltersDrawerPanel = ({ onClose }: { onClose: () => void }) => {
               disabled={!collection}
               operatorValue={styleOperator}
               onOperatorChange={handleStyleOperatorChange}
+              readOnlyPillValues={excludedStyles}
+              onReadOnlyPillRemove={handleRemoveExcludedStyle}
+              onOptionExclude={handleAddExcludedStyle}
             />
           </div>
         )}

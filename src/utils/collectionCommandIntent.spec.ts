@@ -10,6 +10,7 @@ import {
 const baseIntent: CollectionCommandIntent = {
   searchQuery: "aphex",
   selectedStyles: ["Techno", "NotInCollection"],
+  excludedStyles: [],
   selectedYears: [1999, 1888],
   selectedFormats: ["Vinyl"],
   styleOperator: "OR",
@@ -63,7 +64,7 @@ describe("sanitizeCollectionCommandIntent", () => {
     expect(result.filters.yearOperator).toBe("OR");
   });
 
-  it("defaults sort to release year newest when year bounds are set and sort is unchanged", () => {
+  it("keeps default date-added sort when year bounds are set and sort was not requested", () => {
     const result = sanitizeCollectionCommandIntent(
       {
         ...baseIntent,
@@ -81,7 +82,7 @@ describe("sanitizeCollectionCommandIntent", () => {
       },
     );
 
-    expect(result.filters.selectedSort).toBe(SortValues.AlbumYearNew);
+    expect(result.filters.selectedSort).toBe(SortValues.DateAddedNew);
   });
 });
 
@@ -91,5 +92,37 @@ describe("collectionCommandIntentToFilters", () => {
 
     expect(filters.searchQuery).toBe("aphex");
     expect(filters.selectedSort).toBe(SortValues.DateAddedNew);
+  });
+
+  it("maps excludedStyles into persisted filters", () => {
+    const filters = collectionCommandIntentToFilters({
+      ...baseIntent,
+      selectedStyles: ["Deep House"],
+      excludedStyles: ["House"],
+    });
+
+    expect(filters.selectedStyles).toEqual(["Deep House"]);
+    expect(filters.excludedStyles).toEqual(["House"]);
+  });
+});
+
+describe("sanitizeCollectionCommandIntent excluded styles", () => {
+  it("keeps excluded styles that exist in facet options", () => {
+    const result = sanitizeCollectionCommandIntent(
+      {
+        ...baseIntent,
+        searchQuery: "",
+        selectedStyles: ["Deep House"],
+        excludedStyles: ["House", "NotInCollection"],
+      },
+      {
+        availableStyles: ["Deep House", "House"],
+        availableYears: [],
+        availableFormats: [],
+      },
+    );
+
+    expect(result.filters.selectedStyles).toEqual(["Deep House"]);
+    expect(result.filters.excludedStyles).toEqual(["House"]);
   });
 });

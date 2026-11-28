@@ -93,6 +93,7 @@ describe("filterViews", () => {
         selectedSort: session.selectedSort,
         selectedSortSecondary: session.selectedSortSecondary,
         selectedFormats: [],
+        excludedStyles: [],
         selectedYears: [],
         selectedStyles: ["Deep House", "Acid"],
       }),

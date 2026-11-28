@@ -26,6 +26,7 @@ export const isYearMatchOperator = (
 
 export type PersistedFiltersJson = {
   selectedStyles: string[];
+  excludedStyles: string[];
   selectedYears: number[];
   selectedFormats: string[];
   selectedSort: SortValues;
@@ -47,7 +48,9 @@ export type ReleaseFilterCriteria = Pick<
   | "styleOperator"
   | "formatOperator"
   | "yearOperator"
->;
+> & {
+  excludedStyles?: string[];
+};
 
 export interface FacetOptions {
   availableStyles: string[];

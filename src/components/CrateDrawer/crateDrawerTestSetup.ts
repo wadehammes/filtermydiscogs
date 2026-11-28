@@ -1,5 +1,6 @@
 import type { Api } from "src/api/urls";
 import { api } from "src/api/urls";
+import { basicInformationFactory } from "src/tests/factories/BasicInformation.factory";
 import { cratesResponseFactory } from "src/tests/factories/CratesResponse.factory";
 import { crateWithCountFactory } from "src/tests/factories/CrateWithCount.factory";
 import { crateWithReleasesResponseFactory } from "src/tests/factories/CrateWithReleasesResponse.factory";
@@ -25,10 +26,16 @@ export { crateDrawerDefaultDetail };
 
 export const crateDrawerReleasePacked = releaseFactory.build({
   instance_id: "111",
+  basic_information: basicInformationFactory.build({
+    title: "Crate Drawer Packed Fixture",
+  }),
 });
 
 export const crateDrawerReleaseUnpacked = releaseFactory.build({
   instance_id: "222",
+  basic_information: basicInformationFactory.build({
+    title: "Crate Drawer Unpacked Fixture",
+  }),
 });
 
 export const crateDrawerPartiallyPackedResponse =

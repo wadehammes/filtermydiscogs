@@ -1,11 +1,15 @@
 import { describe, expect, it } from "@jest/globals";
 import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import type { PersistedFiltersJson } from "src/types/filters.types";
-import { formatCollectionCommandPreviewDetails } from "src/utils/collectionCommandPreview";
+import {
+  formatCollectionCommandPreviewDetails,
+  formatCollectionCommandPreviewTail,
+} from "src/utils/collectionCommandPreview";
 
 const baseFilters: PersistedFiltersJson = {
   searchQuery: "",
   selectedStyles: [],
+  excludedStyles: [],
   selectedYears: [],
   selectedFormats: [],
   styleOperator: "OR",
@@ -33,6 +37,19 @@ describe("formatCollectionCommandPreviewDetails", () => {
     );
     expect(facts.find((fact) => fact.label === "Sort")?.value).toContain(
       "Release Year",
+    );
+  });
+
+  it("labels excluded styles in the preview tail", () => {
+    const facts = formatCollectionCommandPreviewDetails({
+      ...baseFilters,
+      selectedStyles: ["Deep House"],
+      excludedStyles: ["House"],
+      selectedYears: [2018],
+    });
+
+    expect(formatCollectionCommandPreviewTail(facts)).toBe(
+      "Deep House · excluding House · 2018",
     );
   });
 });

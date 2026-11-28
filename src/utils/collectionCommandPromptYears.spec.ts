@@ -11,6 +11,7 @@ const referenceDate = new Date("2026-11-27T12:00:00");
 const baseIntent: CollectionCommandIntent = {
   searchQuery: "",
   selectedStyles: ["Deep House", "Electro"],
+  excludedStyles: [],
   selectedYears: [2022, 2023],
   selectedFormats: [],
   styleOperator: "OR",

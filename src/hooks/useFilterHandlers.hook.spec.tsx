@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue, useStore } from "jotai";
 import {
   collectionFiltersActiveAtom,
+  excludedStylesAtom,
   filtersDispatchAtom,
   formatOperatorAtom,
   selectedFormatsAtom,
@@ -54,6 +55,109 @@ describe("useFilterHandlers", () => {
     });
 
     expect(result.current.selectedStyles).toEqual(["Rock"]);
+  });
+
+  it("when handleAddExcludedStyle is called, adds the tag to excludedStyles and drops it from selectedStyles", () => {
+    const releases = [
+      releaseFactory.withStyles(["Deep House", "House"]),
+      releaseFactory.withStyles(["Techno"]),
+    ];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers();
+        const selectedStyles = useAtomValue(selectedStylesAtom);
+        const excludedStyles = useAtomValue(excludedStylesAtom);
+
+        return { handlers, selectedStyles, excludedStyles };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ selectedStyles: ["Deep House", "House"] }}
+          >
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleAddExcludedStyle("House");
+    });
+
+    expect(result.current.excludedStyles).toEqual(["House"]);
+    expect(result.current.selectedStyles).toEqual(["Deep House"]);
+    expect(result.current.handlers.excludedStyles).toEqual(["House"]);
+  });
+
+  it("when handleStyleChange includes a tag that is excluded, removes that tag from excludedStyles", () => {
+    const releases = [
+      releaseFactory.withStyles(["Deep House", "Techno"]),
+      releaseFactory.withStyles(["House"]),
+    ];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers();
+        const selectedStyles = useAtomValue(selectedStylesAtom);
+        const excludedStyles = useAtomValue(excludedStylesAtom);
+
+        return { handlers, selectedStyles, excludedStyles };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{
+              selectedStyles: ["Techno"],
+              excludedStyles: ["Deep House"],
+            }}
+          >
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleStyleChange(["Techno", "Deep House"]);
+    });
+
+    expect(result.current.selectedStyles).toEqual(["Techno", "Deep House"]);
+    expect(result.current.excludedStyles).toEqual([]);
+    expect(result.current.handlers.excludedStyles).toEqual([]);
+  });
+
+  it("when handleRemoveExcludedStyle is called, removes the tag from excludedStyles", () => {
+    const releases = [releaseFactory.withStyles(["House", "Techno"])];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers();
+        const excludedStyles = useAtomValue(excludedStylesAtom);
+
+        return { handlers, excludedStyles };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ excludedStyles: ["House"] }}
+          >
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleRemoveExcludedStyle("House");
+    });
+
+    expect(result.current.excludedStyles).toEqual([]);
+    expect(result.current.handlers.excludedStyles).toEqual([]);
   });
 
   it("includes active session styles in styleOptions when facets are empty", () => {

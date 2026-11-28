@@ -79,6 +79,38 @@ describe("AutocompleteSelect", () => {
     expect(screen.getByText("Option 2")).toBeInTheDocument();
   });
 
+  it("shows Not: exclude pills with warning-themed styling", () => {
+    const handleRemoveExclude = jest.fn();
+    po.renderAutocompleteSelect({
+      value: ["option1"],
+      readOnlyPillValues: ["Ambient"],
+      onReadOnlyPillRemove: handleRemoveExclude,
+    });
+
+    expect(screen.getByText("Option 1")).toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: "Exclude Ambient" }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByTestId("fmdExcludePill")).toHaveLength(1);
+    expect(screen.getByText("Ambient")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Remove exclude Ambient" }),
+    ).toBeInTheDocument();
+  });
+
+  it("calls onOptionExclude when Exclude is activated on a list row", async () => {
+    const handleExclude = jest.fn();
+    po.renderAutocompleteSelect({ onOptionExclude: handleExclude });
+
+    const user = await openFilterCombobox("Test Autocomplete");
+    const excludeButton = await screen.findByRole("button", {
+      name: "Exclude Option 1",
+    });
+    await user.click(excludeButton);
+
+    expect(handleExclude).toHaveBeenCalledWith("option1");
+  });
+
   it("clears all selections when Clear is pressed", async () => {
     const handleChange = jest.fn();
     po.renderAutocompleteSelect({
