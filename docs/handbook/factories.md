@@ -101,6 +101,7 @@ name: faker.helpers.arrayElement(FORMAT_NAMES), // FORMAT_NAMES as const, field 
 
 - **`empty()`** — same object as [`defaultPersistedFilters`](../../src/utils/filtersStorage.ts); use for “no filters” expectations and spreads that need the full keyed shape.
 - **`withDefaults(partial)`** — merge onto defaults **without** Faker on unset fields (parse/restore, saved views, **`SeedCollectionFilters`** when passing a full snapshot, operator specs that need stable **`OR`** defaults).
+- **`preFacetExcludesSnapshot(partial)`** — omits **`excludedStyles`** / **`excludedFormats`** / **`excludedYears`** for saved-view JSON and **`ApplySessionFilters`** specs that mirror prefs from before facet excludes ([`LegacyPersistedFiltersSnapshot`](../../src/types/filters.types.ts)).
 - **`build(partial)`** — Faker fills any field not in **`partial`**; use only when random extras do not affect assertions.
 - **`appliedFilterCountInputFrom`**, **`releaseFilterCriteriaFrom`**, **`computeFilterDerivedStateInputFrom`** — map to util spec inputs; pair with [`getAppliedFilterCount.spec.ts`](../../src/utils/getAppliedFilterCount.spec.ts) and [`computeFilterDerivedState.spec.ts`](../../src/utils/computeFilterDerivedState.spec.ts).
 

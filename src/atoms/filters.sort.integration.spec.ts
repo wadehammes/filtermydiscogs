@@ -4,6 +4,7 @@ import {
   collectionFiltersActiveAtom,
   filtersDispatchAtom,
   selectedSortSecondaryAtom,
+  selectedStylesAtom,
   sortedFilteredReleasesAtom,
 } from "src/atoms/filters.atoms";
 import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
@@ -181,6 +182,29 @@ describe("filters secondary sort integration", () => {
     });
 
     expect(result.current.secondary).toBe(SortSecondaryValues.None);
+  });
+
+  it("applies saved view filters that predate facet exclude fields", () => {
+    const legacyFilters = persistedFiltersFactory.preFacetExcludesSnapshot({
+      selectedStyles: ["Techno"],
+    });
+
+    const { result } = renderHook(
+      () => ({
+        dispatch: useSetAtom(filtersDispatchAtom),
+        selectedStyles: useAtomValue(selectedStylesAtom),
+      }),
+      { wrapper: TestProviders },
+    );
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.ApplySessionFilters,
+        payload: legacyFilters,
+      });
+    });
+
+    expect(result.current.selectedStyles).toEqual(["Techno"]);
   });
 
   it("normalizes Then by when applying saved filters with a conflicting secondary sort", () => {

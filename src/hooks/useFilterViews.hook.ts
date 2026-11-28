@@ -12,6 +12,7 @@ import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQue
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import type { PersistedFiltersJson } from "src/types/filters.types";
+import { parseStoredFiltersObject } from "src/utils/filtersStorage";
 import {
   createFilterView,
   ensureUniqueFilterViewName,
@@ -86,7 +87,7 @@ export const useFilterViews = () => {
     (view: FilterView) => {
       filtersDispatch({
         type: FiltersActionTypes.ApplySessionFilters,
-        payload: { ...view.filters },
+        payload: parseStoredFiltersObject(view.filters),
       });
     },
     [filtersDispatch],
@@ -181,7 +182,7 @@ export const useFilterViews = () => {
 
       filtersDispatch({
         type: FiltersActionTypes.ApplySessionFilters,
-        payload: filters,
+        payload: parseStoredFiltersObject(filters),
       });
 
       return true;

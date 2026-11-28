@@ -41,6 +41,15 @@ export type PersistedFiltersJson = {
 
 export type PersistedFiltersState = PersistedFiltersJson;
 
+export type LegacyPersistedFiltersSnapshot = Omit<
+  PersistedFiltersJson,
+  "excludedStyles" | "excludedFormats" | "excludedYears"
+>;
+
+export type StoredPersistedFiltersInput =
+  | PersistedFiltersJson
+  | LegacyPersistedFiltersSnapshot;
+
 export type ReleaseFilterCriteria = Pick<
   PersistedFiltersJson,
   | "selectedStyles"
