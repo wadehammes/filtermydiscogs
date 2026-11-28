@@ -1,12 +1,13 @@
 export const WHATS_NEW_SHORTCUT_PLACEHOLDER = "%shortcut%";
 
-export type WhatsNewBulletBadge = "new" | "fixed" | "improved";
+export type WhatsNewBulletBadge = "new" | "fixed" | "improved" | "removed";
 
 export const WHATS_NEW_BULLET_BADGE_LABEL: Record<WhatsNewBulletBadge, string> =
   {
     new: "New",
     fixed: "Fixed",
     improved: "Improved",
+    removed: "Removed",
   };
 
 export type WhatsNewBullet = {
@@ -46,22 +47,27 @@ export const WHATS_NEW_RELEASES: readonly WhatsNewRelease[] = [
       {
         id: "whats-new-modal",
         badge: "new",
-        text: "What's New? in the account menu summarizes recent releases. After a production deploy refresh, it can open when you have not seen the latest notes.",
+        text: "What's New? in the account menu lists release notes and may open once after a deploy refresh.",
       },
       {
         id: "collection-command-palette",
         badge: "new",
-        text: `On the collection page, open Ask in the filters bar, the mobile header, or press ${WHATS_NEW_SHORTCUT_PLACEHOLDER}, type what you want, run it, then apply filters, save a view, or create a crate from the preview.`,
+        text: `Collection Ask (${WHATS_NEW_SHORTCUT_PLACEHOLDER}, filters bar, or mobile header): describe filters, then apply, save a view, or create a crate.`,
       },
       {
         id: "genre-style-exclude",
         badge: "new",
-        text: "Genre & Style can exclude tags: hover a style in the list and choose Exclude for Not chips, or describe what to omit in Ask (for example, deep house that are not techno). Includes and excludes cannot overlap on the same tag.",
+        text: "Genre & Style excludes: row Exclude → Not chips, or say what to omit in Ask. Same tag cannot be included and excluded.",
+      },
+      {
+        id: "collection-radio-removed",
+        badge: "removed",
+        text: "Collection radio is removed for now. A revised version may return after I refine the concept.",
       },
       {
         id: "mobile-playback-header-dock",
         badge: "improved",
-        text: "While something is playing on phone or tablet, use the header control to hide the playback bar for more screen; when the bar is hidden, play or pause stays in the header so audio keeps going.",
+        text: "Mobile header can hide the playback bar; play and pause stay in the header.",
       },
     ],
   },

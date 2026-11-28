@@ -19,6 +19,7 @@ const WHATS_NEW_BADGE_CLASS: Record<WhatsNewBulletBadge, string> = {
   new: styles.badgeNew,
   fixed: styles.badgeFixed,
   improved: styles.badgeImproved,
+  removed: styles.badgeRemoved,
 };
 
 interface WhatsNewModalProps {

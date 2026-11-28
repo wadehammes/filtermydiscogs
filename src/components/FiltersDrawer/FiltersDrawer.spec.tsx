@@ -18,18 +18,6 @@ import {
 import { createFilterView } from "src/utils/filterViews";
 import { screen, waitFor } from "test-utils";
 
-jest.mock("src/hooks/useCollectionRadioPlayback.hook", () => ({
-  useCollectionRadioPlayback: () => ({
-    startCollectionRadio: jest.fn(),
-    isStarting: false,
-    isPrefetching: false,
-    isDetailsReady: true,
-    filteredReleaseCount: 2,
-    isCollectionRadioSession: false,
-    isCollectionRadioTransportPlaying: false,
-  }),
-}));
-
 jest.mock("src/context/releasePlayback.context", () => {
   const actual = jest.requireActual<
     typeof import("src/context/releasePlayback.context")
@@ -497,7 +485,7 @@ describe("FiltersDrawer", () => {
     expect(saved.selectedFormats).toEqual(["Test Pressing", "White Label"]);
   });
 
-  it("shows collection radio play in the drawer footer when filters are active", () => {
+  it("shows applied filter hint in the drawer footer when filters are active", () => {
     po.renderFiltersDrawer({
       sessionFilters: {
         ...defaultPersistedFilters,
@@ -505,12 +493,6 @@ describe("FiltersDrawer", () => {
       },
     });
 
-    expect(
-      screen.getByTestId("fmdCollectionRadioPlayButton"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Play collection radio")).toBeVisible();
-    expect(
-      screen.getByRole("button", { name: "Play collection radio" }),
-    ).toBeEnabled();
+    expect(screen.getByText("1 filter applied")).toBeVisible();
   });
 });

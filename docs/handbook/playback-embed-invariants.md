@@ -14,7 +14,6 @@ Behavioral contract for **YouTube embed ↔ global queue** wiring. Implementatio
 | Pause, track switch, restore   | [`releasePlayback.context.trackSwitchPauseRestore.spec.tsx`](../../src/context/releasePlayback.context.trackSwitchPauseRestore.spec.tsx) |
 | YouTube overrides              | [`releasePlayback.context.overrides.spec.tsx`](../../src/context/releasePlayback.context.overrides.spec.tsx)                             |
 | Similar queue tail             | [`releasePlayback.context.similarQueue.spec.tsx`](../../src/context/releasePlayback.context.similarQueue.spec.tsx)                       |
-| Collection radio queue         | [`releasePlayback.context.collectionRadio.spec.tsx`](../../src/context/releasePlayback.context.collectionRadio.spec.tsx)                 |
 
 ## Queue advance and end detection
 

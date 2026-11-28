@@ -1,7 +1,6 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
 import {
   useCallback,
   useEffect,
@@ -10,7 +9,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { collectionRadioActiveAtom } from "src/atoms/collectionRadioPlayback.atoms";
 import { useAuth } from "src/context/auth.context";
 import { useCollectionContext } from "src/context/collection.context";
 import { useDiscogsCollectionQuery } from "src/hooks/queries/useDiscogsCollectionQuery";
@@ -408,10 +406,6 @@ export const useReleasePlaybackProviderImpl = (): {
     persistPlaybackSession,
   });
 
-  const collectionRadioActive = useAtomValue(collectionRadioActiveAtom);
-  const collectionRadioActiveRef = useRef(collectionRadioActive);
-  collectionRadioActiveRef.current = collectionRadioActive;
-
   const handleSimilarQueueFetchLifecycle = useCallback(
     (phase: SimilarQueueFetchLifecyclePhase) => {
       if (phase === "start") {
@@ -462,7 +456,6 @@ export const useReleasePlaybackProviderImpl = (): {
         queueManuallyExtendedRef,
         extendQueueWithSimilarReleasesRef,
         similarQueueSuppressedAfterClearRef,
-        collectionRadioActiveRef,
       },
     });
 
@@ -1655,7 +1648,6 @@ export const useReleasePlaybackProviderImpl = (): {
       isLoading,
       isQueueBuilding,
       isSimilarQueueLoading,
-      isCollectionRadioQueueLoading: false,
       queueAutopopulateSource: null,
       isPlaybackVideoLoading,
       isPlaybackVideoTransitionPending,

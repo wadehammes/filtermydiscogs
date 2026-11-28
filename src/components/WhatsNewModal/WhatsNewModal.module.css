@@ -99,6 +99,13 @@
   color: var(--pill-style-foreground);
 }
 
+.badgeRemoved {
+  composes: badge;
+  background: color-mix(in srgb, var(--muted) 45%, var(--background));
+  border-color: color-mix(in srgb, var(--muted-foreground) 35%, var(--border));
+  color: var(--muted-foreground);
+}
+
 .bulletText {
   min-width: 0;
   text-wrap: pretty;

@@ -55,7 +55,6 @@ const defaultDigControlsPlaybackState = (
   isLoading: false,
   isQueueBuilding: false,
   isSimilarQueueLoading: false,
-  isCollectionRadioQueueLoading: false,
   queueAutopopulateSource: null,
   isPlaybackVideoLoading: false,
   isPlaybackVideoTransitionPending: false,

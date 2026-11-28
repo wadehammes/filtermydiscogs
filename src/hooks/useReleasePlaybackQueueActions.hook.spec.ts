@@ -5,16 +5,6 @@ jest.mock("src/analytics/productAnalyticsEvents", () => ({
   trackPlaybackStarted: jest.fn(),
 }));
 
-const mockSetCollectionRadioActive = jest.fn();
-
-jest.mock("jotai", () => {
-  const actual = jest.requireActual<typeof import("jotai")>("jotai");
-  return {
-    ...actual,
-    useSetAtom: () => mockSetCollectionRadioActive,
-  };
-});
-
 import type { Dispatch } from "react";
 import { useReleasePlaybackQueueActions } from "src/hooks/useReleasePlaybackQueueActions.hook";
 
@@ -191,7 +181,6 @@ const buildHarness = ({
 describe("useReleasePlaybackQueueActions", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSetCollectionRadioActive.mockClear();
     localStorage.clear();
   });
 
@@ -1630,25 +1619,10 @@ describe("useReleasePlaybackQueueActions", () => {
 
     result.current.clearQueue();
 
-    expect(mockSetCollectionRadioActive).toHaveBeenCalledWith(false);
     expect(setUpcomingQueue).toHaveBeenCalledWith([]);
     expect(queueManuallyExtendedRef.current).toBe(false);
     expect(similarQueueModeRef.current.enabled).toBe(false);
     expect(similarQueueSuppressedAfterClearRef.current).toBe(true);
-  });
-
-  it("startPlayback clears collection radio active chrome", () => {
-    const release = releaseFactory.withDisplayDefaults();
-    const { result } = buildHarness();
-
-    result.current.startPlayback({
-      release,
-      trackPosition: "A1",
-      trackTitle: "Track",
-      rebuildAlbumQueue: false,
-    });
-
-    expect(mockSetCollectionRadioActive).toHaveBeenCalledWith(false);
   });
 
   it("startPlayback with upcomingQueue does not reset dock progress when continuing the same YouTube upload", () => {
@@ -1913,14 +1887,6 @@ describe("useReleasePlaybackQueueActions", () => {
         trackTitle: "Radio track",
       }),
     );
-  });
-
-  it("stopPlayback clears collection radio active chrome", () => {
-    const { result } = buildHarness();
-
-    result.current.stopPlayback();
-
-    expect(mockSetCollectionRadioActive).toHaveBeenCalledWith(false);
   });
 
   it("stopPlayback clears persisted session state and stops transport", () => {

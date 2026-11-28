@@ -84,20 +84,6 @@
   width: 100%;
 }
 
-.footerRow {
-  align-items: center;
-  display: flex;
-  gap: var(--space-3);
-  justify-content: space-between;
-  width: 100%;
-}
-
-.collectionRadioSlot {
-  flex: none;
-  margin-inline-start: auto;
-  overflow: visible;
-}
-
 .activeFiltersHint {
   color: var(--muted-foreground);
   font-size: var(--text-sm);

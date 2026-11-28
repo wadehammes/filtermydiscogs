@@ -24,15 +24,20 @@ describe("WhatsNewModal", () => {
     expect(
       screen.getByText(/What's New\? in the account menu/i),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Collection Ask/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/open Ask in the filters bar, the mobile header/i),
+      screen.getByText(/apply, save a view, or create a crate/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Genre & Style excludes/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Collection radio is removed for now/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/apply filters, save a view, or create a crate/i),
+      screen.getByText(
+        /A revised version may return after I refine the concept/i,
+      ),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Genre & Style can exclude tags/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Removed")).toBeInTheDocument();
     expect(
       screen.getAllByText(/Other bug fixes and performance improvements/i),
     ).toHaveLength(WHATS_NEW_RELEASES.length);

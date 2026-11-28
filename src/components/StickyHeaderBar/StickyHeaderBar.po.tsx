@@ -18,13 +18,6 @@ jest.mock("src/api/urls");
 jest.mock("src/analytics/analytics", () => ({
   trackEvent: jest.fn(),
 }));
-jest.mock(
-  "src/components/CollectionRadioPlayButton/CollectionRadioPlayButton.component",
-  () => ({
-    CollectionRadioPlayButton: () => null,
-  }),
-);
-
 const mockApi = jest.mocked(api);
 
 export type StickyHeaderBarRenderProps = {

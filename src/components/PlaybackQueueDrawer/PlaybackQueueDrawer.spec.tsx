@@ -18,14 +18,10 @@ const queueItem: PlaybackQueueItem = createQueueItem({
 
 const basePlaybackState: Pick<
   ReleasePlaybackState,
-  | "isQueueBuilding"
-  | "isSimilarQueueLoading"
-  | "isCollectionRadioQueueLoading"
-  | "queueAutopopulateSource"
+  "isQueueBuilding" | "isSimilarQueueLoading" | "queueAutopopulateSource"
 > = {
   isQueueBuilding: false,
   isSimilarQueueLoading: false,
-  isCollectionRadioQueueLoading: false,
   queueAutopopulateSource: null,
 };
 
@@ -70,21 +66,6 @@ describe("PlaybackQueueDrawer", () => {
     ).toHaveAttribute("href", SETTINGS_PLAYBACK_QUEUE_TAIL_HREF);
   });
 
-  it("shows collection radio loading status in the queue drawer", () => {
-    useReleasePlaybackState.mockReturnValue({
-      ...basePlaybackState,
-      isCollectionRadioQueueLoading: true,
-      isQueueBuilding: true,
-      queueAutopopulateSource: "collection-radio",
-    });
-
-    render(<PlaybackQueueDrawer isOpen onClose={jest.fn()} />);
-
-    expect(
-      screen.getByTestId("fmdPlaybackQueueBuildingStatus"),
-    ).toHaveTextContent("Collection radio is adding");
-  });
-
   it("marks the queue list busy while similar tail autopopulate is loading", () => {
     useReleasePlaybackState.mockReturnValue({
       ...basePlaybackState,
@@ -107,7 +88,7 @@ describe("PlaybackQueueDrawer", () => {
   it("keeps reordering enabled while queue status is shown", async () => {
     useReleasePlaybackState.mockReturnValue({
       ...basePlaybackState,
-      queueAutopopulateSource: "collection-radio",
+      queueAutopopulateSource: "similar-tail",
     });
 
     render(<PlaybackQueueDrawer isOpen onClose={jest.fn()} />);

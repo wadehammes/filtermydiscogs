@@ -5,7 +5,6 @@ import {
   trackPlaybackQueued,
   trackPlaybackStarted,
 } from "src/analytics/productAnalyticsEvents";
-import { useCollectionRadioActiveChrome } from "src/hooks/useCollectionRadioActiveChrome.hook";
 import {
   createSimilarQueueMode,
   type SimilarQueueMode,
@@ -178,7 +177,6 @@ export const useReleasePlaybackQueueActions = ({
   forceEmbedReloadAfterUnavailableSkipRef,
   refs,
 }: UseReleasePlaybackQueueActionsParams) => {
-  const { clearCollectionRadioActive } = useCollectionRadioActiveChrome();
   const {
     awaitingResumeGestureRef,
     pendingPlayFromGestureRef,
@@ -472,7 +470,6 @@ export const useReleasePlaybackQueueActions = ({
       upcomingQueue,
       startQueueItem,
     }: StartPlaybackParams) => {
-      clearCollectionRadioActive();
       similarQueueSuppressedAfterClearRef.current = false;
       dispatchSession({ type: "CLEAR_PREVIEW_PENDING" });
 
@@ -550,7 +547,6 @@ export const useReleasePlaybackQueueActions = ({
       });
     },
     [
-      clearCollectionRadioActive,
       dispatchSession,
       maybePushCurrentToHistory,
       playQueueItem,
@@ -794,7 +790,6 @@ export const useReleasePlaybackQueueActions = ({
 
   const stopPlayback = useCallback(
     ({ resetSkipLogToast = true }: { resetSkipLogToast?: boolean } = {}) => {
-      clearCollectionRadioActive();
       resetUserTrackRecordingSession();
       setNowPlayingQueueItem(null);
       setPlaybackTrackTitleOverride(null);
@@ -823,7 +818,6 @@ export const useReleasePlaybackQueueActions = ({
       resetDockEmbedProgress();
     },
     [
-      clearCollectionRadioActive,
       clearPlayFromGestureRetries,
       dispatchSession,
       setPlaybackTrackTitleOverride,
@@ -927,7 +921,6 @@ export const useReleasePlaybackQueueActions = ({
   startPlaybackRef.current = startPlayback;
 
   const clearQueue = useCallback(() => {
-    clearCollectionRadioActive();
     similarQueueSuppressedAfterClearRef.current = true;
     similarQueueModeRef.current = createSimilarQueueMode(false);
     similarQueueGenerationRef.current += 1;
@@ -935,7 +928,6 @@ export const useReleasePlaybackQueueActions = ({
     queueManuallyExtendedRef.current = false;
     setUpcomingQueue([]);
   }, [
-    clearCollectionRadioActive,
     queueManuallyExtendedRef,
     setUpcomingQueue,
     shouldRebuildAlbumQueueRef,

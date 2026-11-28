@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it } from "@jest/globals";
-import { useAtom } from "jotai";
 import type { ReactNode } from "react";
-import { collectionRadioActiveAtom } from "src/atoms/collectionRadioPlayback.atoms";
 import {
   ReleasePlaybackProvider,
   useReleasePlayback,
@@ -704,55 +702,6 @@ describe("ReleasePlaybackProvider — queue and session", () => {
     expect(result.current.activeTrackPosition).toBeNull();
     expect(result.current.isPlaybackVideoLoading).toBe(false);
     expect(readPersistedReleasePlayback()).toBeNull();
-  });
-
-  it("clears collection radio active chrome when playback starts or stops", async () => {
-    const { result } = renderHook(
-      () => {
-        const playback = useReleasePlayback();
-        const [collectionRadioActive, setCollectionRadioActive] = useAtom(
-          collectionRadioActiveAtom,
-        );
-
-        return {
-          playback,
-          collectionRadioActive,
-          setCollectionRadioActive,
-        };
-      },
-      {
-        wrapper: createWrapper([collectionRelease]),
-      },
-    );
-
-    act(() => {
-      result.current.setCollectionRadioActive(true);
-    });
-
-    expect(result.current.collectionRadioActive).toBe(true);
-
-    act(() => {
-      result.current.playback.startPlayback({
-        release: collectionRelease,
-        trackPosition: "A1",
-      });
-    });
-
-    await waitFor(() => {
-      expect(result.current.playback.isPlaying).toBe(true);
-    });
-
-    expect(result.current.collectionRadioActive).toBe(false);
-
-    act(() => {
-      result.current.setCollectionRadioActive(true);
-    });
-
-    act(() => {
-      result.current.playback.stopPlayback();
-    });
-
-    expect(result.current.collectionRadioActive).toBe(false);
   });
 
   it("persists playback state as soon as playback starts", () => {

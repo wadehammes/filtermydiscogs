@@ -13,7 +13,6 @@ import {
   resolveSimilarTailExtensionContext,
   shuffleQueueItems,
 } from "src/utils/playbackQueue";
-import { shouldSuppressSimilarQueueTailForCollectionRadio } from "src/utils/playbackQueueAutopopulate";
 import { showSimilarQueueTailToast } from "src/utils/playbackQueueToast";
 import { fetchPlayableQueuesForSimilarReleases } from "src/utils/similarReleaseQueue";
 import { getSimilarReleases } from "src/utils/similarReleases";
@@ -45,7 +44,6 @@ interface SimilarQueueRefs {
   queueManuallyExtendedRef: RefObject<boolean>;
   extendQueueWithSimilarReleasesRef: RefObject<boolean>;
   similarQueueSuppressedAfterClearRef: RefObject<boolean>;
-  collectionRadioActiveRef: RefObject<boolean>;
 }
 
 export type SimilarQueueFetchLifecyclePhase = "start" | "end";
@@ -82,7 +80,6 @@ export const useReleasePlaybackSimilarQueue = ({
     queueManuallyExtendedRef,
     extendQueueWithSimilarReleasesRef,
     similarQueueSuppressedAfterClearRef,
-    collectionRadioActiveRef,
   } = refs;
   const [isSimilarQueueLoading, setIsSimilarQueueLoading] = useState(false);
 
@@ -221,12 +218,7 @@ export const useReleasePlaybackSimilarQueue = ({
   );
 
   const extendQueueTail = useCallback(async (): Promise<boolean> => {
-    if (
-      shouldSuppressSimilarQueueTailForCollectionRadio({
-        collectionRadioActive: collectionRadioActiveRef.current,
-        upcomingQueue: queueRef.current,
-      })
-    ) {
+    if (queueRef.current.some((item) => item.fromCollectionRadio === true)) {
       return false;
     }
 
@@ -270,22 +262,12 @@ export const useReleasePlaybackSimilarQueue = ({
     queueRef,
     releaseRef,
     similarQueueFetchInFlightRef,
-    collectionRadioActiveRef,
     similarQueueGenerationRef,
     similarQueueModeRef,
     tracksRef,
   ]);
 
   const maybeExtendQueueTail = useCallback(() => {
-    if (
-      shouldSuppressSimilarQueueTailForCollectionRadio({
-        collectionRadioActive: collectionRadioActiveRef.current,
-        upcomingQueue: queueRef.current,
-      })
-    ) {
-      return;
-    }
-
     if (
       previewVideoRef.current !== null ||
       similarQueueFetchInFlightRef.current ||
@@ -330,7 +312,6 @@ export const useReleasePlaybackSimilarQueue = ({
 
     void extendQueueTail();
   }, [
-    collectionRadioActiveRef,
     extendQueueTail,
     extendQueueWithSimilarReleasesRef,
     previewVideoRef,
