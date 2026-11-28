@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import {
   useReleasePlayback,
   useReleasePlaybackIframeActions,
@@ -107,6 +107,10 @@ describe("ReleasePlaybackProvider — embed watchdog", () => {
     mockUserPreferencesResponse();
     setupDefaultCrateApiMocks(mockApi);
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it("when embed pause UI left transport paused, starting another release plays without unavailable skip", async () => {

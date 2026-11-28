@@ -835,10 +835,7 @@ export const useReleasePlaybackProviderImpl = (): {
       awaitingResumeGesture: awaitingResumeGestureRef.current,
     });
 
-    const lastInfoDeliveryCurrentTime =
-      lastInfoDeliveryCurrentTimeRef.current ??
-      dockEmbed.embedProgress?.currentTime ??
-      undefined;
+    const lastInfoDeliveryCurrentTime = lastInfoDeliveryCurrentTimeRef.current;
 
     const confirmInput = {
       imperativeEmbedLoadStartedAtMs:
@@ -881,7 +878,7 @@ export const useReleasePlaybackProviderImpl = (): {
 
     confirmEmbedPlayback();
     return true;
-  }, [confirmEmbedPlayback, dockEmbed.embedProgress?.currentTime, isPlaying]);
+  }, [confirmEmbedPlayback, isPlaying]);
 
   confirmEmbedPlaybackIfAudibleRef.current = confirmEmbedPlaybackIfAudible;
 
@@ -1248,6 +1245,7 @@ export const useReleasePlaybackProviderImpl = (): {
       embedUnavailableSkipHandlerRef.current.resetDedupe();
       embedStartWatchdogRef.current.disarm();
       clearEmbedWatchdogSyncProbeTimeoutRef.current();
+      embedWatchdogVideoIdRef.current = null;
       dispatchEmbedSessionRef.current({ type: "embed/confirm/reset" });
       markEmbedTrackSwitchGraceRef.current();
       setPlaybackEmbedRemountNonce((previous) => previous + 1);
@@ -1299,6 +1297,9 @@ export const useReleasePlaybackProviderImpl = (): {
         priorWatchdogVideoId !== trimmedResolvedVideoId;
       const isFirstUploadLoad =
         trimmedResolvedVideoId !== null && priorWatchdogVideoId === null;
+      const deferWatchdogForPendingOverrideStats =
+        activeTrackAwaitingStatsOverrideRef.current &&
+        matchedActiveVideoIdRef.current === null;
 
       if (isNewUploadLoad) {
         dockEmbed.resetEmbedProgress();
@@ -1321,10 +1322,6 @@ export const useReleasePlaybackProviderImpl = (): {
         embedWatchdogLoadingRearmCountRef.current = 0;
         embedWatchdogSyncProbeAttemptedRef.current = false;
 
-        const deferWatchdogForPendingOverrideStats =
-          activeTrackAwaitingStatsOverrideRef.current &&
-          matchedActiveVideoIdRef.current === null;
-
         if (
           !(isPausedRef.current || deferWatchdogForPendingOverrideStats) &&
           trimmedResolvedVideoId &&
@@ -1333,8 +1330,22 @@ export const useReleasePlaybackProviderImpl = (): {
           armEmbedStartWatchdog();
         }
       } else {
+        if (!embedPlaybackConfirmedRef.current) {
+          dockEmbed.resetEmbedProgress();
+          lastInfoDeliveryCurrentTimeRef.current = undefined;
+        }
+
         syncEmbedPlaybackState();
-        confirmEmbedPlaybackIfAudible();
+
+        if (embedPlaybackConfirmedRef.current) {
+          confirmEmbedPlaybackIfAudible();
+        } else if (
+          !(isPausedRef.current || deferWatchdogForPendingOverrideStats) &&
+          trimmedResolvedVideoId
+        ) {
+          armEmbedStartWatchdog();
+        }
+
         notifyPlaybackVideoPresentationReady();
       }
 

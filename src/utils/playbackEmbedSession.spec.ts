@@ -292,6 +292,20 @@ describe("playbackEmbedSession", () => {
     ).toBe(true);
   });
 
+  it("does not watchdog-progress confirm from stale currentTime without an embed load gate", () => {
+    expect(
+      tryConfirmPlaybackEmbedFromSignal({
+        signal: { kind: "watchdog-progress" },
+        imperativeEmbedLoadStartedAtMs: null,
+        nowMs: 9000,
+        transportSessionActive: true,
+        transportPaused: false,
+        embedPlaybackConfirmed: false,
+        lastInfoDeliveryCurrentTime: 151.2,
+      }),
+    ).toBe(false);
+  });
+
   it("selectEmbedPlaybackConfirmed reads embedConfirmed from session state", () => {
     expect(
       selectEmbedPlaybackConfirmed({

@@ -135,8 +135,8 @@ function DashboardClientContent() {
       >
         <main
           className={styles.container}
-          aria-label={showLoading ? undefined : DASHBOARD_PAGE_MAIN_LABEL}
-          data-testid={showLoading ? undefined : "fmdDashboardClient"}
+          aria-label={DASHBOARD_PAGE_MAIN_LABEL}
+          data-testid="fmdDashboardClient"
         >
           {showLoading ? (
             <DashboardSkeleton />

@@ -58,7 +58,6 @@ const evaluateAudibleEmbedPlaybackConfirm = ({
   playerState,
   infoDeliveryCurrentTime,
   previousInfoDeliveryCurrentTime,
-  lastInfoDeliveryCurrentTime,
 }: {
   gateStartedAtMs: number | null;
   nowMs: number;
@@ -67,7 +66,6 @@ const evaluateAudibleEmbedPlaybackConfirm = ({
   playerState?: number;
   infoDeliveryCurrentTime?: number;
   previousInfoDeliveryCurrentTime?: number;
-  lastInfoDeliveryCurrentTime?: number;
 }): boolean => {
   if (!transportSessionActive || transportPaused) {
     return false;
@@ -75,14 +73,6 @@ const evaluateAudibleEmbedPlaybackConfirm = ({
 
   if (playerState === YOUTUBE_PLAYER_STATE_PAUSED) {
     return false;
-  }
-
-  if (
-    gateStartedAtMs === null &&
-    typeof lastInfoDeliveryCurrentTime === "number" &&
-    lastInfoDeliveryCurrentTime > 0
-  ) {
-    return true;
   }
 
   if (gateStartedAtMs === null) {
@@ -115,13 +105,6 @@ const evaluateAudibleEmbedPlaybackConfirm = ({
     }
   }
 
-  if (
-    typeof lastInfoDeliveryCurrentTime === "number" &&
-    lastInfoDeliveryCurrentTime > 0
-  ) {
-    return true;
-  }
-
   return false;
 };
 
@@ -133,7 +116,6 @@ export const shouldConfirmEmbedPlaybackFromAudibleEmbed = ({
   playerState,
   infoDeliveryCurrentTime,
   previousInfoDeliveryCurrentTime,
-  lastInfoDeliveryCurrentTime,
 }: {
   gateStartedAtMs: number | null;
   nowMs: number;
@@ -142,7 +124,6 @@ export const shouldConfirmEmbedPlaybackFromAudibleEmbed = ({
   playerState?: number;
   infoDeliveryCurrentTime?: number;
   previousInfoDeliveryCurrentTime?: number;
-  lastInfoDeliveryCurrentTime?: number;
 }): boolean =>
   evaluateAudibleEmbedPlaybackConfirm({
     gateStartedAtMs,
@@ -153,7 +134,6 @@ export const shouldConfirmEmbedPlaybackFromAudibleEmbed = ({
       playerState,
       infoDeliveryCurrentTime,
       previousInfoDeliveryCurrentTime,
-      lastInfoDeliveryCurrentTime,
     }),
   });
 
@@ -162,17 +142,45 @@ export const shouldConfirmEmbedPlaybackFromWatchdogProgress = ({
   lastInfoDeliveryCurrentTime,
   isPlaying,
   isPaused,
+  imperativeEmbedLoadStartedAtMs,
+  videoUiLoadingCycleStartedAtMs = null,
+  nowMs,
 }: {
   embedPlaybackConfirmed: boolean;
   lastInfoDeliveryCurrentTime: number | undefined;
   isPlaying: boolean;
   isPaused: boolean;
-}): boolean =>
-  !embedPlaybackConfirmed &&
-  isPlaying &&
-  !isPaused &&
-  typeof lastInfoDeliveryCurrentTime === "number" &&
-  lastInfoDeliveryCurrentTime > 0;
+  imperativeEmbedLoadStartedAtMs: number | null;
+  videoUiLoadingCycleStartedAtMs?: number | null;
+  nowMs: number;
+}): boolean => {
+  if (embedPlaybackConfirmed || !isPlaying || isPaused) {
+    return false;
+  }
+
+  const gateStartedAtMs = resolveEmbedPlaybackConfirmGateStartedAtMs({
+    imperativeEmbedLoadStartedAtMs,
+    videoUiLoadingCycleStartedAtMs,
+  });
+
+  if (gateStartedAtMs === null) {
+    return false;
+  }
+
+  if (
+    !shouldAcceptEmbedPlayingConfirmation({
+      embedLoadStartedAtMs: gateStartedAtMs,
+      nowMs,
+    })
+  ) {
+    return false;
+  }
+
+  return (
+    typeof lastInfoDeliveryCurrentTime === "number" &&
+    lastInfoDeliveryCurrentTime > 0
+  );
+};
 
 export type PlaybackEmbedConfirmSignal =
   | {
@@ -208,6 +216,10 @@ export const tryConfirmPlaybackEmbedFromSignal = (
       lastInfoDeliveryCurrentTime: input.lastInfoDeliveryCurrentTime,
       isPlaying: input.transportSessionActive,
       isPaused: input.transportPaused,
+      imperativeEmbedLoadStartedAtMs: input.imperativeEmbedLoadStartedAtMs,
+      videoUiLoadingCycleStartedAtMs:
+        input.videoUiLoadingCycleStartedAtMs ?? null,
+      nowMs: input.nowMs,
     });
   }
 

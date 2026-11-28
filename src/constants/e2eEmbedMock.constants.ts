@@ -3,9 +3,15 @@ export const E2E_EMBED_MOCK_VIDEO_IDS = {
   silent: "e2eSilent01",
   delayed: "e2eDelay000",
   error: "e2eError000",
+  embed150: "e2eEmb15000",
 } as const;
 
-export type E2eEmbedMockMode = "normal" | "silent" | "delayed" | "error";
+export type E2eEmbedMockMode =
+  | "normal"
+  | "silent"
+  | "delayed"
+  | "error"
+  | "embed150";
 
 export const E2E_EMBED_MOCK_DELAYED_PLAYING_MS = 7200;
 
@@ -14,6 +20,7 @@ const VIDEO_ID_TO_MODE: Record<string, E2eEmbedMockMode> = {
   [E2E_EMBED_MOCK_VIDEO_IDS.silent]: "silent",
   [E2E_EMBED_MOCK_VIDEO_IDS.delayed]: "delayed",
   [E2E_EMBED_MOCK_VIDEO_IDS.error]: "error",
+  [E2E_EMBED_MOCK_VIDEO_IDS.embed150]: "embed150",
 };
 
 export const resolveE2eEmbedMockModeForVideoId = (
