@@ -1,19 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { PLAYBACK_DOCK_BAR_COLLAPSED_STORAGE_KEY } from "src/constants/storageKeys";
-
-const parsePlaybackDockBarCollapsed = (stored: string | null): boolean => {
-  if (stored === null) {
-    return false;
-  }
-
-  try {
-    const parsed = JSON.parse(stored) as unknown;
-    return parsed === true;
-  } catch {
-    return false;
-  }
-};
+import { parsePlaybackDockBarCollapsed } from "src/utils/playbackDockBarCollapsedStorage";
 
 const playbackDockBarCollapsedStorage = createJSONStorage<boolean>(() => ({
   getItem: (key) => {

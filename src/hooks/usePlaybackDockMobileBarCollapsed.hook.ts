@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtom } from "jotai";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { playbackDockBarCollapsedAtom } from "src/atoms/playbackDockUi.atoms";
 import { BELOW_DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { isAdminAppRoute } from "src/constants/protectedRoutes";
@@ -21,16 +21,19 @@ export const usePlaybackDockMobileBarCollapsed = ({
     playbackDockBarCollapsedAtom,
   );
   const onAdminRoute = isMiniPlayerVisible && isAdminAppRoute(pathname);
-  const wasOnAdminRouteRef = useRef(false);
+  const previousPathnameRef = useRef<string | null>(null);
 
-  useLayoutEffect(() => {
-    const enteringAdmin = onAdminRoute && !wasOnAdminRouteRef.current;
-    wasOnAdminRouteRef.current = onAdminRoute;
-
-    if (enteringAdmin) {
+  useEffect(() => {
+    if (
+      isMiniPlayerVisible &&
+      isAdminAppRoute(pathname) &&
+      (previousPathnameRef.current === null ||
+        !isAdminAppRoute(previousPathnameRef.current))
+    ) {
       setDockBarCollapsed(true);
     }
-  }, [onAdminRoute, setDockBarCollapsed]);
+    previousPathnameRef.current = pathname;
+  }, [isMiniPlayerVisible, pathname, setDockBarCollapsed]);
 
   useEffect(() => {
     if (isMiniPlayerVisible && isBelowDesktopLayout) {
