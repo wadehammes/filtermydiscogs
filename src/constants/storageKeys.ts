@@ -17,6 +17,8 @@ export const SIMILAR_PAGE_INDEX_SESSION_KEY =
   "fmd:similar-page-index-by-anchor";
 export const PLAYBACK_DOCK_VOLUME_STORAGE_KEY =
   "filtermydiscogs_playback_dock_volume";
+export const PLAYBACK_DOCK_BAR_COLLAPSED_STORAGE_KEY =
+  "filtermydiscogs_playback_dock_bar_collapsed";
 export const COLLECTION_COMMAND_PROMPTS_STORAGE_KEY =
   "filtermydiscogs_collection_command_prompts";
 

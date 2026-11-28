@@ -1,9 +1,11 @@
 "use client";
 
 import { useAtom } from "jotai";
-import { useEffect } from "react";
-import { playbackDockMobileBarCollapsedAtom } from "src/atoms/playbackDockUi.atoms";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { playbackDockBarCollapsedAtom } from "src/atoms/playbackDockUi.atoms";
 import { BELOW_DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
+import { isAdminAppRoute } from "src/constants/protectedRoutes";
+import { useAuthenticatedGatePathname } from "src/hooks/useAuthenticatedGatePathname.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 
 interface UsePlaybackDockMobileBarCollapsedParams {
@@ -13,28 +15,51 @@ interface UsePlaybackDockMobileBarCollapsedParams {
 export const usePlaybackDockMobileBarCollapsed = ({
   isMiniPlayerVisible,
 }: UsePlaybackDockMobileBarCollapsedParams) => {
+  const pathname = useAuthenticatedGatePathname();
   const isBelowDesktopLayout = useMediaQuery(BELOW_DESKTOP_LAYOUT_MEDIA_QUERY);
-  const [mobileBarCollapsed, setMobileBarCollapsed] = useAtom(
-    playbackDockMobileBarCollapsedAtom,
+  const [dockBarCollapsed, setDockBarCollapsed] = useAtom(
+    playbackDockBarCollapsedAtom,
   );
+  const onAdminRoute = isMiniPlayerVisible && isAdminAppRoute(pathname);
+  const wasOnAdminRouteRef = useRef(false);
+
+  useLayoutEffect(() => {
+    const enteringAdmin = onAdminRoute && !wasOnAdminRouteRef.current;
+    wasOnAdminRouteRef.current = onAdminRoute;
+
+    if (enteringAdmin) {
+      setDockBarCollapsed(true);
+    }
+  }, [onAdminRoute, setDockBarCollapsed]);
 
   useEffect(() => {
-    if (!(isMiniPlayerVisible && isBelowDesktopLayout)) {
-      setMobileBarCollapsed(false);
+    if (isMiniPlayerVisible && isBelowDesktopLayout) {
+      return;
     }
-  }, [isBelowDesktopLayout, isMiniPlayerVisible, setMobileBarCollapsed]);
+
+    if (!isAdminAppRoute(pathname)) {
+      setDockBarCollapsed(false);
+    }
+  }, [
+    isBelowDesktopLayout,
+    isMiniPlayerVisible,
+    pathname,
+    setDockBarCollapsed,
+  ]);
 
   const isMobilePlaybackDockUiActive =
     isBelowDesktopLayout && isMiniPlayerVisible;
 
-  const isDockBarCollapsed = isMobilePlaybackDockUiActive && mobileBarCollapsed;
+  const isDockBarCollapsed = onAdminRoute
+    ? dockBarCollapsed
+    : isMobilePlaybackDockUiActive && dockBarCollapsed;
 
   const collapseDockBar = () => {
-    setMobileBarCollapsed(true);
+    setDockBarCollapsed(true);
   };
 
   const expandDockBar = () => {
-    setMobileBarCollapsed(false);
+    setDockBarCollapsed(false);
   };
 
   return {

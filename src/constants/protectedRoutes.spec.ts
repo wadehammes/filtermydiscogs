@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import {
+  isAdminAppRoute,
   isProtectedAppRoute,
   isPublicCrateRoute,
   isPublicPlaylistRoute,
@@ -40,6 +41,12 @@ describe("protectedRoutes", () => {
     ).toBe(true);
     expect(isPublicShareRoute("/release/249504")).toBe(true);
     expect(isPublicShareRoute("/collection")).toBe(false);
+  });
+
+  it("detects the admin app route", () => {
+    expect(isAdminAppRoute("/admin")).toBe(true);
+    expect(isAdminAppRoute("/administration")).toBe(false);
+    expect(isAdminAppRoute("/collection")).toBe(false);
   });
 
   it("detects protected app routes without treating public crates as owner crates", () => {
