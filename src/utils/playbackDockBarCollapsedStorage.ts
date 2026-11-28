@@ -1,4 +1,6 @@
-export const parsePlaybackDockBarCollapsed = (stored: string | null): boolean => {
+export const parsePlaybackDockBarCollapsed = (
+  stored: string | null,
+): boolean => {
   if (stored === null) {
     return false;
   }
