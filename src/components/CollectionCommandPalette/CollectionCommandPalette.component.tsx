@@ -302,7 +302,6 @@ const CollectionCommandPanel = ({
           primary
             ? styles.commandActionPrimaryCta
             : styles.commandActionSecondary,
-          !primary && inlineMenuStyles.itemNeutral,
         )}
         data-testid={primary ? "fmdCollectionCommandApplyFilters" : undefined}
       >
@@ -331,7 +330,6 @@ const CollectionCommandPanel = ({
             primary
               ? styles.commandActionPrimaryCta
               : styles.commandActionSecondary,
-            !primary && inlineMenuStyles.itemNeutral,
           )}
           disabled={isCreatingCrateFromPreview}
         >
@@ -510,10 +508,7 @@ const CollectionCommandPanel = ({
                         <Button
                           variant="ghost"
                           size="md"
-                          className={classNames(
-                            styles.commandActionSecondary,
-                            inlineMenuStyles.itemNeutral,
-                          )}
+                          className={styles.commandActionSecondary}
                         >
                           <span className={styles.actionLabel}>Save view</span>
                         </Button>
@@ -531,10 +526,7 @@ const CollectionCommandPanel = ({
                     <Button
                       variant="ghost"
                       size="md"
-                      className={classNames(
-                        styles.commandActionSecondary,
-                        inlineMenuStyles.itemNeutral,
-                      )}
+                      className={styles.commandActionSecondary}
                     >
                       <span className={styles.actionLabel}>Save view</span>
                     </Button>

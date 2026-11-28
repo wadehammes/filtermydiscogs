@@ -16,6 +16,7 @@ const EXAMPLE_PROMPT_COUNT = 3;
 
 const baseProbeFilters = (): PersistedFiltersJson => ({
   selectedStyles: [],
+  excludedStyles: [],
   selectedYears: [],
   selectedFormats: [],
   selectedSort: SortValues.DateAddedNew,
@@ -84,7 +85,7 @@ const formatYearPhrase = (years: readonly number[]): string | null => {
   return `${first}–${last}`;
 };
 
-const pickDominantDecadeLabel = (years: readonly number[]): string | null => {
+const pickDominantDecadeYear = (years: readonly number[]): number | null => {
   if (years.length === 0) {
     return null;
   }
@@ -104,38 +105,17 @@ const pickDominantDecadeLabel = (years: readonly number[]): string | null => {
     }
   }
 
-  if (bestDecade === null) {
-    return null;
-  }
+  return bestDecade;
+};
 
-  return formatDecadePhrase(bestDecade);
+const pickDominantDecadeLabel = (years: readonly number[]): string | null => {
+  const bestDecade = pickDominantDecadeYear(years);
+  return bestDecade === null ? null : formatDecadePhrase(bestDecade);
 };
 
 const pickExampleDecadeLabel = (years: readonly number[]): string | null => {
-  if (years.length === 0) {
-    return null;
-  }
-
-  const counts = new Map<number, number>();
-  for (const year of years) {
-    const decade = Math.floor(year / 10) * 10;
-    counts.set(decade, (counts.get(decade) ?? 0) + 1);
-  }
-
-  let bestDecade: number | null = null;
-  let bestCount = 0;
-  for (const [decade, count] of counts) {
-    if (count > bestCount) {
-      bestCount = count;
-      bestDecade = decade;
-    }
-  }
-
-  if (bestDecade === null) {
-    return null;
-  }
-
-  return `the ${bestDecade}s`;
+  const bestDecade = pickDominantDecadeYear(years);
+  return bestDecade === null ? null : `the ${bestDecade}s`;
 };
 
 const describeActiveFilterSet = (
@@ -339,23 +319,6 @@ const assignDistinctIdleStyleSlots = (
     distinct.push(style);
     if (distinct.length >= 3) {
       break;
-    }
-  }
-
-  if (distinct.length < 3) {
-    for (const style of stylePool) {
-      if (distinct.includes(style)) {
-        continue;
-      }
-
-      if (!isStyleViableForExample(style, format, releases)) {
-        continue;
-      }
-
-      distinct.push(style);
-      if (distinct.length >= 3) {
-        break;
-      }
     }
   }
 

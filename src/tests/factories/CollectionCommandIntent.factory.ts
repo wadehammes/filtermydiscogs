@@ -15,6 +15,7 @@ class CollectionCommandIntentFactory extends BaseFactory<
     return {
       searchQuery: "",
       selectedStyles: [],
+      excludedStyles: [],
       selectedYears: [],
       selectedFormats: [],
       styleOperator: "OR",

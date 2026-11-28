@@ -20,6 +20,7 @@ describe("filtersStorage", () => {
   it("writes and reads persisted filter state", () => {
     const saved = {
       selectedStyles: ["Jazz"],
+      excludedStyles: ["Techno"],
       selectedYears: [1970],
       selectedFormats: ["LP"],
       selectedSort: "AZTitle",
@@ -54,6 +55,7 @@ describe("filtersStorage", () => {
       parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
     ).toEqual({
       selectedStyles: ["Jazz"],
+      excludedStyles: [],
       selectedYears: [1970],
       selectedFormats: ["LP"],
       selectedSort: "AZTitle",
@@ -83,6 +85,7 @@ describe("filtersStorage", () => {
       parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
     ).toEqual({
       selectedStyles: ["Jazz"],
+      excludedStyles: [],
       selectedYears: [1970],
       selectedFormats: ["LP"],
       selectedSort: "AZTitle",
@@ -92,6 +95,25 @@ describe("filtersStorage", () => {
       yearOperator: "OR",
       searchQuery: "blue note",
     });
+  });
+
+  it("defaults excludedStyles when missing from stored filters", () => {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        selectedStyles: ["Jazz"],
+        selectedYears: [1970],
+        selectedFormats: ["LP"],
+        selectedSort: "AZTitle",
+        styleOperator: "AND",
+        searchQuery: "blue note",
+      }),
+    );
+
+    expect(
+      parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY))
+        .excludedStyles,
+    ).toEqual([]);
   });
 
   it("returns defaults for invalid JSON and clears corrupt storage", () => {
@@ -211,6 +233,7 @@ describe("filtersStorage", () => {
       selectedSort: defaultPersistedFilters.selectedSort,
       selectedSortSecondary: defaultPersistedFilters.selectedSortSecondary,
       selectedFormats: [],
+      excludedStyles: [],
       selectedYears: [],
       selectedStyles: ["Acid"],
     };

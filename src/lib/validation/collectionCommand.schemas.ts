@@ -46,6 +46,7 @@ export const collectionCommandPromptBodySchema = z.object({
 export const collectionCommandIntentGenerationSchema = z.object({
   searchQuery: z.string(),
   selectedStyles: z.array(z.string()),
+  excludedStyles: z.array(z.string()),
   selectedYears: z.array(z.number().int()),
   selectedFormats: z.array(z.string()),
   styleOperator: styleOperatorSchema,
@@ -62,6 +63,7 @@ export const collectionCommandIntentGenerationSchema = z.object({
 const collectionCommandIntentDefaultsSchema = z.object({
   searchQuery: z.string().default(""),
   selectedStyles: z.array(z.string()).default([]),
+  excludedStyles: z.array(z.string()).default([]),
   selectedYears: z.array(z.number().int()).default([]),
   selectedFormats: z.array(z.string()).default([]),
   styleOperator: styleOperatorSchema.default("OR"),

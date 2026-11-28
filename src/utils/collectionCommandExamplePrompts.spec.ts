@@ -16,6 +16,7 @@ import {
 
 const baseFilters = (): PersistedFiltersJson => ({
   selectedStyles: [],
+  excludedStyles: [],
   selectedYears: [],
   selectedFormats: [],
   selectedSort: SortValues.DateAddedNew,

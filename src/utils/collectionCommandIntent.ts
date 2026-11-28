@@ -1,27 +1,11 @@
-import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
+import type { SortValues } from "src/constants/sortValues";
 import type { CollectionCommandIntent } from "src/lib/validation/collectionCommand.schemas";
 import type {
   FacetOptions,
   PersistedFiltersJson,
 } from "src/types/filters.types";
 import { normalizeThenBySortSelection } from "src/utils/collectionSortOptions";
-import {
-  defaultPersistedFilters,
-  parseStoredFiltersObject,
-} from "src/utils/filtersStorage";
-
-const intentUsesDefaultSort = (intent: CollectionCommandIntent): boolean => {
-  const primary = intent.selectedSort as SortValues;
-  const secondary = normalizeThenBySortSelection(
-    primary,
-    intent.selectedSortSecondary,
-  );
-
-  return (
-    primary === defaultPersistedFilters.selectedSort &&
-    secondary === SortSecondaryValues.None
-  );
-};
+import { parseStoredFiltersObject } from "src/utils/filtersStorage";
 
 const intersectTags = (
   selected: readonly string[],
@@ -102,6 +86,7 @@ export const collectionCommandIntentToFilters = (
   return parseStoredFiltersObject({
     searchQuery: intent.searchQuery ?? "",
     selectedStyles: intent.selectedStyles ?? [],
+    excludedStyles: intent.excludedStyles ?? [],
     selectedYears: intent.selectedYears ?? [],
     selectedFormats: intent.selectedFormats ?? [],
     styleOperator: intent.styleOperator,
@@ -122,6 +107,11 @@ export const sanitizeCollectionCommandIntent = (
 
   const keptStyles = intersectTags(
     selectedStyles,
+    facetOptions.availableStyles,
+  );
+  const excludedStyles = intent.excludedStyles ?? [];
+  const keptExcludedStyles = intersectTags(
+    excludedStyles,
     facetOptions.availableStyles,
   );
   const keptFormats = intersectTags(
@@ -150,19 +140,14 @@ export const sanitizeCollectionCommandIntent = (
     (year) => !keptYears.includes(year),
   );
 
-  const useYearRangeDefaultSort =
-    yearBoundsActive && keptYears.length > 0 && intentUsesDefaultSort(intent);
-
   const filters = collectionCommandIntentToFilters({
     ...intent,
     selectedStyles: keptStyles,
+    excludedStyles: keptExcludedStyles,
     selectedFormats: keptFormats,
     selectedYears: keptYears,
     yearOperator:
       yearBoundsActive && keptYears.length > 0 ? "OR" : intent.yearOperator,
-    selectedSort: useYearRangeDefaultSort
-      ? SortValues.AlbumYearNew
-      : intent.selectedSort,
   });
 
   return {

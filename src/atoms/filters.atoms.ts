@@ -56,6 +56,8 @@ export enum FiltersActionTypes {
   SetSortSecondary = "SET_SORT_SECONDARY",
   ClearStyles = "CLEAR_STYLES",
   SetStyles = "SET_STYLES",
+  AddExcludedStyle = "ADD_EXCLUDED_STYLE",
+  RemoveExcludedStyle = "REMOVE_EXCLUDED_STYLE",
   SetStyleOperator = "SET_STYLE_OPERATOR",
   SetFormatOperator = "SET_FORMAT_OPERATOR",
   SetYearOperator = "SET_YEAR_OPERATOR",
@@ -103,6 +105,14 @@ export type FiltersActions =
   | {
       type: FiltersActionTypes.SetStyles;
       payload: string[];
+    }
+  | {
+      type: FiltersActionTypes.AddExcludedStyle;
+      payload: string;
+    }
+  | {
+      type: FiltersActionTypes.RemoveExcludedStyle;
+      payload: string;
     }
   | {
       type: FiltersActionTypes.SetStyleOperator;
@@ -273,6 +283,7 @@ const getActiveFilterInputs = (get: Getter) => {
   if (!get(collectionFiltersActiveAtom)) {
     return {
       selectedStyles: [...inactiveFilterSelectionDefaults.selectedStyles],
+      excludedStyles: [...inactiveFilterSelectionDefaults.excludedStyles],
       selectedYears: [...inactiveFilterSelectionDefaults.selectedYears],
       selectedFormats: [...inactiveFilterSelectionDefaults.selectedFormats],
       searchQuery: inactiveFilterSelectionDefaults.searchQuery,
@@ -286,6 +297,7 @@ const getActiveFilterInputs = (get: Getter) => {
 
   return {
     selectedStyles: get(selectedStylesAtom),
+    excludedStyles: get(excludedStylesAtom),
     selectedYears: get(selectedYearsAtom),
     selectedFormats: get(selectedFormatsAtom),
     searchQuery: get(searchQueryAtom),
@@ -298,6 +310,7 @@ const getActiveFilterInputs = (get: Getter) => {
 };
 
 export const selectedStylesAtom = sessionFieldAtom("selectedStyles");
+export const excludedStylesAtom = sessionFieldAtom("excludedStyles");
 export const selectedYearsAtom = sessionFieldAtom("selectedYears");
 export const selectedFormatsAtom = sessionFieldAtom("selectedFormats");
 export const selectedSortAtom = sessionFieldAtom("selectedSort");
@@ -314,6 +327,7 @@ export const isSearchingAtom = atom(false);
 const getFacetFilterInputs = (get: Getter): ReleaseFilterCriteria => {
   const {
     selectedStyles,
+    excludedStyles,
     selectedYears,
     selectedFormats,
     searchQuery,
@@ -324,6 +338,7 @@ const getFacetFilterInputs = (get: Getter): ReleaseFilterCriteria => {
 
   return {
     selectedStyles,
+    excludedStyles,
     selectedYears,
     selectedFormats,
     searchQuery,
@@ -398,11 +413,20 @@ export const filtersStateAtom = atom<FiltersState>((get) => ({
   isSearching: get(isSearchingAtom),
 }));
 
+const excludedStylesAfterIncluding = (
+  excludedStyles: readonly string[],
+  selectedStyles: readonly string[],
+): string[] => {
+  const selectedSet = new Set(selectedStyles);
+  return excludedStyles.filter((style) => !selectedSet.has(style));
+};
+
 const applyFilterChange = (
   get: Getter,
   set: Setter,
   updates: {
     selectedStyles?: string[];
+    excludedStyles?: string[];
     selectedYears?: number[];
     selectedFormats?: string[];
     selectedSort?: SortValues;
@@ -418,6 +442,9 @@ const applyFilterChange = (
 
   if (updates.selectedStyles !== undefined) {
     set(selectedStylesAtom, updates.selectedStyles);
+  }
+  if (updates.excludedStyles !== undefined) {
+    set(excludedStylesAtom, updates.excludedStyles);
   }
   if (updates.selectedYears !== undefined) {
     set(selectedYearsAtom, updates.selectedYears);
@@ -470,6 +497,8 @@ const persistedFilterActionTypes = new Set<FiltersActions["type"]>([
   FiltersActionTypes.SetSortSecondary,
   FiltersActionTypes.ClearStyles,
   FiltersActionTypes.SetStyles,
+  FiltersActionTypes.AddExcludedStyle,
+  FiltersActionTypes.RemoveExcludedStyle,
   FiltersActionTypes.SetStyleOperator,
   FiltersActionTypes.SetFormatOperator,
   FiltersActionTypes.SetYearOperator,
@@ -507,10 +536,28 @@ export const filtersDispatchAtom = atom(
 
       case FiltersActionTypes.ToggleStyle: {
         const selectedStyles = get(selectedStylesAtom);
-        const newSelectedStyles = selectedStyles.includes(action.payload)
+        const isRemoving = selectedStyles.includes(action.payload);
+        const newSelectedStyles = isRemoving
           ? selectedStyles.filter((style) => style !== action.payload)
           : [...selectedStyles, action.payload];
-        applyFilterChange(get, set, { selectedStyles: newSelectedStyles });
+
+        if (isRemoving) {
+          applyFilterChange(get, set, { selectedStyles: newSelectedStyles });
+          return;
+        }
+
+        const excludedStyles = get(excludedStylesAtom);
+        const nextExcludedStyles = excludedStylesAfterIncluding(
+          excludedStyles,
+          newSelectedStyles,
+        );
+
+        applyFilterChange(get, set, {
+          selectedStyles: newSelectedStyles,
+          ...(nextExcludedStyles.length !== excludedStyles.length
+            ? { excludedStyles: nextExcludedStyles }
+            : {}),
+        });
         return;
       }
 
@@ -559,9 +606,51 @@ export const filtersDispatchAtom = atom(
         applyFilterChange(get, set, { selectedStyles: [] });
         return;
 
-      case FiltersActionTypes.SetStyles:
-        applyFilterChange(get, set, { selectedStyles: action.payload });
+      case FiltersActionTypes.SetStyles: {
+        const excludedStyles = get(excludedStylesAtom);
+        const nextExcludedStyles = excludedStylesAfterIncluding(
+          excludedStyles,
+          action.payload,
+        );
+
+        applyFilterChange(get, set, {
+          selectedStyles: action.payload,
+          ...(nextExcludedStyles.length !== excludedStyles.length
+            ? { excludedStyles: nextExcludedStyles }
+            : {}),
+        });
         return;
+      }
+
+      case FiltersActionTypes.AddExcludedStyle: {
+        const excludedStyles = get(excludedStylesAtom);
+        if (excludedStyles.includes(action.payload)) {
+          return;
+        }
+
+        const selectedStyles = get(selectedStylesAtom);
+        applyFilterChange(get, set, {
+          excludedStyles: [...excludedStyles, action.payload],
+          selectedStyles: selectedStyles.filter(
+            (style) => style !== action.payload,
+          ),
+        });
+        return;
+      }
+
+      case FiltersActionTypes.RemoveExcludedStyle: {
+        const excludedStyles = get(excludedStylesAtom);
+        if (!excludedStyles.includes(action.payload)) {
+          return;
+        }
+
+        applyFilterChange(get, set, {
+          excludedStyles: excludedStyles.filter(
+            (style) => style !== action.payload,
+          ),
+        });
+        return;
+      }
 
       case FiltersActionTypes.SetStyleOperator:
         applyFilterChange(get, set, { styleOperator: action.payload });
@@ -614,6 +703,7 @@ export const filtersDispatchAtom = atom(
       case FiltersActionTypes.ClearAllFilters: {
         set(pendingFiltersRestoreAtom, null);
         set(selectedStylesAtom, []);
+        set(excludedStylesAtom, []);
         set(selectedYearsAtom, []);
         set(selectedFormatsAtom, []);
         set(searchQueryAtom, "");
@@ -625,8 +715,15 @@ export const filtersDispatchAtom = atom(
       }
 
       case FiltersActionTypes.ApplySessionFilters: {
+        const selectedStyles = [...action.payload.selectedStyles];
+        const excludedStyles = excludedStylesAfterIncluding(
+          action.payload.excludedStyles,
+          selectedStyles,
+        );
+
         applyFilterChange(get, set, {
-          selectedStyles: [...action.payload.selectedStyles],
+          selectedStyles,
+          excludedStyles,
           selectedYears: [...action.payload.selectedYears],
           selectedFormats: [...action.payload.selectedFormats],
           selectedSort: action.payload.selectedSort,

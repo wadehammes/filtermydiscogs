@@ -30,6 +30,9 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
 
   const {
     handleStyleChange,
+    handleAddExcludedStyle,
+    handleRemoveExcludedStyle,
+    excludedStyles,
     handleYearChange,
     handleFormatChange,
     handleSortChange,
@@ -95,6 +98,9 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
                 disabled={!collection}
                 multiple={true}
                 placeholder="All genres & styles"
+                readOnlyPillValues={excludedStyles}
+                onReadOnlyPillRemove={handleRemoveExcludedStyle}
+                onOptionExclude={handleAddExcludedStyle}
               />
 
               <FilterMatchOperatorSelect

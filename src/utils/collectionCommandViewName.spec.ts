@@ -11,6 +11,7 @@ import {
 
 const baseFilters = (): PersistedFiltersJson => ({
   selectedStyles: [],
+  excludedStyles: [],
   selectedYears: [],
   selectedFormats: [],
   selectedSort: SortValues.DateAddedNew,
@@ -24,6 +25,7 @@ const baseFilters = (): PersistedFiltersJson => ({
 const baseIntent = (): CollectionCommandIntent => ({
   searchQuery: "",
   selectedStyles: [],
+  excludedStyles: [],
   selectedYears: [],
   selectedFormats: [],
   styleOperator: "OR",
@@ -110,6 +112,18 @@ describe("buildCollectionCommandViewNameFromFilters", () => {
         },
       }),
     ).toBe("2018");
+  });
+
+  it("appends excluded style labels for saved view naming", () => {
+    expect(
+      buildCollectionCommandViewNameFromFilters({
+        filters: {
+          ...baseFilters(),
+          selectedStyles: ["Deep House"],
+          excludedStyles: ["House"],
+        },
+      }),
+    ).toBe("Deep House not House");
   });
 
   it("uses search query only when no other segments exist", () => {

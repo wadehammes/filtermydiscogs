@@ -106,6 +106,11 @@ export const buildCollectionCommandViewNameFromFilters = ({
     segments.push(styles);
   }
 
+  const excludedStyles = joinTagLabels(filters.excludedStyles ?? []);
+  if (excludedStyles.length > 0) {
+    segments.push(`not ${excludedStyles}`);
+  }
+
   const formats = joinTagLabels(filters.selectedFormats ?? []);
   if (formats.length > 0) {
     segments.push(formats);

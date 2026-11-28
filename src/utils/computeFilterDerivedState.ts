@@ -27,9 +27,20 @@ const emptyFacetOptions = (): FacetOptions => ({
   availableFormats: [],
 });
 
+const facetOptionsFromSets = (
+  styleSet: Set<string>,
+  yearSet: Set<number>,
+  formatSet: Set<string>,
+): FacetOptions => ({
+  availableStyles: Array.from(styleSet).sort(),
+  availableYears: Array.from(yearSet).sort((first, second) => second - first),
+  availableFormats: sortFormatTags(Array.from(formatSet)),
+});
+
 export const computeFilterDerivedState = ({
   releases,
   selectedStyles,
+  excludedStyles = [],
   selectedYears,
   selectedFormats,
   searchQuery,
@@ -42,6 +53,7 @@ export const computeFilterDerivedState = ({
   const searchTokens = parseSearchTokens(searchQuery);
   const hasActiveFilters =
     selectedStyles.length > 0 ||
+    excludedStyles.length > 0 ||
     selectedYears.length > 0 ||
     selectedFormats.length > 0 ||
     searchTokens.length > 0;
@@ -71,12 +83,16 @@ export const computeFilterDerivedState = ({
       selectedYears,
       yearOperator,
     );
-    const matchesStyles = releaseMatchesStyles(
+    const matchesIncludedStyles = releaseMatchesStyles(
       release,
       selectedStyles,
       styleOperator,
       genreStyleTags,
     );
+    const matchesExcludedStyles =
+      excludedStyles.length === 0 ||
+      !releaseMatchesStyles(release, excludedStyles, "OR", genreStyleTags);
+    const matchesStyles = matchesIncludedStyles && matchesExcludedStyles;
     const matchesFormats = releaseMatchesFormats(
       release,
       selectedFormats,
@@ -111,11 +127,7 @@ export const computeFilterDerivedState = ({
 
   return {
     filteredReleases,
-    facetOptions: {
-      availableStyles: Array.from(styleSet).sort(),
-      availableYears: Array.from(yearSet).sort((a, b) => b - a),
-      availableFormats: sortFormatTags(Array.from(formatSet)),
-    },
+    facetOptions: facetOptionsFromSets(styleSet, yearSet, formatSet),
   };
 };
 
@@ -147,9 +159,5 @@ const computeFacetOptionsFromReleases = (
     }
   }
 
-  return {
-    availableStyles: Array.from(styleSet).sort(),
-    availableYears: Array.from(yearSet).sort((a, b) => b - a),
-    availableFormats: sortFormatTags(Array.from(formatSet)),
-  };
+  return facetOptionsFromSets(styleSet, yearSet, formatSet);
 };

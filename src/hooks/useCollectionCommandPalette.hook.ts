@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "src/api/urls";
 import {
   FiltersActionTypes,
@@ -46,7 +46,11 @@ import {
   buildCollectionCommandCrateName,
   buildCollectionCommandViewName,
 } from "src/utils/collectionCommandViewName";
-import { persistedFiltersEqual } from "src/utils/filtersStorage";
+import { computeFacetOptions } from "src/utils/computeFacetOptions";
+import {
+  inactiveFilterSelectionDefaults,
+  persistedFiltersEqual,
+} from "src/utils/filtersStorage";
 import {
   eventMatchesShortcut,
   isTypingTarget,
@@ -58,6 +62,20 @@ export const useCollectionCommandPalette = () => {
   const queryClient = useQueryClient();
   const allReleases = useAllReleases();
   const facetOptions = useFacetOptions();
+  const commandPaletteFacetOptionsFromCollection = useMemo(() => {
+    if (allReleases.length === 0) {
+      return null;
+    }
+
+    return computeFacetOptions({
+      releases: allReleases,
+      ...inactiveFilterSelectionDefaults,
+    });
+  }, [allReleases]);
+  const commandPaletteFacetOptions =
+    commandPaletteFacetOptionsFromCollection ?? facetOptions;
+  const commandPaletteFacetOptionsRef = useRef(commandPaletteFacetOptions);
+  commandPaletteFacetOptionsRef.current = commandPaletteFacetOptions;
   const sessionFilters = useAtomValue(sessionFiltersAtom);
   const filtersDispatch = useFiltersDispatch();
   const { saveViewFromFilters, canAddView } = useFilterViews();
@@ -111,7 +129,7 @@ export const useCollectionCommandPalette = () => {
     onSuccess: (response, prompt) => {
       const sanitized = sanitizeCollectionCommandIntent(
         response.intent,
-        facetOptions,
+        commandPaletteFacetOptionsRef.current,
       );
       setPreviewIntent(response.intent);
       setPreviewFilters(sanitized.filters);
@@ -359,7 +377,7 @@ export const useCollectionCommandPalette = () => {
 
     const sanitized = sanitizeCollectionCommandIntent(
       previewIntent,
-      facetOptions,
+      commandPaletteFacetOptions,
     );
 
     setPreviewFilters((previous) => {
@@ -369,7 +387,7 @@ export const useCollectionCommandPalette = () => {
 
       return sanitized.filters;
     });
-  }, [facetOptions, previewIntent]);
+  }, [commandPaletteFacetOptions, previewIntent]);
 
   useEffect(
     () => registerCollectionCommandPaletteOpen(openPalette),

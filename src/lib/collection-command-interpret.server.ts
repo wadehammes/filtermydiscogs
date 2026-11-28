@@ -11,7 +11,7 @@ import {
   collectionCommandIntentGenerationSchema,
   parseCollectionCommandIntentFromLlm,
 } from "src/lib/validation/collectionCommand.schemas";
-import { applyPromptYearBoundsToIntent } from "src/utils/collectionCommandPromptYears";
+import { applyCollectionCommandPromptRules } from "src/utils/collectionCommandPromptRules";
 
 export type InterpretCollectionCommandResult =
   | { intent: CollectionCommandIntent }
@@ -43,9 +43,11 @@ const buildSystemPrompt = (referenceDate: Date): string => {
     "before YYYY → yearEndExclusive YYYY, selectedYears []. after YYYY → yearStartInclusive YYYY+1 unless inclusive after is stated.",
     `last N years → yearStartInclusive ${calendarYear}-N+1, yearEndExclusive ${calendarYear}+1, selectedYears [].`,
     "this year → single-year bounds on the current calendar year; last year → the prior calendar year only.",
-    "Year-range filters without an explicit sort keep DateAddedNew in JSON; the app applies Release Year newest (AlbumYearNew) after sanitization.",
+    "Primary sort defaults to DateAddedNew unless the user asks for another order (e.g. sorted by year, rating, title, artist).",
     "between YYYY and ZZZ → yearStartInclusive YYYY, yearEndExclusive ZZZ+1.",
     "Use styleOperator and formatOperator: OR (any tag), AND (all tags), NONE (exclude).",
+    "Put styles the user wants to omit in excludedStyles (e.g. Deep House but not House → selectedStyles [Deep House], excludedStyles [House], styleOperator OR).",
+    "Put explicit calendar years in selectedYears (e.g. from 2018 → [2018]) unless the phrase is relative (last N years, this year).",
     "Use yearOperator: OR or NONE.",
     "Put free-text artist, label, title, or note phrases in searchQuery.",
     "Pick selectedSort from: DateAddedNew, DateAddedOld, RatingHigh, RatingLow, AlbumYearNew, AlbumYearOld, AZTitle, ZATitle, AZArtist, ZAArtist.",
@@ -89,7 +91,7 @@ export const interpretCollectionCommandPrompt = async (
       return { error: "interpret_failed" };
     }
 
-    const intent: CollectionCommandIntent = applyPromptYearBoundsToIntent(
+    const intent: CollectionCommandIntent = applyCollectionCommandPromptRules(
       parsed,
       prompt,
       referenceDate,

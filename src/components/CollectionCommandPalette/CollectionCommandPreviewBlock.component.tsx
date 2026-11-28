@@ -1,4 +1,7 @@
-import type { CollectionCommandPreviewFact } from "src/utils/collectionCommandPreview";
+import {
+  type CollectionCommandPreviewFact,
+  formatCollectionCommandPreviewTail,
+} from "src/utils/collectionCommandPreview";
 import styles from "./CollectionCommandPalette.module.css";
 
 type CollectionCommandPreviewBlockProps = {
@@ -7,15 +10,12 @@ type CollectionCommandPreviewBlockProps = {
   confidenceNotes?: string | undefined;
 };
 
-const buildPreviewTail = (facts: CollectionCommandPreviewFact[]): string =>
-  facts.map((fact) => fact.value).join(" · ");
-
 export const CollectionCommandPreviewBlock = ({
   matchCount,
   facts,
   confidenceNotes,
 }: CollectionCommandPreviewBlockProps) => {
-  const tail = buildPreviewTail(facts);
+  const tail = formatCollectionCommandPreviewTail(facts);
 
   return (
     <div className={styles.previewSection} role="status">

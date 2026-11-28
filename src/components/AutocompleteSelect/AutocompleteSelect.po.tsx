@@ -21,6 +21,9 @@ export type AutocompleteSelectRenderProps = {
   className?: string;
   clearable?: boolean;
   showLabel?: boolean;
+  readOnlyPillValues?: readonly string[];
+  onReadOnlyPillRemove?: (value: string) => void;
+  onOptionExclude?: (value: string) => void;
 };
 
 export class AutocompleteSelectPageObject extends BasePageObject {
