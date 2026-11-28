@@ -33,7 +33,8 @@
   border-radius: var(--radius-none);
   bottom: calc(
     var(--release-mini-player-bar-height, 3.25rem) +
-    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-bottom, 0px) +
+    var(--playback-video-panel-viewport-bottom-inset, 0px)
   );
   box-shadow: 0 -4px 16px rgb(0 0 0 / 12%);
   display: flex;
