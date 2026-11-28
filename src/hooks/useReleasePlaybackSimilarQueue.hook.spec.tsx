@@ -121,7 +121,6 @@ const buildHarness = (
           queueManuallyExtendedRef,
           extendQueueWithSimilarReleasesRef,
           similarQueueSuppressedAfterClearRef,
-          collectionRadioActiveRef: { current: false },
         },
       }),
     { wrapper },
@@ -262,16 +261,16 @@ describe("useReleasePlaybackSimilarQueue", () => {
     expect(updateUpcomingQueue).not.toHaveBeenCalled();
   });
 
-  it("does not extend the tail while a collection radio track is in up next", () => {
-    const radioItem = createQueueItem({
+  it("does not extend the tail while a legacy fromCollectionRadio queue item is up next", () => {
+    const legacyRadioItem = createQueueItem({
       release: catalogSimilarRelease,
       trackPosition: "A1",
-      trackTitle: "Collection radio track",
+      trackTitle: "Legacy queued track",
     });
-    radioItem.fromCollectionRadio = true;
+    legacyRadioItem.fromCollectionRadio = true;
 
     const { result, updateUpcomingQueue } = buildHarness({
-      queue: [radioItem],
+      queue: [legacyRadioItem],
       similarQueueMode: { enabled: true },
     });
 

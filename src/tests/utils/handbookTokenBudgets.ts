@@ -18,7 +18,6 @@ export const LEGACY_OVERSIZED_PAGES = new Set([
   "docs/handbook/factories.md",
   "docs/handbook/feature-guides/collection-command-palette.md",
   "docs/handbook/feature-guides/public-sharing.md",
-  "docs/handbook/feature-guides/radio.md",
   "docs/handbook/llms.md",
   "docs/handbook/patterns.md",
   "docs/handbook/platform.md",

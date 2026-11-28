@@ -1,7 +1,6 @@
 import { Activity, useCallback, useMemo, useState } from "react";
 import { AutocompleteSelect } from "src/components/AutocompleteSelect/AutocompleteSelect.component";
 import Button from "src/components/Button/Button.component";
-import { CollectionRadioPlayButton } from "src/components/CollectionRadioPlayButton/CollectionRadioPlayButton.component";
 import { CollectionSortControls } from "src/components/CollectionSortControls/CollectionSortControls.component";
 import { FilterMatchOperatorSelect } from "src/components/FilterMatchOperatorSelect/FilterMatchOperatorSelect.component";
 import { FiltersDrawer } from "src/components/FiltersDrawer/FiltersDrawer.component";
@@ -152,9 +151,6 @@ export const FiltersBar = ({ disabled = false }: FiltersBarProps) => {
               onSecondarySortChange={handleSortSecondaryChange}
               disabled={fetchingCollection}
             />
-            <div className={styles.collectionRadioPlayEnd}>
-              <CollectionRadioPlayButton />
-            </div>
           </div>
 
           <div className={styles.mobileFilters}>

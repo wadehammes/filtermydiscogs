@@ -36,7 +36,6 @@ const idlePlaybackState: ReleasePlaybackState = {
   isLoading: false,
   isQueueBuilding: false,
   isSimilarQueueLoading: false,
-  isCollectionRadioQueueLoading: false,
   queueAutopopulateSource: null,
   isPlaybackVideoLoading: false,
   isPlaybackVideoTransitionPending: false,

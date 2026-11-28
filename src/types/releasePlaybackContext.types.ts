@@ -39,10 +39,7 @@ export interface RemoveAlbumTracksFromQueueParams {
   trackPositions: string[];
 }
 
-export type PlaybackQueueAutopopulateSource =
-  | "collection-radio"
-  | "similar-tail"
-  | null;
+export type PlaybackQueueAutopopulateSource = "similar-tail" | null;
 
 export interface ReleasePlaybackState {
   release: DiscogsRelease | null;
@@ -72,7 +69,6 @@ export interface ReleasePlaybackState {
   isLoading: boolean;
   isQueueBuilding: boolean;
   isSimilarQueueLoading: boolean;
-  isCollectionRadioQueueLoading: boolean;
   queueAutopopulateSource: PlaybackQueueAutopopulateSource;
   isPlaybackVideoLoading: boolean;
   isPlaybackVideoTransitionPending: boolean;

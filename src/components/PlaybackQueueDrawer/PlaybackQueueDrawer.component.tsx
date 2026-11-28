@@ -155,12 +155,8 @@ export const PlaybackQueueDrawer = ({
 }: PlaybackQueueDrawerProps) => {
   const { queue, playQueueAtIndex, removeFromQueue, reorderQueue, clearQueue } =
     useReleasePlaybackQueue();
-  const {
-    isQueueBuilding,
-    isSimilarQueueLoading,
-    isCollectionRadioQueueLoading,
-    queueAutopopulateSource,
-  } = useReleasePlaybackState();
+  const { isQueueBuilding, isSimilarQueueLoading, queueAutopopulateSource } =
+    useReleasePlaybackState();
   const isCompactLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
   const queueEmptyMessage = isCompactLayout
     ? PLAYBACK_QUEUE_EMPTY_MESSAGE_TOUCH
@@ -169,11 +165,9 @@ export const PlaybackQueueDrawer = ({
   const queueStatusMessage = resolvePlaybackQueueDrawerStatusMessage({
     isAlbumQueueBuilding: isQueueBuilding,
     isSimilarQueueLoading,
-    isCollectionRadioQueueLoading,
     autopopulateSource: queueAutopopulateSource,
   });
-  const queueListBusy =
-    isQueueBuilding || isSimilarQueueLoading || isCollectionRadioQueueLoading;
+  const queueListBusy = isQueueBuilding || isSimilarQueueLoading;
   const showQueueTailSettingsLink =
     isSimilarQueueLoading || queueAutopopulateSource === "similar-tail";
 
