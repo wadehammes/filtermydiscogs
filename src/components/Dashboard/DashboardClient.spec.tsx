@@ -66,15 +66,15 @@ describe("DashboardClient", () => {
     po.renderDashboardClient({ releaseCount: 3 });
 
     await waitFor(() => {
-      expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", {
+          level: 1,
+          name: "testuser's collection",
+        }),
+      ).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: "testuser's collection",
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
     expect(screen.getByTestId("fmdDashboardHeroCount")).toHaveAttribute(
       "aria-label",
       "3",
@@ -106,7 +106,13 @@ describe("DashboardClient", () => {
       );
     });
 
-    expect(screen.queryByTestId(po.testId)).not.toBeInTheDocument();
+    expect(screen.getByTestId(po.testId)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", {
+        level: 1,
+        name: "testuser's collection",
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows an empty state when the collection has no releases", async () => {

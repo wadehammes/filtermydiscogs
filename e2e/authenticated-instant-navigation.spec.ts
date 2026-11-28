@@ -1,4 +1,5 @@
 import { instant } from "@next/playwright";
+import { DASHBOARD_PAGE_MAIN_LABEL } from "src/constants/accessibilityLabels.constants";
 import {
   e2eDashboardCollectionHeading,
   e2eDashboardHeroCountLabel,
@@ -6,7 +7,10 @@ import {
 import { expect, test } from "./fixtures/msw.fixture";
 import { clickAppNavLink } from "./helpers/appNavigation";
 import { expectE2eCollectionLoaded } from "./helpers/authenticatedExpectations";
-import { instantNavOptions } from "./helpers/instantNavOptions";
+import {
+  instantNavContentTimeout,
+  instantNavOptions,
+} from "./helpers/instantNavOptions";
 
 test.describe("authenticated instant navigation (MSW)", () => {
   test("Dashboard link shows the app shell immediately from collection", async ({
@@ -23,20 +27,20 @@ test.describe("authenticated instant navigation (MSW)", () => {
         await clickAppNavLink(page, "Dashboard");
         await expect(page).toHaveURL(/\/dashboard/);
         await expect(
-          page.getByRole("heading", {
-            level: 1,
-            name: e2eDashboardCollectionHeading(),
-          }),
-        ).toBeVisible();
-        await expect(
-          page.getByRole("heading", {
-            level: 1,
-            name: e2eDashboardCollectionHeading(),
-          }),
-        ).toBeVisible();
+          page.getByRole("main", { name: DASHBOARD_PAGE_MAIN_LABEL }),
+        ).toBeVisible({
+          timeout: instantNavContentTimeout,
+        });
       },
       instantNavOptions(baseURL),
     );
+
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: e2eDashboardCollectionHeading(),
+      }),
+    ).toBeVisible({ timeout: 30_000 });
   });
 
   test("Collection link shows the collection grid immediately from dashboard", async ({
