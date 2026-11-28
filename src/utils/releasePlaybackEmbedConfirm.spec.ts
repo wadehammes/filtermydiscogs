@@ -185,7 +185,6 @@ describe("releasePlaybackEmbedConfirm", () => {
         isPaused: false,
         playerState: YOUTUBE_PLAYER_STATE_PAUSED,
         infoDeliveryCurrentTime: 1.2,
-        lastInfoDeliveryCurrentTime: 1.2,
       }),
     ).toBe(false);
   });
@@ -229,7 +228,6 @@ describe("releasePlaybackEmbedConfirm", () => {
         isPlaying: true,
         isPaused: false,
         playerState: YOUTUBE_PLAYER_STATE_PLAYING,
-        lastInfoDeliveryCurrentTime: 2.5,
       }),
     ).toBe(true);
   });
@@ -241,7 +239,6 @@ describe("releasePlaybackEmbedConfirm", () => {
         nowMs: 9000,
         isPlaying: true,
         isPaused: false,
-        lastInfoDeliveryCurrentTime: 3.2,
       }),
     ).toBe(false);
   });

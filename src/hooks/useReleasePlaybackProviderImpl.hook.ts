@@ -859,10 +859,6 @@ export const useReleasePlaybackProviderImpl = (): {
         ...confirmInput,
         signal: { kind: "watchdog-progress" },
         embedPlaybackConfirmed: false,
-        imperativeEmbedLoadStartedAtMs:
-          playbackVideoUiLoadingEmbedLoadStartedAtMsRef.current,
-        videoUiLoadingCycleStartedAtMs:
-          playbackVideoUiLoadingCycleStartedAtMsRef.current,
       });
 
     if (

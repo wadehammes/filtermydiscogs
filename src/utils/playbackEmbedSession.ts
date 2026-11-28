@@ -58,7 +58,6 @@ const evaluateAudibleEmbedPlaybackConfirm = ({
   playerState,
   infoDeliveryCurrentTime,
   previousInfoDeliveryCurrentTime,
-  lastInfoDeliveryCurrentTime,
 }: {
   gateStartedAtMs: number | null;
   nowMs: number;
@@ -67,7 +66,6 @@ const evaluateAudibleEmbedPlaybackConfirm = ({
   playerState?: number;
   infoDeliveryCurrentTime?: number;
   previousInfoDeliveryCurrentTime?: number;
-  lastInfoDeliveryCurrentTime?: number;
 }): boolean => {
   if (!transportSessionActive || transportPaused) {
     return false;
@@ -118,7 +116,6 @@ export const shouldConfirmEmbedPlaybackFromAudibleEmbed = ({
   playerState,
   infoDeliveryCurrentTime,
   previousInfoDeliveryCurrentTime,
-  lastInfoDeliveryCurrentTime,
 }: {
   gateStartedAtMs: number | null;
   nowMs: number;
@@ -127,7 +124,6 @@ export const shouldConfirmEmbedPlaybackFromAudibleEmbed = ({
   playerState?: number;
   infoDeliveryCurrentTime?: number;
   previousInfoDeliveryCurrentTime?: number;
-  lastInfoDeliveryCurrentTime?: number;
 }): boolean =>
   evaluateAudibleEmbedPlaybackConfirm({
     gateStartedAtMs,
@@ -138,7 +134,6 @@ export const shouldConfirmEmbedPlaybackFromAudibleEmbed = ({
       playerState,
       infoDeliveryCurrentTime,
       previousInfoDeliveryCurrentTime,
-      lastInfoDeliveryCurrentTime,
     }),
   });
 
