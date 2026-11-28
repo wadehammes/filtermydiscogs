@@ -37,10 +37,6 @@
   z-index: calc(var(--z-10-bottom-drawer) + 1);
 }
 
-.queueDrawerOverVideo .queueDrawer {
-  border-bottom: 1px solid var(--border);
-}
-
 .queueDrawer {
   @media (width >= 768px) {
     border-bottom: 1px solid var(--border);
@@ -52,6 +48,10 @@
     justify-content: flex-end;
     padding: var(--space-3) var(--space-4);
   }
+}
+
+.queueDrawerOverVideo .queueDrawer {
+  border-bottom: 1px solid var(--border);
 }
 
 .queueList {
