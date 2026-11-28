@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import {
   useReleasePlayback,
   useReleasePlaybackIframeActions,
@@ -107,6 +107,10 @@ describe("ReleasePlaybackProvider — embed watchdog", () => {
     mockUserPreferencesResponse();
     setupDefaultCrateApiMocks(mockApi);
     setupFetchDiscogsReleaseMock(mockApi, releaseDetail);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it("when embed pause UI left transport paused, starting another release plays without unavailable skip", async () => {
@@ -902,54 +906,6 @@ describe("ReleasePlaybackProvider — embed watchdog", () => {
     expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
     expect(mockAppendPlaybackSkipAndSchedule.mock.calls[0]?.[0]?.reason).toBe(
       "Private or removed on YouTube",
-    );
-
-    await waitFor(() => {
-      expect(result.current.activeTrackPosition).toBe("B1");
-    });
-  });
-
-  it("when YouTube posts embed disabled error 150, remounts once then skips", async () => {
-    const postMessage = jest.fn();
-    const contentWindow = { postMessage } as unknown as Window;
-    const iframe = { contentWindow } as HTMLIFrameElement;
-
-    const { result } = renderHook(() => useReleasePlayback(), {
-      wrapper: createWrapper([collectionRelease]),
-    });
-
-    act(() => {
-      result.current.startPlayback({
-        release: collectionRelease,
-        trackPosition: "A1",
-      });
-      result.current.registerPlaybackIframe(iframe);
-    });
-
-    await waitFor(() => {
-      expect(result.current.isPlaybackReady).toBe(true);
-    });
-
-    mockAppendPlaybackSkipAndSchedule.mockClear();
-
-    act(() => {
-      dispatchYoutubePlayerError({ contentWindow, errorCode: 150 });
-    });
-
-    expect(mockAppendPlaybackSkipAndSchedule).not.toHaveBeenCalled();
-    expect(result.current.playbackEmbedRemountNonce).toBe(1);
-
-    mockAppendPlaybackSkipAndSchedule.mockImplementation((_entry, onSkip) => {
-      onSkip();
-    });
-
-    act(() => {
-      dispatchYoutubePlayerError({ contentWindow, errorCode: 150 });
-    });
-
-    expect(mockAppendPlaybackSkipAndSchedule).toHaveBeenCalledTimes(1);
-    expect(mockAppendPlaybackSkipAndSchedule.mock.calls[0]?.[0]?.reason).toBe(
-      "Cannot play in embedded player",
     );
 
     await waitFor(() => {

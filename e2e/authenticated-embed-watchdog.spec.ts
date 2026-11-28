@@ -2,6 +2,7 @@ import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.cons
 import { E2E_EMBED_MOCK_VIDEO_IDS } from "src/constants/e2eEmbedMock.constants";
 import { E2E_TAG_FULL_SUITE } from "./e2eProjectTags.constants";
 import { expect, test } from "./fixtures/msw.fixture";
+import { expectE2eNowPlayingShowsPauseControl } from "./helpers/embedTransportSync";
 import {
   E2E_EMBED_DISABLED_SKIP_REASON,
   E2E_WATCHDOG_SKIP_REASON,
@@ -14,7 +15,6 @@ import {
   startE2eAlbumOneTrackPlayback,
   stubE2eReleaseDetailWithYoutubeVideoId,
 } from "./helpers/embedWatchdog";
-import { expectE2eNowPlayingShowsPauseControl } from "./helpers/embedTransportSync";
 
 test.describe("authenticated embed watchdog harness (MSW + mock iframe)", () => {
   test.describe.configure({ timeout: 90_000 });

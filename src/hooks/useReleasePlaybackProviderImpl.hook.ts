@@ -1245,6 +1245,7 @@ export const useReleasePlaybackProviderImpl = (): {
       embedUnavailableSkipHandlerRef.current.resetDedupe();
       embedStartWatchdogRef.current.disarm();
       clearEmbedWatchdogSyncProbeTimeoutRef.current();
+      embedWatchdogVideoIdRef.current = null;
       dispatchEmbedSessionRef.current({ type: "embed/confirm/reset" });
       markEmbedTrackSwitchGraceRef.current();
       setPlaybackEmbedRemountNonce((previous) => previous + 1);
@@ -1338,13 +1339,14 @@ export const useReleasePlaybackProviderImpl = (): {
 
         if (embedPlaybackConfirmedRef.current) {
           confirmEmbedPlaybackIfAudible();
-          notifyPlaybackVideoPresentationReady();
         } else if (
           !(isPausedRef.current || deferWatchdogForPendingOverrideStats) &&
           trimmedResolvedVideoId
         ) {
           armEmbedStartWatchdog();
         }
+
+        notifyPlaybackVideoPresentationReady();
       }
 
       if (!(isNewUploadLoad || isFirstUploadLoad)) {
