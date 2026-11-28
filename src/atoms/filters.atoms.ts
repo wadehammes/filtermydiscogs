@@ -9,6 +9,7 @@ import { FILTERS_STORAGE_KEY } from "src/constants/storageKeys";
 import type { DiscogsRelease } from "src/types";
 import type {
   ReleaseFilterCriteria,
+  StoredPersistedFiltersInput,
   StyleOperator,
   YearOperator,
 } from "src/types/filters.types";
@@ -20,6 +21,7 @@ import {
   inactiveFilterSelectionDefaults,
   type PersistedFiltersState,
   parsePersistedFilters,
+  parseStoredFiltersObject,
 } from "src/utils/filtersStorage";
 import { syncReleaseSearchIndex } from "src/utils/releaseSearchIndex";
 import { sortReleases as sortReleasesUtil } from "src/utils/sortReleases";
@@ -176,7 +178,7 @@ export type FiltersActions =
     }
   | {
       type: FiltersActionTypes.ApplySessionFilters;
-      payload: PersistedFiltersState;
+      payload: StoredPersistedFiltersInput;
     }
   | {
       type: FiltersActionTypes.SetSearchQuery;
@@ -903,22 +905,20 @@ export const filtersDispatchAtom = atom(
       }
 
       case FiltersActionTypes.ApplySessionFilters: {
-        const selectedStyles = [...action.payload.selectedStyles];
+        const payload = parseStoredFiltersObject(action.payload);
+        const selectedStyles = [...payload.selectedStyles];
         const excludedStyles = excludedStylesAfterIncluding(
-          action.payload.excludedStyles,
+          payload.excludedStyles,
           selectedStyles,
         );
-        const selectedYears = [...action.payload.selectedYears];
+        const selectedYears = [...payload.selectedYears];
         const excludedYears = reconcileYearIncludesWithExcludes(
           selectedYears,
-          excludedYearsAfterIncluding(
-            action.payload.excludedYears,
-            selectedYears,
-          ),
+          excludedYearsAfterIncluding(payload.excludedYears, selectedYears),
         );
-        const selectedFormats = [...action.payload.selectedFormats];
+        const selectedFormats = [...payload.selectedFormats];
         const excludedFormats = excludedFormatsAfterIncluding(
-          action.payload.excludedFormats,
+          payload.excludedFormats,
           selectedFormats,
         );
 
@@ -929,15 +929,15 @@ export const filtersDispatchAtom = atom(
           excludedYears,
           selectedFormats,
           excludedFormats,
-          selectedSort: action.payload.selectedSort,
+          selectedSort: payload.selectedSort,
           selectedSortSecondary: normalizeThenBySortSelection(
-            action.payload.selectedSort,
-            action.payload.selectedSortSecondary,
+            payload.selectedSort,
+            payload.selectedSortSecondary,
           ),
-          styleOperator: action.payload.styleOperator,
-          formatOperator: action.payload.formatOperator,
-          yearOperator: action.payload.yearOperator,
-          searchQuery: action.payload.searchQuery,
+          styleOperator: payload.styleOperator,
+          formatOperator: payload.formatOperator,
+          yearOperator: payload.yearOperator,
+          searchQuery: payload.searchQuery,
           clearSearching: true,
         });
         return;

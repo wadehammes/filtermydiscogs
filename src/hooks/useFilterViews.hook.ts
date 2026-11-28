@@ -25,6 +25,7 @@ import {
   renameFilterView,
 } from "src/utils/filterViews";
 import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
+import { parseStoredFiltersObject } from "src/utils/filtersStorage";
 import { toast } from "src/utils/toast";
 
 const FILTER_VIEW_SAVED_MESSAGE = "View saved";
@@ -86,7 +87,7 @@ export const useFilterViews = () => {
     (view: FilterView) => {
       filtersDispatch({
         type: FiltersActionTypes.ApplySessionFilters,
-        payload: { ...view.filters },
+        payload: parseStoredFiltersObject(view.filters),
       });
     },
     [filtersDispatch],
@@ -181,7 +182,7 @@ export const useFilterViews = () => {
 
       filtersDispatch({
         type: FiltersActionTypes.ApplySessionFilters,
-        payload: filters,
+        payload: parseStoredFiltersObject(filters),
       });
 
       return true;

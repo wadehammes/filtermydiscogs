@@ -5,6 +5,7 @@ import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
 import type { DiscogsRelease } from "src/types";
 import type {
+  LegacyPersistedFiltersSnapshot,
   PersistedFiltersJson,
   ReleaseFilterCriteria,
   StyleOperator,
@@ -91,6 +92,19 @@ class PersistedFiltersFactory extends BaseFactory<
       ...defaultPersistedFilters,
       ...(attributes ?? {}),
     };
+  }
+
+  preFacetExcludesSnapshot(
+    attributes?: Partial<LegacyPersistedFiltersSnapshot>,
+  ): LegacyPersistedFiltersSnapshot {
+    const {
+      excludedStyles: _excludedStyles,
+      excludedFormats: _excludedFormats,
+      excludedYears: _excludedYears,
+      ...legacy
+    } = this.withDefaults(attributes);
+
+    return legacy;
   }
 }
 

@@ -24,6 +24,22 @@ describe("filterViews", () => {
     expect(normalizeFilterViewName("  Techno  ")).toBe("Techno");
   });
 
+  it("normalizes legacy saved view filters missing facet exclude fields", () => {
+    const legacyView = {
+      id: "legacy-view",
+      name: "Rock",
+      filters: persistedFiltersFactory.preFacetExcludesSnapshot({
+        selectedStyles: ["Rock"],
+      }),
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+
+    const [parsed] = parseFilterViews([legacyView]);
+    expect(parsed?.filters.excludedStyles).toEqual([]);
+    expect(parsed?.filters.excludedFormats).toEqual([]);
+    expect(parsed?.filters.excludedYears).toEqual([]);
+  });
+
   it("parses stored views and rejects invalid payloads", () => {
     const filters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Rock"],

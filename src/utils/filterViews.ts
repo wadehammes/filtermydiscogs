@@ -64,7 +64,13 @@ export const parseFilterViews = (value: unknown): FilterView[] => {
     return [];
   }
 
-  return value.filter(isValidFilterView).slice(0, MAX_FILTER_VIEWS);
+  return value
+    .filter(isValidFilterView)
+    .slice(0, MAX_FILTER_VIEWS)
+    .map((view) => ({
+      ...view,
+      filters: parseStoredFiltersObject(view.filters),
+    }));
 };
 
 export const isValidFilterViewsPatch = (
