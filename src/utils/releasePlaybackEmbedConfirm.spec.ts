@@ -130,23 +130,33 @@ describe("releasePlaybackEmbedConfirm", () => {
   });
 
   it("when infoDelivery currentTime is advancing, confirms embed playback before watchdog skip", () => {
+    const startedAt = 2000;
+    const afterGate = startedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS;
+
     expect(
       shouldConfirmEmbedPlaybackFromWatchdogProgress({
         embedPlaybackConfirmed: false,
         lastInfoDeliveryCurrentTime: 1.5,
         isPlaying: true,
         isPaused: false,
+        imperativeEmbedLoadStartedAtMs: startedAt,
+        nowMs: afterGate,
       }),
     ).toBe(true);
   });
 
   it("when infoDelivery never reported progress, does not confirm from watchdog progress alone", () => {
+    const startedAt = 2000;
+    const afterGate = startedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS;
+
     expect(
       shouldConfirmEmbedPlaybackFromWatchdogProgress({
         embedPlaybackConfirmed: false,
         lastInfoDeliveryCurrentTime: undefined,
         isPlaying: true,
         isPaused: false,
+        imperativeEmbedLoadStartedAtMs: startedAt,
+        nowMs: afterGate,
       }),
     ).toBe(false);
   });
@@ -218,12 +228,13 @@ describe("releasePlaybackEmbedConfirm", () => {
         nowMs: cycleStartedAt + EMBED_PLAYBACK_CONFIRM_PLAYING_MIN_MS,
         isPlaying: true,
         isPaused: false,
+        playerState: YOUTUBE_PLAYER_STATE_PLAYING,
         lastInfoDeliveryCurrentTime: 2.5,
       }),
     ).toBe(true);
   });
 
-  it("shouldConfirmEmbedPlaybackFromAudibleEmbed confirms from cached progress when confirm gate timestamp is missing", () => {
+  it("shouldConfirmEmbedPlaybackFromAudibleEmbed does not confirm from cached progress when confirm gate timestamp is missing", () => {
     expect(
       shouldConfirmEmbedPlaybackFromAudibleEmbed({
         gateStartedAtMs: null,
@@ -232,7 +243,7 @@ describe("releasePlaybackEmbedConfirm", () => {
         isPaused: false,
         lastInfoDeliveryCurrentTime: 3.2,
       }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("resolvePlaybackEmbedWatchdogDelayMsWithInitialGrace adds grace only while initial presentation is pending", () => {
