@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { Activity, useCallback, useEffect, useRef, useState } from "react";
+import { Activity, useCallback, useEffect, useState } from "react";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
@@ -78,10 +78,11 @@ export const ReleaseMiniPlayer = ({
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const isDockBarExpanded = !isDockBarCollapsed;
   const isQueueDrawerOpen = isQueueOpen && isDockBarExpanded;
-  const miniPlayerBarRef = useRef<HTMLDivElement>(null);
+  const [dockScrollPassthroughNode, setDockScrollPassthroughNode] =
+    useState<HTMLElement | null>(null);
 
   usePlaybackDockMobileScrollPassthrough({
-    miniPlayerBarRef,
+    dockShellNode: dockScrollPassthroughNode,
     enabled: isMobileLayout && isDockBarExpanded,
   });
   const { openRelease: openReleaseBase, prefetchPointerProps } =
@@ -198,6 +199,7 @@ export const ReleaseMiniPlayer = ({
         popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
       >
         <section
+          ref={setDockScrollPassthroughNode}
           className={styles.miniPlayerShell}
           data-testid="fmdReleaseMiniPlayer"
           {...(isVideoPanelExpanded &&
@@ -259,7 +261,7 @@ export const ReleaseMiniPlayer = ({
             />
           </Activity>
           {isDockBarExpanded ? (
-            <div ref={miniPlayerBarRef} className={styles.miniPlayerBar}>
+            <div className={styles.miniPlayerBar}>
               <div className={styles.releaseArea}>
                 <div className={styles.metaRow}>
                   {!isMobileLayout ? addToMenu : null}

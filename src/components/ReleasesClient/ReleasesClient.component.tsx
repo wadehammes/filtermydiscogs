@@ -279,6 +279,7 @@ const ReleasesClientContent = () => {
               className={styles.mainContent}
               data-releases-scroll-root
               aria-label={RELEASES_WORKSPACE_MAIN_LABEL}
+              tabIndex={-1}
             >
               {hasReleases || !allReleasesLoaded ? (
                 <ReleasesHeader

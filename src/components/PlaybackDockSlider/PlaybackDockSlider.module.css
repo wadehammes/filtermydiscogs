@@ -18,7 +18,7 @@
 
   @media (width < 768px) {
     .root:not(.rootVertical) & {
-      touch-action: pan-x;
+      touch-action: pan-y;
     }
   }
 }
