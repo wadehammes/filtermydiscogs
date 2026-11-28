@@ -12,6 +12,9 @@ export const isProtectedAppRoute = (pathname: string): boolean =>
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 
+export const isAdminAppRoute = (pathname: string): boolean =>
+  pathname === "/admin";
+
 export const isPublicCrateRoute = (pathname: string): boolean =>
   pathname.startsWith("/crate/") && pathname.length > "/crate/".length;
 

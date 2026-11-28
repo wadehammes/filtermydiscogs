@@ -1,6 +1,7 @@
 import { clearSimilarReleasesPageIndexByAnchor } from "src/components/ReleaseModal/useSimilarReleasesPageState.hook";
 import {
   LEGACY_COMMUNITY_RATINGS_STORAGE_KEY,
+  PLAYBACK_DOCK_BAR_COLLAPSED_STORAGE_KEY,
   RELEASES_TABLE_LAYOUT_STORAGE_KEY,
   SELECTED_RELEASES_STORAGE_KEY,
   THEME_STORAGE_KEY,
@@ -31,6 +32,7 @@ export const clearClientStoredData = (): void => {
   localStorage.removeItem(THEME_STORAGE_KEY);
   localStorage.removeItem(VIEW_STATE_STORAGE_KEY);
   localStorage.removeItem(RELEASES_TABLE_LAYOUT_STORAGE_KEY);
+  localStorage.removeItem(PLAYBACK_DOCK_BAR_COLLAPSED_STORAGE_KEY);
   localStorage.removeItem(LEGACY_COMMUNITY_RATINGS_STORAGE_KEY);
   localStorage.removeItem(PERSIST_FILTERS_STORAGE_KEY);
   resetFilterPersistenceCache();
