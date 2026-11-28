@@ -20,6 +20,10 @@ describe("WhatsNewModal", () => {
     expect(
       screen.getByRole("heading", { name: WHATS_NEW_MODAL_TITLE }),
     ).toBeInTheDocument();
+    expect(screen.getByText("v2026.11.28")).toBeInTheDocument();
+    expect(
+      screen.getByText(/scrolls with your releases instead of sitting in a fixed overlay/i),
+    ).toBeInTheDocument();
     expect(screen.getByText("v2026.11.27")).toBeInTheDocument();
     expect(
       screen.getByText(/What's New\? in the account menu/i),

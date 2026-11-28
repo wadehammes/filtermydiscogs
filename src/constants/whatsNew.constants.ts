@@ -42,6 +42,16 @@ export const resolveWhatsNewBulletText = (
 
 export const WHATS_NEW_RELEASES: readonly WhatsNewRelease[] = [
   {
+    version: "v2026.11.28",
+    highlights: [
+      {
+        id: "mobile-dock-in-scroll",
+        badge: "improved",
+        text: "Mobile collection and workspace pages: the playback dock scrolls with your releases instead of sitting in a fixed overlay at the bottom of the screen.",
+      },
+    ],
+  },
+  {
     version: "v2026.11.27",
     highlights: [
       {
