@@ -18,14 +18,13 @@ describe("FilterMatchOperatorSelect", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("renders ANY and NONE operators when one value is selected", () => {
-    po.renderFilterMatchOperatorSelect({
+  it("renders nothing when only one value is selected", () => {
+    const { container } = po.renderFilterMatchOperatorSelect({
       selectedCount: 1,
       showLabel: true,
     });
 
-    expect(screen.getByText("Match")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Match" })).toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it("renders the match operator select when multiple values are selected", () => {

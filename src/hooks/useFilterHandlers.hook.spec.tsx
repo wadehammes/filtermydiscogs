@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it } from "@jest/globals";
 import { useAtomValue, useStore } from "jotai";
 import {
   collectionFiltersActiveAtom,
+  excludedFormatsAtom,
   excludedStylesAtom,
+  excludedYearsAtom,
   filtersDispatchAtom,
   formatOperatorAtom,
   selectedFormatsAtom,
@@ -90,6 +92,113 @@ describe("useFilterHandlers", () => {
     expect(result.current.excludedStyles).toEqual(["House"]);
     expect(result.current.selectedStyles).toEqual(["Deep House"]);
     expect(result.current.handlers.excludedStyles).toEqual(["House"]);
+  });
+
+  it("when handleAddExcludedFormat is called, adds the format to excludedFormats and drops it from selectedFormats", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({
+          formats: [{ name: "Vinyl", qty: "1" }],
+        }),
+      }),
+    ];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers();
+        const selectedFormats = useAtomValue(selectedFormatsAtom);
+        const excludedFormats = useAtomValue(excludedFormatsAtom);
+
+        return { handlers, selectedFormats, excludedFormats };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ selectedFormats: ["Vinyl", "CD"] }}
+          >
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleAddExcludedFormat("CD");
+    });
+
+    expect(result.current.excludedFormats).toEqual(["CD"]);
+    expect(result.current.selectedFormats).toEqual(["Vinyl"]);
+  });
+
+  it("when handleAddExcludedYear is called, adds the year to excludedYears and clears included years", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({ year: 2018 }),
+      }),
+    ];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers();
+        const selectedYears = useAtomValue(selectedYearsAtom);
+        const excludedYears = useAtomValue(excludedYearsAtom);
+
+        return { handlers, selectedYears, excludedYears };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ selectedYears: [2018, 2019] }}
+          >
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleAddExcludedYear("2019");
+    });
+
+    expect(result.current.excludedYears).toEqual([2019]);
+    expect(result.current.selectedYears).toEqual([]);
+  });
+
+  it("when handleYearChange sets included years, clears excluded years", () => {
+    const releases = [
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({ year: 2018 }),
+      }),
+    ];
+
+    const { result } = renderFeatureHook(
+      () => {
+        const handlers = useFilterHandlers();
+        const selectedYears = useAtomValue(selectedYearsAtom);
+        const excludedYears = useAtomValue(excludedYearsAtom);
+
+        return { handlers, selectedYears, excludedYears };
+      },
+      {
+        wrapper: ({ children }) => (
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ excludedYears: [2019] }}
+          >
+            {children}
+          </SeedCollectionFilters>
+        ),
+      },
+    );
+
+    act(() => {
+      result.current.handlers.handleYearChange(["2018"]);
+    });
+
+    expect(result.current.selectedYears).toEqual([2018]);
+    expect(result.current.excludedYears).toEqual([]);
   });
 
   it("when handleStyleChange includes a tag that is excluded, removes that tag from excludedStyles", () => {
@@ -409,7 +518,10 @@ describe("useFilterHandlers", () => {
       },
       {
         wrapper: ({ children }) => (
-          <SeedCollectionFilters releases={releases}>
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ selectedStyles: ["Rock", "Jazz"] }}
+          >
             {children}
           </SeedCollectionFilters>
         ),
@@ -435,7 +547,10 @@ describe("useFilterHandlers", () => {
       },
       {
         wrapper: ({ children }) => (
-          <SeedCollectionFilters releases={releases}>
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ selectedFormats: ["Vinyl", "CD"] }}
+          >
             {children}
           </SeedCollectionFilters>
         ),
@@ -454,6 +569,9 @@ describe("useFilterHandlers", () => {
       releaseFactory.build({
         basic_information: basicInformationFactory.build({ year: 2020 }),
       }),
+      releaseFactory.build({
+        basic_information: basicInformationFactory.build({ year: 2021 }),
+      }),
     ];
 
     const { result } = renderFeatureHook(
@@ -465,7 +583,10 @@ describe("useFilterHandlers", () => {
       },
       {
         wrapper: ({ children }) => (
-          <SeedCollectionFilters releases={releases}>
+          <SeedCollectionFilters
+            releases={releases}
+            sessionFilters={{ selectedYears: [2020, 2021] }}
+          >
             {children}
           </SeedCollectionFilters>
         ),

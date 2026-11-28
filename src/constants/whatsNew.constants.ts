@@ -47,27 +47,27 @@ export const WHATS_NEW_RELEASES: readonly WhatsNewRelease[] = [
       {
         id: "whats-new-modal",
         badge: "new",
-        text: "What's New? in the account menu lists release notes and may open once after a deploy refresh.",
+        text: "What's New? in the account menu lists each release. After a deploy refresh, the dialog may open once if you have not seen the latest notes.",
       },
       {
         id: "collection-command-palette",
         badge: "new",
-        text: `Collection Ask (${WHATS_NEW_SHORTCUT_PLACEHOLDER}, filters bar, or mobile header): describe filters, then apply, save a view, or create a crate.`,
+        text: `Collection Ask (${WHATS_NEW_SHORTCUT_PLACEHOLDER}, filters bar, or mobile header): describe filters, then apply them, save a view, or create a crate.`,
       },
       {
-        id: "genre-style-exclude",
+        id: "facet-excludes",
         badge: "new",
-        text: "Genre & Style excludes: row Exclude → Not chips, or say what to omit in Ask. Same tag cannot be included and excluded.",
+        text: "Genre & Style, Format Type, and Release Year: row Exclude → Not chips on the filter bar and mobile drawer. Ask accepts genre & style negation. Release year is include or exclude, not both; other facets cannot include and exclude the same value.",
       },
       {
         id: "collection-radio-removed",
         badge: "removed",
-        text: "Collection radio is removed for now. A revised version may return after I refine the concept.",
+        text: "Collection radio is off for now. I may ship a revised version later.",
       },
       {
         id: "mobile-playback-header-dock",
         badge: "improved",
-        text: "Mobile header can hide the playback bar; play and pause stay in the header.",
+        text: "Mobile: hide the playback bar; play and pause remain in the header.",
       },
     ],
   },

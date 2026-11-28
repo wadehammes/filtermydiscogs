@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   type CollectionSortSecondary,
   type SortValues,
@@ -10,7 +10,9 @@ import {
   FiltersActionTypes,
 } from "src/context/filters.context";
 import {
+  useExcludedFormats,
   useExcludedStyles,
+  useExcludedYears,
   useFacetOptions,
   useFiltersDispatch,
   useFormatOperator,
@@ -60,6 +62,8 @@ export const useFilterHandlers = () => {
     useFacetOptions();
   const selectedStyles = useSelectedStyles();
   const excludedStyles = useExcludedStyles();
+  const excludedYears = useExcludedYears();
+  const excludedFormats = useExcludedFormats();
   const selectedYears = useSelectedYears();
   const selectedFormats = useSelectedFormats();
   const selectedSort = useSelectedSort();
@@ -80,25 +84,61 @@ export const useFilterHandlers = () => {
     [filtersDispatch],
   );
 
-  const handleAddExcludedStyle = useCallback(
-    (style: string) => {
-      filtersDispatch({
-        type: FiltersActionTypes.AddExcludedStyle,
-        payload: style,
-      });
-    },
-    [filtersDispatch],
-  );
+  const {
+    handleAddExcludedStyle,
+    handleRemoveExcludedStyle,
+    handleAddExcludedFormat,
+    handleRemoveExcludedFormat,
+    handleAddExcludedYear,
+    handleRemoveExcludedYear,
+  } = useMemo(() => {
+    const dispatchExcludedYear = (yearValue: string, remove: boolean) => {
+      const year = Number.parseInt(yearValue, 10);
+      if (Number.isNaN(year)) {
+        return;
+      }
 
-  const handleRemoveExcludedStyle = useCallback(
-    (style: string) => {
       filtersDispatch({
-        type: FiltersActionTypes.RemoveExcludedStyle,
-        payload: style,
+        type: remove
+          ? FiltersActionTypes.RemoveExcludedYear
+          : FiltersActionTypes.AddExcludedYear,
+        payload: year,
       });
-    },
-    [filtersDispatch],
-  );
+    };
+
+    return {
+      handleAddExcludedStyle: (style: string) => {
+        filtersDispatch({
+          type: FiltersActionTypes.AddExcludedStyle,
+          payload: style,
+        });
+      },
+      handleRemoveExcludedStyle: (style: string) => {
+        filtersDispatch({
+          type: FiltersActionTypes.RemoveExcludedStyle,
+          payload: style,
+        });
+      },
+      handleAddExcludedFormat: (format: string) => {
+        filtersDispatch({
+          type: FiltersActionTypes.AddExcludedFormat,
+          payload: format,
+        });
+      },
+      handleRemoveExcludedFormat: (format: string) => {
+        filtersDispatch({
+          type: FiltersActionTypes.RemoveExcludedFormat,
+          payload: format,
+        });
+      },
+      handleAddExcludedYear: (yearValue: string) => {
+        dispatchExcludedYear(yearValue, false);
+      },
+      handleRemoveExcludedYear: (yearValue: string) => {
+        dispatchExcludedYear(yearValue, true);
+      },
+    };
+  }, [filtersDispatch]);
 
   const handleYearChange = useCallback(
     (value: string | string[]) => {
@@ -184,11 +224,21 @@ export const useFilterHandlers = () => {
     [],
   );
 
+  const selectedYearLabels = selectedYears.map(String);
+  const excludedYearLabels = excludedYears.map(String);
+
   return {
     handleStyleChange,
     handleAddExcludedStyle,
     handleRemoveExcludedStyle,
     excludedStyles,
+    handleAddExcludedFormat,
+    handleRemoveExcludedFormat,
+    excludedFormats,
+    handleAddExcludedYear,
+    handleRemoveExcludedYear,
+    excludedYears,
+    excludedYearLabels,
     handleYearChange,
     handleFormatChange,
     handleSortChange,
@@ -200,14 +250,14 @@ export const useFilterHandlers = () => {
       availableStyles,
       selectedStyles,
     ),
-    yearOptions: withSelectedFilterSelectOptions(
-      availableYears.map(String),
-      selectedYears.map(String),
-    ),
-    formatOptions: withSelectedFilterSelectOptions(
-      availableFormats,
-      selectedFormats,
-    ),
+    yearOptions: withSelectedFilterSelectOptions(availableYears.map(String), [
+      ...selectedYearLabels,
+      ...excludedYearLabels,
+    ]),
+    formatOptions: withSelectedFilterSelectOptions(availableFormats, [
+      ...selectedFormats,
+      ...excludedFormats,
+    ]),
     selectedStyles,
     selectedYears,
     selectedFormats,

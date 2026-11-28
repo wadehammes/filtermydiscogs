@@ -3,8 +3,10 @@ import {
   FILTERS_STORAGE_KEY,
   VIEW_STATE_STORAGE_KEY,
 } from "src/constants/storageKeys";
-import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
-import { defaultPersistedFilters } from "src/utils/filtersStorage";
+import {
+  persistedFiltersFactory,
+  userPreferencesFactory,
+} from "src/tests/factories/UserPreferences.factory";
 import { buildLocalPreferencesSeedPatch } from "src/utils/userPreferencesLocalSeedPatch";
 
 describe("buildLocalPreferencesSeedPatch", () => {
@@ -24,15 +26,14 @@ describe("buildLocalPreferencesSeedPatch", () => {
   });
 
   it("seeds non-default local filters when server filters are default", () => {
-    const localFilters = {
-      ...defaultPersistedFilters,
+    const localFilters = persistedFiltersFactory.withDefaults({
       searchQuery: "miles",
-    };
+    });
     localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(localFilters));
 
     const preferences = userPreferencesFactory.build({
       persistFilters: true,
-      filters: defaultPersistedFilters,
+      filters: persistedFiltersFactory.empty(),
     });
 
     expect(

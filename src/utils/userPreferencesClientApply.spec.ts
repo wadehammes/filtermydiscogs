@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { createStore } from "jotai/vanilla";
 import { persistedFiltersAtom } from "src/atoms/filters.atoms";
 import { viewStateAtom } from "src/atoms/view.atoms";
-import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
 import {
-  defaultPersistedFilters,
-  persistedFiltersEqual,
-} from "src/utils/filtersStorage";
+  persistedFiltersFactory,
+  userPreferencesFactory,
+} from "src/tests/factories/UserPreferences.factory";
+import { persistedFiltersEqual } from "src/utils/filtersStorage";
 import { applyUserPreferencesToClient } from "src/utils/userPreferencesClientApply";
 import { markFiltersPendingPersist } from "src/utils/userPreferencesSyncState";
 
@@ -65,17 +65,16 @@ describe("applyUserPreferencesToClient", () => {
 
   it("clears local filters when persistFilters is disabled on the server", () => {
     const store = createStore();
-    const customFilters = {
-      ...defaultPersistedFilters,
+    const customFilters = persistedFiltersFactory.withDefaults({
       searchQuery: "miles",
-    };
+    });
     store.set(persistedFiltersAtom, customFilters);
 
     const setPersistedFilters = jest.fn();
     const setPendingFiltersRestore = jest.fn();
     const preferences = userPreferencesFactory.build({
       persistFilters: false,
-      filters: defaultPersistedFilters,
+      filters: persistedFiltersFactory.empty(),
     });
 
     applyUserPreferencesToClient({
@@ -90,23 +89,24 @@ describe("applyUserPreferencesToClient", () => {
       currentTheme: preferences.theme,
     });
 
-    expect(setPersistedFilters).toHaveBeenCalledWith(defaultPersistedFilters);
+    expect(setPersistedFilters).toHaveBeenCalledWith(
+      persistedFiltersFactory.empty(),
+    );
     expect(setPendingFiltersRestore).toHaveBeenCalledWith(null);
     expect(
       persistedFiltersEqual(
         store.get(persistedFiltersAtom),
-        defaultPersistedFilters,
+        persistedFiltersFactory.empty(),
       ),
     ).toBe(false);
   });
 
   it("skips filter hydration when a pending local persist matches server filters", () => {
     const store = createStore();
-    const filters = {
-      ...defaultPersistedFilters,
+    const filters = persistedFiltersFactory.withDefaults({
       searchQuery: "coltrane",
-    };
-    store.set(persistedFiltersAtom, defaultPersistedFilters);
+    });
+    store.set(persistedFiltersAtom, persistedFiltersFactory.empty());
 
     markFiltersPendingPersist(filters);
 

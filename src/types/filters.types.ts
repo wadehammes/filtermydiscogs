@@ -28,7 +28,9 @@ export type PersistedFiltersJson = {
   selectedStyles: string[];
   excludedStyles: string[];
   selectedYears: number[];
+  excludedYears: number[];
   selectedFormats: string[];
+  excludedFormats: string[];
   selectedSort: SortValues;
   selectedSortSecondary: CollectionSortSecondary;
   styleOperator: StyleOperator;
@@ -50,6 +52,8 @@ export type ReleaseFilterCriteria = Pick<
   | "yearOperator"
 > & {
   excludedStyles?: string[];
+  excludedYears?: number[];
+  excludedFormats?: string[];
 };
 
 export interface FacetOptions {

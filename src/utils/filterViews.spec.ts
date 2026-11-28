@@ -1,7 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { SortValues } from "src/constants/sortValues";
 import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.factory";
-import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import {
   createFilterView,
   ensureUniqueFilterViewName,
@@ -26,7 +25,7 @@ describe("filterViews", () => {
   });
 
   it("parses stored views and rejects invalid payloads", () => {
-    const filters = persistedFiltersFactory.build({
+    const filters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Rock"],
       searchQuery: "blue",
     });
@@ -47,12 +46,12 @@ describe("filterViews", () => {
   });
 
   it("finds a matching view from the current session filters", () => {
-    const filters = persistedFiltersFactory.build({
+    const filters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Techno"],
       selectedSort: SortValues.AZArtist,
     });
     const views = [
-      createFilterView("Other", defaultPersistedFilters),
+      createFilterView("Other", persistedFiltersFactory.empty()),
       createFilterView("Techno", filters),
     ];
 
@@ -66,7 +65,7 @@ describe("filterViews", () => {
   });
 
   it("matches views when multi-select values differ only by order", () => {
-    const filters = persistedFiltersFactory.build({
+    const filters = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Acid", "Deep House"],
     });
     const views = [createFilterView("Deep Acid", filters)];
@@ -80,48 +79,39 @@ describe("filterViews", () => {
   });
 
   it("matches views when stored filter objects use a different key order", () => {
-    const session = {
-      ...defaultPersistedFilters,
+    const session = persistedFiltersFactory.withDefaults({
       selectedStyles: ["Acid", "Deep House"],
-    };
-    const views = [
-      createFilterView("Deep Acid", {
-        searchQuery: "",
-        yearOperator: "OR",
-        formatOperator: "OR",
-        styleOperator: "OR",
-        selectedSort: session.selectedSort,
-        selectedSortSecondary: session.selectedSortSecondary,
-        selectedFormats: [],
-        excludedStyles: [],
-        selectedYears: [],
-        selectedStyles: ["Deep House", "Acid"],
-      }),
-    ];
+    });
+    const stored = persistedFiltersFactory.withDefaults({
+      selectedStyles: ["Deep House", "Acid"],
+    });
+    const views = [createFilterView("Deep Acid", stored)];
 
     expect(findMatchingFilterView(views, session)?.name).toBe("Deep Acid");
   });
 
   it("formats saved view summaries for settings", () => {
-    expect(formatFilterViewSummary(defaultPersistedFilters)).toBe(
+    expect(formatFilterViewSummary(persistedFiltersFactory.empty())).toBe(
       "Default filters",
     );
     expect(
-      formatFilterViewSummary({
-        ...defaultPersistedFilters,
-        selectedStyles: ["Acid", "Deep House"],
-        styleOperator: "OR",
-      }),
+      formatFilterViewSummary(
+        persistedFiltersFactory.withDefaults({
+          selectedStyles: ["Acid", "Deep House"],
+          styleOperator: "OR",
+        }),
+      ),
     ).toBe("Genre & style: Acid, Deep House (ANY)");
     expect(
-      formatFilterViewSummary({
-        ...defaultPersistedFilters,
-        searchQuery: "blue note",
-        selectedFormats: ["Vinyl"],
-        selectedYears: [1999],
-        yearOperator: "NONE",
-        selectedSort: SortValues.AZArtist,
-      }),
+      formatFilterViewSummary(
+        persistedFiltersFactory.withDefaults({
+          searchQuery: "blue note",
+          selectedFormats: ["Vinyl"],
+          selectedYears: [1999],
+          yearOperator: "NONE",
+          selectedSort: SortValues.AZArtist,
+        }),
+      ),
     ).toBe(
       'Search: "blue note" · Format: Vinyl · Year: 1999 (NONE) · Sort: Artist A–Z',
     );
@@ -129,27 +119,31 @@ describe("filterViews", () => {
 
   it("includes then-by sort in saved view summaries when set", () => {
     expect(
-      formatFilterViewSummary({
-        ...defaultPersistedFilters,
-        selectedSort: SortValues.AZArtist,
-        selectedSortSecondary: SortValues.DateAddedOld,
-      }),
+      formatFilterViewSummary(
+        persistedFiltersFactory.withDefaults({
+          selectedSort: SortValues.AZArtist,
+          selectedSortSecondary: SortValues.DateAddedOld,
+        }),
+      ),
     ).toBe("Sort: Artist A–Z · Then by: Date Added · oldest");
   });
 
   it("detects duplicate names and saveable filter state", () => {
-    const view = createFilterView("Techno", defaultPersistedFilters);
+    const view = createFilterView("Techno", persistedFiltersFactory.empty());
 
-    expect(hasSaveableFilterViewFilters(defaultPersistedFilters)).toBe(false);
+    expect(hasSaveableFilterViewFilters(persistedFiltersFactory.empty())).toBe(
+      false,
+    );
     expect(
-      hasSaveableFilterViewFilters({
-        ...defaultPersistedFilters,
-        selectedSort: SortValues.AZArtist,
-      }),
+      hasSaveableFilterViewFilters(
+        persistedFiltersFactory.withDefaults({
+          selectedSort: SortValues.AZArtist,
+        }),
+      ),
     ).toBe(false);
     expect(
       hasSaveableFilterViewFilters(
-        persistedFiltersFactory.build({ selectedStyles: ["Techno"] }),
+        persistedFiltersFactory.withDefaults({ selectedStyles: ["Techno"] }),
       ),
     ).toBe(true);
     expect(filterViewNameExists([view], "techno")).toBe(true);
@@ -157,14 +151,14 @@ describe("filterViews", () => {
   });
 
   it("renames a saved view and rejects invalid or duplicate names", () => {
-    const techno = createFilterView("Techno", {
-      ...defaultPersistedFilters,
-      selectedStyles: ["Techno"],
-    });
-    const ambient = createFilterView("Ambient", {
-      ...defaultPersistedFilters,
-      selectedStyles: ["Ambient"],
-    });
+    const techno = createFilterView(
+      "Techno",
+      persistedFiltersFactory.withDefaults({ selectedStyles: ["Techno"] }),
+    );
+    const ambient = createFilterView(
+      "Ambient",
+      persistedFiltersFactory.withDefaults({ selectedStyles: ["Ambient"] }),
+    );
     const views = [techno, ambient];
 
     const renamed = renameFilterView(views, techno.id, "  Peak time  ");
@@ -179,7 +173,7 @@ describe("filterViews", () => {
   });
 
   it("appends a numeric suffix when the view name is already taken", () => {
-    const filters = persistedFiltersFactory.build();
+    const filters = persistedFiltersFactory.withDefaults();
     const views = [createFilterView("Deep house", filters)];
 
     expect(ensureUniqueFilterViewName("Deep house", views)).toBe(

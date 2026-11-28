@@ -1,12 +1,12 @@
 import { describe, expect, it } from "@jest/globals";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.factory";
 import type { DuplicateGroup } from "src/types/dashboard.types";
 import {
   buildDashboardDrilldownSessionFilters,
   buildDuplicateGroupDrilldownTarget,
   listYearsForDecadeLabel,
 } from "src/utils/dashboardDrilldownFilters";
-import { defaultPersistedFilters } from "src/utils/filtersStorage";
 
 describe("listYearsForDecadeLabel", () => {
   it("when label is a decade, returns ten consecutive years", () => {
@@ -27,10 +27,11 @@ describe("buildDashboardDrilldownSessionFilters", () => {
         kind: "genreStyle",
         label: "Electronic",
       }),
-    ).toEqual({
-      ...defaultPersistedFilters,
-      selectedStyles: ["Electronic"],
-    });
+    ).toEqual(
+      persistedFiltersFactory.withDefaults({
+        selectedStyles: ["Electronic"],
+      }),
+    );
   });
 
   it("when kind is decade, sets selectedYears from the decade label", () => {
@@ -39,12 +40,13 @@ describe("buildDashboardDrilldownSessionFilters", () => {
         kind: "decade",
         label: "1980s",
       }),
-    ).toEqual({
-      ...defaultPersistedFilters,
-      selectedYears: [
-        1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989,
-      ],
-    });
+    ).toEqual(
+      persistedFiltersFactory.withDefaults({
+        selectedYears: [
+          1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989,
+        ],
+      }),
+    );
   });
 
   it("when kind is format, sets selectedFormats", () => {
@@ -53,10 +55,11 @@ describe("buildDashboardDrilldownSessionFilters", () => {
         kind: "format",
         label: "Vinyl",
       }),
-    ).toEqual({
-      ...defaultPersistedFilters,
-      selectedFormats: ["Vinyl"],
-    });
+    ).toEqual(
+      persistedFiltersFactory.withDefaults({
+        selectedFormats: ["Vinyl"],
+      }),
+    );
   });
 
   it("when kind is search, sets searchQuery", () => {
@@ -65,10 +68,11 @@ describe("buildDashboardDrilldownSessionFilters", () => {
         kind: "search",
         label: "Kind of Blue",
       }),
-    ).toEqual({
-      ...defaultPersistedFilters,
-      searchQuery: "Kind of Blue",
-    });
+    ).toEqual(
+      persistedFiltersFactory.withDefaults({
+        searchQuery: "Kind of Blue",
+      }),
+    );
   });
 });
 

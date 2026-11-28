@@ -8,12 +8,14 @@ import {
   SETTINGS_EMAIL_VERIFICATION_SENT_MESSAGE,
 } from "src/constants/settingsCopy.constants";
 import { ANALYTICS_CONSENT_STORAGE_KEY } from "src/constants/storageKeys";
-import { userPreferencesFactory } from "src/tests/factories/UserPreferences.factory";
+import {
+  persistedFiltersFactory,
+  userPreferencesFactory,
+} from "src/tests/factories/UserPreferences.factory";
 import {
   expectPortaledPopupAttachedToBody,
   openFilterSelect,
 } from "src/tests/filterControlTestHelpers";
-import { defaultPersistedFilters } from "src/utils/filtersStorage";
 import { createFilterView } from "src/utils/filterViews";
 import { toast } from "src/utils/toast";
 import { screen, waitFor, within } from "test-utils";
@@ -299,10 +301,10 @@ describe("SettingsClient", () => {
   });
 
   it("renames a saved view from the filters panel", async () => {
-    const technoView = createFilterView("Techno", {
-      ...defaultPersistedFilters,
-      selectedStyles: ["Techno"],
-    });
+    const technoView = createFilterView(
+      "Techno",
+      persistedFiltersFactory.withDefaults({ selectedStyles: ["Techno"] }),
+    );
 
     po.mockUserPreferences(
       userPreferencesFactory.asApiResponse({

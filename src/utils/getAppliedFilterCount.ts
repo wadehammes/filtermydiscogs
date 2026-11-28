@@ -3,7 +3,9 @@ export type AppliedFilterCountInput = {
   selectedStyles: string[];
   excludedStyles?: string[];
   selectedYears: number[];
+  excludedYears?: number[];
   selectedFormats: string[];
+  excludedFormats?: string[];
 };
 
 export const getAppliedFilterCount = ({
@@ -11,7 +13,9 @@ export const getAppliedFilterCount = ({
   selectedStyles,
   excludedStyles = [],
   selectedYears,
+  excludedYears = [],
   selectedFormats,
+  excludedFormats = [],
 }: AppliedFilterCountInput): number => {
   let count = 0;
 
@@ -23,11 +27,11 @@ export const getAppliedFilterCount = ({
     count += 1;
   }
 
-  if (selectedYears.length > 0) {
+  if (selectedYears.length > 0 || excludedYears.length > 0) {
     count += 1;
   }
 
-  if (selectedFormats.length > 0) {
+  if (selectedFormats.length > 0 || excludedFormats.length > 0) {
     count += 1;
   }
 

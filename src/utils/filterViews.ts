@@ -224,13 +224,21 @@ export const formatFilterViewSummary = (
   }
 
   if (normalized.excludedStyles.length > 0) {
-    parts.push(`Not: ${normalized.excludedStyles.join(", ")}`);
+    parts.push(`Not style: ${normalized.excludedStyles.join(", ")}`);
+  }
+
+  if (normalized.excludedFormats.length > 0) {
+    parts.push(`Not format: ${normalized.excludedFormats.join(", ")}`);
   }
 
   if (normalized.selectedFormats.length > 0) {
     parts.push(
       `Format: ${normalized.selectedFormats.join(", ")}${formatOperatorSuffix(normalized.formatOperator, normalized.selectedFormats.length, FILTER_MATCH_OPERATOR_OPTIONS)}`,
     );
+  }
+
+  if (normalized.excludedYears.length > 0) {
+    parts.push(`Not year: ${normalized.excludedYears.join(", ")}`);
   }
 
   if (normalized.selectedYears.length > 0) {

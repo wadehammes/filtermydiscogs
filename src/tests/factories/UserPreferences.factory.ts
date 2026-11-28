@@ -3,8 +3,10 @@ import type { Prisma } from "@prisma/client";
 import { DEFAULT_COLLECTION_COMMAND_SHORTCUT } from "src/constants/collectionCommand.constants";
 import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import { BaseFactory } from "src/tests/factories/BaseFactory";
+import type { DiscogsRelease } from "src/types";
 import type {
   PersistedFiltersJson,
+  ReleaseFilterCriteria,
   StyleOperator,
 } from "src/types/filters.types";
 import type { KeysMatch } from "src/types/KeysMatch";
@@ -16,6 +18,7 @@ import {
   type UserPreferencesJson,
 } from "src/types/userPreferences.types";
 import { defaultPersistedFilters } from "src/utils/filtersStorage";
+import type { AppliedFilterCountInput } from "src/utils/getAppliedFilterCount";
 import { STORED_THEMES } from "src/utils/themeAppearance";
 import { toPrismaJsonValue } from "src/utils/toPrismaJsonValue";
 
@@ -41,7 +44,9 @@ class PersistedFiltersFactory extends BaseFactory<
       ]),
       excludedStyles: [],
       selectedYears: faker.helpers.arrayElements([1970, 1980, 1990]),
+      excludedYears: [],
       selectedFormats: faker.helpers.arrayElements(["Vinyl", "CD", "Cassette"]),
+      excludedFormats: [],
       selectedSort: faker.helpers.arrayElement([
         SortValues.DateAddedNew,
         SortValues.AZArtist,
@@ -77,6 +82,15 @@ class PersistedFiltersFactory extends BaseFactory<
 
   empty(): PersistedFiltersJson {
     return defaultPersistedFilters;
+  }
+
+  withDefaults(
+    attributes?: Partial<PersistedFiltersJson>,
+  ): PersistedFiltersJson {
+    return {
+      ...defaultPersistedFilters,
+      ...(attributes ?? {}),
+    };
   }
 }
 
@@ -180,4 +194,48 @@ class UserPreferencesFactory extends BaseFactory<
 }
 
 export const persistedFiltersFactory = new PersistedFiltersFactory();
+
+export const appliedFilterCountInputFrom = (
+  attributes?: Partial<AppliedFilterCountInput>,
+): AppliedFilterCountInput => {
+  const base = persistedFiltersFactory.empty();
+  return {
+    searchQuery: base.searchQuery,
+    selectedStyles: base.selectedStyles,
+    excludedStyles: base.excludedStyles,
+    selectedYears: base.selectedYears,
+    excludedYears: base.excludedYears,
+    selectedFormats: base.selectedFormats,
+    excludedFormats: base.excludedFormats,
+    ...attributes,
+  };
+};
+
+export const releaseFilterCriteriaFrom = (
+  attributes?: Partial<ReleaseFilterCriteria>,
+): ReleaseFilterCriteria => {
+  const base = persistedFiltersFactory.empty();
+  return {
+    searchQuery: base.searchQuery,
+    selectedStyles: base.selectedStyles,
+    excludedStyles: base.excludedStyles,
+    selectedYears: base.selectedYears,
+    excludedYears: base.excludedYears,
+    selectedFormats: base.selectedFormats,
+    excludedFormats: base.excludedFormats,
+    styleOperator: base.styleOperator,
+    formatOperator: base.formatOperator,
+    yearOperator: base.yearOperator,
+    ...attributes,
+  };
+};
+
+export const computeFilterDerivedStateInputFrom = (
+  releases: DiscogsRelease[],
+  attributes?: Partial<ReleaseFilterCriteria>,
+) => ({
+  releases,
+  ...releaseFilterCriteriaFrom(attributes),
+});
+
 export const userPreferencesFactory = new UserPreferencesFactory();

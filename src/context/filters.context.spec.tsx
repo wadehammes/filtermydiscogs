@@ -6,11 +6,10 @@ import {
   dismissPendingFiltersRestoreAtom,
   pendingFiltersRestoreAtom,
 } from "src/atoms/filters.atoms";
-import { SortSecondaryValues } from "src/constants/sortValues";
 import { releaseFactory } from "src/tests/factories/Release.factory";
+import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.factory";
 import { computeFilterDerivedState } from "src/utils/computeFilterDerivedState";
 import {
-  defaultPersistedFilters,
   FILTERS_STORAGE_KEY,
   parsePersistedFilters,
 } from "src/utils/filtersStorage";
@@ -99,18 +98,16 @@ describe("FiltersProvider", () => {
     expect(result.current.filters.state.searchQuery).toBe("");
 
     await waitFor(() => {
-      expect(result.current.pendingRestore).toEqual({
-        selectedStyles: ["Rock"],
-        excludedStyles: [],
-        selectedYears: [1984],
-        selectedFormats: ["LP"],
-        selectedSort: SortValues.AZTitle,
-        selectedSortSecondary: SortSecondaryValues.None,
-        styleOperator: "AND",
-        formatOperator: "OR",
-        yearOperator: "OR",
-        searchQuery: "test query",
-      });
+      expect(result.current.pendingRestore).toEqual(
+        persistedFiltersFactory.withDefaults({
+          selectedStyles: ["Rock"],
+          selectedYears: [1984],
+          selectedFormats: ["LP"],
+          selectedSort: SortValues.AZTitle,
+          styleOperator: "AND",
+          searchQuery: "test query",
+        }),
+      );
     });
   });
 
@@ -194,18 +191,12 @@ describe("FiltersProvider", () => {
     expect(remountedResult.current.filters.state.searchQuery).toBe("");
 
     await waitFor(() => {
-      expect(remountedResult.current.pendingRestore).toEqual({
-        selectedStyles: ["Electronic"],
-        excludedStyles: [],
-        selectedYears: [],
-        selectedFormats: [],
-        selectedSort: SortValues.DateAddedNew,
-        selectedSortSecondary: SortSecondaryValues.None,
-        styleOperator: "OR",
-        formatOperator: "OR",
-        yearOperator: "OR",
-        searchQuery: "ambient",
-      });
+      expect(remountedResult.current.pendingRestore).toEqual(
+        persistedFiltersFactory.withDefaults({
+          selectedStyles: ["Electronic"],
+          searchQuery: "ambient",
+        }),
+      );
     });
   });
 
@@ -251,7 +242,7 @@ describe("FiltersProvider", () => {
     });
     expect(
       parsePersistedFilters(localStorage.getItem(FILTERS_STORAGE_KEY)),
-    ).toEqual(defaultPersistedFilters);
+    ).toEqual(persistedFiltersFactory.empty());
 
     unmount();
 
@@ -490,6 +481,13 @@ describe("FiltersProvider", () => {
 
     act(() => {
       result.current.dispatch({
+        type: FiltersActionTypes.SetStyles,
+        payload: ["Rock", "Jazz"],
+      });
+    });
+
+    act(() => {
+      result.current.dispatch({
         type: FiltersActionTypes.SetStyleOperator,
         payload: "AND",
       });
@@ -514,6 +512,13 @@ describe("FiltersProvider", () => {
 
     act(() => {
       result.current.dispatch({
+        type: FiltersActionTypes.SetFormats,
+        payload: ["Vinyl", "CD"],
+      });
+    });
+
+    act(() => {
+      result.current.dispatch({
         type: FiltersActionTypes.SetFormatOperator,
         payload: "AND",
       });
@@ -534,6 +539,13 @@ describe("FiltersProvider", () => {
   it("sets year operator", () => {
     const { result } = renderHook(() => useFilters(), {
       wrapper: TestProviders,
+    });
+
+    act(() => {
+      result.current.dispatch({
+        type: FiltersActionTypes.SetYears,
+        payload: [1984, 1999],
+      });
     });
 
     act(() => {

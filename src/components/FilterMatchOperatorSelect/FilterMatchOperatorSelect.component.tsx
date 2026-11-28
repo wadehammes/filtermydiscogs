@@ -1,8 +1,5 @@
 import Select from "src/components/Select/Select.component";
-import {
-  FILTER_ANY_NONE_OPERATOR_OPTIONS,
-  FILTER_MATCH_OPERATOR_OPTIONS,
-} from "src/constants/filterMatchOperators";
+import { FILTER_MATCH_OPERATOR_OPTIONS } from "src/constants/filterMatchOperators";
 import type { StyleOperator, YearOperator } from "src/types/filters.types";
 
 interface FilterMatchOperatorSelectProps {
@@ -25,20 +22,16 @@ export const FilterMatchOperatorSelect = ({
   showLabel = false,
   options = FILTER_MATCH_OPERATOR_OPTIONS,
 }: FilterMatchOperatorSelectProps) => {
-  if (selectedCount < 1) {
+  if (selectedCount < 2) {
     return null;
   }
-
-  const effectiveOptions =
-    selectedCount === 1 ? FILTER_ANY_NONE_OPERATOR_OPTIONS : options;
-  const displayValue = selectedCount === 1 && value === "AND" ? "OR" : value;
 
   return (
     <Select
       showLabel={showLabel}
       label="Match"
-      options={[...effectiveOptions]}
-      value={displayValue}
+      options={[...options]}
+      value={value}
       onChange={onChange}
       disabled={disabled}
       placeholder="Select operator..."

@@ -2,25 +2,12 @@ import { describe, expect, it } from "@jest/globals";
 import { CRATE_NAME_MAX_LENGTH } from "src/constants/crate";
 import { SortSecondaryValues, SortValues } from "src/constants/sortValues";
 import type { CollectionCommandIntent } from "src/lib/validation/collectionCommand.schemas";
-import type { PersistedFiltersJson } from "src/types/filters.types";
+import { persistedFiltersFactory } from "src/tests/factories/UserPreferences.factory";
 import {
   buildCollectionCommandCrateName,
   buildCollectionCommandViewName,
   buildCollectionCommandViewNameFromFilters,
 } from "src/utils/collectionCommandViewName";
-
-const baseFilters = (): PersistedFiltersJson => ({
-  selectedStyles: [],
-  excludedStyles: [],
-  selectedYears: [],
-  selectedFormats: [],
-  selectedSort: SortValues.DateAddedNew,
-  selectedSortSecondary: SortSecondaryValues.None,
-  styleOperator: "OR",
-  formatOperator: "OR",
-  yearOperator: "OR",
-  searchQuery: "",
-});
 
 const baseIntent = (): CollectionCommandIntent => ({
   searchQuery: "",
@@ -51,11 +38,10 @@ describe("buildCollectionCommandViewName", () => {
     expect(
       buildCollectionCommandViewName({
         prompt: "Releases with Electro and Deep House from 2018",
-        filters: {
-          ...baseFilters(),
+        filters: persistedFiltersFactory.withDefaults({
           selectedStyles: ["Electro", "Deep House"],
           selectedYears: [2018],
-        },
+        }),
       }),
     ).toBe("2018 Deep House/Electro");
   });
@@ -104,7 +90,7 @@ describe("buildCollectionCommandViewNameFromFilters", () => {
   it("formats a single-year range from intent bounds", () => {
     expect(
       buildCollectionCommandViewNameFromFilters({
-        filters: baseFilters(),
+        filters: persistedFiltersFactory.empty(),
         intent: {
           ...baseIntent(),
           yearStartInclusive: 2018,
@@ -117,11 +103,10 @@ describe("buildCollectionCommandViewNameFromFilters", () => {
   it("appends excluded style labels for saved view naming", () => {
     expect(
       buildCollectionCommandViewNameFromFilters({
-        filters: {
-          ...baseFilters(),
+        filters: persistedFiltersFactory.withDefaults({
           selectedStyles: ["Deep House"],
           excludedStyles: ["House"],
-        },
+        }),
       }),
     ).toBe("Deep House not House");
   });
@@ -129,10 +114,9 @@ describe("buildCollectionCommandViewNameFromFilters", () => {
   it("uses search query only when no other segments exist", () => {
     expect(
       buildCollectionCommandViewNameFromFilters({
-        filters: {
-          ...baseFilters(),
+        filters: persistedFiltersFactory.withDefaults({
           searchQuery: "Boards of Canada",
-        },
+        }),
       }),
     ).toBe("Boards of Canada");
   });
