@@ -12,6 +12,7 @@ import { useUserPreferencesQuery } from "src/hooks/queries/useUserPreferencesQue
 import { useFiltersDispatch } from "src/hooks/useFilterAtoms.hook";
 import { usePersistUserPreferences } from "src/hooks/usePersistUserPreferences.hook";
 import type { PersistedFiltersJson } from "src/types/filters.types";
+import { parseStoredFiltersObject } from "src/utils/filtersStorage";
 import {
   createFilterView,
   ensureUniqueFilterViewName,
@@ -25,7 +26,6 @@ import {
   renameFilterView,
 } from "src/utils/filterViews";
 import { getAppliedFilterCount } from "src/utils/getAppliedFilterCount";
-import { parseStoredFiltersObject } from "src/utils/filtersStorage";
 import { toast } from "src/utils/toast";
 
 const FILTER_VIEW_SAVED_MESSAGE = "View saved";
