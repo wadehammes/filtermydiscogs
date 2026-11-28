@@ -124,7 +124,8 @@ if [ "${#jest_targets[@]}" -gt 0 ]; then
   done
 fi
 
-jest_args=(--runInBand --detectOpenHandles --passWithNoTests)
+# Match pnpm test:ci — parallel and no detectOpenHandles (pnpm test keeps runInBand + leak detection).
+jest_args=(--passWithNoTests --maxWorkers=50%)
 
 if [ "${#jest_targets[@]}" -gt 0 ]; then
   jest_args+=("${jest_targets[@]}")

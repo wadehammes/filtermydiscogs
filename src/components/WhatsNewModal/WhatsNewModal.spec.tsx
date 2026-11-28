@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import userEvent from "@testing-library/user-event";
 import { WhatsNewModalPageObject } from "src/components/WhatsNewModal/WhatsNewModal.po";
+import { WHATS_NEW_MODAL_TITLE } from "src/constants/whatsNew.constants";
 import {
-  WHATS_NEW_MODAL_TITLE,
-  WHATS_NEW_RELEASES,
-} from "src/constants/whatsNew.constants";
-import { screen } from "test-utils";
+  buildWhatsNewModalTestReleases,
+  whatsNewModalTestCopy,
+} from "src/tests/factories/WhatsNewRelease.factory";
+import { screen, within } from "test-utils";
 
 let po: WhatsNewModalPageObject;
 
@@ -17,32 +18,35 @@ describe("WhatsNewModal", () => {
   it("renders release highlights and a New badge for the latest feature", () => {
     po.renderWhatsNewModal();
 
+    const dialog = screen.getByRole("dialog");
+
     expect(
-      screen.getByRole("heading", { name: WHATS_NEW_MODAL_TITLE }),
+      within(dialog).getByRole("heading", { name: WHATS_NEW_MODAL_TITLE }),
     ).toBeInTheDocument();
-    expect(screen.getByText("v2026.11.27")).toBeInTheDocument();
+
+    const latestReleaseSection = within(dialog)
+      .getByRole("heading", { name: whatsNewModalTestCopy.latestVersion })
+      .closest("li");
+    expect(latestReleaseSection).not.toBeNull();
     expect(
-      screen.getByText(/What's New\? in the account menu/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Collection Ask/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/apply them, save a view, or create a crate/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        /Genre & Style, Format Type, and Release Year: row Exclude/i,
+      within(latestReleaseSection as HTMLElement).getByText(
+        whatsNewModalTestCopy.latestImprovedBulletText,
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Collection radio is off for now/i),
+      within(latestReleaseSection as HTMLElement).getByText("Improved"),
+    ).toBeInTheDocument();
+
+    expect(
+      within(dialog).getByRole("heading", {
+        name: whatsNewModalTestCopy.priorVersion,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/I may ship a revised version later/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Removed")).toBeInTheDocument();
-    expect(
-      screen.getAllByText(/Other bug fixes and performance improvements/i),
-    ).toHaveLength(WHATS_NEW_RELEASES.length);
+      within(dialog).getAllByText(
+        /Other bug fixes and performance improvements/i,
+      ),
+    ).toHaveLength(buildWhatsNewModalTestReleases().length);
   });
 
   it("closes when the toolbar close control is activated", async () => {
