@@ -62,10 +62,7 @@ html:has([data-global-playback-dock]),
   }
 
   &:has([data-video-expanded="true"]) {
-    --release-mini-player-video-panel-offset: calc(
-      1.75rem +
-      100vw * 9 / 16
-    );
+    --release-mini-player-video-panel-offset: calc(1.75rem + 100vw * 9 / 16);
 
     @media (width >= 768px) {
       --release-mini-player-video-panel-offset: 0px;
@@ -169,7 +166,8 @@ html:has([data-playback-dock-in-flow]) {
   [data-testid="fmdReleaseSidePanelFab"],
   [data-testid="fmdBackToTop"] {
     bottom: calc(
-      var(--workspace-fab-bottom) + var(--release-mini-player-stack-offset, 0px)
+      var(--workspace-fab-bottom) +
+      var(--release-mini-player-stack-offset, 0px)
     );
   }
 
