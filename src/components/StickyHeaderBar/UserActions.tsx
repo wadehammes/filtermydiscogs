@@ -11,6 +11,7 @@ import { SUBMIT_BUG_REPORT_NAV_LABEL } from "src/constants/sentryUserFeedback.co
 import { SUPPORT_PROJECT_NAV_LABEL } from "src/constants/supportProjectToast.constants";
 import { WHATS_NEW_NAV_LABEL } from "src/constants/whatsNew.constants";
 import { useAuth } from "src/context/auth.context";
+import { useCloseUserMenuOnBelowDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import { runSubmitBugReport } from "src/lib/sentry/runSubmitBugReport.client";
 import { resolveSentryEnabled } from "src/lib/sentry/sentryInitOptions";
 import { ExpandChevronThinIcon } from "src/styles/icons/ExpandChevronThinIcon.component";
@@ -46,6 +47,12 @@ export const UserActions = ({
   const handleMenuNavigation = useCallback(() => {
     setIsDropdownOpen(false);
   }, []);
+
+  const closeUserMenu = useCallback(() => {
+    setIsDropdownOpen(false);
+  }, []);
+
+  useCloseUserMenuOnBelowDesktop(closeUserMenu);
 
   const containerClass =
     variant === "mobile" ? styles.mobileActions : styles.userSection;

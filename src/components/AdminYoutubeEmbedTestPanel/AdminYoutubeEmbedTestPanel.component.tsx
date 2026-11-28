@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useForm } from "react-hook-form";
 import dashboardStyles from "src/components/AdminDashboard/AdminDashboardClient.module.css";
+import { Checkbox } from "src/components/Checkbox/Checkbox.component";
 import { DashboardSection } from "src/components/Dashboard/DashboardSection.component";
 import {
   type AdminYoutubeEmbedFormValues,
@@ -57,6 +58,8 @@ export const AdminYoutubeEmbedTestPanel = () => {
       autoplay: false,
     },
   });
+
+  const { ref: autoplayInputRef, ...autoplayField } = register("autoplay");
 
   const watchUrl = useMemo(
     () => (activeVideoId ? buildYoutubeWatchUrl(activeVideoId) : null),
@@ -157,7 +160,11 @@ export const AdminYoutubeEmbedTestPanel = () => {
             </p>
           ) : null}
           <label className={styles.autoplayLabel} htmlFor={autoplayId}>
-            <input {...register("autoplay")} id={autoplayId} type="checkbox" />
+            <Checkbox
+              id={autoplayId}
+              inputRef={autoplayInputRef}
+              {...autoplayField}
+            />
             Autoplay on load
           </label>
           <div className={styles.formActions}>

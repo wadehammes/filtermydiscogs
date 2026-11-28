@@ -1,0 +1,42 @@
+.root {
+  align-items: center;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1rem;
+  justify-content: center;
+  width: 1rem;
+
+  &[data-checked] {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  &[data-disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+.indicator {
+  align-items: center;
+  display: flex;
+  height: 0.625rem;
+  justify-content: center;
+  width: 0.625rem;
+}
+
+.checkIcon {
+  display: block;
+  height: 100%;
+  width: 100%;
+}

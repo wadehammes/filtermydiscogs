@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { useCloseMobileDrawerOnDesktop } from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
+import {
+  useCloseMobileDrawerOnDesktop,
+  useCloseUserMenuOnBelowDesktop,
+} from "src/hooks/useCloseMobileDrawerOnDesktop.hook";
 import { setupResponsiveDesktopMatchMedia } from "src/tests/mocks/setupResponsiveDesktopMatchMedia.mock";
 import { act, renderHook } from "test-utils";
 
@@ -37,6 +40,45 @@ describe("useCloseMobileDrawerOnDesktop", () => {
     const onClose = jest.fn();
 
     renderHook(() => useCloseMobileDrawerOnDesktop(onClose));
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+describe("useCloseUserMenuOnBelowDesktop", () => {
+  beforeEach(() => {
+    setupResponsiveDesktopMatchMedia(true);
+  });
+
+  it("calls onClose when the viewport crosses below desktop", () => {
+    const media = setupResponsiveDesktopMatchMedia(true);
+    const onClose = jest.fn();
+
+    renderHook(() => useCloseUserMenuOnBelowDesktop(onClose));
+
+    expect(onClose).not.toHaveBeenCalled();
+
+    act(() => {
+      media.setDesktop(false);
+    });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClose on mount when already below desktop", () => {
+    setupResponsiveDesktopMatchMedia(false);
+    const onClose = jest.fn();
+
+    renderHook(() => useCloseUserMenuOnBelowDesktop(onClose));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not call onClose when staying on desktop", () => {
+    setupResponsiveDesktopMatchMedia(true);
+    const onClose = jest.fn();
+
+    renderHook(() => useCloseUserMenuOnBelowDesktop(onClose));
 
     expect(onClose).not.toHaveBeenCalled();
   });

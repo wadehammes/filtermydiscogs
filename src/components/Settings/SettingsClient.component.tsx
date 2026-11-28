@@ -5,6 +5,7 @@ import classNames from "classnames";
 import { useSetAtom, useStore } from "jotai";
 import { useSearchParams } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { playbackDockMobileBarCollapsedAtom } from "src/atoms/playbackDockUi.atoms";
 import {
   ViewActionTypes,
   viewDispatchAtom,
@@ -101,6 +102,17 @@ export default function SettingsClient() {
   const settingsSectionParam = searchParams.get("section");
   const emailVerificationParam = searchParams.get("emailVerification");
   const handledEmailVerificationToastRef = useRef<string | null>(null);
+  const setMobilePlaybackDockCollapsed = useSetAtom(
+    playbackDockMobileBarCollapsedAtom,
+  );
+
+  useEffect(() => {
+    setMobilePlaybackDockCollapsed(true);
+
+    return () => {
+      setMobilePlaybackDockCollapsed(false);
+    };
+  }, [setMobilePlaybackDockCollapsed]);
 
   useEffect(() => {
     if (

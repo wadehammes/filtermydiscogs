@@ -13,3 +13,13 @@ export const useCloseMobileDrawerOnDesktop = (onClose: () => void) => {
     }
   }, [isDesktop, onClose]);
 };
+
+export const useCloseUserMenuOnBelowDesktop = (onClose: () => void) => {
+  const isDesktop = useMediaQuery(DESKTOP_LAYOUT_MEDIA_QUERY, false);
+
+  useEffect(() => {
+    if (!isDesktop) {
+      onClose();
+    }
+  }, [isDesktop, onClose]);
+};
