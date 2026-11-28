@@ -12,6 +12,8 @@
   --font-mono: ui-monospace, monospace;
   --grid-lane-count: 1;
   --transform-origin: center;
+  --release-mini-player-bar-height: 0px;
+  --release-mini-player-bar-offset: 0px;
   --release-mini-player-stack-offset: 0px;
   --release-modal-available-height: 100dvh;
   --release-modal-viewport-inset-bottom: 0px;

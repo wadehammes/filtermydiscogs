@@ -1,8 +1,15 @@
 "use client";
 
 import classNames from "classnames";
+import { useAtomValue } from "jotai";
 import { type ReactNode, useCallback, useState } from "react";
+import { createPortal } from "react-dom";
+import { playbackDockMobileInScrollAtom } from "src/atoms/playbackDockUi.atoms";
+import { BELOW_DESKTOP_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useIsMiniPlayerVisible } from "src/context/releasePlayback.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { usePlaybackDockMobileInScroll } from "src/hooks/usePlaybackDockMobileInScroll.hook";
+import { PlaybackPageInScrollDock } from "./PlaybackPageInScrollDock.component";
 import {
   PlaybackPageShellProvider,
   usePlaybackPageShellMountSetters,
@@ -50,6 +57,7 @@ export const PlaybackPageShell = ({
         subheader={subheader}
         mainClassName={mainClassName}
         overlays={overlays}
+        scrollElement={scrollElement}
         usesExternalScrollRoot={usesExternalScrollRoot}
         setMainScrollRef={setMainScrollRef}
       >
@@ -67,6 +75,7 @@ interface PlaybackPageShellFrameProps {
   subheader?: ReactNode | undefined;
   mainClassName?: string | undefined;
   overlays?: ReactNode | undefined;
+  scrollElement: HTMLElement | null;
   usesExternalScrollRoot: boolean;
   setMainScrollRef: (node: HTMLDivElement | null) => void;
 }
@@ -79,11 +88,18 @@ const PlaybackPageShellFrame = ({
   subheader,
   mainClassName,
   overlays,
+  scrollElement,
   usesExternalScrollRoot,
   setMainScrollRef,
 }: PlaybackPageShellFrameProps) => {
   const { setOverlayPortalElement } = usePlaybackPageShellMountSetters();
   const isMiniPlayerVisible = useIsMiniPlayerVisible();
+  const isBelowDesktopLayout = useMediaQuery(BELOW_DESKTOP_LAYOUT_MEDIA_QUERY);
+  const usesInScrollPlaybackDock = fillViewport && isBelowDesktopLayout;
+
+  usePlaybackDockMobileInScroll(usesInScrollPlaybackDock);
+
+  const dockInScrollShell = useAtomValue(playbackDockMobileInScrollAtom);
 
   const setOverlayPortalRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -92,12 +108,35 @@ const PlaybackPageShellFrame = ({
     [setOverlayPortalElement],
   );
 
+  const inScrollDockNode = (() => {
+    if (!usesInScrollPlaybackDock) {
+      return null;
+    }
+
+    if (usesExternalScrollRoot) {
+      if (!scrollElement) {
+        return null;
+      }
+
+      return createPortal(
+        <PlaybackPageInScrollDock />,
+        scrollElement,
+        "fmd-playback-in-scroll-dock",
+      );
+    }
+
+    return <PlaybackPageInScrollDock />;
+  })();
+
   return (
     <div
       className={classNames(styles.shell, className, {
         [styles.shellViewport]: fillViewport,
       })}
       data-playback-page-shell
+      {...(usesInScrollPlaybackDock
+        ? { "data-playback-dock-in-scroll-shell": true }
+        : {})}
       data-testid="fmdPlaybackPageShell"
     >
       {header ? <div className={styles.headerSlot}>{header}</div> : null}
@@ -115,11 +154,17 @@ const PlaybackPageShellFrame = ({
               data-playback-page-shell-main
             >
               {children}
+              {!usesExternalScrollRoot ? inScrollDockNode : null}
             </div>
           )}
         </div>
         {overlays ? (
-          <div className={styles.workspaceOverlays}>{overlays}</div>
+          <div
+            className={styles.workspaceOverlays}
+            data-playback-workspace-overlays
+          >
+            {overlays}
+          </div>
         ) : null}
         <div
           ref={setOverlayPortalRef}
@@ -127,8 +172,9 @@ const PlaybackPageShellFrame = ({
           data-playback-overlay-portal
         />
       </div>
+      {usesExternalScrollRoot ? inScrollDockNode : null}
       <div className={styles.dockSlot}>
-        {isMiniPlayerVisible ? (
+        {isMiniPlayerVisible && !dockInScrollShell ? (
           <div data-playback-dock-spacer aria-hidden />
         ) : null}
       </div>

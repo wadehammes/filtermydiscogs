@@ -3,10 +3,6 @@
   min-width: 0;
   width: 100%;
 
-  @media (width < 768px) {
-    touch-action: pan-y;
-  }
-
   @media (width >= 768px) {
     margin-inline-start: var(--space-2);
     width: auto;

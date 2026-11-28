@@ -15,11 +15,8 @@ import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.cons
 import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useAuth } from "src/context/auth.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
-import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
-import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePlaybackDockMobileBarCollapsed } from "src/hooks/usePlaybackDockMobileBarCollapsed.hook";
-import { usePlaybackDockMobileScrollPassthrough } from "src/hooks/usePlaybackDockMobileScrollPassthrough.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import { buildUserTrackMetadataBody } from "src/utils/buildUserTrackMetadataBody";
 import { definedProps } from "src/utils/definedProps";
@@ -70,21 +67,12 @@ export const ReleaseMiniPlayer = ({
     resumePlaybackFromGesture,
   } = useReleasePlayback();
   const isMobileLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
-  const filtersDrawerOpen = useFiltersDrawerOpen();
-  const crateDrawerOpen = useCrateDrawerOpen();
   const { isDockBarCollapsed } = usePlaybackDockMobileBarCollapsed({
     isMiniPlayerVisible,
   });
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const isDockBarExpanded = !isDockBarCollapsed;
   const isQueueDrawerOpen = isQueueOpen && isDockBarExpanded;
-  const [dockScrollPassthroughNode, setDockScrollPassthroughNode] =
-    useState<HTMLElement | null>(null);
-
-  usePlaybackDockMobileScrollPassthrough({
-    dockShellNode: dockScrollPassthroughNode,
-    enabled: isMobileLayout && isDockBarExpanded,
-  });
   const { openRelease: openReleaseBase, prefetchPointerProps } =
     useReleaseCardOpenHandler({
       release,
@@ -100,8 +88,6 @@ export const ReleaseMiniPlayer = ({
     useReleaseMiniPlayerVideoPanelState({
       isMiniPlayerVisible,
       isPlaying,
-      filtersDrawerOpen,
-      crateDrawerOpen,
       resumePlaybackFromGesture,
     });
 
@@ -199,7 +185,6 @@ export const ReleaseMiniPlayer = ({
         popoverZIndex="calc(var(--z-9-playback-dock) + 1)"
       >
         <section
-          ref={setDockScrollPassthroughNode}
           className={styles.miniPlayerShell}
           data-testid="fmdReleaseMiniPlayer"
           {...(isVideoPanelExpanded &&

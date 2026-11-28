@@ -47,7 +47,6 @@ export const ReleasesPageLoading = ({ ssrView }: ReleasesPageLoadingProps) => {
               className={styles.mainContent}
               data-releases-scroll-root
               aria-label={RELEASES_WORKSPACE_MAIN_LABEL}
-              tabIndex={-1}
             >
               <ReleasesHeader
                 releaseCount={0}

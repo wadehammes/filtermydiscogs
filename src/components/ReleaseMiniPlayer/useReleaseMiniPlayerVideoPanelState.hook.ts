@@ -7,16 +7,12 @@ import { markPlaybackVideoIntroSeen } from "src/utils/playbackVideoIntroStorage"
 interface UseReleaseMiniPlayerVideoPanelStateParams {
   isMiniPlayerVisible: boolean;
   isPlaying: boolean;
-  filtersDrawerOpen: boolean;
-  crateDrawerOpen: boolean;
   resumePlaybackFromGesture: () => void;
 }
 
 export const useReleaseMiniPlayerVideoPanelState = ({
   isMiniPlayerVisible,
   isPlaying,
-  filtersDrawerOpen,
-  crateDrawerOpen,
   resumePlaybackFromGesture,
 }: UseReleaseMiniPlayerVideoPanelStateParams) => {
   const [videoPanelOverride, setVideoPanelOverride] = useState<
@@ -33,10 +29,7 @@ export const useReleaseMiniPlayerVideoPanelState = ({
     previousVideoPanelExpandedRef.current = false;
   }, [isMiniPlayerVisible]);
 
-  const drawerForcedCollapsed = filtersDrawerOpen || crateDrawerOpen;
-
-  const isVideoPanelExpanded =
-    videoPanelOverride === "open" && !drawerForcedCollapsed;
+  const isVideoPanelExpanded = videoPanelOverride === "open";
 
   useEffect(() => {
     const wasExpanded = previousVideoPanelExpandedRef.current;

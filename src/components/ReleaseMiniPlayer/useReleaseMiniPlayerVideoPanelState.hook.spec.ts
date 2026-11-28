@@ -13,8 +13,6 @@ const renderVideoPanelState = (
     useReleaseMiniPlayerVideoPanelState({
       isMiniPlayerVisible: true,
       isPlaying: true,
-      filtersDrawerOpen: false,
-      crateDrawerOpen: false,
       resumePlaybackFromGesture,
       ...overrides,
     }),
@@ -47,33 +45,11 @@ describe("useReleaseMiniPlayerVideoPanelState", () => {
     expect(result.current.isVideoPanelExpanded).toBe(false);
   });
 
-  it("when the filters drawer opens while the panel is expanded, collapses until the drawer closes", () => {
-    const { result, rerender } = renderHook(
-      (props: { filtersDrawerOpen: boolean }) =>
-        useReleaseMiniPlayerVideoPanelState({
-          isMiniPlayerVisible: true,
-          isPlaying: true,
-          filtersDrawerOpen: props.filtersDrawerOpen,
-          crateDrawerOpen: false,
-          resumePlaybackFromGesture,
-        }),
-      { initialProps: { filtersDrawerOpen: false } },
-    );
+  it("when the listener opens the panel while a drawer is up, keeps the expanded override", () => {
+    const { result } = renderVideoPanelState();
 
     act(() => {
       result.current.handleVideoToggle();
-    });
-
-    expect(result.current.isVideoPanelExpanded).toBe(true);
-
-    act(() => {
-      rerender({ filtersDrawerOpen: true });
-    });
-
-    expect(result.current.isVideoPanelExpanded).toBe(false);
-
-    act(() => {
-      rerender({ filtersDrawerOpen: false });
     });
 
     expect(result.current.isVideoPanelExpanded).toBe(true);

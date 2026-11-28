@@ -9,7 +9,7 @@ import {
   useReleasePlaybackEmbedProgressState,
 } from "src/context/releasePlayback.context";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
-import { prepareCollectionScrollFromPlaybackDockTouch } from "src/utils/playbackDockFocus";
+import { blurFocusWithinPlaybackDock } from "src/utils/playbackDockFocus";
 import {
   PLAYBACK_DOCK_SEEK_SKIP_SECONDS,
   resolvePlaybackProgressSliderMax,
@@ -50,7 +50,7 @@ export const ReleaseMiniPlayerDigScrub = ({
       seekPlayback(value);
 
       if (isCompactLayout) {
-        prepareCollectionScrollFromPlaybackDockTouch();
+        blurFocusWithinPlaybackDock();
       }
     },
     [isCompactLayout, seekPlayback],

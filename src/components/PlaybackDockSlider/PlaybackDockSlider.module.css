@@ -15,12 +15,6 @@
   position: relative;
   touch-action: none;
   width: 100%;
-
-  @media (width < 768px) {
-    .root:not(.rootVertical) & {
-      touch-action: pan-y;
-    }
-  }
 }
 
 .track {

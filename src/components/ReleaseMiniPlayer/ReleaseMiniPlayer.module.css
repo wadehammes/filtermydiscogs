@@ -56,15 +56,6 @@
   @media (prefers-reduced-motion: reduce) {
     transition: none;
   }
-
-  @media (width < 768px) {
-    pointer-events: none;
-    touch-action: pan-y;
-
-    & > * {
-      pointer-events: auto;
-    }
-  }
 }
 
 .miniPlayerShell[data-playback-queue-shell-open] .miniPlayerBar {
