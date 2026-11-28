@@ -3,10 +3,13 @@
 import classNames from "classnames";
 import { useCallback, useEffect, useState } from "react";
 import { PlaybackDockSlider } from "src/components/PlaybackDockSlider/PlaybackDockSlider.component";
+import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import {
   useReleasePlaybackActions,
   useReleasePlaybackEmbedProgressState,
 } from "src/context/releasePlayback.context";
+import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { blurFocusWithinPlaybackDock } from "src/utils/playbackDockFocus";
 import {
   PLAYBACK_DOCK_SEEK_SKIP_SECONDS,
   resolvePlaybackProgressSliderMax,
@@ -24,6 +27,7 @@ export const ReleaseMiniPlayerDigScrub = ({
   "use memo";
   const { embedProgress } = useReleasePlaybackEmbedProgressState();
   const { seekPlayback } = useReleasePlaybackActions();
+  const isCompactLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
 
   const [scrubValue, setScrubValue] = useState(0);
   const [isScrubbing, setIsScrubbing] = useState(false);
@@ -44,8 +48,12 @@ export const ReleaseMiniPlayerDigScrub = ({
       setIsScrubbing(false);
       setScrubValue(value);
       seekPlayback(value);
+
+      if (isCompactLayout) {
+        blurFocusWithinPlaybackDock();
+      }
     },
-    [seekPlayback],
+    [isCompactLayout, seekPlayback],
   );
 
   const skipBySeconds = useCallback(

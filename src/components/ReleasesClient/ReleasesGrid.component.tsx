@@ -7,6 +7,7 @@ import { useCrateState } from "src/context/crate.context";
 import { DiceThinIcon } from "src/styles/icons/DiceThinIcon.component";
 import textActionStyles from "src/styles/modules/text-action.module.css";
 import type { DiscogsRelease } from "src/types";
+import { definedProps } from "src/utils/definedProps";
 import styles from "./ReleasesGrid.module.css";
 
 interface ReleasesGridProps {
@@ -81,7 +82,12 @@ const ReleasesGridComponent = ({
     <div
       className={gridClassName}
       key={`grid-${view}-${isRandomMode}`}
-      data-fixed-lanes={useFixedLanes ? "" : undefined}
+      {...definedProps({
+        "data-fixed-lanes": useFixedLanes ? "" : undefined,
+        "data-releases-random-workspace": isActuallyRandomMode
+          ? true
+          : undefined,
+      })}
       style={fixedLaneStyle}
     >
       {releasesToShow.map((release: DiscogsRelease, index) => {

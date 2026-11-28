@@ -15,8 +15,6 @@ import { NOW_PLAYING_REGION_LABEL } from "src/constants/accessibilityLabels.cons
 import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useAuth } from "src/context/auth.context";
 import { useReleasePlayback } from "src/context/releasePlayback.context";
-import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
-import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePlaybackDockMobileBarCollapsed } from "src/hooks/usePlaybackDockMobileBarCollapsed.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
@@ -69,8 +67,6 @@ export const ReleaseMiniPlayer = ({
     resumePlaybackFromGesture,
   } = useReleasePlayback();
   const isMobileLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
-  const filtersDrawerOpen = useFiltersDrawerOpen();
-  const crateDrawerOpen = useCrateDrawerOpen();
   const { isDockBarCollapsed } = usePlaybackDockMobileBarCollapsed({
     isMiniPlayerVisible,
   });
@@ -92,8 +88,6 @@ export const ReleaseMiniPlayer = ({
     useReleaseMiniPlayerVideoPanelState({
       isMiniPlayerVisible,
       isPlaying,
-      filtersDrawerOpen,
-      crateDrawerOpen,
       resumePlaybackFromGesture,
     });
 

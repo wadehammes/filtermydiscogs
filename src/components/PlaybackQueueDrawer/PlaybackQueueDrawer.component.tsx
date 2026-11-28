@@ -162,6 +162,9 @@ export const PlaybackQueueDrawer = ({
     ? PLAYBACK_QUEUE_EMPTY_MESSAGE_TOUCH
     : PLAYBACK_QUEUE_EMPTY_MESSAGE_DESKTOP;
 
+  const stackQueueAboveExpandedVideo =
+    Boolean(elevateOverVideo) && isCompactLayout;
+
   const queueStatusMessage = resolvePlaybackQueueDrawerStatusMessage({
     isAlbumQueueBuilding: isQueueBuilding,
     isSimilarQueueLoading,
@@ -223,9 +226,10 @@ export const PlaybackQueueDrawer = ({
         elevateOverVideo && styles.queueDrawerOverVideo,
         elevateOverVideo && styles.queueElevated,
       )}
-      behindMiniPlayer
+      aboveMiniPlayer={stackQueueAboveExpandedVideo}
+      behindMiniPlayer={!stackQueueAboveExpandedVideo}
       hideOverlay
-      inline
+      inline={!stackQueueAboveExpandedVideo}
       footer={
         queue.length > 0 ? (
           <button

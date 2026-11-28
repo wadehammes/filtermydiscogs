@@ -4,11 +4,20 @@ import {
   render as rtlRender,
   renderHook as rtlRenderHook,
 } from "@testing-library/react";
+import { type createStore, Provider as JotaiProvider } from "jotai";
 import type { ComponentType, ReactElement, ReactNode } from "react";
 import {
   TestProviders,
   type TestProvidersProps,
 } from "src/tests/utils/testProviders";
+
+export type JotaiTestStore = ReturnType<typeof createStore>;
+
+const renderWithStore =
+  (store: JotaiTestStore) =>
+  ({ children }: { children: ReactNode }) => (
+    <JotaiProvider store={store}>{children}</JotaiProvider>
+  );
 
 type TestProviderOptions = Pick<
   TestProvidersProps,
@@ -128,5 +137,6 @@ export {
   render,
   renderFeatureHook,
   renderHookWithTestProviders,
+  renderWithStore,
   TestProviders,
 };

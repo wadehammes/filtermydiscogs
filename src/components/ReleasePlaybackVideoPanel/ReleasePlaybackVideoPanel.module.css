@@ -27,8 +27,9 @@
   --video-panel-chrome-height: 1.75rem;
 
   background: var(--background);
-  border: 1px solid var(--border);
-  border-bottom: 0;
+  border-block-end: 0;
+  border-block-start: 1px solid var(--border);
+  border-inline: 0;
   border-radius: var(--radius-none);
   bottom: calc(
     var(--release-mini-player-bar-height, 3.25rem) +
@@ -49,7 +50,7 @@
     box-shadow var(--transition-normal);
   visibility: visible;
   width: 100%;
-  z-index: 2;
+  z-index: calc(var(--z-10-bottom-drawer) + 1);
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;

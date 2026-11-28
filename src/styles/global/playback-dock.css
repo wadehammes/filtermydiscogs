@@ -62,7 +62,7 @@ html:has([data-global-playback-dock]),
   }
 
   &:has([data-video-expanded="true"]) {
-    --release-mini-player-video-panel-offset: calc(2rem + 100vw * 9 / 16);
+    --release-mini-player-video-panel-offset: calc(1.75rem + 100vw * 9 / 16);
 
     @media (width >= 768px) {
       --release-mini-player-video-panel-offset: 0px;
@@ -156,4 +156,28 @@ html:has([data-global-playback-dock])
   [data-testid="fmdPublicAuthLayout"]
   > footer {
   padding-bottom: var(--release-mini-player-stack-offset, 0);
+}
+
+html:has([data-playback-dock-in-flow]) {
+  [data-playback-workspace-overlays] {
+    z-index: calc(var(--z-9-playback-dock) + 1);
+  }
+
+  [data-testid="fmdReleaseSidePanelFab"],
+  [data-testid="fmdBackToTop"] {
+    bottom: calc(
+      var(--workspace-fab-bottom) +
+      var(--release-mini-player-stack-offset, 0px)
+    );
+  }
+
+  [data-releases-random-workspace] {
+    padding-bottom: calc(
+      var(--workspace-fab-bottom) +
+      var(--release-mini-player-stack-offset, 0px) +
+      3rem +
+      var(--space-6) +
+      env(safe-area-inset-bottom, 0px)
+    );
+  }
 }

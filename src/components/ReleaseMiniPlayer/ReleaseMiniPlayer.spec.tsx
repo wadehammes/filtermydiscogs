@@ -384,7 +384,7 @@ describe("ReleaseMiniPlayer", () => {
     );
   });
 
-  it("collapses the mobile video panel when the crate drawer opens", async () => {
+  it("keeps the mobile video panel expanded when the crate drawer opens", async () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
@@ -399,15 +399,16 @@ describe("ReleaseMiniPlayer", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
         "data-video-expanded",
+        "true",
       );
     });
 
     document.querySelector("[data-collection-side-panel-open]")?.remove();
   });
 
-  it("collapses the mobile video panel when the filters drawer opens", async () => {
+  it("keeps the mobile video panel expanded when the filters drawer opens", async () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
@@ -422,15 +423,16 @@ describe("ReleaseMiniPlayer", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
         "data-video-expanded",
+        "true",
       );
     });
 
     document.querySelector("[data-filters-drawer-open]")?.remove();
   });
 
-  it("re-opens the mobile video panel after the filters drawer closes", async () => {
+  it("opens the mobile video panel while the filters drawer is open", async () => {
     setupMockMatchMedia({ desktop: false });
     const user = userEvent.setup();
 
@@ -443,26 +445,14 @@ describe("ReleaseMiniPlayer", () => {
       '<div data-filters-drawer-open="true"></div>',
     );
 
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
-        "data-video-expanded",
-      );
-    });
-
     await user.click(screen.getByRole("button", { name: "Show video" }));
 
-    expect(screen.getByTestId("fmdReleaseMiniPlayer")).not.toHaveAttribute(
+    expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
       "data-video-expanded",
+      "true",
     );
 
     document.querySelector("[data-filters-drawer-open]")?.remove();
-
-    await waitFor(() => {
-      expect(screen.getByTestId("fmdReleaseMiniPlayer")).toHaveAttribute(
-        "data-video-expanded",
-        "true",
-      );
-    });
   });
 
   it("loads the next video via postMessage when advancing tracks with the panel visible", async () => {
