@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useId } from "react";
+import { Checkbox } from "src/components/Checkbox/Checkbox.component";
 import styles from "./SettingsClient.module.css";
 
 type SettingsBooleanPreferenceToggleProps = {
@@ -22,19 +24,19 @@ export const SettingsBooleanPreferenceToggle = ({
   onChange,
   settingId,
 }: SettingsBooleanPreferenceToggleProps) => {
+  const toggleInputId = useId();
+
   return (
     <div
       className={styles.panelBlock}
       {...(settingId ? { id: settingId } : {})}
     >
-      <label className={styles.settingToggle}>
-        <input
-          data-1p-ignore
-          type="checkbox"
+      <label className={styles.settingToggle} htmlFor={toggleInputId}>
+        <Checkbox
+          id={toggleInputId}
           checked={checked}
-          onChange={(event) => onChange(event.target.checked)}
           disabled={disabled}
-          className={styles.settingCheckbox}
+          onCheckedChange={onChange}
         />
         <span>{label}</span>
       </label>

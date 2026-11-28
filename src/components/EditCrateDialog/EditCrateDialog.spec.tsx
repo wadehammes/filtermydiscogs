@@ -47,7 +47,7 @@ describe("EditCrateDialog", () => {
     expect(screen.getByTestId("fmdEditCrateDialog")).toBeInTheDocument();
     expect(screen.getByLabelText("Crate name")).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Show gig packing checklist"),
+      screen.getByRole("checkbox", { name: "Show gig packing checklist" }),
     ).toBeInTheDocument();
   });
 });

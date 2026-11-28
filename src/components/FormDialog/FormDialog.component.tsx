@@ -2,9 +2,13 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import classNames from "classnames";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode, Ref } from "react";
 import { useId } from "react";
 import { AppDialog } from "src/components/AppDialog/AppDialog.component";
+import {
+  Checkbox,
+  type CheckboxProps,
+} from "src/components/Checkbox/Checkbox.component";
 import { definedProps } from "src/utils/definedProps";
 import styles from "./FormDialog.module.css";
 
@@ -135,23 +139,34 @@ const FormDialogField = ({
 type FormDialogCheckboxFieldProps = {
   label: ReactNode;
   className?: string;
-} & ComponentPropsWithoutRef<"input">;
+  ref?: Ref<HTMLInputElement>;
+} & Omit<CheckboxProps, "inputRef">;
 
 const FormDialogCheckboxField = ({
   label,
   className,
-  ...inputProps
-}: FormDialogCheckboxFieldProps) => (
-  <label className={classNames(styles.checkboxLabel, className)}>
-    <input
-      type="checkbox"
-      className={styles.checkbox}
-      {...inputProps}
-      data-1p-ignore
-    />
-    <span>{label}</span>
-  </label>
-);
+  ref: inputRef,
+  id: idProp,
+  ...checkboxProps
+}: FormDialogCheckboxFieldProps) => {
+  const generatedId = useId();
+  const checkboxId = idProp ?? generatedId;
+
+  return (
+    <label
+      className={classNames(styles.checkboxLabel, className)}
+      htmlFor={checkboxId}
+    >
+      <Checkbox
+        {...checkboxProps}
+        data-1p-ignore
+        id={checkboxId}
+        {...definedProps({ inputRef })}
+      />
+      <span>{label}</span>
+    </label>
+  );
+};
 
 export const FormDialog = Object.assign(FormDialogRoot, {
   Field: FormDialogField,

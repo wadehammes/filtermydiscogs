@@ -154,7 +154,7 @@ describe("CrateDrawerReleases", () => {
     expect(screen.getByText("0 of 2 packed for gig")).toBeInTheDocument();
     expect(
       screen.getByRole("checkbox", {
-        name: /hide albums packed for your gig/i,
+        name: /hide packed/i,
       }),
     ).toBeInTheDocument();
     expect(
@@ -174,7 +174,7 @@ describe("CrateDrawerReleases", () => {
     expect(screen.getByText("Hide packed")).toBeInTheDocument();
     expect(
       screen.getByRole("checkbox", {
-        name: /hide albums packed for your gig/i,
+        name: /hide packed/i,
       }),
     ).toBeInTheDocument();
   });
@@ -255,7 +255,7 @@ describe("CrateDrawerReleases", () => {
 
     await user.click(
       screen.getByRole("checkbox", {
-        name: /hide albums packed for your gig/i,
+        name: /hide packed/i,
       }),
     );
 

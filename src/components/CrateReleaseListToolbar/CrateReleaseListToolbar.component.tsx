@@ -1,6 +1,8 @@
 "use client";
 
 import classNames from "classnames";
+import { useId } from "react";
+import { Checkbox } from "src/components/Checkbox/Checkbox.component";
 import { useCrateDrawerContext } from "src/components/CrateDrawer/CrateDrawer.context";
 import textActionStyles from "src/styles/modules/text-action.module.css";
 import styles from "./CrateReleaseListToolbar.module.css";
@@ -25,6 +27,7 @@ export const CrateReleaseListToolbar = ({
     setShowClearPackedDialog,
   } = useCrateDrawerContext();
 
+  const hidePackedCheckboxId = useId();
   const releaseCount = selectedReleases.length;
   const isBusy = isUpdatingCrate || isDeletingCrate;
   const showToolbar = packedEnabled;
@@ -55,15 +58,15 @@ export const CrateReleaseListToolbar = ({
           >
             Clear packed
           </button>
-          <label className={styles.checkboxLabel}>
-            <input
-              data-1p-ignore
-              type="checkbox"
-              className={styles.checkbox}
+          <label
+            className={styles.checkboxLabel}
+            htmlFor={hidePackedCheckboxId}
+          >
+            <Checkbox
+              id={hidePackedCheckboxId}
               checked={hidePackedItems}
-              onChange={(event) => setHidePackedItems(event.target.checked)}
               disabled={isBusy}
-              aria-label="Hide albums packed for your gig"
+              onCheckedChange={setHidePackedItems}
             />
             <span>Hide packed</span>
           </label>
