@@ -2,7 +2,7 @@
 
 import classNames from "classnames";
 import Image from "next/image";
-import { Activity, useCallback, useEffect, useState } from "react";
+import { Activity, useCallback, useEffect, useRef, useState } from "react";
 import { OverlayStack } from "src/components/OverlayStack/OverlayStack.component";
 import { PersistentYoutubeIframe } from "src/components/PersistentYoutubeIframe/PersistentYoutubeIframe.component";
 import { PlaybackQueueDrawerLazy } from "src/components/PlaybackQueueDrawer/PlaybackQueueDrawerLazy.component";
@@ -19,6 +19,7 @@ import { useCrateDrawerOpen } from "src/hooks/useCrateDrawerOpen.hook";
 import { useFiltersDrawerOpen } from "src/hooks/useFiltersDrawerOpen.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
 import { usePlaybackDockMobileBarCollapsed } from "src/hooks/usePlaybackDockMobileBarCollapsed.hook";
+import { usePlaybackDockMobileScrollPassthrough } from "src/hooks/usePlaybackDockMobileScrollPassthrough.hook";
 import { useReleaseCardOpenHandler } from "src/hooks/useReleaseCardOpenHandler.hook";
 import { buildUserTrackMetadataBody } from "src/utils/buildUserTrackMetadataBody";
 import { definedProps } from "src/utils/definedProps";
@@ -77,6 +78,12 @@ export const ReleaseMiniPlayer = ({
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const isDockBarExpanded = !isDockBarCollapsed;
   const isQueueDrawerOpen = isQueueOpen && isDockBarExpanded;
+  const miniPlayerBarRef = useRef<HTMLDivElement>(null);
+
+  usePlaybackDockMobileScrollPassthrough({
+    miniPlayerBarRef,
+    enabled: isMobileLayout && isDockBarExpanded,
+  });
   const { openRelease: openReleaseBase, prefetchPointerProps } =
     useReleaseCardOpenHandler({
       release,
@@ -252,7 +259,7 @@ export const ReleaseMiniPlayer = ({
             />
           </Activity>
           {isDockBarExpanded ? (
-            <div className={styles.miniPlayerBar}>
+            <div ref={miniPlayerBarRef} className={styles.miniPlayerBar}>
               <div className={styles.releaseArea}>
                 <div className={styles.metaRow}>
                   {!isMobileLayout ? addToMenu : null}
