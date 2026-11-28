@@ -10,6 +10,7 @@ import {
 import { COMPACT_LAYOUT_MEDIA_QUERY } from "src/constants/layoutMediaQueries";
 import { useDraggablePanel } from "src/hooks/useDraggablePanel.hook";
 import { useMediaQuery } from "src/hooks/useMediaQuery.hook";
+import { usePlaybackMobileVideoPanelViewportInset } from "src/hooks/usePlaybackMobileVideoPanelViewportInset.hook";
 import { VIDEO_PANEL_LAYOUT_STORAGE_KEY } from "src/utils/videoPanelLayoutStorage";
 import styles from "./ReleasePlaybackVideoPanel.module.css";
 
@@ -27,6 +28,9 @@ export const ReleasePlaybackVideoPanel = ({
   children,
 }: ReleasePlaybackVideoPanelProps) => {
   const isMobileLayout = useMediaQuery(COMPACT_LAYOUT_MEDIA_QUERY);
+  const mobileViewportBottomInset = usePlaybackMobileVideoPanelViewportInset(
+    isExpanded && isMobileLayout,
+  );
   const {
     panelRef,
     position,
@@ -76,6 +80,11 @@ export const ReleasePlaybackVideoPanel = ({
         ...(isExpanded && useFloatingLayout
           ? {
               ["--panel-scale" as string]: String(scale),
+            }
+          : {}),
+        ...(isExpanded && isMobileLayout
+          ? {
+              ["--playback-video-panel-viewport-bottom-inset" as string]: `${mobileViewportBottomInset}px`,
             }
           : {}),
       }}
